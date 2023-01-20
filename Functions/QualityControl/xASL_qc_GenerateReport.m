@@ -18,7 +18,7 @@ function xASL_qc_GenerateReport(x)
 % 
 % EXAMPLE: xASL_qc_GenerateReport(x);
 % __________________________________
-% Copyright (C) 2015-2022 ExploreASL
+% Copyright (C) 2015-2023 ExploreASL
 
 % Determine x.mat file
 PathX = fullfile(x.dir.SUBJECTDIR,'x.mat');
@@ -149,49 +149,6 @@ function line = xASL_vis_PrintPatient(PatientInfo, figure, line, fontsize)
         end
     end
 
-end
-
-
-function graph = xASL_Average_Intensity(x)
-    if ~xASL_exist(x.D.ROOT); return; end
-    
-    graph = [];
-end
-
-function SlabPlaced = xASL_vis_PlotSlab(x)
-    if ~xASL_exist(x.D.ROOT); return; end
-    Dlist = xASL_adm_GetFileList(x.D.ROOT,'^.*$','List',[0 Inf], true);
-    Flist = xASL_adm_GetFileList(x.D.ROOT,'^.nii*$','List',[0 Inf], false);
-    bAnat = false;
-    NiftiList = {};
-
-    %Load T1W image
-    if contains(fieldnames(Flist), 'T1*')
-        bAnat = true;
-        NiftiList{1,1} = fullfile(x.D.ROOT, 'T1.nii.gz');
-    end
-
-    if contains(fieldnames(Flist), 'T2*')
-        bAnat = true;
-        NiftiList{end,1} = fullfile(x.D.ROOT, 'T2.nii.gz');
-    end
-
-    if contains(fieldnames(Flist), 'FLAIR*')
-        bAnat = true;
-        NiftiList{end,1} = fullfile(x.D.ROOT, 'Flair.nii.gz');
-    end
-
-    if ~(bAnat)
-        warning('No anatomical scans found, cannot plot orientation.');
-    end
-
-    %Load ASL image
-    if contains(fieldnames(Dlist), 'ASL')
-        
-    end
-
-    xASL_qc_PrintOrientation(NiftiList, x.D.ROOT, '');
-    SlabPlaced = [];
 end
 
 function Values = GetValues(x, OutputFields, iSubjSess)
