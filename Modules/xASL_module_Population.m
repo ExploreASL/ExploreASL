@@ -29,13 +29,12 @@ function [result, x] = xASL_module_Population(x)
 %
 % EXAMPLE: [~, x] = xASL_module_Population(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
 
 %% ------------------------------------------------------------------------------------------------------------
 %% Admin
-result = false;
 [x] = xASL_init_SubStructs(x);
 
 % Input check
@@ -43,6 +42,18 @@ if x.opts.nWorkers>1 % don't run population module when ExploreASL is paralleliz
     warning('Population module should not run in parallel, skipping...');
     result = true;
     return;
+end
+
+% Default atlases/ROIs
+if ~isfield(x.S,'Atlases')
+	x.S.Atlases = {'TotalGM','DeepWM'}; % Default
+end
+
+% Default datatypes
+if ~isfield(x.S,'DataTypes') || isempty(x.S.DataTypes)
+	x.S.DataTypes = {'qCBF'}; % Default
+	% Alternatives: 'Tex' 'ATT' 'SD' 'M0'
+	% These can be added in the dataPar manually
 end
 
 % Create population directory
@@ -203,19 +214,6 @@ end
 %% 7    ROI statistics
 if ~x.mutex.HasState(StateName{8})
     
-    % Default atlases/ROIs
-    if ~isfield(x.S,'Atlases')
-        x.S.Atlases = {'TotalGM','DeepWM'}; % Default
-    end
-    
-    % Default datatypes
-    if ~isfield(x.S,'DataTypes') || isempty(x.S.DataTypes)
-        x.S.DataTypes = {'qCBF'}; % Default
-        % Alternatives: 'Tex' 'ATT' 'SD' 'M0'
-        % These can be added in the dataPar manually
-    end
-    
-    
     x = xASL_init_LoadMetadata(x); % Add statistical variables, if there are new ones
     % if exist('ASL','var')
     %     xASL_vis_OverlapT1_ASL(x, ASL.Data.data); % Overlap T1 GM probability map & CBF, Create image showing spatial/visual agreement between T1 GM segmentation & ASL
@@ -223,11 +221,9 @@ if ~x.mutex.HasState(StateName{8})
 
     xASL_stat_ComputeWsCV(x); % This computes wsCV & bsCV to compute power   
 
-
     % ROI statistics
     % x.S.SubjectWiseVisualization =1; % set this on to visualize the subject-wise masks
     % over CBF maps (takes lot of extra time though)
-
     
     % Iterate over DataTypes
     for iDataType=1:length(x.S.DataTypes)
