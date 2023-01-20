@@ -18,7 +18,7 @@ function xASL_wrp_GetVolumetrics(x)
 %
 % EXAMPLE: xASL_wrp_GetVolumetrics(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------
@@ -94,21 +94,29 @@ if xASL_exist(x.P.Path_WMH_SEGM, 'file')
     xASL_adm_DeleteFileList(x.D.TissueVolumeDir, '^LST_tlv_.*\.(csv|tsv)$', [], [0 Inf]);
     xASL_adm_DeleteFileList(x.D.TissueVolumeDir, ['WMH_LST_(LGA|LPA)_' x.P.SubjectID '.(csv|tsv)'], [], [0 Inf]);
     
-    % run the LST lesion volume calculator
+    % Run the LST lesion volume calculator
+	% Change directory to the SUBJECT DIRECTORY as the count function outputs to the current directory
     CurrDir = pwd;
-    cd(x.D.TissueVolumeDir);
+    cd(x.dir.SUBJECTDIR);
     [~, FileName] = ps_LST_tlv(x.P.Path_WMH_SEGM, ~bVerbose, BinThresh, MinimalLesionVolume);
     cd(CurrDir);
     % get current filename:
-    FileName = fullfile(x.D.TissueVolumeDir, FileName);
+    FileName = fullfile(x.dir.SUBJECTDIR, FileName);
     % define new filename:
-    OutputPath = fullfile(x.D.TissueVolumeDir, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.csv']);
-    % Then move our file
+    OutputPathCSV = fullfile(x.dir.SUBJECTDIR, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.csv']);
+	OutputPathTSV = fullfile(x.dir.SUBJECTDIR, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.tsv']);
+    OutputPathTSVPopulation = fullfile(x.D.TissueVolumeDir, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.tsv']);
     if ~exist(FileName, 'file')
          warning(['Missing:' FileName]);
-    else
-        xASL_Move(FileName, OutputPath, true);
-        xASL_bids_csv2tsvReadWrite(OutputPath, true); % convert to tsv per BIDS
+	else
+		% Rename the file to the standardized name
+        xASL_Move(FileName, OutputPathCSV, true);
+
+		% Convert to CSV
+        xASL_bids_csv2tsvReadWrite(OutputPathCSV, true); % convert to tsv per BIDS
+
+		% Move the file to the population folder
+		xASL_Move(OutputPathTSV, OutputPathTSVPopulation);
     end
 end
 

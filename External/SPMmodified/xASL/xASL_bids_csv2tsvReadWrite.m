@@ -1,7 +1,7 @@
-function [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn, bDeleteCSV, bWriteTSV)
+function [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn, bDeleteCSV, bOverwrite)
 %xASL_bids_csv2tsvReadWrite Multi-purpose read & convert csv/tsv
 %
-% FORMAT: [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn[, bDeleteCSV, bWriteTSV])
+% FORMAT: [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn[, bDeleteCSV, bOverwrite])
 %
 % INPUT:
 %   PathIn          - path to CSV or TSV input file (REQUIRED)
@@ -24,14 +24,14 @@ function [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn, bDeleteCSV
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_adm_tsvWrite(ParticipantsMetadata, '/MyStudy/participants.tsv');
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
 
 %% -------------------------------------------------------
 %% Admin
-if nargin<3 || isempty(bWiteTSV)
-    bWriteTSV = true;
+if nargin<3 || isempty(bOverwrite)
+    bOverwrite = true;
 end
 
 if nargin<2 || isempty(bDeleteCSV)
@@ -45,7 +45,7 @@ end
 
 [Fpath, Ffile, Fext] = xASL_fileparts(PathIn);
 
-if isempty(regexp(Fext, '^\.(tsv|csv)$'))
+if isempty(regexp(Fext, '^\.(tsv|csv)$', 'once'))
     warning('Wrong extension, resetting to .csv');
     PathIn = fullfile(Fpath, [Ffile '.csv']);
 end
@@ -75,8 +75,10 @@ end
 
 %% -------------------------------------------------------
 %% 2) Write the TSV file (if requested)
-if ~exist(PathTSV, 'file') && bWriteTSV
+if ~exist(PathTSV, 'file') || bOverwrite
     xASL_tsvWrite(CellContents, PathTSV, 1); % overwrite
+else
+	warning(['File ' PathTSV ' already exists and bOverwrite is set to false'])
 end
 
 
