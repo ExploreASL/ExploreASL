@@ -52,14 +52,6 @@ elseif isunix || ismac
     fontsize = 8;
 end
 
-% Load participants data
-PatientInfo = xASL_adm_readParticipantsTSV(x);
-
-% Debugg print participants
-if ~isempty(PatientInfo)
-    PatientInfo
-end
-
 %% Print the title
 fprintf('Printing ExploreASL PDF report:   \n');
 
@@ -70,7 +62,7 @@ spm_figure('Clear','Graphics');
 
 %% Print the Title
 PrintImage('Design/ExploreASL_logoHeader.png', spm_fig, [0 0.96 1 0.04]);
-NewLine = PrintBold(['ExploreASL QC summary report ', SuSeID], spm_fig, [0 0.96 1 0], fontsize+2);
+NewLine = PrintBold('ExploreASL QC summary report ', spm_fig, [0 0.96 1 0], fontsize+2);
 
 %% Print the Footer
 PrintBold('This report was automatically generated with ExploreASL', spm_fig,  [0 0.02 1 0], fontsize+2);
@@ -78,14 +70,21 @@ PrintBold('This report was automatically generated with ExploreASL', spm_fig,  [
 %% Load Pdf configuration
 config = xASL_adm_LoadPDFConfig(x);
 
-%% -----------------------------------------------------------------------------------------------
+% Load participants data
+PatientInfo = xASL_adm_readParticipantsTSV(x);
+NewLine = xASL_vis_PrintPatient(PatientInfo, spm_fig, NewLine, fontsize);
+
 %% Collect field name & field values to print
 OutputFields = fieldnames(x.Output);
 Paragraphs = GetValues(x, OutputFields, iSubjSess);
 
 for iField=1:length(Paragraphs) 
-    NewLine = PrintParagraph(x, config, spm_fig, Paragraphs{iField}, OutputFields{iField}, fontsize, NewLine);
+    NewLine = PrintParagraph(x, config, Paragraphs{iField}, OutputFields{iField}, spm_fig, NewLine, fontsize);
 end
+
+%% Print Graphs
+PrintImage('~/filler.png', spm_fig, [0.70 0.35 0.3 0.3]);
+PrintImage('~/filler.png', spm_fig, [0.70 0.65 0.3 0.3]);
 
 PrintFile = 'xASL_Report';
 PrintPath = fullfile(PrintDir, PrintFile); 
@@ -117,19 +116,41 @@ end
 function PatientInfo = xASL_adm_readParticipantsTSV(x)
     %Check if participant data exists.
     ExistsParticipants = xASL_adm_GetFileList(x.D.ROOT, 'participants.tsv');
-    if ~isempty(ExistsParticipants)
-        sParticipants = xASL_tsvRead(ExistsParticipants{1});
-        nParticipants = size(sParticipants, 1);
-        for iPar=2:nParticipants
-            if sParticipants{iPar, 1} == x.SUBJECT
-                %Extract Participants table, and participants info
-                PatientInfo = [sParticipants(1,:); sParticipants(iPar, :)];
-            end
-        end
-    else
+
+    if isempty(ExistsParticipants)
         PatientInfo = {};
+        return
     end
+
+    sParticipants = xASL_tsvRead(ExistsParticipants{1});
+    nParticipants = size(sParticipants, 1);
+    for iPar=2:nParticipants
+        if sParticipants{iPar, 1} == x.SUBJECT
+            %Extract Participants table, and participants info
+            PatientInfo = [sParticipants(1,:); sParticipants(iPar, :)];
+        end
+    end
+    
 end
+
+function line = xASL_vis_PrintPatient(PatientInfo, figure, line, fontsize)
+    if isempty(PatientInfo)
+        fprintf ("no patient info found to be printed")
+        return
+    end
+    line = PrintBold('Participant Information', figure, line, fontsize );
+    for iEntry=1:size(PatientInfo,2)
+        if strcmp(PatientInfo{1, iEntry},'participant_id')
+            line = PrintText(['Participant: ', PatientInfo{2, iEntry}], figure, line, fontsize );
+        elseif strcmp(PatientInfo{1, iEntry},'age')
+            line = PrintText(['Participant age: ', num2str(PatientInfo{2, iEntry})], figure, line, fontsize );
+        elseif strcmp(PatientInfo{1, iEntry},'sex')
+            line = PrintText(['Participant sex: ', PatientInfo{2, iEntry}], figure, line, fontsize );
+        end
+    end
+
+end
+
 
 function graph = xASL_Average_Intensity(x)
     if ~xASL_exist(x.D.ROOT); return; end
@@ -190,7 +211,7 @@ function Values = GetValues(x, OutputFields, iSubjSess)
     end 
 end
 
-function line = PrintParagraph(x, config, figure, Contents, ModName, fontsize, line)
+function line = PrintParagraph(x, config, Contents, ModName, figure, line, fontsize)
     % Printing header/title
     line = PrintBold(ModName, figure, line, fontsize);    
     for ii=1:size(Contents,2) % iterating over text lines
