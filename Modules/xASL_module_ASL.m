@@ -261,6 +261,8 @@ end
 %% G1. Split ASL and M0 within the ASL time series
 % Run this when the data hasn't been touched yet
 % The first three states are here, because the first two are run only conditionally
+
+% NOTE THAT THIS PART IS BEING PHASED OUT, AND NOW PROCESSED IN `xASL_bids_parseM0`
 if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mutex.HasState(StateName{3})
 	% Split the M0 and dummy scans from the ASL time-series
 	xASL_io_SplitASL(x.P.Path_ASL4D, x.modules.asl.M0PositionInASL4D, x.modules.asl.DummyScanPositionInASL4D);
@@ -290,7 +292,7 @@ if xASL_exist(x.P.Path_ASL4Dcontext, 'file')
 		x.modules.asl.bContainsDeltaM = true;
 	end
 else
-	% In case the ASL-context file is missing we label as containsDeltaM all volumes with a single volume only
+	% In case the ASL-context file is missing we set containsDeltaM to true for all NIfTIs with a single volume only
 	if xASL_exist(x.P.Path_ASL4D, 'file')
 		niftiASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
 		if size(niftiASL.dat,4) == 1
