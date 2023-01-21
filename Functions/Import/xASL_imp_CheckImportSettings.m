@@ -20,7 +20,7 @@ function [x] = xASL_imp_CheckImportSettings(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
     % Check bCheckPermissions
@@ -35,26 +35,48 @@ function [x] = xASL_imp_CheckImportSettings(x)
     
     if ~isfield(x.modules.import.imPar,'dcmExtFilter') || isempty(x.modules.import.imPar.dcmExtFilter)
         % dcmExtFilter: the last one is because some convertors save files without extension, 
-        % but there would be a dot/period before a bunch of numbers
-        x.modules.import.imPar.dcmExtFilter = '^(.*\.dcm|.*\.DCM|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
-    end
-    
-    % Check SkipSubjectIfExists
-    if ~isfield(x.modules.import.imPar,'SkipSubjectIfExists') || isempty(x.modules.import.imPar.SkipSubjectIfExists)
-        % allows to skip existing subject folders in the temp folder, when this is set to true,
-        % avoiding partly re-importing/converting dcm2niiX when processing has been partly done
-        x.modules.import.imPar.SkipSubjectIfExists = false;
-    else
-        warning('Skipping existing subjects in temp folder...');
-        fprintf('If you want to overwrite, first remove the full subject folder...');
-    end
+		% but there would be a dot/period before a bunch of numbers
+		x.modules.import.imPar.dcmExtFilter = '^(.*\.dcm|.*\.DCM|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
+	end
+
+	% Check SkipSubjectIfExists
+	if ~isfield(x.modules.import.imPar,'SkipSubjectIfExists') || isempty(x.modules.import.imPar.SkipSubjectIfExists)
+		% allows to skip existing subject folders in the temp folder, when this is set to true,
+		% avoiding partly re-importing/converting dcm2niiX when processing has been partly done
+		x.modules.import.imPar.SkipSubjectIfExists = false;
+	else
+		warning('Skipping existing subjects in temp folder...');
+		fprintf('If you want to overwrite, first remove the full subject folder...');
+	end
+
+	%% Check if folderHierarchy matches with tokenOrdering
+	nLeftBrackets = 0;
+	nRightBrackets = 0;
+
+	for iLayer = 1:numel(x.modules.import.imPar.folderHierarchy)
+		leftBracket = regexp(x.modules.import.imPar.folderHierarchy{iLayer}, '(');
+		rightBracket = regexp(x.modules.import.imPar.folderHierarchy{iLayer}, ')');
+		if numel(leftBracket)~=numel(rightBracket)
+			error(['Unequal brackets used in folderHierarchy layer ' num2str(iLayer) ': ' x.modules.import.imPar.folderHierarchy{iLayer}]);
+		end
+
+		nLeftBrackets = nLeftBrackets + numel(leftBracket);
+		nRightBrackets = nRightBrackets + numel(rightBracket);
+	end
+
+	nTokens = sum(x.modules.import.imPar.tokenOrdering>0);
+
+	% Report this
+	fprintf('%s\n', [num2str(nLeftBrackets) ' tokens detected in folderHierarchy']);
+	fprintf('%s\n', [num2str(nTokens) ' tokens detected in tokenOrdering']);
+
+	if nLeftBrackets~=nTokens
+		error('Number of tokens of folderHierarchy and tokenOrdering should be the same');
+	end
 
 
 
-
-
-    
-    %% Manage .nii vs .nii.gz extensions
+	%% Manage .nii vs .nii.gz extensions
 	if ~isempty(x.modules.import.imPar.folderHierarchy)
 		lastHierarchy = x.modules.import.imPar.folderHierarchy{end};
 		% Remove $ first
