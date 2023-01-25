@@ -33,6 +33,8 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
 
     %% 4.1 Initialize variables
     
+    PrintDICOMFields = [];
+    
     % Get other basic fields
     scanID = thisRun.scanIDs{scanFields.iScan};
     summary_line = [];
@@ -77,16 +79,21 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         fprintf('Subject = %s, visit = %s, session = %s, scan = %s\n',scanFields.subjectID, scanFields.visitID, printSession, scan_name);
     end
 
-    % Defaults
-    bOneScanIsEnough = false;
-    bPutInSessionFolder = true; 
+%     % Defaults
+    bOneScanIsEnough = false; % PM: THIS USED TO BE TRUE FOR ANATOMICAL SCANS
+    bPutInSessionFolder = true; % THIS USED TO BE FALSE FOR ANATOMICAL SCANS
     switch scan_name
         case {'ASL4D', 'M0', 'ASL4D_RevPE', 'func_bold'}
             bPutInSessionFolder = true;
-        case {'T1', 'WMH_SEGM', 'FLAIR', 'T2', 'T1c'}
-            bPutInSessionFolder = false;
+            bAnatomical = false;        
+        case {'T1w' 'T2w' 'T1', 'WMH_SEGM', 'FLAIR', 'T2', 'T1c'}
+%             bPutInSessionFolder = false;
+            bAnatomical = true;
+        otherwise
+            error('Unrecognized scantype');
     end
 
+    
     %% 4.4 Now pick the matching one from the folder list
     
     % Only get the matching session
@@ -110,7 +117,6 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         end
         % Add information to summary lines and stop import of this scan here
         thisSubject.summary_lines{scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan} = summary_line;
-        PrintDICOMFields = [];
         return
     end
 
@@ -162,35 +168,42 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
 
 
     %% 4.7 Store JSON files
+    jsonFiles = {};
     if ~isempty(nii_files)
-        jsonFiles = nii_files;
+
         for iFile = 1:length(nii_files)
-            [Fpath, Ffile, ~] = fileparts(nii_files{iFile});
+            [Fpath, Ffile, ~] = xASL_fileparts(nii_files{iFile});
             newFile = xASL_adm_GetFileList(Fpath,['^' Ffile '.json$'],'FPList');
-            jsonFiles{iFile} = newFile{1};
+            if ~isempty(newFile)
+                jsonFiles{iFile} = newFile{1};
+            else
+                warning(['JSON sidecar missing for ' nii_files{iFile}]);
+            end
         end
-        [parms, x.modules.import.pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(...
-            x.modules.import.imPar, jsonFiles, first_match, x.modules.import.settings.bUseDCMTK, x.modules.import.pathDcmDict);
+        if ~isempty(jsonFiles)
+            [parms, x.modules.import.pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(...
+                x.modules.import.imPar, jsonFiles, first_match, x.modules.import.settings.bUseDCMTK, x.modules.import.pathDcmDict);
+        end
     end
 
-    %% 4.8 Sort ASL Volumes
     
-    % In case of GE or PARREC/a single NII ASL file loaded from PAR/REC, we need to 
-    % shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order.
-    [x,nii_files, summary_line, thisSubject.globalCounts] = ...
-        xASL_imp_DCM2NII_Subject_SortASLVolumes(x, thisSubject.globalCounts, scanpath, scan_name, nii_files, scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan);
+    %% 4.8 Sort ASL Volumes
+    if ~bAnatomical % skip this for anatomical scans
+        % In case of GE or PARREC/a single NII ASL file loaded from PAR/REC, we need to 
+        % shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order.
+        [x,nii_files, summary_line, thisSubject.globalCounts] = ...
+            xASL_imp_DCM2NII_Subject_SortASLVolumes(x, thisSubject.globalCounts, scanpath, scan_name, nii_files, scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan);
 
-    % Correct nifti rescale slope if parms.RescaleSlopeOriginal =~1 but nii.dat.scl_slope==1 (this can happen in case
-    % of hidden scale slopes in private Philips header, that is dealt with by xASL_bids_Dicom2JSON but not by dcm2niiX.
-    if ~isempty(nii_files) && exist('parms','var')
-        [TempLine, PrintDICOMFields] = xASL_imp_AppendParmsParameters(parms);
-        summary_line = [summary_line TempLine];
-    else
-        PrintDICOMFields = [];
+        % Correct nifti rescale slope if parms.RescaleSlopeOriginal =~1 but nii.dat.scl_slope==1 (this can happen in case
+        % of hidden scale slopes in private Philips header, that is dealt with by xASL_bids_Dicom2JSON but not by dcm2niiX.
+        if ~isempty(nii_files) && exist('parms','var')
+            [TempLine, PrintDICOMFields] = xASL_imp_AppendParmsParameters(parms);
+            summary_line = [summary_line TempLine];
+        end
     end
 
     %% 4.9 Copy single dicom as QC placeholder
-    if x.modules.import.settings.bCopySingleDicoms && ~isempty(first_match)
+    if x.modules.import.settings.bCopySingleDicoms && ~isempty(first_match) && ~regexpi(fExt, '\.(nii|nii\.gz)')
         xASL_Copy(first_match, fullfile(destdir, ['DummyDicom_' scan_name '.dcm']), x.modules.import.imPar.bOverwrite, x.modules.import.imPar.bVerbose);
     end
 
