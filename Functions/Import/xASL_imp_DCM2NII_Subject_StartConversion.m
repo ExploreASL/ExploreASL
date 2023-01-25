@@ -38,18 +38,17 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
         %% Check if we have a nii(gz) file, or something that needs to be converted (parrec/dicom)
         if ~exist(scanpath, 'dir') && ~isempty(regexpi(scanpath,'(\.nii|\.nii\.gz)$'))
             %% We found a NIfTI file, check if output exists
-            first_match = fullfile(destdir, [scan_name '.nii']);
-            if x.modules.import.imPar.bOverwrite || ~xASL_exist(first_match,'file')
-                [~, fname, fext] = fileparts(scanpath);
-                destfile = fullfile(destdir, [fname fext]); % will be renamed later
-                xASL_Copy(scanpath, destfile, x.modules.import.imPar.bOverwrite, x.modules.import.imPar.bVerbose);
-                % gunzip if required
-                destfile = xASL_adm_UnzipNifti(destfile);
-                xASL_Move(destfile, first_match, x.modules.import.imPar.bOverwrite, x.modules.import.imPar.bVerbose);
+            first_match = fullfile(destdir, [scan_name '.nii.gz']);
+            % only copy this file if it doesn't exist yet, or if we want to
+            % overwrite
+            if x.modules.import.imPar.bOverwrite || ~xASL_exist(first_match,'file') % this will check both .nii & .nii.gz
+                xASL_Copy(scanpath, first_match, x.modules.import.imPar.bOverwrite, x.modules.import.imPar.bVerbose);
+                % gzip if required
+                xASL_adm_GzipAllFiles(fileparts(first_match));
             end
             nii_files{1} = first_match;
             
-        else % we found dicom files
+        else %% Convert DICOM files
             %% Start the conversion. Note that the dicom filter is only in effect when a directory is specified as input.
             try
                 [nii_files, scan_name, first_match, MsgDcm2nii] = xASL_io_dcm2nii(scanpath, destdir, scan_name, x.modules.import.imPar, x.opts.MyPath);
