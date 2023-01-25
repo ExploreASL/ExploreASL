@@ -39,7 +39,7 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
     % Subsequent code is based on having data per ASL scan, so we "fool" it
     % by renaming all runs into ASL_1 ASL_2 ASL_n and keeping the
     % unique runs only. Missing scans will issue a warning, not an error.
-    listRuns = xASL_adm_GetFileList(fullfile(x.modules.import.imPar.TempRoot,nameSubjectSession),'^(ASL|T1w|FLAIR).+$',false,[],true);
+    listRuns = xASL_adm_GetFileList(fullfile(x.modules.import.imPar.TempRoot,nameSubjectSession),'^(ASL|T1|T2|FLAIR).+$',false,[],true);
     listRuns = cellfun(@(y) y(end), listRuns, 'UniformOutput', false);
     listRuns = unique(listRuns);
     listRuns = cellfun(@(y) ['ASL_' y], listRuns, 'UniformOutput', false);
