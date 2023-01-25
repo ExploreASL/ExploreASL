@@ -79,8 +79,10 @@ end
 jsonOut.RepetitionTimePreparation = jsonOut.RepetitionTime;
 
 %% 3. Save or move the NII to the correct location
+xASL_adm_CreateDir(filparts(pathM0Out));
 
 % Validate the M0 output filename
+
 [~,outputFileM0,outputExtensionM0] = xASL_fileparts([pathM0Out '.nii.gz']);
 outputFilenameM0 = [outputFileM0 outputExtensionM0];
 xASL_bids_ValidateNiftiName(outputFilenameM0,'m0scan');
@@ -109,9 +111,5 @@ end
 
 jsonOut = rmfield(jsonOut,'scaleFactor');
 
+
 end
-
-
-
-
-

@@ -158,8 +158,8 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		end
 		
 		% Create the directory for the reversed PE if needed
-		if iReversedPE == 2 && xASL_exist([pathM0In '.nii']) && ~exist(fullfile(outSessionPath,bidsPar.stringFmap),'dir')
-			mkdir(fullfile(outSessionPath,bidsPar.stringFmap));
+		if iReversedPE == 2 && xASL_exist([pathM0In '.nii'])
+			xASL_adm_CreateDir(fullfile(outSessionPath,bidsPar.stringFmap));
 		end
 		
 		% If M0, then copy M0 and add ASL path to the IntendedFor
