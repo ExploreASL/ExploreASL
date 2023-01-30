@@ -23,6 +23,20 @@ function xASL_wrp_CreateBiasfield(x)
 %              PM: add normalization of between-subjects SD as well.
 %              PM: are there other things we can normalize?
 %
+%              This function has the following sections:
+%
+%  0. Admin
+%  1. Load images & store site-average CBF images
+%  2. Smooth the site-average CBF images to biasfields
+%  3. Create average biasfield
+%  4. Create new bias-fields, masked & expand
+%  5. Save biasfields
+%  6. Create backup of each CBF image before applying biasfields
+%  7. Print QC reference images
+%  8. Rescale CBF images (apply the biasfield correction)
+%  9. Re-load & store site-average CBF images
+% 10. Perform site-wise SD correction & save new CBF images
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_wrp_CreateBiasfield(x);
 % __________________________________
@@ -39,7 +53,7 @@ function xASL_wrp_CreateBiasfield(x)
     x.WBmaskNarrow = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir,'ParenchymNarrow.nii'));
 
     %% ------------------------------------------------------------------------------------------------------------
-    %% Admin
+    %% 0. Admin
     pGMname = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii');
 
     if ~exist('iSiteSet','var')
@@ -62,17 +76,18 @@ function xASL_wrp_CreateBiasfield(x)
 
 
     %% ------------------------------------------------------------------------------------------------------------
-    %% 1) Create average images per scanner/sequence/site
-    % This should be specified in a variable "Site.mat"- file in the root directory
-    % of the pipeline;
+    %% Create average images per scanner/sequence/site
+    % This should be specified in a variable "Site" column in
+    % participants.tsv
     % If you have multiple sessions, then specify as how you want to
     % average/rescale them
     % NB: make sure you exclude the bad apples first, since these can mess up
-    % this rescaling process
+    % this rescaling process (although robust mean average maps are created
+    % here)
 
     fprintf('%s\n',['Creating biasfields for ' num2str(nSites) ' sites']);
 
-    %% Import average site-CBF images
+    %% 1. Load images & store site-average CBF images
     for iSite=1:nSites
         IM = single.empty(0);
         SiteScans = find(x.S.SetsID(:,iSiteSet)==AllSites(iSite));
@@ -102,11 +117,11 @@ function xASL_wrp_CreateBiasfield(x)
 
     %% This needs improvement, to avoid PV effects in the intensity normalization
     %% ------------------------------------------------------------------------------------------------------------
-    %% Create smooth images
+    %% 2. Smooth the site-average CBF images to biasfields
     % Store reference images
     RefIM{1} = xASL_im_rotate(RobustMean(:,:,53,1),90);
     for iSite=2:nSites
-        % 1) visualize mean CBF images
+        % Reference image 1: visualize mean CBF images
         RefIM{1} = [RefIM{1} xASL_im_rotate(RobustMean(:,:,53,iSite),90)];
     end
 
@@ -116,7 +131,7 @@ function xASL_wrp_CreateBiasfield(x)
 
     RefIM{2} = xASL_im_rotate(Ind_Biasfield(:,:,53,1),90);
     for iSite=2:nSites
-        % 2) visualize mean CBF images after masking
+        % Reference image 2: visualize mean CBF images after masking
         RefIM{2} = [RefIM{2} xASL_im_rotate(Ind_Biasfield(:,:,53,iSite),90)];
     end
 
@@ -133,13 +148,13 @@ function xASL_wrp_CreateBiasfield(x)
 
     RefIM{3} = xASL_im_rotate(Ind_Biasfield(:,:,53,1),90);
     for iSite=2:nSites
-        % 3) visualize mean CBF images after masking & smoothing with extrapolation
+        % Reference image 3: visualize mean CBF images after masking & smoothing with extrapolation
         RefIM{3} = [RefIM{3} xASL_im_rotate(Ind_Biasfield(:,:,53,iSite),90)];
     end
 
 
     %% ------------------------------------------------------------------------------------------------------------
-    %% Create average bias-field
+    %% 3. Create average biasfield
     AV_biasfield = xASL_stat_MeanNan(Ind_Biasfield,4);
     % Turn NaNs into zeros
     AV_biasfield(isnan(AV_biasfield))= 0;
@@ -148,7 +163,7 @@ function xASL_wrp_CreateBiasfield(x)
     AV_biasfield = ScaleFactor .* AV_biasfield;
 
     % Put average images in RefIM
-    % 4) average mean CBF
+    % Reference image 4: average mean CBF
     RefIM{4} = repmat(xASL_im_rotate(AV_biasfield(:,:,53),90),[1 nSites]);
 
 
@@ -156,7 +171,7 @@ function xASL_wrp_CreateBiasfield(x)
 
 
     %% ------------------------------------------------------------------------------------------------------------
-    %% Create new bias-fields, masked & expand
+    %% 4. Create new bias-fields, masked & expand
     % using AV_biasfield = Ind_Biasfield .* BiasFieldMultipl + BiasFieldAdditiv
     BiasFieldMultipl = repmat(AV_biasfield,[1 1 1 nSites]) ./ Ind_Biasfield ; % .* repmat(Bmask,[1 1 1 nSites])
     BiasFieldMultipl(BiasFieldMultipl<=0) = NaN;
@@ -186,17 +201,16 @@ function xASL_wrp_CreateBiasfield(x)
 
 
     %% ------------------------------------------------------------------------------------------------------------
+    %% 5. Save biasfields
     % Store reference images
     RefIM{5} = xASL_im_rotate(BiasFieldMultipl(:,:,53,1),90);
     for iSite=2:nSites
-        % 5) Biasfields
+        % Reference image 5: Biasfields
         RefIM{5} = [RefIM{5} xASL_im_rotate(BiasFieldMultipl(:,:,53,iSite),90)];
     end
 
 
-
-    %% ------------------------------------------------------------------------------------------------------------
-    %% Save biasfields
+    % Save biasfields
     for iSite=1:nSites
         FieldFileName = fullfile(x.D.PopDir,['Biasfield_Multipl_Site_' num2str(iSite) '_' x.S.SetsOptions{iSiteSet}{iSite} '.nii']);
         xASL_io_SaveNifti(pGMname,FieldFileName,BiasFieldMultipl(:,:,:,iSite));
@@ -205,7 +219,7 @@ function xASL_wrp_CreateBiasfield(x)
 
 
     %% ------------------------------------------------------------------------------------------------------------
-    %% First create backup
+    %% 6. Create backup of each CBF image before applying biasfields
     TryN = 1;
     BackupDir = fullfile(x.D.PopDir, 'BackupBeforeSiteRescale_1');
     while exist(BackupDir, 'dir')
@@ -229,11 +243,12 @@ function xASL_wrp_CreateBiasfield(x)
 
 
     %% ------------------------------------------------------------------------------------------------------------
-    %% Print reference image
+    %% 7. Print QC reference images
     xASL_vis_Imwrite([RefIM{1};RefIM{2};RefIM{3};RefIM{4}], fullfile(BackupDir,'Overview_biasfields.jpg') );
 
+    
     %% ------------------------------------------------------------------------------------------------------------
-    %% Rescale CBF images
+    %% 8. Rescale CBF images (apply the biasfield correction)
     for iSite=1:nSites
         clear SiteScans nScans
         SiteScans = find(x.S.SetsID(:,iSiteSet)==AllSites(iSite));
@@ -255,13 +270,13 @@ function xASL_wrp_CreateBiasfield(x)
     end
 
 %%
-%% Now normalize the SD for the Manufacturers (i.e. spatial CoV)
+%% Now normalize the SD for the sites (i.e. spatial CoV)
 
 
 
 
 %% ------------------------------------------------------------------------------------------------------------
-%% Import site-CBF images
+%% 9. Re-load & store site-average CBF images
 IM = cell.empty(0);
 
 iNext = ones(1,nSites);
@@ -286,6 +301,7 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------------------
+%% 10. Perform site-wise SD correction & save new CBF images
 % Divide by mean
 for iSite=1:nSites
     MeanCBF{iSite} = squeeze(xASL_stat_MeanNan(IM{iSite},1)); % compute mean CBF
