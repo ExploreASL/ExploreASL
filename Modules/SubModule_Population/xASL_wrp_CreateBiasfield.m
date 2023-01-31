@@ -23,6 +23,9 @@ function xASL_wrp_CreateBiasfield(x)
 %              PM: add normalization of between-subjects SD as well.
 %              PM: are there other things we can normalize?
 %
+%              Note that NaNs in the images are ignored (so for each voxel
+%              only the subjects without a NaN in the voxel are considered)
+%
 %              This function has the following sections:
 %
 %  0. Admin
