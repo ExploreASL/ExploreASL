@@ -1,12 +1,13 @@
-function [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn, bDeleteCSV, bOverwrite)
+function [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn, bDeleteCSV, bWriteTSV)
 %xASL_bids_csv2tsvReadWrite Multi-purpose read & convert csv/tsv
 %
-% FORMAT: [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn[, bDeleteCSV, bOverwrite])
+% FORMAT: [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn[, bDeleteCSV, bWriteTSV])
 %
 % INPUT:
 %   PathIn          - path to CSV or TSV input file (REQUIRED)
 %   bDeleteCSV      - boolean specifying if an original CSV should be deleted (OPTIONAL, DEFAULT=true)
-%   bOverwrite      - boolean specifying if the CSV contents should be written to a new TSV file (OPTIONAL, DEFAULT=true)
+%   bWriteTSV       - boolean specifying if the CSV contents should be
+%                     written to a new TSV file (OPTIONAL, DEFAULT=true) (note: also overwrites any pre-existing TSV-file)
 %
 % OUTPUT:
 %   PathTSV         - path to TSV file
@@ -30,8 +31,8 @@ function [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn, bDeleteCSV
 
 %% -------------------------------------------------------
 %% Admin
-if nargin<3 || isempty(bOverwrite)
-    bOverwrite = true;
+if nargin<3 || isempty(bWriteTSV)
+    bWriteTSV = true;
 end
 
 if nargin<2 || isempty(bDeleteCSV)
@@ -75,10 +76,10 @@ end
 
 %% -------------------------------------------------------
 %% 2) Write the TSV file (if requested)
-if ~exist(PathTSV, 'file') || bOverwrite
+if ~exist(PathTSV, 'file') || bWriteTSV
     xASL_tsvWrite(CellContents, PathTSV, 1); % overwrite
 else
-	warning(['File ' PathTSV ' already exists and bOverwrite is set to false'])
+	warning(['File ' PathTSV ' already exists and bWriteTSV is set to false'])
 end
 
 
