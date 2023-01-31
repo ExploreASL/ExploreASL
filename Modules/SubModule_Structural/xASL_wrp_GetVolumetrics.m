@@ -100,23 +100,17 @@ if xASL_exist(x.P.Path_WMH_SEGM, 'file')
     cd(x.dir.SUBJECTDIR);
     [~, FileName] = ps_LST_tlv(x.P.Path_WMH_SEGM, ~bVerbose, BinThresh, MinimalLesionVolume);
     cd(CurrDir);
+    
     % get current filename:
     FileName = fullfile(x.dir.SUBJECTDIR, FileName);
     % define new filename:
-    OutputPathCSV = fullfile(x.dir.SUBJECTDIR, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.csv']);
-	OutputPathTSV = fullfile(x.dir.SUBJECTDIR, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.tsv']);
-    OutputPathTSVPopulation = fullfile(x.D.TissueVolumeDir, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.tsv']);
+    OutputPath = fullfile(x.dir.SUBJECTDIR, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.csv']);
+    % Then move our file
     if ~exist(FileName, 'file')
          warning(['Missing:' FileName]);
 	else
-		% Rename the file to the standardized name
-        xASL_Move(FileName, OutputPathCSV, true);
-
-		% Convert to CSV
-        xASL_bids_csv2tsvReadWrite(OutputPathCSV, true); % convert to tsv per BIDS
-
-		% Move the file to the population folder
-		xASL_Move(OutputPathTSV, OutputPathTSVPopulation);
+        xASL_Move(FileName, OutputPath, true);
+        xASL_bids_csv2tsvReadWrite(OutputPath, true); % convert to tsv per BIDS
     end
 end
 
