@@ -130,7 +130,7 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         dbSettings.diaryFile = ['<ROOT>/log/' moduleName '.log'];
     elseif ~isempty(regexp(ModName,'(Import|BIDS2Legacy)', 'once'))
         dbSettings.diaryFile = ['<ROOT>/derivatives/ExploreASL/log/' moduleName '_sub-<SUBJECT>.log'];
-    elseif ~isempty(regexp(ModName,'(Structural)', 'once'))
+    elseif ~isempty(regexp(ModName,'(Structural|LongReg)', 'once'))
         dbSettings.diaryFile = ['<ROOT>/log/' moduleName '_<SUBJECT>.log'];
     else
         dbSettings.diaryFile = ['<ROOT>/log/' moduleName '_<SUBJECT>_<SESSION>.log'];
