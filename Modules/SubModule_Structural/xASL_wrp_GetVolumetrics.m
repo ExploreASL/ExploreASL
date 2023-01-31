@@ -95,7 +95,7 @@ if xASL_exist(x.P.Path_WMH_SEGM, 'file')
     xASL_adm_DeleteFileList(x.D.TissueVolumeDir, ['WMH_LST_(LGA|LPA)_' x.P.SubjectID '.(csv|tsv)'], [], [0 Inf]);
     
     % Run the LST lesion volume calculator
-	% Change directory to the SUBJECT DIRECTORY as the count function outputs to the current directory
+	% -> Here, we change the current directory to the SUBJECT DIRECTORY as ps_LST_tlv outputs to the current directory
     CurrDir = pwd;
     cd(x.dir.SUBJECTDIR);
     [~, FileName] = ps_LST_tlv(x.P.Path_WMH_SEGM, ~bVerbose, BinThresh, MinimalLesionVolume);
