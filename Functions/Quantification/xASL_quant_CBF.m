@@ -1,19 +1,21 @@
-function [ScaleImage, CBF] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
-%xASL_quant_CBF % Perform a multi-step quantification
-% FORMAT: [ScaleImage[, CBF]] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x)
+function [ScaleImage, CBF, ATT, Tex] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
+%xASL_quant_CBF Perform a multi-step quantification of single or mutli-PLD with or without BASIL
+% FORMAT: [ScaleImage[, CBF, ATT, Tex]] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
 %
 % INPUT:
-%   PWI             - image matrix of perfusion-weighted image (REQUIRED)
+%   PWI             - 3D (single PLD) or 4D (multi PLD) image matrix of perfusion-weighted image (REQUIRED)
 %   M0_im           - M0 image (can be a single number or image matrix) (REQUIRED)
 %   imSliceNumber   - image matrix showing slice number in current ASL space (REQUIRED for 2D multi-slice)
 %   x               - struct containing pipeline environment parameters (REQUIRED)
 %   bUseBasilQuantification - boolean, true for using FSL BASIL for
 %                             quantification, false for using ExploreASL's
-%                             own quantification (OPTIONAL, DEFAULT = false)
+%                             own quantification (OPTIONAL, DEFAULT = false for singlePLD, true for multiPLD)
 %
 % OUTPUT:
 % ScaleImage        - image matrix containing net/effective quantification scale factor
 % CBF               - Quantified CBF image
+% ATT               - Estimated ATT map
+% Tex             - Estimated map of time of exchange across BBB (if multi-TE is available)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script performs a multi-step quantification, by
 %              initializing a ScaleImage that travels through this script & gets changed by the following quantification
@@ -41,39 +43,59 @@ function [ScaleImage, CBF] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x, bUseBa
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [ScaleImage, CBF] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
 %% Admin
-fprintf('%s\n','Quantification CBF single PLD:');
+if x.modules.asl.bMultiPLD
+	fprintf('%s\n', 'Performing multi-PLD quantification');
+else
+	fprintf('%s\n', 'Performing single-PLD quantification');
+end
+
+if nargin < 4
+	error('Four input parameters required.');
+end
 
 if  xASL_stat_SumNan(M0_im(:))==0 && x.modules.asl.ApplyQuantification(5)
     error('Empty M0 image, something went wrong in M0 processing');
+elseif xASL_stat_SumNan(M0_im(:))==0
+    warning('Weird M0 image detected');    
 end
 
 if nargin<5 || isempty(bUseBasilQuantification)
-    bUseBasilQuantification = false;
+	if x.modules.asl.bMultiPLD
+		bUseBasilQuantification = true;
+	else
+		bUseBasilQuantification = false;
+	end
+end
+
+if x.modules.asl.bMultiPLD && ~bUseBasilQuantification
+	error('Multi-PLD quantification currently works only with BASIL');
 end
 
 ScaleImage = 1; % initializing (double data format by default in Matlab)
+
+% Convert to double precision to increase quantification precision
+% This is especially useful with the large factors that we can multiply and
+% divide with in ASL quantification
+PWI = double(PWI);
+M0_im = double(M0_im);
 
 if ~x.modules.asl.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 else
     
-    %% Single PLD part, remove for multi-PLD
-    x.Q.Initial_PLD = unique(x.Q.Initial_PLD);
-    if numel(x.Q.Initial_PLD)>1
-        warning('Multiple PLDs detected, selecting maximal value');
-        fprintf('%s\n', 'A multi-PLD quantification may provide more accurate results');
-        x.Q.Initial_PLD = max(x.Q.Initial_PLD);
-    end
-
-    % Convert to double precision to increase quantification precision
-    % This is especially useful with the large factors that we can multiply and
-    % divide with in ASL quantification
-    PWI = double(PWI);
-    M0_im = double(M0_im);    
+    %% Single PLD part only
+	if ~modules.asl.bMultiPLD
+		x.Q.Initial_PLD = unique(x.Q.Initial_PLD);
+		if numel(x.Q.Initial_PLD)>1
+			warning('Multiple PLDs detected, selecting maximal value');
+			fprintf('%s\n', 'A multi-PLD quantification may provide more accurate results');
+			x.Q.Initial_PLD = max(x.Q.Initial_PLD);
+		end
+	end
     
     % Calculate the vector of SliceReadoutTime
     SliceReadoutTime = xASL_quant_SliceTiming(x,x.P.Path_ASL4D);
