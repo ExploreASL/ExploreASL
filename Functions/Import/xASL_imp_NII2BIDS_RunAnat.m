@@ -85,15 +85,20 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
             xASL_Move([anatPath '.nii'], anatNiiPath, 1);
 
             % Load the JSON
-            jsonAnat = xASL_io_ReadJson([anatPath '.json']);
+            jsonPath = [anatPath '.json'];
+            if ~xASL_exist(jsonPath, 'file')
+                warning(['JSON file missing: ' jsonPath]);
+            else
+                jsonAnat = xASL_io_ReadJson(jsonPath);
 
-            % Save the JSON
-            jsonAnat = xASL_bids_BIDSifyAnatJSON(jsonAnat, studyPar);
-            jsonAnat = xASL_bids_VendorFieldCheck(jsonAnat);
-            jsonAnat = xASL_bids_JsonCheck(jsonAnat, '');
-            
-            jsonWritePath = [anatOutLabel '_' iAnatType{1} '.json'];
-            xASL_io_WriteJson(jsonWritePath, jsonAnat);
+                % Save the JSON
+                jsonAnat = xASL_bids_BIDSifyAnatJSON(jsonAnat, studyPar);
+                jsonAnat = xASL_bids_VendorFieldCheck(jsonAnat);
+                jsonAnat = xASL_bids_JsonCheck(jsonAnat, '');
+
+                jsonWritePath = [anatOutLabel '_' iAnatType{1} '.json'];
+                xASL_io_WriteJson(jsonWritePath, jsonAnat);
+			end
         end
     end
 
