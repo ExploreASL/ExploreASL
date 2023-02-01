@@ -51,6 +51,11 @@ if x.modules.asl.bMultiPLD
 	fprintf('%s\n', 'Performing multi-PLD quantification');
 else
 	fprintf('%s\n', 'Performing single-PLD quantification');
+	if nargout > 2
+		warning('Cannot assign more than two output parameters for single-PLD quantification. Setting ATT and Tex to empty vectors.')
+		ATT = [];
+		Tex = [];
+	end
 end
 
 if nargin < 4
@@ -153,12 +158,14 @@ else
 
     if bUseBasilQuantification
         % Here we perform FSL BASIL
-        PWI = xASL_quant_Basil(PWI, x);
+		if modules.asl.bMultiPLD
+			[PWI, ATT, Tex] = xASL_quant_Basil(PWI, x);
+		else
+			PWI = xASL_quant_Basil(PWI, x);
+		end
         % If resultFSL is not 0, something went wrong
         % This will issue a warning inside xASL_quant_Basil
-    end
-       
-    if ~bUseBasilQuantification
+	else
         % This part should only run when we don't use FSL BASIL
         % or as a fallback when FSL BASIL crashed
         
@@ -170,7 +177,6 @@ else
         end
 
         %% 3    Scaling to physiological units
-        
         % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
         % (& old Siemens sequence also didn't need the 1 gr->100 gr conversion)
         ScaleImage = ScaleImage.*60000.*100.*x.Q.Lambda;
@@ -292,18 +298,48 @@ end
 fprintf('%s\n',' model with parameters:');
 
 if x.modules.asl.ApplyQuantification(3)
-    if isfield(x.Q,'LabelingDuration') && isfield(x.Q,'Initial_PLD')
-        switch lower(x.Q.LabelingType)
-            case 'pasl'
-                fprintf('%s',['TI1 = ' xASL_num2str(x.Q.LabelingDuration) ' ms, ']);
-                fprintf('%s',['TI (ms) = ' xASL_num2str(x.Q.Initial_PLD)]);
-            case 'casl'
-                fprintf('%s',['LabelingDuration = ' xASL_num2str(x.Q.LabelingDuration) ' ms, ']);
-                fprintf('%s',['PLD (ms) = ' xASL_num2str(x.Q.Initial_PLD)]);
-        end
-    else
-        fprintf('Labeling duration and initial PLD undefined...\n');
-    end
+	if modules.asl.bMultiPLD
+		% Prepare unique multi-PLD parameters
+		[PLDs, ind] = unique(x.Q.Initial_PLD, 'stable');
+		if length(x.Q.LabelingDuration)>1
+			LDs = (x.Q.LabelingDuration(ind))';
+		else
+			LDs = ones(size(PLDs))*x.Q.LabelingDuration;
+		end
+		% Skip the first PLD of the block for Time-Encoded
+		if x.modules.asl.bTimeEncoded
+			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
+			ind = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
+			PLDs = PLDs(ind(:)');
+			LDs = LDs(ind(:)');
+		end
+	else
+		% Prepare single-PLD parameters
+		if isfield(x.Q,'LabelingDuration')
+			LDs = x.Q.LabelingDuration;
+		else
+			LDs = [];
+		end
+		if  isfield(x.Q,'Initial_PLD')
+			PLDs = x.Q.Initial_PLD;
+		else
+			PLDs = [];
+		end
+	end
+
+	% Print the prepared parameters
+	if ~isempty(LDs) && ~isempty(PLDs)
+		switch lower(x.Q.LabelingType)
+			case 'pasl'
+				fprintf('%s\n',['TI1 = ' xASL_num2str(LDs) ' ms,']);
+				fprintf('%s\n',['TI  = ' xASL_num2str(PLDs) ' ms.']);
+			case 'casl'
+				fprintf('%s\n',['LabelingDuration = ' xASL_num2str(LDs) ' ms,']);
+				fprintf('%s\n',['PLD              = ' xASL_num2str(PLDs) ' ms.']);
+		end
+	else
+		fprintf('Labeling duration and PLD undefined...\n');
+	end
 
 	if max(SliceReadoutTime)>0 && strcmpi(x.Q.readoutDim,'2D')
 		fprintf('%s',[' + ' xASL_num2str(SliceReadoutTime(2)-SliceReadoutTime(1)) ' ms*(slice-1)']);
