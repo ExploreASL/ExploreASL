@@ -1,6 +1,6 @@
-function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
-%xASL_quant_SinglePLD % Perform a multi-step quantification
-% FORMAT: [ScaleImage[, CBF]] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x)
+function [ScaleImage, CBF] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
+%xASL_quant_CBF % Perform a multi-step quantification
+% FORMAT: [ScaleImage[, CBF]] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x)
 %
 % INPUT:
 %   PWI             - image matrix of perfusion-weighted image (REQUIRED)
@@ -39,7 +39,7 @@ function [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x, 
 %              imSliceNumber)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [ScaleImage, CBF] = xASL_quant_SinglePLD(PWI, M0_im, imSliceNumber, x);
+% EXAMPLE: [ScaleImage, CBF] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
 
@@ -142,7 +142,7 @@ else
         
         %% 2    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'LabelingDuration')
-            ScaleImage = xASL_quant_SinglePLD_ApplyLabelDecayScaleFactor(x, ScaleImage);
+            ScaleImage = xASL_quant_CBF_ApplyLabelDecayScaleFactor(x, ScaleImage);
         else
             warning('Please define both LabelingType and LabelingDuration of this dataset...');
         end
@@ -303,7 +303,7 @@ end
 
 
 %% Determine Label Decay Scale Factor
-function ScaleImage = xASL_quant_SinglePLD_ApplyLabelDecayScaleFactor(x, ScaleImage)
+function ScaleImage = xASL_quant_CBF_ApplyLabelDecayScaleFactor(x, ScaleImage)
 
     switch x.Q.nCompartments
         case 1 % single-compartment model

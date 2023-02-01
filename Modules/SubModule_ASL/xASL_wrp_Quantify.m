@@ -433,16 +433,16 @@ end
 %% 8.   Perform Quantification
 if ~x.modules.asl.bMultiPLD % single PLD quantification
     fprintf('%s\n', 'Performing single PLD quantification');
-    [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
+    [~, CBF] = xASL_quant_CBF(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
 	ATT = NaN;
 	Tex = NaN;
 elseif x.Q.bUseBasilQuantification
     % perform BASIL multi-PLD quantification
     fprintf('%s\n', 'Performing multi PLD quantification using BASIL');
-    [~, CBF, ATT, Tex] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
+    [~, CBF, ATT, Tex] = xASL_quant_CBF(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
 else
     % multi-PLD quantification without BASIL
-    error('Multi PLD quantification without BASIL not implemented yet');
+    error('Multi PLD quantification without BASIL is not yet implemented.');
 end
 
 if x.modules.asl.ApplyQuantification(5)==0

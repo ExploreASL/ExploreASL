@@ -146,7 +146,7 @@ function [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
     end
 	
     %% 6. Scaling to physiological units
-    % Note different to xASL_quant_SinglePLD since Fabber has T1 in seconds
+    % Note different to xASL_quant_CBF since Fabber has T1 in seconds
     % and does not take into account labeling efficiency
     
     CBF_nocalib = CBF_nocalib .* 6000 .* x.Q.Lambda ./ x.Q.LabelingEfficiency;
