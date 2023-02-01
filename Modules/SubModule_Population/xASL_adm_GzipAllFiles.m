@@ -60,11 +60,18 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
         if ~isempty(pathExternal)
             PathList = xASL_adm_GetFileList(ROOT, '^.*\.(nii)$', 'FPListRec', [0 Inf], false);
             if ~isempty(PathList)
-                fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
+                fprintf('\n%s\n',['G-zZzZipping']);
                 numCores = feature('numcores');
                 glob_pat = join(['"' ROOT '/**/*.nii"']);
                 % Get SuperGzip path
-                PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'super-gunzip.exe');
+                if ispc
+                    PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'super-gzip.exe');
+                elseif ismac
+                    PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'super-gzip_macOS');
+                elseif isunix
+                    PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'super-gzip_linux');
+                end
+
                 % Define SuperGzip command
                 command = [PathToSuperGzip ' gzip ' glob_pat ' -n ' num2str(numCores) ' --verbose' ];
                 % Run script
