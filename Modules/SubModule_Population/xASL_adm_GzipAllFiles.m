@@ -38,7 +38,11 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
         bUseLinux = false;
     end
     if nargin<4 || isempty(pathExternal)
-        pathExternal = [];
+        pathExternal = fullfile(x.opts.MyPath,'External');
+        if ~exist(pathExternal, 'dir')
+            warning('No pathExternal provided, skipping superGzip');
+            pathExternal = [];
+        end
     end
 
     exit_code = NaN;
