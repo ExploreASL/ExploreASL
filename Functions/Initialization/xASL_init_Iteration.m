@@ -61,15 +61,30 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         dbSettings.settings.stopAfterErrors = stopAfterErrors;
     end
     
-    % Check if it was possible to load the subjects
+    % Check if x.SUBJECTS and x.SESSIONS exist (they should at least be
+    % initialized, could also be a dummy session)
+    % Note that "SelectedSubjects" here is a variable only used when
+    % debugging
     if nargin<5 || isempty(SelectedSubjects)
+        if ~isfield(x,'SUBJECTS')
+            error('x.SUBJECTS field missing: loading subjects went wrong, verify that ExploreASL was correctly initialized');
+        elseif isempty(x.SUBJECTS)
+            error('x.SUBJECTS was empty: loading subjects went wrong, verify that ExploreASL was correctly initialized');
+        end
+
         try
             SelectedSubjects = x.SUBJECTS;
         catch ME
-            warning('Loading subjects didnt work, verify that ExploreASL was correctly initialized with the correct DataParameter file...\n%s',ME.message);
-            SelectedSubjects = {''};
+            error('Something wrong with x.SUBJECTS: loading subjects went wrong, verify that ExploreASL was correctly initialized: \n%s',ME.message);
         end
     end
+    % same for x.SESSIONS
+    if ~isfield(x,'SESSIONS')
+        error('x.SESSIONS field missing: loading sessions went wrong, verify that ExploreASL was correctly initialized');
+    elseif isempty(x.SESSIONS)
+        error('x.SESSIONS was empty: loading sessions went wrong, verify that ExploreASL was correctly initialized');
+    end
+
     
     %% Print module name
     dbSettings.jobfn = str2func(moduleName);
