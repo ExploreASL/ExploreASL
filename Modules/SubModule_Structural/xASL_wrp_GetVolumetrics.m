@@ -95,22 +95,26 @@ if xASL_exist(x.P.Path_WMH_SEGM, 'file')
     xASL_adm_DeleteFileList(x.D.TissueVolumeDir, ['WMH_LST_(LGA|LPA)_' x.P.SubjectID '.(csv|tsv)'], [], [0 Inf]);
     
     % Run the LST lesion volume calculator
-	% -> Here, we change the current directory to the SUBJECT DIRECTORY as ps_LST_tlv outputs to the current directory
+	% -> Here, we change the current directory to the SUBJECT DIRECTORY as ps_LST_tlv outputs to the current (SUBJECT) directory
     CurrDir = pwd;
     cd(x.dir.SUBJECTDIR);
     [~, FileName] = ps_LST_tlv(x.P.Path_WMH_SEGM, ~bVerbose, BinThresh, MinimalLesionVolume);
     cd(CurrDir);
     
-    % get current filename:
+    % Get the current filename in the SUBJECT DIRECTORY
     FileName = fullfile(x.dir.SUBJECTDIR, FileName);
-    % define new filename:
-    OutputPath = fullfile(x.dir.SUBJECTDIR, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.csv']);
+    % Define new filenames:
+    OutputPath = fullfile(x.D.TissueVolumeDir, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.csv']);
     % Then move our file
     if ~exist(FileName, 'file')
          warning(['Missing:' FileName]);
 	else
+		% First rename the output file to the correct filename format in the population dir
         xASL_Move(FileName, OutputPath, true);
-        xASL_bids_csv2tsvReadWrite(OutputPath, true); % convert to tsv per BIDS
+
+		% Then convert CSV to TSV file per BIDS inside the population dir
+        xASL_bids_csv2tsvReadWrite(OutputPath, true);
+
     end
 end
 

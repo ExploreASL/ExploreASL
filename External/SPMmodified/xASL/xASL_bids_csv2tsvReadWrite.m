@@ -64,6 +64,15 @@ if strcmp(Fext, '.csv') && ~exist(PathIn, 'file')
     end
 end
 
+if strcmp(Fext, '.tsv') && ~exist(PathIn, 'file')
+    % if we want to read a TSV file, but it doesnt exist, try reading a CSV file instead
+    Fext = '.csv';
+	PathIn = fullfile(Fpath,[Ffile '.csv']);
+    if ~exist(PathIn, 'file')
+        warning([PathIn ' did not exist, skipping']);
+        return;
+    end
+end
 
 %% -------------------------------------------------------
 %% 1) Read the CSV or TSV file
