@@ -129,8 +129,11 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         dbSettings.diaryFile = fullfile('<ROOT>', 'derivatives', 'ExploreASL' ,'log', [moduleName '_sub-<SUBJECT>.log']);
     elseif ~isempty(regexpi(ModName,'(Structural|LongReg)', 'once'))
         dbSettings.diaryFile = fullfile('<ROOT>', 'log', [moduleName '_<SUBJECT>.log']);
+    elseif ~isempty(regexpi(ModName,'(ASL|func|dwi)', 'once'))        
+        dbSettings.diaryFile = fullfile('<ROOT>', 'log', [moduleName '_<SUBJECT>_<SESSION>.log']);
     else
         warning(['Unknown module name: ' moduleName]);
+        % default
         dbSettings.diaryFile = fullfile('<ROOT>', 'log', [moduleName '_<SUBJECT>_<SESSION>.log']);
     end
     
