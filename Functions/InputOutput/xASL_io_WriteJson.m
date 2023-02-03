@@ -36,13 +36,20 @@ if xASL_exist(pathJSON,'file') && ~bOverwrite
 	error(['File exists, please set bOverwrite to true: ' pathJSON]);
 end
 
-%% 1. Open the JSON file for writing
+%% 1. Encode the content to text.
+% This is executed first in case there are issues with the file
+txt = jsonencode(json);
+
+%% 2. Open the JSON file for writing and save it
 fileID = fopen(pathJSON,'w+');
 
-
-%% 2. Encode the content to text and write it to the file
-txt = jsonencode(json);
-fprintf(fileID, '%s', txt);
+try
+	fprintf(fileID, '%s', txt);
+catch ME
+	% In case an error appears during writing, we close the file and exit
+	fclose(fileID);
+	error('%s',ME.getReport());
+end
 
 % Close the file and return
 fclose(fileID);

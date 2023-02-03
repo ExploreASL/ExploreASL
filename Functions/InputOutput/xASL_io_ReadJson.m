@@ -31,10 +31,16 @@ end
 
 %% 1. Read the JSON file
 fileID = fopen(pathJSON, 'r');
-txt = fscanf(fileID, '%s');
+try 
+	txt = fscanf(fileID, '%s');
 
-%% 2. Decode the text content
-json = jsondecode(txt);
+	%% 2. Decode the text content
+	json = jsondecode(txt);
+catch
+	% In case an error appears during reading or decoding, we close the file and exit
+	fclose(fileID);
+	error('%s',ME.getReport());
+end
 
 % Close the file and returns
 fclose(fileID);
