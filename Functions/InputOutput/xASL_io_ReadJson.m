@@ -36,7 +36,7 @@ try
 
 	%% 2. Decode the text content
 	json = jsondecode(txt);
-catch
+catch ME
 	% In case an error appears during reading or decoding, we close the file and exit
 	fclose(fileID);
 	error('%s',ME.getReport());
