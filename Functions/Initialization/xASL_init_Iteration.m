@@ -104,11 +104,6 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         ModName = moduleName;
     end
     
-    % DARTEL & LongReg settings
-    if  strcmpi(ModName,'DARTEL') || strcmpi(ModName,'LongReg')
-        dbSettings.x.dir.LockDir = [dbSettings.x.dir.LockDir '_' x.P.STRUCT ];
-    end
-    
     % SUBJECT, SUBJECTDIR & LockDir
     if ~isempty(regexpi(ModName,'(Import|BIDS2Legacy|Struct|ASL|func|LongReg|dwi)', 'once'))
         dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
