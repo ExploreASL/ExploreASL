@@ -1,5 +1,5 @@
 function [ScaleImage, CBF, ATT, Tex] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
-%xASL_quant_CBF Perform a multi-step quantification of single or mutli-PLD with or without BASIL
+%xASL_quant_CBF Perform a multi-step quantification of single or multi-PLD with or without BASIL
 % FORMAT: [ScaleImage[, CBF, ATT, Tex]] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
 %
 % INPUT:
@@ -104,6 +104,7 @@ else
     
     % Calculate the vector of SliceReadoutTime
     SliceReadoutTime = xASL_quant_SliceTiming(x,x.P.Path_ASL4D);
+    
     
     %% 1    PLD scalefactor (gradient if 2D multi-slice)
     % For BASIL the x.Q.SliceReadoutTime is used internally, otherwise
@@ -283,6 +284,7 @@ else
     ScaleImage = ScaleImage./M0_im;
 end
 
+
 %% 6    Apply quantification
 if x.modules.asl.ApplyQuantification(6)
     CBF = PWI.*ScaleImage;
@@ -293,6 +295,7 @@ end
 if bUseBasilQuantification
     CBF = xASL_stat_MeanNan(CBF, 4);
 end
+
 
 %% 6    Print parameters used
 fprintf('%s\n',' model with parameters:');
@@ -360,6 +363,10 @@ end
 end
 
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% Determine Label Decay Scale Factor
 function ScaleImage = xASL_quant_CBF_ApplyLabelDecayScaleFactor(x, ScaleImage)
 
@@ -393,6 +400,3 @@ function ScaleImage = xASL_quant_CBF_ApplyLabelDecayScaleFactor(x, ScaleImage)
     end
 
 end
-
-
-
