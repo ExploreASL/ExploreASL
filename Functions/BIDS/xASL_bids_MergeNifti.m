@@ -199,7 +199,7 @@ priorityList = zeros(1,length(NiftiPaths));
 % Goes through all files
 for iFile=1:length(NiftiPaths)
 	% For each file, finds the JSONs
-	[jsonPath,jsonName,~] = fileparts(NiftiPaths{iFile});
+	[jsonPath,jsonName,~] = xASL_fileparts(NiftiPaths{iFile});
 	jsonPath = fullfile(jsonPath, [jsonName, '.json']);
 		
 	% Loads the JSON file
@@ -260,7 +260,7 @@ pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, 1:length(NiftiPaths), 'ASL4D', 
 % If this worked
 if ~isempty(pathOut)
 	% And adds the ASLContext to the JSON
-	[jsonPath,jsonName,~] = fileparts(pathOut);
+	[jsonPath,jsonName,~] = xASL_fileparts(pathOut);
 		
 	jsonPar = xASL_io_ReadJson(fullfile(jsonPath, [jsonName, '.json']));
 	jsonPar.ASLContext = ASLContext;
