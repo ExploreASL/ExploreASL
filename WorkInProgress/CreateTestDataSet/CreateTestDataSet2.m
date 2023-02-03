@@ -20,7 +20,7 @@ for iSubject=1:x.dataset.nSubjects
     continue;
     end
     
-    JSON = spm_jsonread(Path_ASL4Djson);
+    JSON = xASL_io_ReadJson(Path_ASL4Djson);
 
     if ~isfield(JSON, 'PhilipsScaleSlope') || ~isfield(JSON, 'PhilipsRescaleSlope')
         warning(['iSubject ' x.SUBJECTS{iSubject} ' is missing scaleslope(s)']);

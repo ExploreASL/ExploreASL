@@ -39,8 +39,8 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
     % Compare JSON files on field basis
     if (exist(currentFileA,'file') && exist(currentFileB,'file')) % xASL_exist somehow didn't work here (again)
         % Import JSON files
-        jsonA = spm_jsonread(char(currentFileA));
-        jsonB = spm_jsonread(char(currentFileB));
+        jsonA = xASL_io_ReadJson(char(currentFileA));
+        jsonB = xASL_io_ReadJson(char(currentFileB));
         
         % Make all paths to paths of THIS os
         jsonA = fixPathFields(jsonA);

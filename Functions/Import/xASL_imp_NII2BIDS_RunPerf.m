@@ -53,7 +53,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 
     %% 2. Load the JSONs and NIfTI information
     if exist(fullfile(inSessionPath, [aslLegacyLabel '.json']),'file')
-        jsonDicom = spm_jsonread(fullfile(inSessionPath, [aslLegacyLabel '.json']));
+        jsonDicom = xASL_io_ReadJson(fullfile(inSessionPath, [aslLegacyLabel '.json']));
     else
         warning('Missing JSON file: %s\n',fullfile(inSessionPath, [aslLegacyLabel '.json']));
 		
@@ -120,7 +120,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		
 		% Load the M0 JSON
 		if xASL_exist([pathM0In '.json'])
-			jsonM0 = spm_jsonread([pathM0In '.json']);
+			jsonM0 = xASL_io_ReadJson([pathM0In '.json']);
 		else
 			jsonM0 = struct;
 		end
@@ -169,7 +169,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 			% Save JSON to new dir
 			jsonM0 = xASL_bids_VendorFieldCheck(jsonM0);
 			jsonM0 = xASL_bids_JsonCheck(jsonM0,'M0');
-			spm_jsonwrite([pathM0Out '.json'],jsonM0);
+			xASL_io_WriteJson([pathM0Out '.json'],jsonM0);
 		end
 	end
 
@@ -179,12 +179,12 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     jsonLocal = xASL_bids_BIDSifyASLNII(jsonLocal, bidsPar, fullfile(inSessionPath,[aslLegacyLabel '.nii']), aslOutLabel);
     jsonLocal = xASL_bids_VendorFieldCheck(jsonLocal);
     [jsonLocal,bidsReport] = xASL_bids_JsonCheck(jsonLocal,'ASL');
-    spm_jsonwrite([aslOutLabel '_' bidsPar.stringASL '.json'],jsonLocal);
+    xASL_io_WriteJson([aslOutLabel '_' bidsPar.stringASL '.json'],jsonLocal);
 
     % Export report file for ASL dependencies
     if exist('bidsReport','var')
         if ~isempty(fieldnames(bidsReport))
-            spm_jsonwrite(fullfile(fileparts(imPar.BidsRoot),'derivatives','ExploreASL','log', ...
+            xASL_io_WriteJson(fullfile(fileparts(imPar.BidsRoot),'derivatives','ExploreASL','log', ...
                 ['bids_report_' subjectSessionLabel runLabel '.json']), bidsReport);
         end
     end

@@ -32,7 +32,7 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     % Load the imPar from the file
     if ~isempty(imParPath) && xASL_exist(imParPath,'file')==2
         % DCM2NII
-        imPar = spm_jsonread(imParPath);
+        imPar = xASL_io_ReadJson(imParPath);
     else
         % NII2BIDS, DEFACE & BIDS2LEGACY
         imPar = struct;

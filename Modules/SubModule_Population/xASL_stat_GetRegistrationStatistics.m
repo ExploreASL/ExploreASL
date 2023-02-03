@@ -71,7 +71,7 @@ for iSubject=1:x.dataset.nSubjects
 
 		if exist(PathJSON, 'file')
 			% Load the file
-            Parms = spm_jsonread(PathJSON);
+            Parms = xASL_io_ReadJson(PathJSON);
             if isfield(Parms,'ASL')
                 Parms = Parms.ASL;
     

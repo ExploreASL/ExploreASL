@@ -92,7 +92,7 @@ else
 		warning('Multiple dataPar*.jsons exist. Using the first: %s\n',fListDataPar{1});
 	end
 	% Fill the dataPars with the provided parameters
-	x.dataPar = spm_jsonread(fListDataPar{1});
+	x.dataPar = xASL_io_ReadJson(fListDataPar{1});
 end
 
 %% 4. Load the BIDS structure of all subjects

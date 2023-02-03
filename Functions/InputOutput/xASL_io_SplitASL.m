@@ -133,10 +133,10 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
             jsonM0 = xASL_bids_VendorFieldCheck(jsonM0);
             jsonM0 = xASL_bids_JsonCheck(jsonM0,'M0');
             % Write file
-            spm_jsonwrite(paths.M0JSON, jsonM0);
+            xASL_io_WriteJson(paths.M0JSON, jsonM0);
         end
         if exist('jsonASL','var') && ~strcmp(paths.ASL_Source_JSON, paths.ASLJSON)
-            spm_jsonwrite(paths.ASLJSON, jsonASL);
+            xASL_io_WriteJson(paths.ASLJSON, jsonASL);
         end
         
     end
@@ -301,7 +301,7 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, indicesM
 
     % Load backup JSON
     if exist(BackupJSONPath,'file')
-        jsonStruct = spm_jsonread(BackupJSONPath);
+        jsonStruct = xASL_io_ReadJson(BackupJSONPath);
         
 		% Remove DummyScanPositionInASL4D and M0PositionInASL4D fields if present
 		if isfield(jsonStruct,'M0PositionInASL4D')

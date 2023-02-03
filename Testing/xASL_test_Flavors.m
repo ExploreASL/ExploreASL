@@ -76,7 +76,7 @@ pathTesting = fileparts(mfilename('fullpath'));
 % Check if testConfig.json needs to be read
 if nargin<1 || isempty(testConfig)
 	if exist(fullfile(pathTesting,'testConfig.json'),'file')
-		testConfig = spm_jsonread(fullfile(pathTesting,'testConfig.json'));
+		testConfig = xASL_io_ReadJson(fullfile(pathTesting,'testConfig.json'));
 		if ~(isfield(testConfig,'pathExploreASL') && isfield(testConfig,'pathFlavorDatabase') && isfield(testConfig,'cmdCloneFlavors'))
 			fprintf('Please add the correct fields to your testConfig.json...\n');
 			return
@@ -103,7 +103,7 @@ end
 
 % Load database JSON
 if xASL_exist(fullfile(testConfig.pathFlavorDatabase,'flavors.json'),'file')
-	databaseInfo = spm_jsonread(fullfile(testConfig.pathFlavorDatabase,'flavors.json'));
+	databaseInfo = xASL_io_ReadJson(fullfile(testConfig.pathFlavorDatabase,'flavors.json'));
 	flavors.data = databaseInfo.flavors;
 else
 	error('The flavors.json file is missing...');
@@ -288,8 +288,8 @@ function ignoreRows = xASL_test_CompareFieldsOfJSON(currentMessage,filename,flav
         pathB = fullfile(flavorPath,'derivativesReference',currentMessage(startExploreASL:end));
         if xASL_exist(pathA,'file') && xASL_exist(pathB,'file')
             % Actual comparison
-            jsonA = spm_jsonread(pathA);
-            jsonB = spm_jsonread(pathB);
+            jsonA = xASL_io_ReadJson(pathA);
+            jsonB = xASL_io_ReadJson(pathB);
             % Get fieldnames
             fieldNamesA = fieldnames(jsonA);
             fieldNamesB = fieldnames(jsonB);

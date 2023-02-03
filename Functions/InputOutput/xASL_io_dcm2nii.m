@@ -315,7 +315,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     [Gpath, Gfile] = xASL_fileparts(fTempNii);
                     tempJSON = fullfile(Gpath,[Gfile '.json']);
                     if exist(tempJSON,'file')
-                        tempJSON = spm_jsonread(tempJSON);
+                        tempJSON = xASL_io_ReadJson(tempJSON);
                         if isfield(tempJSON,'SeriesNumber')
                             DestFileName = [DestFileName '_' num2str(tempJSON.SeriesNumber)];
                         end
@@ -408,9 +408,9 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                         xASL_Move(temp_BIDS, dest_BIDS, imPar.bOverwrite, imPar.bVerbose);
                         % Add InstanceNumber if possible
                         if ~isempty(niiInstanceNumber)
-                            tmpJSON = spm_jsonread(dest_BIDS);
+                            tmpJSON = xASL_io_ReadJson(dest_BIDS);
                             tmpJSON.InstanceNumber = niiInstanceNumber;
-                            spm_jsonwrite(dest_BIDS,tmpJSON);
+                            xASL_io_WriteJson(dest_BIDS,tmpJSON);
                         end
                     end
                 end

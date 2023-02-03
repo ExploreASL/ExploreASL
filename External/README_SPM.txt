@@ -349,6 +349,7 @@ DESCRIPTION:
 Instead of error for an imaginary number, put it in a string
 FILE:
 spm_jsonwrite.m at line 198
+NOTE: Since version 1.11.0, spm_jsonwrite and spm_jsonread are not used anymore
 
 
 DATE+NAME:2020_01_17, JP
@@ -356,12 +357,14 @@ DESCRIPTION:
 Edited the spm_jsonwrite so that it makes a newline after each field
 FILE:
 spm_jsonwrite.m at line 157
+NOTE: Since version 1.11.0, spm_jsonwrite and spm_jsonread are not used anymore
 
 DATE+NAME:2019_10_25, JP
 DESCRIPTION:
 Edited the jsmn.c so that spm_jsonread.c can read JSONs that have empty string as value
 FILE:
 jsmn.c at line 269
+NOTE: Since version 1.11.0, spm_jsonwrite and spm_jsonread are not used anymore
 
 DATE+NAME:2021_01_12, JP
 DESCRIPTION:
@@ -369,12 +372,14 @@ Edited the spm_jsonread.c so that spm_jsonread MEX correctly reads files that co
 Which causes that the JSON is not read entirely. We now read the entire JSON and replace 0 by a space.
 FILE:
 spm_jsonread.c at line 496
+NOTE: Since version 1.11.0, spm_jsonwrite and spm_jsonread are not used anymore
 
 DATE+NAME:2022_08_25, JP
 DESCRIPTION:
 Edited the spm_jsonread.c so that spm_jsonread MEX reports that an error happened within jsonread and also print out the file name being read to be able to identify the source of error.
 FILE:
 spm_jsonread.c at line 588 and all lines with mexErrMsgTxt, mexWarnMsgTxt, and mexPrintf.
+NOTE: Since version 1.11.0, spm_jsonwrite and spm_jsonread are not used anymore
 
 *********************************************************************************************************
 OTHER CODE HACKS

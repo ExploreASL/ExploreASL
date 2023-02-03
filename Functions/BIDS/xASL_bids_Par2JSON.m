@@ -30,7 +30,7 @@ end
 
 % Parms already exist, so its content is loaded
 if exist(pathJSON, 'file')
-	parms = spm_jsonread(pathJSON);
+	parms = xASL_io_ReadJson(pathJSON);
 end
 
 % Parse the PAR header
@@ -56,6 +56,6 @@ parms = xASL_bids_parms2BIDS(parms, [], 1, 0);
 parms.RepetitionTime                = hdr.RepetitionTime/1000;		
 
 % Saves the JSON sidecar
-spm_jsonwrite(pathJSON, parms);
+xASL_io_WriteJson(pathJSON, parms);
 
 return

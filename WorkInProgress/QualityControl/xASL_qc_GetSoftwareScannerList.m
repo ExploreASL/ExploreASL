@@ -50,7 +50,7 @@ for iDir=1:length(DirList)
     if length(SequenceList)>0
         CurrentSequence = '';
         try
-            json = spm_jsonread(SequenceList{1});
+            json = xASL_io_ReadJson(SequenceList{1});
             FieldsAre = {'MagneticFieldStrength' 'Manufacturer' 'ManufacturersModelName' 'DeviceSerialNumber' 'SoftwareVersions'};
             for iField=1:length(FieldsAre)
                 if isfield(json,FieldsAre{iField})

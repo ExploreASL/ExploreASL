@@ -71,7 +71,7 @@ if ischar(inputIm)
 	
 	% Check if the JSON sidecar of the original file exists
 	if xASL_exist(pathJson, 'file')
-		parmsLocal = spm_jsonread(pathJson);
+		parmsLocal = xASL_io_ReadJson(pathJson);
 		% Loads the JSON file and converts it to the Legacy format
 		parmsLocal = xASL_bids_parms2BIDS([], parmsLocal, 0);
 		

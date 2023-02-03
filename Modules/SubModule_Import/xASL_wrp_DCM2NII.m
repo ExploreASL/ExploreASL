@@ -80,7 +80,7 @@ function xASL_imp_DCM2NII_CleanUp(x, dcm2niiCatchedErrors)
         xASL_delete(SavePath);
         xASL_delete(SaveJSON);
         save(SavePath,'dcm2niiCatchedErrors');
-        spm_jsonwrite(SaveJSON, dcm2niiCatchedErrors);
+        xASL_io_WriteJson(SaveJSON, dcm2niiCatchedErrors);
     end
     
     fprintf('\n');

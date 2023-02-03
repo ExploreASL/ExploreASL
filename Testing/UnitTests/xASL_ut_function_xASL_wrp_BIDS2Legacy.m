@@ -109,7 +109,7 @@ dataParJSON.x.dataset.subjectRegexp = '^sub-.*$';
 dataParJSON.x.settings.Quality = 1;
 xASL_adm_CreateDir(fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0','derivatives','ExploreASL'));
 fclose('all');
-spm_jsonwrite(fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0','derivatives','ExploreASL','dataPar.json'),dataParJSON);
+xASL_io_WriteJson(fullfile(TestRepository,'UnitTesting','working_directory','test_patient_2_3_0','derivatives','ExploreASL','dataPar.json'),dataParJSON);
 
 % Initialize & run BIDS2Legacy
 try

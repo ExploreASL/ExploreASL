@@ -112,7 +112,7 @@ if strcmpi(Fext, '.m')
 	PathJSON = fullfile(Fpath, [Ffile '.json']);
 	
 	% Escape characters that are illegal in JSON
-	% Note that most characters (like backslashes) are correctly escaped when saving the JSON in spm_jsonwrite
+	% Note that most characters (like backslashes) are correctly escaped when saving the JSON in xASL_io_WriteJson
 	FieldsX = fields(x);
 	for iField=1:length(FieldsX)
 		tString = x.(FieldsX{iField});
@@ -133,13 +133,13 @@ if strcmpi(Fext, '.m')
 		fprintf('Warning: m-files are deprecated. Cannot convert to JSON because a file with json extension exists in the same directory');
 	else
 		fprintf('Warning: m-files are deprecated. Converted to a JSON file. Please delete the original m-file');
-		spm_jsonwrite(PathJSON, x);
+		xASL_io_WriteJson(PathJSON, x);
 	end
 
 elseif strcmpi(Fext, '.json')
 	%% In case a JSON file is provided, it reads it, checks it and just give it to the output, no need for conversion or saving
 	% Read a JSON file	
-	jsonData = spm_jsonread(pathDataPar);
+	jsonData = xASL_io_ReadJson(pathDataPar);
 
 	% Remove x field if it exists
 	if isfield(jsonData,'x')

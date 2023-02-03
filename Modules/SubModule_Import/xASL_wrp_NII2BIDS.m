@@ -76,7 +76,7 @@ function x = xASL_wrp_NII2BIDS(x)
         xASL_adm_CreateDir(x.modules.import.imPar.BidsRoot);
     end
 	
-	spm_jsonwrite(fullfile(x.modules.import.imPar.BidsRoot,[bidsPar.datasetDescription.filename '.json']),datasetDescription);
+	xASL_io_WriteJson(fullfile(x.modules.import.imPar.BidsRoot,[bidsPar.datasetDescription.filename '.json']),datasetDescription);
 	
 	%% 3. Go through all subjects and check all the M0 and ASLs and modify the JSONs
 	% This step should be completely automatic, just taking the info filled above and using it to convert to full BIDS.

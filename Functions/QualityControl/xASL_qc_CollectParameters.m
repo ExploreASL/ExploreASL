@@ -105,7 +105,7 @@ x.Output = rmfield(x.Output,'SoftwareVersion');
 %% Save QC output
 QC_Path = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, ['QC_collection_' x.SUBJECTS{iSubject} '.json']);
 xASL_delete(QC_Path);
-spm_jsonwrite(QC_Path, x.Output);
+xASL_io_WriteJson(QC_Path, x.Output);
 
 % Generate WAD-QC Descriptor 
 % Run once for each subject

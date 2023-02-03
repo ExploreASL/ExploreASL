@@ -56,7 +56,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
         [rootName, fileName] = xASL_fileparts(filePath);
         niiTable{iNii,1} = fileName;
         % Open corresponding JSON file
-        tmpJSON = spm_jsonread(fullfile(rootName,[fileName '.json']));
+        tmpJSON = xASL_io_ReadJson(fullfile(rootName,[fileName '.json']));
         % Try to extract the InstanceNumber field from the JSON file
         if isfield(tmpJSON,'InstanceNumber')
             niiTable{iNii,2} = xASL_str2num(tmpJSON.InstanceNumber);

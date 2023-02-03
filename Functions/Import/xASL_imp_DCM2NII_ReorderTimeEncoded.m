@@ -67,7 +67,7 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncod
 					resultJSON.EchoTime = repmat(resultJSON.EchoTime, (numberPLDs*numberRepetitions), 1);
 					
 					% Save the JSON with the updated echo times
-					spm_jsonwrite(fullfile(resultPath, [resultFile '.json']),resultJSON);
+					xASL_io_WriteJson(fullfile(resultPath, [resultFile '.json']),resultJSON);
 				elseif numberRepetitions > 1
 					if ~interleavedPLDs 
 						error('Import of FME TimeEncoded with single-TE and multi-Repetitions not yet implemented for non-interleaved PLDs');

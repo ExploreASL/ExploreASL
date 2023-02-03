@@ -119,7 +119,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			if imPar.bVerbose; fprintf('Recreating parameter file: %s   \n',printFileName); end
 			
 			% Make a list of the instanceNumbers
-			tmpJSON = spm_jsonread(pathJSON{iJSON});
+			tmpJSON = xASL_io_ReadJson(pathJSON{iJSON});
             
             % Check instance & series number
 			if isfield(tmpJSON,'InstanceNumber')
@@ -632,7 +632,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			
 			% Loads the JSON parms
 			if exist(pathJSON{indexInstance},'file')
-				JSONParms = spm_jsonread(pathJSON{indexInstance});
+				JSONParms = xASL_io_ReadJson(pathJSON{indexInstance});
 			else
 				JSONParms = [];
 			end
@@ -641,7 +641,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			parms{parmsIndex} = xASL_bids_parms2BIDS(parms{parmsIndex}, JSONParms, 1, 0);
 			
 			% Saves the JSON file
-			spm_jsonwrite(pathJSON{indexInstance}, parms{parmsIndex});
+			xASL_io_WriteJson(pathJSON{indexInstance}, parms{parmsIndex});
 		end
     end
     % Newline after track progress

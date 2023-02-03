@@ -119,7 +119,7 @@ listEndNumber = zeros(length(NiftiPaths),1);
 % Go through all JSONs
 for iFile=1:length(NiftiPaths)
 	[Fpath, Ffile] = xASL_fileparts(NiftiPaths{iFile});
-	jsonParms = spm_jsonread(fullfile(Fpath, [Ffile, '.json']));
+	jsonParms = xASL_io_ReadJson(fullfile(Fpath, [Ffile, '.json']));
 	
 	% List the end number from the file name
 	[iStart, iEnd] = regexp(Ffile,'\d*$');
@@ -204,7 +204,7 @@ for iFile=1:length(NiftiPaths)
 		
 	% Loads the JSON file
 	if exist(jsonPath,'file')
-		jsonPar = spm_jsonread(jsonPath);
+		jsonPar = xASL_io_ReadJson(jsonPath);
 	else
 		fprintf('Warning: Non-existent JSON sidecar: %s\n', jsonPath) ;
 		jsonPar = [];
@@ -262,10 +262,10 @@ if ~isempty(pathOut)
 	% And adds the ASLContext to the JSON
 	[jsonPath,jsonName,~] = fileparts(pathOut);
 		
-	jsonPar = spm_jsonread(fullfile(jsonPath, [jsonName, '.json']));
+	jsonPar = xASL_io_ReadJson(fullfile(jsonPath, [jsonName, '.json']));
 	jsonPar.ASLContext = ASLContext;
 	jsonPar = rmfield(jsonPar,'ImageType');
-	spm_jsonwrite(fullfile(jsonPath, [jsonName, '.json']),jsonPar);
+	xASL_io_WriteJson(fullfile(jsonPath, [jsonName, '.json']),jsonPar);
 	
 	% And deletes the old files
 	xASL_bids_MergeNifti_RenameParms(jsonPath,'ASL4D');
@@ -383,7 +383,7 @@ function pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths)
 
     for iFile=1:length(NiftiPaths)
         [Fpath, Ffile] = xASL_fileparts(NiftiPaths{iFile});
-        jsonParms = spm_jsonread(fullfile(Fpath,[Ffile,'.json']));
+        jsonParms = xASL_io_ReadJson(fullfile(Fpath,[Ffile,'.json']));
 
         % Make sure that we deal with Siemens files
         if isempty(jsonParms) || ~isfield(jsonParms,'Manufacturer') || isempty(strfind(jsonParms.Manufacturer,'Siemens'))
@@ -623,7 +623,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 		% Go through the JSONs in increasing priority
 		[Fpath, Ffile] = xASL_fileparts(NiftiPaths{priorityListIndex(iJSON)});
 		if xASL_exist(fullfile(Fpath,[Ffile '.json']), 'file')
-			currentJSON = spm_jsonread(fullfile(Fpath,[Ffile '.json']));
+			currentJSON = xASL_io_ReadJson(fullfile(Fpath,[Ffile '.json']));
 			
 			% Go through all fields
 			listFieldNames = fieldnames(currentJSON);
@@ -658,7 +658,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
             % Get JSON
             [jsonPathX, jsonNameX] = xASL_fileparts(NiftiPaths{iFileCheck});
             if exist(fullfile(jsonPathX, [jsonNameX '.json']),'file')
-                tmpCheckJSON = spm_jsonread(fullfile(jsonPathX, [jsonNameX '.json']));
+                tmpCheckJSON = xASL_io_ReadJson(fullfile(jsonPathX, [jsonNameX '.json']));
                 % Check if FME Hadamard
 				bHadamardFME = xASL_imp_CheckIfFME(tmpCheckJSON, []);
 				
@@ -702,7 +702,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
             % Write changes to JSON
 			outputJSON.EchoTime = EchoTimes;
 		end
-		spm_jsonwrite(fullfile(Fpath,[nameMerged '.json']), outputJSON);
+		xASL_io_WriteJson(fullfile(Fpath,[nameMerged '.json']), outputJSON);
     else
         fprintf('Warning: Cannot concatenate multiple NIfTIs & jsons as output from dcm2niiX\n');
     end
