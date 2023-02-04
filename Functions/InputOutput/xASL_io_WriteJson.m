@@ -38,7 +38,7 @@ end
 
 %% 1. Encode the content to text.
 % This is executed first in case there are issues with the file
-txt = jsonencode(json);
+txt = jsonencode(json, 'PrettyPrint', true);
 
 %% 2. Open the JSON file for writing and save it
 fileID = fopen(pathJSON,'w+');
