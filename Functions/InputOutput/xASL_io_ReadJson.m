@@ -32,7 +32,7 @@ end
 %% 1. Read the JSON file
 fileID = fopen(pathJSON, 'r');
 try 
-	txt = fscanf(fileID, '%s');
+	txt = fscanf(fileID, '%c');
 
 	%% 2. Decode the text content
 	json = jsondecode(txt);
