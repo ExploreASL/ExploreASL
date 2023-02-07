@@ -301,10 +301,8 @@ end
 fprintf('%s\n',' model with parameters:');
 
 if x.modules.asl.ApplyQuantification(3)
-	LabDurs = [];
-	PLDs = [];
-	if modules.asl.bMultiPLD
-		% Prepare unique multi-PLD parameters
+	if isfield(x.Q,'LabelingDuration') && isfield(x.Q,'Initial_PLD')
+		% Prepare unique PLDs
 		[PLDs, index] = unique(x.Q.Initial_PLD, 'stable');
 		if length(x.Q.LabelingDuration)>1
 			LabDurs = (x.Q.LabelingDuration(index))';
@@ -318,25 +316,17 @@ if x.modules.asl.ApplyQuantification(3)
 			PLDs = PLDs(index(:)');
 			LabDurs = LabDurs(index(:)');
 		end
-	else
-		% Prepare single-PLD parameters
-		if isfield(x.Q,'LabelingDuration')
-			LabDurs = x.Q.LabelingDuration;
-		end
-		if  isfield(x.Q,'Initial_PLD')
-			PLDs = x.Q.Initial_PLD;
-		end
-	end
 
-	% Print the prepared parameters
-	if ~isempty(LabDurs) && ~isempty(PLDs)
-		switch lower(x.Q.LabelingType)
-			case 'pasl'
-				fprintf('%s\n',['TI1 = ' xASL_num2str(LabDurs) ' ms,']);
-				fprintf('%s\n',['TI  = ' xASL_num2str(PLDs) ' ms.']);
-			case 'casl'
-				fprintf('%s\n',['LabelingDuration = ' xASL_num2str(LabDurs) ' ms,']);
-				fprintf('%s\n',['PLD              = ' xASL_num2str(PLDs) ' ms.']);
+		% Print the prepared parameters
+		if ~isempty(LabDurs) && ~isempty(PLDs)
+			switch lower(x.Q.LabelingType)
+				case 'pasl'
+					fprintf('%s\n',['TI1 = ' xASL_num2str(LabDurs) ' ms,']);
+					fprintf('%s\n',['TI  = ' xASL_num2str(PLDs) ' ms.']);
+				case 'casl'
+					fprintf('%s\n',['LabelingDuration = ' xASL_num2str(LabDurs) ' ms,']);
+					fprintf('%s\n',['PLD              = ' xASL_num2str(PLDs) ' ms.']);
+			end
 		end
 	else
 		fprintf('Labeling duration and/or PLD undefined...\n');
