@@ -4,7 +4,7 @@ function json = xASL_io_ReadJson(pathJSON)
 % FORMAT: json = xASL_io_ReadJson(pathJSON)
 %
 % INPUT:
-%   pathJSON           - path to the JSON file (REQUIRED)
+%   pathJSON           - path to the JSON file (STRING, REQUIRED)
 %
 % OUTPUT:
 %   json               - output Matlab structure with the decoded JSON
@@ -22,7 +22,7 @@ function json = xASL_io_ReadJson(pathJSON)
 %% ------------------------------------------------------------------------------------------------
 %% 0.   Administration
 if nargin < 1 || isempty(pathJSON)
-	error('Requires the path to the JSON file.');
+	error('The path to the JSON file is missing.');
 end
 
 if ~xASL_exist(pathJSON,'file')
@@ -33,16 +33,16 @@ end
 fileID = fopen(pathJSON, 'r');
 try 
 	txt = fscanf(fileID, '%c');
-
-	%% 2. Decode the text content
-	json = jsondecode(txt);
 catch ME
 	% In case an error appears during reading or decoding, we close the file and exit
 	fclose(fileID);
 	error('%s',ME.getReport());
 end
 
-% Close the file and returns
+% Close the file
 fclose(fileID);
+
+%% 2. Decode the text content
+json = jsondecode(txt);
 
 end

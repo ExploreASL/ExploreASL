@@ -4,12 +4,12 @@ function xASL_io_WriteJson(pathJSON, json, bOverwrite)
 % FORMAT: xASL_io_WriteJson(pathJSON, json[, bOverwrite])
 %
 % INPUT:
-%   pathJSON     - path to the JSON file (REQUIRED)
-%   json         - Matlab structure to be written as JSON (REQUIRED)
-%   bOverwrite   - boolean that is true if an existing file should be overwritten (OPTIONAL, DEFAULT = TRUE)
+%   pathJSON     - path to the JSON file (STRING, REQUIRED)
+%   json         - Matlab structure to be written as JSON (STRUCT, REQUIRED)
+%   bOverwrite   - boolean that is true if an existing file should be overwritten (BOOLEAN, OPTIONAL, DEFAULT = TRUE)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function writes a Matlab structure into a JSON file located at the given path encoding it using the Matlab routine
+% DESCRIPTION: This function writes a Matlab structure into a JSON file located at the given path encoding it using the Matlab function
 %              JSONENCODE.
 %
 %
@@ -21,11 +21,11 @@ function xASL_io_WriteJson(pathJSON, json, bOverwrite)
 %% ------------------------------------------------------------------------------------------------
 %% 0.   Administration
 if nargin < 1 || isempty(pathJSON)
-	error('Requires the path to the JSON file.');
+	error('The path to the JSON file is missing.');
 end
 
 if nargin < 2 || isempty(json)
-	error('Requires the json structure to be saved.')
+	error('The json structure to be saved is missing.')
 end
 
 if nargin < 3 || isempty(bOverwrite)
