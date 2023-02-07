@@ -42,6 +42,7 @@
  *    PhilipsLabelControl - 0x2005, 0x1429
  *    PhoenixProtocol - 0x0029, 0x1020
  *    SiemensSliceTime - 0x0019, 0x0010
+ *    SequenceName - 0x0018, 0x0024
  *
  *    What is read is hard coded - to change that, you need to change the MEX file
  *
@@ -52,7 +53,7 @@
  * REFERENCES:
  * OFFIS DCMTK https://support.dcmtk.org/redmine/projects/dcmtk/wiki/Overview
  * __________________________________
- * Copyright © 2015-2018 ExploreASL
+ * Copyright © 2015-2023 ExploreASL
  * 
  * 2010-07-30 Joost Kuijer - VUmc - original version
  * 2018-12-17 Jan Petr - adapted for xASL use
@@ -497,6 +498,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "ManufacturersModelName"   , MXAGetString( dataset,             DcmTagKey(0x0008, 0x1090)   ) );
 	mxSetField( pmxOutput, 0, "SeriesDescription"        , MXAGetString( dataset,             DCM_SeriesDescription       ) );
 	mxSetField( pmxOutput, 0, "ProtocolName"             , MXAGetString( dataset,             DCM_ProtocolName            ) );
+	mxSetField( pmxOutput, 0, "SequenceName"             , MXAGetString( dataset,             DCM_SequenceName            ) );
 	mxSetField( pmxOutput, 0, "SeriesTime"               , MXAGetStringArray( dataset,        DCM_SeriesTime              ) );
 	mxSetField( pmxOutput, 0, "StudyInstanceUID"         , MXAGetString( dataset,             DCM_StudyInstanceUID        ) );	
 	mxSetField( pmxOutput, 0, "SeriesInstanceUID"        , MXAGetString( dataset,             DCM_SeriesInstanceUID       ) );	
@@ -682,10 +684,11 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	    "AcquisitionContrast", "ComplexImageComponent", "GELabelingType", "PulseSequenceName", \
 		"InversionTime", "GELabelingDuration", "PhilipsNumberTemporalScans", \
 		"PhilipsLabelControl", "TemporalPositionIdentifier", "PhoenixProtocol", "SoftwareVersions", \
-		"SiemensSliceTime", "StudyID", "SeriesNumber", "AcquisitionNumber", "InstanceNumber"
+		"SiemensSliceTime", "StudyID", "SeriesNumber", "AcquisitionNumber", "InstanceNumber", \
+		"SequenceName"
     };
 
-    const int inFields = 49;
+    const int inFields = 50;
 	int readPixel;
 	double *tmp;
 
