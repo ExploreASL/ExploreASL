@@ -301,47 +301,45 @@ end
 fprintf('%s\n',' model with parameters:');
 
 if x.modules.asl.ApplyQuantification(3)
+	LabDurs = [];
+	PLDs = [];
 	if modules.asl.bMultiPLD
 		% Prepare unique multi-PLD parameters
-		[PLDs, ind] = unique(x.Q.Initial_PLD, 'stable');
+		[PLDs, index] = unique(x.Q.Initial_PLD, 'stable');
 		if length(x.Q.LabelingDuration)>1
-			LDs = (x.Q.LabelingDuration(ind))';
+			LabDurs = (x.Q.LabelingDuration(index))';
 		else
-			LDs = ones(size(PLDs))*x.Q.LabelingDuration;
+			LabDurs = ones(size(PLDs))*x.Q.LabelingDuration;
 		end
 		% Skip the first PLD of the block for Time-Encoded
 		if x.modules.asl.bTimeEncoded
 			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-			ind = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
-			PLDs = PLDs(ind(:)');
-			LDs = LDs(ind(:)');
+			index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
+			PLDs = PLDs(index(:)');
+			LabDurs = LabDurs(index(:)');
 		end
 	else
 		% Prepare single-PLD parameters
 		if isfield(x.Q,'LabelingDuration')
-			LDs = x.Q.LabelingDuration;
-		else
-			LDs = [];
+			LabDurs = x.Q.LabelingDuration;
 		end
 		if  isfield(x.Q,'Initial_PLD')
 			PLDs = x.Q.Initial_PLD;
-		else
-			PLDs = [];
 		end
 	end
 
 	% Print the prepared parameters
-	if ~isempty(LDs) && ~isempty(PLDs)
+	if ~isempty(LabDurs) && ~isempty(PLDs)
 		switch lower(x.Q.LabelingType)
 			case 'pasl'
-				fprintf('%s\n',['TI1 = ' xASL_num2str(LDs) ' ms,']);
+				fprintf('%s\n',['TI1 = ' xASL_num2str(LabDurs) ' ms,']);
 				fprintf('%s\n',['TI  = ' xASL_num2str(PLDs) ' ms.']);
 			case 'casl'
-				fprintf('%s\n',['LabelingDuration = ' xASL_num2str(LDs) ' ms,']);
+				fprintf('%s\n',['LabelingDuration = ' xASL_num2str(LabDurs) ' ms,']);
 				fprintf('%s\n',['PLD              = ' xASL_num2str(PLDs) ' ms.']);
 		end
 	else
-		fprintf('Labeling duration and PLD undefined...\n');
+		fprintf('Labeling duration and/or PLD undefined...\n');
 	end
 
 	if max(SliceReadoutTime)>0 && strcmpi(x.Q.readoutDim,'2D')
