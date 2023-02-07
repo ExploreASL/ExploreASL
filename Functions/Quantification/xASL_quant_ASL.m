@@ -1,6 +1,6 @@
-function [ScaleImage, CBF, ATT, Tex] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
-%xASL_quant_CBF Perform a multi-step quantification of single or multi-PLD with or without BASIL
-% FORMAT: [ScaleImage[, CBF, ATT, Tex]] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
+function [ScaleImage, CBF, ATT, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
+%xASL_quant_ASL Perform a multi-step quantification of single or multi-PLD with or without BASIL
+% FORMAT: [ScaleImage[, CBF, ATT, Tex]] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
 %
 % INPUT:
 %   PWI             - 3D (single PLD) or 4D (multi PLD) image matrix of perfusion-weighted image (REQUIRED)
@@ -41,7 +41,7 @@ function [ScaleImage, CBF, ATT, Tex] = xASL_quant_CBF(PWI, M0_im, imSliceNumber,
 %              imSliceNumber)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [ScaleImage, CBF] = xASL_quant_CBF(PWI, M0_im, imSliceNumber, x);
+% EXAMPLE: [ScaleImage, CBF] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x);
 % __________________________________
 % Copyright (c) 2015-2023 ExploreASL
 
@@ -172,7 +172,7 @@ else
         
         %% 2    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'LabelingDuration')
-            ScaleImage = xASL_quant_CBF_ApplyLabelDecayScaleFactor(x, ScaleImage);
+            ScaleImage = xASL_quant_ASL_ApplyLabelDecayScaleFactor(x, ScaleImage);
         else
             warning('Please define both LabelingType and LabelingDuration of this dataset...');
         end
@@ -368,7 +368,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Determine Label Decay Scale Factor
-function ScaleImage = xASL_quant_CBF_ApplyLabelDecayScaleFactor(x, ScaleImage)
+function ScaleImage = xASL_quant_ASL_ApplyLabelDecayScaleFactor(x, ScaleImage)
 
     switch x.Q.nCompartments
         case 1 % single-compartment model
