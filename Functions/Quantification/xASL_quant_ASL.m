@@ -47,23 +47,10 @@ function [ScaleImage, CBF, ATT, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber,
 
 
 %% Admin
-if x.modules.asl.bMultiPLD
-	fprintf('%s\n', 'Performing multi-PLD quantification');
-else
-	fprintf('%s\n', 'Performing single-PLD quantification');
-end
+fprintf('%s\n', 'Performing quantification');
+
 ATT = [];
 Tex = [];
-
-if nargin < 4
-	error('Four input parameters required.');
-end
-
-if  xASL_stat_SumNan(M0_im(:))==0 && x.modules.asl.ApplyQuantification(5)
-    error('Empty M0 image, something went wrong in M0 processing');
-elseif xASL_stat_SumNan(M0_im(:))==0
-    warning('Weird M0 image detected');    
-end
 
 if nargin<5 || isempty(bUseBasilQuantification)
 	if x.modules.asl.bMultiPLD
@@ -71,6 +58,16 @@ if nargin<5 || isempty(bUseBasilQuantification)
 	else
 		bUseBasilQuantification = false;
 	end
+end
+
+if nargin < 4
+	error('Four input parameters required');
+end
+
+if  xASL_stat_SumNan(M0_im(:))==0 && x.modules.asl.ApplyQuantification(5)
+    error('Empty M0 image, something went wrong in M0 processing');
+elseif xASL_stat_SumNan(M0_im(:))==0
+    warning('Empty M0 image detected');
 end
 
 if x.modules.asl.bMultiPLD && ~bUseBasilQuantification
@@ -204,7 +201,7 @@ else
 	if ~isempty(regexpi(x.Q.Vendor,'GE'))
 		if ~isfield(x.Q,'NumberOfAverages')
 			% GE accumulates signal instead of averaging by NEX, therefore division by NEX is required
-			error('GE-data expected, "NumberOfAverages" should be a dicom-field, but was not found!!!')
+			error('GE-data assumed, "NumberOfAverages" should be a BIDS field, but was not found')
 		else
 			x.Q.NumberOfAverages = max(x.Q.NumberOfAverages); % fix for combination of M0 & PWI in same nifti, for GE quantification
 		end
@@ -218,15 +215,14 @@ else
 		end
 		
 		if ~softwareVersions || softwareVersions > 15
-			% GE new version
-			% division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
-			qnt_R1gain = 32; %  PWI is scaled up by 32 (default GE scalefactor)
-			qnt_GEscaleFactor = qnt_R1gain*x.Q.NumberOfAverages;
+			qnt_ReceiverGain = 32; % PWI is scaled up by 32 (default GE scalefactor)
 		else
 			% GE older WIP version
-			qnt_RGcorr = 45.24; % Correction for receiver gain in PDref (but not used apparently?)
-			qnt_GEscaleFactor = qnt_RGcorr*x.Q.NumberOfAverages;
-		end
+			qnt_ReceiverGain = 45.24;
+        end
+        
+        qnt_GEscaleFactor = qnt_ReceiverGain*x.Q.NumberOfAverages;
+        % division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
 
 		ScaleImage = ScaleImage./qnt_GEscaleFactor;
 		fprintf('%s\n',['Quantification corrected for GE scale factor ' xASL_num2str(qnt_GEscaleFactor) ' for NSA=' xASL_num2str(x.Q.NumberOfAverages)]);
@@ -299,10 +295,11 @@ if x.modules.asl.ApplyQuantification(3)
 		% Prepare unique PLDs
 		[PLDs, index] = unique(x.Q.Initial_PLD, 'stable');
 		if length(x.Q.LabelingDuration)>1
-			LabDurs = (x.Q.LabelingDuration(index))';
+			LabDurs = x.Q.LabelingDuration(index)';
 		else
 			LabDurs = ones(size(PLDs))*x.Q.LabelingDuration;
-		end
+        end
+        
 		% Skip the first PLD of the block for Time-Encoded
 		if x.modules.asl.bTimeEncoded
 			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
