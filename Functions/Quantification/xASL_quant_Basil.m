@@ -10,8 +10,8 @@ function [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
 % OUTPUT:
 % CBF_nocalib       - Quantified CBF image
 %                     (if there is no FSL/BASIL installed, we return the original PWI)
-% ATT_Map           - ATT map (if possible to calculate with multi-PLD)
-% Tex_map         - Time of exchange map of transport across BBB (if possible to calculate with multi-TE)
+% ATT_Map           - ATT map (if possible to calculate with multi-PLD, otherwise empty)
+% Tex_map           - Time of exchange map of transport across BBB (if possible to calculate with multi-TE, otherwise empty)
 % resultFSL         - describes if the execution was successful
 %                     (0 = successful, NaN = no FSL/BASIL found, 1 or other = something failed)
 %
@@ -34,11 +34,14 @@ function [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
 % EXAMPLE: CBF_nocalib = xASL_quant_Basil(PWI, x);
 %
 % __________________________________
-% Copyright 2015-2022 ExploreASL 
+% Copyright 2015-2023 ExploreASL 
     
 
     %% Admin
-    fprintf('%s\n','Quantification CBF using FSL BASIL:');    
+    fprintf('%s\n','Quantification CBF using FSL BASIL:');   
+
+	Tex_map = [];
+	ATT_map = [];
     
     %% 1. Define paths
     % For Basil and Fabber
@@ -80,8 +83,6 @@ function [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
 
     %% 4. Create option_file that contains options which are passed to the FSL command
     % basil_options is a character array containing CLI args for the Basil/Fabber command
-    
-    
     if bUseFabber
         BasilOptions = xASL_quant_Fabber_Options(pathBasilOptions, x, PWI, pathBasilInput);
     else
@@ -123,7 +124,7 @@ function [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
 		else
 			error('FSL BASIL failed');
 		end
-    end
+	end
    
     pathBasilCBF = pathBasilCBF{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
        
@@ -133,17 +134,13 @@ function [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
 	if ~isempty(pathBasilATT)
 		pathBasilATT = pathBasilATT{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 		ATT_map = xASL_io_Nifti2Im(pathBasilATT);
-	else
-		ATT_map = NaN;
-    end
+	end
     
     pathFabberTex = xASL_adm_GetFileList(dirBasilOutput, '^mean_T_exch\.nii$', 'FPListRec');
 	if ~isempty(pathFabberTex)
 		pathFabberTex = pathFabberTex{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 		Tex_map = xASL_io_Nifti2Im(pathFabberTex);
-	else
-		Tex_map = NaN;
-    end
+	end
 	
     %% 6. Scaling to physiological units
     % Note different to xASL_quant_ASL since Fabber has T1 in seconds

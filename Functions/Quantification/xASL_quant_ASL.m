@@ -14,8 +14,8 @@ function [ScaleImage, CBF, ATT, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber,
 % OUTPUT:
 % ScaleImage        - image matrix containing net/effective quantification scale factor
 % CBF               - Quantified CBF image
-% ATT               - Estimated ATT map
-% Tex             - Estimated map of time of exchange across BBB (if multi-TE is available)
+% ATT               - Estimated ATT map (if multi-PLD, otherwise empty)
+% Tex               - Estimated map of time of exchange across BBB (if multi-TE is available, otherwise empty)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script performs a multi-step quantification, by
 %              initializing a ScaleImage that travels through this script & gets changed by the following quantification
@@ -51,12 +51,9 @@ if x.modules.asl.bMultiPLD
 	fprintf('%s\n', 'Performing multi-PLD quantification');
 else
 	fprintf('%s\n', 'Performing single-PLD quantification');
-	if nargout > 2
-		warning('Cannot assign more than two output parameters for single-PLD quantification. Setting ATT and Tex to empty vectors.')
-		ATT = [];
-		Tex = [];
-	end
 end
+ATT = [];
+Tex = [];
 
 if nargin < 4
 	error('Four input parameters required.');
@@ -93,7 +90,7 @@ if ~x.modules.asl.ApplyQuantification(3)
 else
     
     %% Single PLD part only
-	if ~modules.asl.bMultiPLD
+	if ~x.modules.asl.bMultiPLD
 		x.Q.Initial_PLD = unique(x.Q.Initial_PLD);
 		if numel(x.Q.Initial_PLD)>1
 			warning('Multiple PLDs detected, selecting maximal value');
@@ -159,12 +156,9 @@ else
 
     if bUseBasilQuantification
         % Here we perform FSL BASIL
-		if modules.asl.bMultiPLD
-			[PWI, ATT, Tex] = xASL_quant_Basil(PWI, x);
-		else
-			PWI = xASL_quant_Basil(PWI, x);
-		end
-        % If resultFSL is not 0, something went wrong
+		[PWI, ATT, Tex] = xASL_quant_Basil(PWI, x);
+		
+		% If resultFSL is not 0, something went wrong
         % This will issue a warning inside xASL_quant_Basil
 	else
         % This part should only run when we don't use FSL BASIL
