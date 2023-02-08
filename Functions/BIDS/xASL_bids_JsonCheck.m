@@ -216,6 +216,8 @@ if strcmpi(fileType,'ASL')
                 
                 % One of the dependencies was not fulfilled
                 if ~isempty(strReportFilled) || ~isempty(strReportEmpty) || ~isempty(strReportRecommended)
+                    fprintf('%s\n', 'BIDS dependency check: ');
+
                     % Report the conditional field
                     if isempty(bidsPar.ASLCondition{iCond}.value)
                         fprintf('The field %s is empty, please check the dependencies below:\n',bidsPar.ASLCondition{iCond}.field);
@@ -231,13 +233,13 @@ if strcmpi(fileType,'ASL')
                     
                     % Report the incorrect dependencies
                     if ~isempty(strReportFilled)
-                        fprintf(2,'The required fields are missing: %s\n',strReportFilled);
+                        fprintf(2,'These BIDS required fields are missing: %s\n',strReportFilled);
                     end
                     if ~isempty(strReportEmpty)
-                        fprintf('The following fields should be empty: %s\n',strReportEmpty);
+                        fprintf('These BIDS required fields should be empty: %s\n',strReportEmpty);
                     end
                     if ~isempty(strReportRecommended)
-                        fprintf('The recommended fields are missing: %s\n',strReportRecommended);
+                        fprintf('These BIDS recommended fields are missing: %s\n',strReportRecommended);
                     end
                 end
             end
