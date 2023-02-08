@@ -79,7 +79,7 @@ end
 jsonOut.RepetitionTimePreparation = jsonOut.RepetitionTime;
 
 %% 3. Save or move the NII to the correct location
-xASL_adm_CreateDir(filparts(pathM0Out));
+xASL_adm_CreateDir(fileparts(pathM0Out));
 
 % Validate the M0 output filename
 
