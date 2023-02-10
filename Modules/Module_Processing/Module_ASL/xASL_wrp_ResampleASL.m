@@ -203,7 +203,8 @@ end
 
 
 %% ------------------------------------------------------------------------------------------
-% 8. Pair-wise subtraction & saving PWI & PWI4D in both spaces
+% 8. Pair-wise control-label subtraction
+% for both native & standard space
 % Load ASL time series (after being pre-processed)
 StringSpaceIs = {'native' 'standard'};
 PathASL = {x.P.Path_rdespiked_ASL4D x.P.Path_rtemp_despiked_ASL4D};
@@ -216,6 +217,8 @@ for iSpace=1:2
     ASL_im = xASL_io_Nifti2Im(PathASL{iSpace}); % Load time-series nifti
     dim4 = size(ASL_im, 4);
 
+    % =====================================================================
+    % A) Check subtraction
     if numel(size(ASL_im))>4
         error('Unknown multi-dimensionality of ASL4D.nii');
         
@@ -223,6 +226,8 @@ for iSpace=1:2
         warning('Odd (i.e., not even) number of control-label pairs, skipping');
         return;
         
+    % =====================================================================
+    % B) Time-Encoded subtraction
     elseif x.modules.asl.bTimeEncoded
         % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
         ASL_im = xASL_quant_HadamardDecoding(PathASL{iSpace}, x.Q);
@@ -248,6 +253,8 @@ for iSpace=1:2
         % Create single PWI for further steps in ASL module
         PWI3D = xASL_stat_MeanNan(PWI4D(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
         
+    % =====================================================================
+    % C) Single- or multi-PLD subtraction
     else
         if dim4>1 && ~x.modules.asl.bContainsDeltaM
             % Paired subtraction
@@ -278,13 +285,15 @@ for iSpace=1:2
                 PWI4D(:, :, :, nPLD) = xASL_stat_MeanNan(ASL_im(:, :, :, indexAverage_PLD_LabDur == nPLD), 4); % Averaged PWI4D 
             end
             
-            PWI3D = xASL_stat_MeanNan(ASL_im, 4); % create single PWI for further steps in ASL module
-            
         else
             PWI4D = ASL_im;
-            PWI3D = xASL_stat_MeanNan(PWI4D, 4);
-        end            
+        end
+        
+        PWI3D = xASL_stat_MeanNan(PWI4D, 4);
     end
+    
+    % =====================================================================
+    % D) Save subtracted to disk
     
     % Save PWI3D
     fprintf('%s\n', PathPWI{iSpace});
