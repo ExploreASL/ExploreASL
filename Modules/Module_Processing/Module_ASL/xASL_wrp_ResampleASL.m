@@ -217,6 +217,7 @@ for iSpace=1:2
     ASL_im = xASL_io_Nifti2Im(PathASL{iSpace}); % Load time-series nifti
     dim4 = size(ASL_im, 4);
 
+    
     % =====================================================================
     % A) Check subtraction
     if numel(size(ASL_im))>4
@@ -225,6 +226,7 @@ for iSpace=1:2
     elseif dim4>1 && round(dim4/2)~=dim4/2
         warning('Odd (i.e., not even) number of control-label pairs, skipping');
         return;
+        
         
     % =====================================================================
     % B) Time-Encoded subtraction
@@ -253,6 +255,7 @@ for iSpace=1:2
         % Create single PWI for further steps in ASL module
         PWI3D = xASL_stat_MeanNan(PWI4D(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
         
+        
     % =====================================================================
     % C) Single- or multi-PLD subtraction
     else
@@ -260,8 +263,20 @@ for iSpace=1:2
             % Paired subtraction
             [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
             ASL_im = ControlIm - LabelIm;
+            
+            if numel(x.Q.Initial_PLD)>1
+                % Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
+                % we need the PLD vector now for the pairwise subtractions only
+                Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
+            else
+                Initial_PLD_PWI = x.Q.Initial_PLD;
+            end
         end
 
+        % After subtraction, we obtain the unique PLDs
+        Initial_PLD_PWI_averaged = unique(Initial_PLD_PWI, 'stable');
+        
+        
         % Average PWI - multiPLD
         if x.modules.asl.bMultiPLD 
 			% Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
@@ -278,7 +293,7 @@ for iSpace=1:2
 			% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
 			% indexAverage_PLD_LabDur lists for each original position to where it should be averaged
 			[~, ~, indexAverage_PLD_LabDur] = unique([Initial_PLD_PWI, Initial_LabDur_PWI], 'stable', 'rows');
-			
+
             % MultiPLD PWI after averaging
 			PWI4D = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), max(indexAverage_PLD_LabDur)); % preallocate PWI
             for nPLD = 1:max(indexAverage_PLD_LabDur)
@@ -291,6 +306,7 @@ for iSpace=1:2
         
         PWI3D = xASL_stat_MeanNan(PWI4D, 4);
     end
+    
     
     % =====================================================================
     % D) Save subtracted to disk
