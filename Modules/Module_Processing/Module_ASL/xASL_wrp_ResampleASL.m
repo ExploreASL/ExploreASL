@@ -216,16 +216,12 @@ for iSpace=1:2
     ASL_im = xASL_io_Nifti2Im(PathASL{iSpace}); % Load time-series nifti
     dim4 = size(ASL_im, 4);
 
-
-    if dim4>1 && round(dim4/2)~=dim4/2
-        warning('Odd number of control-label pairs, skipping');
-        return;
+    if numel(size(ASL_im))>4
+        error('Unknown multi-dimensionality of ASL4D.nii');
         
-    elseif dim4==1 || x.modules.asl.bContainsDeltaM
-        % dim4==1 -> the subtraction was already done on the scanner/reconstruction
-        % x.modules.asl.bContainsDeltaM -> The original ASL4D volume contains subtraction images and not control/label images
-        PWI4D = ASL_im;
-        PWI3D = xASL_stat_MeanNan(PWI4D, 4);
+    elseif dim4>1 && round(dim4/2)~=dim4/2
+        warning('Odd (i.e., not even) number of control-label pairs, skipping');
+        return;
         
     elseif x.modules.asl.bTimeEncoded
         % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
@@ -253,9 +249,11 @@ for iSpace=1:2
         PWI3D = xASL_stat_MeanNan(PWI4D(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
         
     else
-        % Paired subtraction
-        [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
-        ASL_im = ControlIm - LabelIm;
+        if dim4>1 && ~x.modules.asl.bContainsDeltaM
+            % Paired subtraction
+            [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
+            ASL_im = ControlIm - LabelIm;
+        end
 
         % Average PWI - multiPLD
         if x.modules.asl.bMultiPLD 
@@ -284,7 +282,7 @@ for iSpace=1:2
             
         else
             PWI4D = ASL_im;
-            PWI3D = xASL_stat_MeanNan(PWI4D, 4); % singlePLD PWI
+            PWI3D = xASL_stat_MeanNan(PWI4D, 4);
         end            
     end
     
