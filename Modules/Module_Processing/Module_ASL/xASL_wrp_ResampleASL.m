@@ -219,20 +219,20 @@ for iSpace=1:2
 
     if dim4==1
         % Apparently, the subtraction was already done on the scanner/reconstruction
+        PWI4D = ASL_im;
+        PWI3D = PWI4D;        
         
 	elseif x.modules.asl.bContainsDeltaM
 		% The original ASL4D volume contains subtraction images and not control/label images
 		
 		% For multi-PLD, save both PWI4D and PWI
 		if x.modules.asl.bMultiPLD
-			% Save PWI4D
-			fprintf('%s\n', PathPWI4D{iSpace});
-			xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, ASL_im, 32, false);
+            PWI4D = ASL_im;
 		end
 		
 		% For both single- and multi-PLD, create single PWI for further steps in ASL module
-		PWI3D = xASL_stat_MeanNan(ASL_im,4); % Average across PLDs
-        
+        PWI4D = ASL_im;
+		PWI3D = xASL_stat_MeanNan(PWI4D, 4); % Average across PLDs        
 				
     elseif round(dim4/2)~=dim4/2
         warning('Odd number of control-label pairs, skipping');
@@ -259,10 +259,6 @@ for iSpace=1:2
         else % if Hadamard Block size == unique PLDs * number of multi-TEs -> a single repetitions -> we don't want to average
             PWI4D = ASL_im;
         end
-
-        % Save PWI4D
-        fprintf('%s\n', PathPWI4D{iSpace});
-        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);
         
         % Create single PWI for further steps in ASL module
         PWI3D = xASL_stat_MeanNan(PWI4D(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
@@ -295,20 +291,21 @@ for iSpace=1:2
                 PWI4D(:, :, :, nPLD) = xASL_stat_MeanNan(ASL_im(:, :, :, indexAverage_PLD_LabDur == nPLD), 4); % Averaged PWI4D 
             end
             
-            % Save PWI
-            fprintf('%s\n', PathPWI4D{iSpace});
-            xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);
-            
             PWI3D = xASL_stat_MeanNan(ASL_im, 4); % create single PWI for further steps in ASL module
             
         else
-            PWI4D = xASL_stat_MeanNan(ASL_im, 4); % singlePLD PWI
+            PWI4D = ASL_im;
+            PWI3D = xASL_stat_MeanNan(PWI4D, 4); % singlePLD PWI
         end            
     end
     
-    % Save PWI.nii
+    % Save PWI3D
     fprintf('%s\n', PathPWI{iSpace});
     xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWI3D, 32, false);
+    
+    % Save PWI4D
+    fprintf('%s\n', PathPWI4D{iSpace});
+    xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);    
 end
 
 
