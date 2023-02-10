@@ -231,7 +231,7 @@ for iSpace=1:2
 		end
 		
 		% For both single- and multi-PLD, create single PWI for further steps in ASL module
-		PWIsingle = xASL_stat_MeanNan(ASL_im,4); % Average across PLDs
+		PWI3D = xASL_stat_MeanNan(ASL_im,4); % Average across PLDs
         
 				
     elseif round(dim4/2)~=dim4/2
@@ -265,7 +265,7 @@ for iSpace=1:2
         xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);
         
         % Create single PWI for further steps in ASL module
-        PWIsingle = xASL_stat_MeanNan(PWI4D(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
+        PWI3D = xASL_stat_MeanNan(PWI4D(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
         
     else
         % Paired subtraction
@@ -299,7 +299,7 @@ for iSpace=1:2
             fprintf('%s\n', PathPWI4D{iSpace});
             xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);
             
-            PWIsingle = xASL_stat_MeanNan(ASL_im, 4); % create single PWI for further steps in ASL module
+            PWI3D = xASL_stat_MeanNan(ASL_im, 4); % create single PWI for further steps in ASL module
             
         else
             PWI4D = xASL_stat_MeanNan(ASL_im, 4); % singlePLD PWI
@@ -308,7 +308,7 @@ for iSpace=1:2
     
     % Save PWI.nii
     fprintf('%s\n', PathPWI{iSpace});
-    xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWIsingle, 32, false);
+    xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWI3D, 32, false);
 end
 
 
