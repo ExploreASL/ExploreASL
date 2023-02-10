@@ -251,21 +251,21 @@ for iSpace=1:2
 				% Number of total volumes cannot be divided by blockSize
 				error(['Total number of volumes ' xASL_num2str(size(ASL_im,4)) ' cannot be composed of blocks of size ' xASL_num2str(blockSize)]);
 			else
-				PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), blockSize); % preallocate PWI
+				PWI4D = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), blockSize); % preallocate PWI
 				for iBlock = 1:blockSize
-					PWI(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,iBlock:blockSize:end), 4); % Averaged PWI4D across repetitions
+					PWI4D(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,iBlock:blockSize:end), 4); % Averaged PWI4D across repetitions
 				end
 			end
         else % if Hadamard Block size == unique PLDs * number of multi-TEs -> a single repetitions -> we don't want to average
-            PWI = ASL_im;
+            PWI4D = ASL_im;
         end
 
         % Save PWI4D
         fprintf('%s\n', PathPWI4D{iSpace});
-        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI, 32, false);
+        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);
         
         % Create single PWI for further steps in ASL module
-        PWIsingle = xASL_stat_MeanNan(PWI(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
+        PWIsingle = xASL_stat_MeanNan(PWI4D(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
         
     else
         % Paired subtraction
@@ -286,23 +286,23 @@ for iSpace=1:2
 			end
         
 			% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
-			% indexNew lists for each original position to where it should be averaged
-			[~, ~, indexNew] = unique([Initial_PLD_PWI, Initial_LabDur_PWI], 'stable', 'rows');
+			% indexAverage_PLD_LabDur lists for each original position to where it should be averaged
+			[~, ~, indexAverage_PLD_LabDur] = unique([Initial_PLD_PWI, Initial_LabDur_PWI], 'stable', 'rows');
 			
             % MultiPLD PWI after averaging
-			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), max(indexNew)); % preallocate PWI
-            for nPLD = 1:max(indexNew)
-                PWI(:, :, :, nPLD) = xASL_stat_MeanNan(ASL_im(:, :, :, indexNew == nPLD), 4); % Averaged PWI4D 
+			PWI4D = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), max(indexAverage_PLD_LabDur)); % preallocate PWI
+            for nPLD = 1:max(indexAverage_PLD_LabDur)
+                PWI4D(:, :, :, nPLD) = xASL_stat_MeanNan(ASL_im(:, :, :, indexAverage_PLD_LabDur == nPLD), 4); % Averaged PWI4D 
             end
             
             % Save PWI
             fprintf('%s\n', PathPWI4D{iSpace});
-            xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI, 32, false);
+            xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);
             
             PWIsingle = xASL_stat_MeanNan(ASL_im, 4); % create single PWI for further steps in ASL module
             
         else
-            PWI = xASL_stat_MeanNan(ASL_im, 4); % singlePLD PWI
+            PWI4D = xASL_stat_MeanNan(ASL_im, 4); % singlePLD PWI
         end            
     end
     
@@ -316,12 +316,12 @@ end
 % 9. Save PWI NIfTI & time-series-related maps (SD, SNR)
 MaskIM = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rgrey.nii'));
 MaskIM = MaskIM>(0.7*max(MaskIM(:)));
-PWI = xASL_stat_MeanNan(ASL_im, 4); % repeat this here, in case it is skipped above for single volumes (e.g. GE 3D spiral)
+PWI4D = xASL_stat_MeanNan(ASL_im, 4); % repeat this here, in case it is skipped above for single volumes (e.g. GE 3D spiral)
 
 if size(ASL_im, 4)>3
     % Save SD & SNR maps
     SD = xASL_stat_StdNan(ASL_im, 0, 4);
-    SNR = PWI./SD;
+    SNR = PWI4D./SD;
     SNR(SNR<0) = 0; % clip @ zero    
     
     xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Pop_Path_SD, SD ,[], 0);
@@ -379,7 +379,7 @@ end
 
 %% ------------------------------------------------------------------------------------------
 % 11. Report spatial CoV as QC
-CoV0 = xASL_stat_ComputeSpatialCoV(PWI, MaskIM)*100;
+CoV0 = xASL_stat_ComputeSpatialCoV(PWI4D, MaskIM)*100;
 fprintf('%s\n',['Standard space spatial CoV pGM>0.7 = ' num2str(CoV0,3) '%']);
 
 
