@@ -216,10 +216,10 @@ for iSpace=1:2
     ASL_im = xASL_io_Nifti2Im(PathASL{iSpace}); % Load time-series nifti
     dim4 = size(ASL_im, 4);
 
+
     if dim4==1
         % Apparently, the subtraction was already done on the scanner/reconstruction
-        fprintf('%s\n', PathPWI{iSpace});
-        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, ASL_im, 32, false);
+        
 	elseif x.modules.asl.bContainsDeltaM
 		% The original ASL4D volume contains subtraction images and not control/label images
 		
@@ -233,10 +233,7 @@ for iSpace=1:2
 		% For both single- and multi-PLD, create single PWI for further steps in ASL module
 		PWIsingle = xASL_stat_MeanNan(ASL_im,4); % Average across PLDs
         
-		% Save single PWI
-		fprintf('%s\n', PathPWI{iSpace});
-		xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWIsingle, 32, false);
-					
+				
     elseif round(dim4/2)~=dim4/2
         warning('Odd number of control-label pairs, skipping');
         return;
@@ -269,10 +266,6 @@ for iSpace=1:2
         
         % Create single PWI for further steps in ASL module
         PWIsingle = xASL_stat_MeanNan(PWI(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
-        
-        % Save single PWI
-        fprintf('%s\n', PathPWI{iSpace});
-        xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWIsingle, 32, false);
         
     else
         % Paired subtraction
@@ -308,17 +301,14 @@ for iSpace=1:2
             
             PWIsingle = xASL_stat_MeanNan(ASL_im, 4); % create single PWI for further steps in ASL module
             
-            % Save single PWI
-            fprintf('%s\n', PathPWI{iSpace});
-            xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWIsingle, 32, false);
-            
         else
             PWI = xASL_stat_MeanNan(ASL_im, 4); % singlePLD PWI
-            % Save PWI
-            fprintf('%s\n', PathPWI{iSpace});
-            xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWI, 32, false);
         end            
     end
+    
+    % Save PWI.nii
+    fprintf('%s\n', PathPWI{iSpace});
+    xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWIsingle, 32, false);
 end
 
 
