@@ -217,26 +217,15 @@ for iSpace=1:2
     dim4 = size(ASL_im, 4);
 
 
-    if dim4==1
-        % Apparently, the subtraction was already done on the scanner/reconstruction
-        PWI4D = ASL_im;
-        PWI3D = PWI4D;        
-        
-	elseif x.modules.asl.bContainsDeltaM
-		% The original ASL4D volume contains subtraction images and not control/label images
-		
-		% For multi-PLD, save both PWI4D and PWI
-		if x.modules.asl.bMultiPLD
-            PWI4D = ASL_im;
-		end
-		
-		% For both single- and multi-PLD, create single PWI for further steps in ASL module
-        PWI4D = ASL_im;
-		PWI3D = xASL_stat_MeanNan(PWI4D, 4); % Average across PLDs        
-				
-    elseif round(dim4/2)~=dim4/2
+    if dim4>1 && round(dim4/2)~=dim4/2
         warning('Odd number of control-label pairs, skipping');
         return;
+        
+    elseif dim4==1 || x.modules.asl.bContainsDeltaM
+        % dim4==1 -> the subtraction was already done on the scanner/reconstruction
+        % x.modules.asl.bContainsDeltaM -> The original ASL4D volume contains subtraction images and not control/label images
+        PWI4D = ASL_im;
+        PWI3D = xASL_stat_MeanNan(PWI4D, 4);
         
     elseif x.modules.asl.bTimeEncoded
         % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
