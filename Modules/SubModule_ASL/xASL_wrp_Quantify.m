@@ -241,7 +241,7 @@ if strcmpi(x.Q.M0,'separate_scan')
 				% Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
 				warning('TE of ASL and M0 are unequal. Check geometric distortion...');
 			end
-        end
+		end
 
         % Correction factor and name for 3D spiral sequences
         if strcmpi(x.Q.Sequence,'3D_spiral')
@@ -289,10 +289,10 @@ else
 
     %% ------------------------------------------------------------------------------------------------
     %% 6.   Initialize quantification parameters
-    if ~isfield(x.Q,'nCompartments') || isempty(x.Q.nCompartments)
+	if ~isfield(x.Q,'nCompartments') || isempty(x.Q.nCompartments)
         x.Q.nCompartments = 1; % by default, we use a single-compartment model, as proposed by the Alsop et al. MRM 2014 concensus paper
     elseif x.Q.nCompartments>2 || x.Q.nCompartments<1
-        warning(['Unknown x.Q.nCompartments: ' xASL_numstr2(x.Q.nCompartments)]);
+		warning(['Unknown x.Q.nCompartments: ' xASL_numstr2(x.Q.nCompartments)]);
         fprintf('%s\n', 'Now x.Q.nCompartments set to 1 (single compartment model)');
         x.Q.nCompartments = 1;
 	end
@@ -341,12 +341,12 @@ else
 				fprintf('%s\n',['Warning: Unknown T1-blood for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 		end
 	end
-    if ~isfield(x.Q,'T2art')
+    if ~isfield(x.Q, 'T2art')
 		if x.MagneticFieldStrength == 3
 			x.Q.T2art = 50; % T2* of arterial blood, only used when no M0 image
 		else
 			x.Q.T2art = 50;
-			%fprintf('%s\n','Warning: Unknown T2-art for non-3T scanners'); % Skip warning as this is never used
+			fprintf('%s\n','Warning: Unknown T2-art for non-3T scanners'); 
 		end
     end
     if ~isfield(x.Q,'Lambda')
@@ -357,15 +357,15 @@ else
         x.Q.BloodT1 = x.Q.BloodT1.*1000;
     end
 
-    if ~isfield(x.Q,'LabelingType')
+	if ~isfield(x.Q,'LabelingType')
            error('Unknown LabelingType, needed for quantification');
-    elseif isempty(regexpi(x.Q.LabelingType,'^(PC|P|C)ASL$'))
+    elseif isempty(regexpi(x.Q.LabelingType, '^(PC|P|C)ASL$'))
            error('x.Q.LabelingType was invalid, should be PASL|CASL|PCASL');
     elseif strcmpi(x.Q.LabelingType,'PCASL')
            x.Q.LabelingType = 'CASL';
 	end
 
-	if isfield(x.Q,'BackgroundSuppression') && ~x.Q.BackgroundSuppression 
+	if isfield(x.Q,'BackgroundSuppression') && ~x.Q.BackgroundSuppression
 		% In case BSup is defined and turned off, then we set the number of pulses to 0
 		x.Q.BackgroundSuppressionNumberPulses = 0;
 		% otherwise, Bsup is either not defined or BSup == true
@@ -396,7 +396,7 @@ else
 				x.Q.BackgroundSuppressionNumberPulses = 0;
 			end
         end
-    end
+	end
 
 
     %% 7.   Labeling efficiency
@@ -449,9 +449,6 @@ if x.modules.asl.ApplyQuantification(5)==0
         fprintf('%s\n',['mean whole image CBF normalized from ' xASL_num2str(MeanCBF) ' to 10 mL/100g/min']);
     end
 end
-
-
-
 
 %% ------------------------------------------------------------------------------------------------
 %% 9.	Save files
@@ -511,9 +508,9 @@ if x.Q.bUseBasilQuantification
     xASL_spm_deformations(x, {x.P.Path_CBF}, {x.P.Pop_Path_CBF}, [], [], AffineTransfPath, x.P.Path_y_ASL);
 	if xASL_exist(x.P.Path_ATT,'file')
 		xASL_spm_deformations(x, {x.P.Path_ATT}, {x.P.Pop_Path_ATT}, [], [], AffineTransfPath, x.P.Path_y_ASL);
-    end
+	end
     
-    if xASL_exist(x.P.Path_Tex,'file')
+	if xASL_exist(x.P.Path_Tex,'file')
 		xASL_spm_deformations(x, {x.P.Path_Tex}, {x.P.Pop_Path_Tex}, [], [], AffineTransfPath, x.P.Path_y_ASL);
 	end
 end

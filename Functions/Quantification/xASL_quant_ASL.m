@@ -185,7 +185,7 @@ else
 	ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
 	% Throw warning if no Philips scans, but some of the scale slopes are not 1:
-	if isempty(regexpi(x.Q.Vendor,'Philips'))
+	if isempty(regexpi(x.Q.Vendor, 'Philips'))
 		if isfield(ASL_parms,'RescaleSlopeOriginal') && ASL_parms.RescaleSlopeOriginal~=1
 			warning('We detected a RescaleSlopeOriginal~=1, verify that this is not a Philips scan!!!');
 		end
@@ -219,7 +219,7 @@ else
 		else
 			% GE older WIP version
 			qnt_ReceiverGain = 45.24;
-        end
+		end
         
         qnt_GEscaleFactor = qnt_ReceiverGain*x.Q.NumberOfAverages;
         % division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
@@ -298,7 +298,7 @@ if x.modules.asl.ApplyQuantification(3)
 			LabDurs = x.Q.LabelingDuration(index)';
 		else
 			LabDurs = ones(size(PLDs))*x.Q.LabelingDuration;
-        end
+		end
         
 		% Skip the first PLD of the block for Time-Encoded
 		if x.modules.asl.bTimeEncoded
@@ -339,7 +339,7 @@ if x.modules.asl.ApplyQuantification(3)
 end
 
 
-
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
