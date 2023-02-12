@@ -460,12 +460,12 @@ fprintf('%s\n','Saving PWI & CBF niftis');
 
 xASL_io_SaveNifti(PWI_Path, pathOutputCBF, CBF, 32, 0);
 
-if numel(ATT) > 1 || ~isnan(ATT)
+if numel(ATT) > 1
 	% Save the ATT file
 	xASL_io_SaveNifti(PWI_Path, pathOutputATT, ATT, 32, 0);
 end
 
-if numel(Tex) > 1 || ~isnan(Tex)
+if numel(Tex) > 1
 	% Save the Tex file
 	xASL_io_SaveNifti(PWI_Path, pathOutputTex, Tex, 32, 0);
 end
