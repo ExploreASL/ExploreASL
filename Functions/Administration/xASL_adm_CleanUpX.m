@@ -16,20 +16,9 @@ function [x] = xASL_adm_CleanUpX(x)
 % EXAMPLE:        x = xASL_adm_CleanUpX(x);
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
-    %% Zipping
-    
-    % Zip all NIfTIs if we do not immediately run the pipeline afterwards
-    if x.opts.bLoadData || ~x.opts.bProcessData
-        if isfield(x.D,'ROOT')
-			% Run zipping only on rawdata and derivatives and not on the entire folder
-            xASL_adm_GzipAllFiles(x.dir.Derivatives,[],[],fullfile(x.opts.MyPath,'External'));
-			xASL_adm_GzipAllFiles(x.dir.RawData,[],[],fullfile(x.opts.MyPath,'External'));
-        end
-    end
-    
 
     %% Clean-up of the x structure
 
