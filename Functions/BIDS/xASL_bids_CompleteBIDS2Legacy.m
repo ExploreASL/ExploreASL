@@ -87,10 +87,8 @@ function [x,dataPar] = xASL_bids_FinishImport_CreateDataPar(x)
     % Write DataParFile if it does not exist already
     fListDataPar = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'),'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
     if isempty(fListDataPar)
-        fprintf('Creating dataPar.json since file does not exist in derivatives directory...\n');
+        fprintf('Creating /derivatives/ExploreASL/dataPar.json (did not exist yet)...\n');
         xASL_io_WriteJson(fullfile(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), 'dataPar.json'), dataPar);
-    else
-        fprintf('There is a dataPar.json in derivatives already...\n');
     end
 
     % Update dataPar path
@@ -99,9 +97,6 @@ function [x,dataPar] = xASL_bids_FinishImport_CreateDataPar(x)
     if length(fListDataParLegacy)>1
         fprintf('Multiple dataPar.json files within the derivatives directory...\n');
     end
-
-    % Overwrite dataPar.json in x structure
-    fprintf('Overwriting x.dir.dataPar...\n');
 
 end
 
