@@ -1,24 +1,21 @@
 #!/bin/bash
-# Master script to create n instances of ExploreASL on the Flux server
-
-
+# Script to run all weekly tests in order
+# Turn on/off the booleans to activate certain tests
 
 # Set variables for Workerscript
 MyScript=/scratch/mshammer/ExploreASL/Testing/xASL_test_RunInstance.sh
 # set command to current matlab
-Matlab=matlab-R2021b 
+Matlab=matlab-R2019b 
 
 # Define folders.
-scratchDir=/scratch/mshammer
-XASLDIR=/scratch/mshammer/ExploreASL
+scratchDir=/scratch/radv/mshammer
+XASLDIR=${scratchDir}/ExploreASL
 ReferenceTSV=${XASLDIR}/Testing/Reference/ReferenceValues.tsv
-TestDataSetSourceDir=${scratchDir}/TestDataSets/.
-TestDataSetWorkspaceDir=${scratchDir}/xASL-cdci/TestDataSetWorkspace
+TestDataSetSourceDir=${scratchDir}/TestDataSets
+TestDataSetWorkspaceDir=${TMP}/TestDataSetWorkspace
 UnitTestingDir=${scratchDir}/Testing
-FlavorTestConfig=${scratchDir}/xASL-cdci/FlavorConfig.json
-ResultMasterDir=${scratchDir}/xASL-cdci/Results
-
-
+FlavorTestConfig=${scratchDir}/WeeklyTest/FlavorConfig.json
+ResultMasterDir=${scratchDir}/WeeklyTest/Results
 
 # Email adress to send results to
 EmailAdress=m.hammer@amsterdamumc.nl
@@ -28,10 +25,12 @@ bPull=false
 bSPMTest=false
 bUnitTest=true
 bFlavorTest=true
-bTestDataSet=false
+bTestDataSet=true
+bCompile=true
+bSummary=true
 bEmail=false
 bParallel=false
-bSummary=true
+
 
 
 # Make the results directory timed conform ISO 8601
@@ -92,6 +91,7 @@ if ${bTestDataSet}; then
 	echo "bTestDataSet was ${bTestDataSet} "
 	# Run Explore ASL on the TestDataSet Directory
 	# Copy to a reference location and go there
+	rm -r ${TestDataSetWorkspaceDir}
 	cp -R ${TestDataSetSourceDir} ${TestDataSetWorkspaceDir} 
 	cd ${TestDataSetWorkspaceDir}
 
@@ -105,7 +105,7 @@ if ${bTestDataSet}; then
 	for ((i=0; i<${lengthDir}; i++));
 	do
 		rm -fd ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/locked;
-		rm -fd ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/*.status 
+		rm -f ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/*.status 
 	done
 
 	# DEBUGGING
@@ -139,10 +139,18 @@ if ${bTestDataSet}; then
 		mv ${TestDataSetWorkspaceDir}/*.tsv ${ResultDirToday}
 		mv ${TestDataSetWorkspaceDir}/*ResultsTable.mat ${ResultDirToday}
 	fi
+
+	# Clean up temporary files
+	rm -r ${TestDataSetWorkspaceDir}
+fi
+
+if ${bCompile}; then
+	mkdir ${ResultDirToday}/compilation
+	nice -n 10 `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_dev_MakeStandalone('${ResultDirToday}/compilation','${TestDataSetWorkspaceDir}');exit;"`
 fi
 
 if ${bSummary}; then
-	nice -n 10 `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_Summarize(${ResultDirToday});exit;"`
+	nice -n 10 `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_Summarize('${ResultDirToday}');exit;"`
 fi
 
 if ${bEmail}; then
