@@ -1,4 +1,4 @@
-function [ControlIm, LabelIm, OrderContLabl] = xASL_quant_GetControlLabelOrder(ASLTimeSeries)
+function [ControlIm, LabelIm, OrderContLabl] = xASL_quant_GetControlLabelOrder(ASLTimeSeries,x)
 %xASL_quant_GetControlLabelOrder Get control-label order of ASL time-series
 %
 % FORMAT: [ControlIm, LabelIm, OrderContLabl] = xASL_quant_GetControlLabelOrder(ASLTimeSeries)
@@ -26,10 +26,20 @@ function [ControlIm, LabelIm, OrderContLabl] = xASL_quant_GetControlLabelOrder(A
 % Copyright (C) 2015-2021 ExploreASL
 
 %% Get control-label order
-ControlIm = ASLTimeSeries(:,:,:,1:2:end-1); % usual order
-LabelIm = ASLTimeSeries(:,:,:,2:2:end-0);
+if exist('x','var') &&  isfield(x.Q,'LookLocker') % determine Look-Locker order and rearrange
 
-
+    NPLD = 8; % change this, just to test
+    NAverages = size(ASLTimeSeries,4)/NPLD;
+    for iPLD = 1 : NPLD
+        ControlIm(:,:,:,(1+NAverages/2*(iPLD-1)):(NAverages/2*iPLD)) = ASLTimeSeries(:,:,:,iPLD:2*NPLD:end-NPLD); % usual order
+        LabelIm(:,:,:,(1+NAverages/2*(iPLD-1)):(NAverages/2*iPLD))  = ASLTimeSeries(:,:,:,iPLD+NPLD:2*NPLD:end);
+        
+    end
+else
+    ControlIm = ASLTimeSeries(:,:,:,1:2:end-1); % usual order
+    LabelIm = ASLTimeSeries(:,:,:,2:2:end-0);
+    
+end
 % Check equality of n frames control & label
 if size(ControlIm,4)~=size(LabelIm,4)
     error('Control and label image have unequal number of frames!');
