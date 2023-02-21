@@ -83,7 +83,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 			ExePath = fullfile(mricron_version_path,'dcm2niix-lx32');
 		case 'GLNXA64'
 			ExePath = fullfile(mricron_version_path,'dcm2niix-lx64');
-		case {'MACI','MACI64'}
+		case {'MACI','MACI64','MACA64'}
 			ExePath = fullfile(mricron_version_path,'dcm2niix-osx');
 		otherwise
 			error('Unknown computer architecture: %s',computer());
