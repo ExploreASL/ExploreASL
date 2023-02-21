@@ -61,7 +61,7 @@ ifndef SUF
       $(error Unknowm platform $(PLATFORM)-$(HARDWARE))
     endif
   endif
-  ##### MacOS #####
+  ##### macOS #####
   ifeq (Darwin,$(PLATFORM))
     HARDWARE   = $(shell $(UNAME) -p)
     ifeq (i386,$(HARDWARE))
@@ -71,6 +71,12 @@ ifndef SUF
       $(error Unknowm platform $(PLATFORM)-$(HARDWARE))
     endif
   endif
+  ifeq (arm64,$(PLATFORM))
+  MEXEXT     = mexmaca64
+  MEXBIN    ?= mex
+  # https://stackoverflow.com/questions/37362414/
+  OMPFLAG    = -fopenmp=libiomp5
+endif
   ##### Windows #####
   ifeq (MINGW32,$(word 1,$(subst _, ,$(PLATFORM))))
     override PLATFORM = windows
