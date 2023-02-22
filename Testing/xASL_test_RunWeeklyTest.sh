@@ -2,8 +2,6 @@
 # Script to run all weekly tests.
 # Turn on/off the booleans to activate certain tests.
 
-# Set variables for Workerscript
-MyScript=/scratch/mshammer/ExploreASL/Testing/xASL_test_RunInstance.sh
 # set command to current matlab
 Matlab=matlab-R2019b 
 
@@ -32,7 +30,7 @@ bTestDataSet=true
 bCompile=false
 bSummary=true
 bEmail=false
-iNiceness=10 # 0 in testing, 10 at weekend.
+iNiceness=10
 
 # Make the results directory timed conform ISO 8601
 today=$(date +"%FT%H:%M%:z") 
@@ -78,9 +76,6 @@ if ${bSPMTest}; then
 
 	cd ${XASLDIR}
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_SPM('${TestDataSetWorkspaceDir}', false);exit;"
-
-	# Clean up temporary files
-	rm -rf ${TestDataSetWorkspaceDir}
 fi
 
 # Run UnitTest
