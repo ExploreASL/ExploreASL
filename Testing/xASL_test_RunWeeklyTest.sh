@@ -2,6 +2,8 @@
 # Script to run all weekly tests.
 # Turn on/off the booleans to activate certain tests.
 
+# Set variables for Workerscript
+MyScript=/scratch/mshammer/ExploreASL/Testing/xASL_test_RunInstance.sh
 # set command to current matlab
 Matlab=matlab-R2019b 
 
