@@ -2,8 +2,6 @@
 # Script to run all weekly tests.
 # Turn on/off the booleans to activate certain tests.
 
-# Set variables for Workerscript
-MyScript=/scratch/mshammer/ExploreASL/Testing/xASL_test_RunInstance.sh
 # set command to current matlab
 Matlab=matlab-R2019b 
 
@@ -32,7 +30,7 @@ bTestDataSet=true
 bCompile=true
 bSummary=true
 bEmail=false
-bParallel=false
+iNiceness=10
 
 # Make the results directory timed conform ISO 8601
 today=$(date +"%FT%H:%M%:z") 
@@ -69,7 +67,7 @@ echo "We're testing version on ExploreASL version ${RepositoryVersion}." >> Vers
 if ${bSPMTest}; then
 	echo "bSPMTest was conducted in ExploreASL version ${RepositoryVersion}." >> VersionFile
 	cd ${XASLDIR}
-    nice -n 10 ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_SPM('${TestDataSetWorkspaceDir}', false);exit;"
+    nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_SPM('${TestDataSetWorkspaceDir}', false);exit;"
 fi
 
 # Run UnitTest
@@ -79,7 +77,7 @@ if ${bUnitTest}; then
 	UnitVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
 	echo "Unit test directory was tested on version ${UnitVersion}." >> VersionFile
-    nice -n 10 ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_UnitTesting(false);exit;"
+    nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_UnitTesting(false);exit;"
 	mv ${UnitTestingDir}/*results.mat ${ResultDirToday}
 	mv ${UnitTestingDir}/*comparison.tsv ${ResultDirToday}
 fi
@@ -91,7 +89,7 @@ if ${bFlavorTest}; then
 	FlavorVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
 	echo "Flavor database test directory was tested  on version ${FlavorVersion}." >> VersionFile
-    nice -n 10 ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();config=spm_jsonread('${FlavorTestConfig}');xASL_test_Flavors(config, false, false);exit;"
+    nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();config=spm_jsonread('${FlavorTestConfig}');xASL_test_Flavors(config, false, false);exit;"
 	mv ${XASLDIR}/Testing/*results.mat ${ResultDirToday}
 	mv ${XASLDIR}/Testing/*comparison.tsv ${ResultDirToday}
 fi
@@ -121,29 +119,12 @@ if ${bTestDataSet}; then
 		rm -f ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/*.status 
 	done
 
-	# DEBUGGING
-	# Set to true if you want an interactive slurm shell to test if the environmental variables are passed on correctly. 
-	if false; then
-		srun --export=ALL,WORKER=1,NWORKERS=${lengthDir},{XASLDIR}=${XASLDIR},DATAFOLDER=${TestDataSetWorkspaceDir}${FolderArray[0]} --job-name 'interactive-shell' --cpus-per-task 2 --mem-per-cpu 8 --time 0:00:30 --pty bash
-	fi
+	# Run all test
+	for (( i=0; i<${lengthDir}; i++ ));
+	do
+		nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('$XASLDIR');ExploreASL('${TestDataSetWorkspaceDir}/${FolderArray[i]}', 0, 1);exit;"
+	done
 
-	if bParallel; then
-		# Make a seperate slurm job for every folder in the test directory to speed up process.
-		for (( i=0; i<${lengthDir}; i++ ));
-		do
-			sbatch -W --export=ALL,WORKER=${i},NWORKERS=${lengthDir},XASLDIR=${XASLDIR},DATAFOLDER=${TestDataSetWorkspaceDir}${FolderArray[i]} --job-name 'xASL_'.${i}.${lengthDir}.run $MyScript
-		done
-		wait 
-	# alternatively 
-	# while `squeue -u mshammer | wc -l` >= 2; do 
-	# sleep 5m
-	# done
-	else
-		for (( i=0; i<${lengthDir}; i++ ));
-		do
-			nice -n 10 ${Matlab} -nodesktop -nosplash -r "cd('$XASLDIR');ExploreASL('${TestDataSetWorkspaceDir}/${FolderArray[i]}', 0, 1);exit;"
-		done
-	fi
 
 	# Debugging, dont run this yet
 	if true; then
