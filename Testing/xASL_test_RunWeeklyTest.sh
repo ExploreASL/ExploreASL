@@ -2,11 +2,17 @@
 # Script to run all weekly tests.
 # Turn on/off the booleans to activate certain tests.
 
+<<<<<<< HEAD
+=======
+# Set variables for Workerscript
+MyScript=/scratch/mshammer/ExploreASL/Testing/xASL_test_RunInstance.sh
+>>>>>>> 4690c8f9 ( #1247 added Version summary and pulling/resetting flavor and dataset to clean)
 # set command to current matlab
 Matlab=matlab-R2019b 
 
 # Define folders.
 scratchDir=/scratch/radv/mshammer
+<<<<<<< HEAD
 XASLDIR=${scratchDir}/WeeklyTest/ExploreASL
 ReferenceTSV=${XASLDIR}/Testing/Reference/ReferenceValues.tsv
 FlavorTestConfig=${scratchDir}/WeeklyTest/FlavorConfig.json
@@ -16,6 +22,17 @@ UnitTestingDir=${scratchDir}/WeeklyTest/Testing
 ResultMasterDir=${scratchDir}/WeeklyTest/Results
 
 # Temporary Folders, ALL CONTENT WILL BE REMOVED FROM THIS FOLDER.
+=======
+XASLDIR=${scratchDir}/ExploreASL
+ReferenceTSV=${XASLDIR}/Testing/Reference/ReferenceValues.tsv
+FlavorTestConfig=${scratchDir}/WeeklyTest/FlavorConfig.json
+FlavorDir=${scratchDir}/FlavorDatabase
+TestDataSetSourceDir=${scratchDir}/TestDataSets
+UnitTestingDir=${scratchDir}/Testing
+ResultMasterDir=${scratchDir}/WeeklyTest/Results
+
+# Temporary Folders.
+>>>>>>> 4690c8f9 ( #1247 added Version summary and pulling/resetting flavor and dataset to clean)
 TestDataSetWorkspaceDir=${TMP}/TestDataSetWorkspace
 
 # Email adress to send results to
@@ -27,18 +44,29 @@ bSPMTest=true
 bUnitTest=true
 bFlavorTest=true
 bTestDataSet=true
+<<<<<<< HEAD
 bCompile=false
 bSummary=true
 bEmail=false
 iNiceness=10 # 0 in testing, 10 at weekend.
+=======
+bCompile=true
+bSummary=true
+bEmail=false
+bParallel=false
+>>>>>>> 4690c8f9 ( #1247 added Version summary and pulling/resetting flavor and dataset to clean)
 
 # Make the results directory timed conform ISO 8601
 today=$(date +"%FT%H:%M%:z") 
 ResultDirToday=${ResultMasterDir}/${today}
 mkdir ${ResultDirToday}
 VersionFile=${ResultDirToday}/VersionsTested.txt
+<<<<<<< HEAD
 LogFile=${ResultDirToday}/LogFile.txt
 touch ${VersionFile}
+=======
+touch VersionFile
+>>>>>>> 4690c8f9 ( #1247 added Version summary and pulling/resetting flavor and dataset to clean)
 
 # Initialize some variables
 cd ${XASLDIR}
@@ -62,6 +90,7 @@ fi
 
 # Get current Commit hash
 RepositoryVersion=`git rev-parse --short HEAD` 
+<<<<<<< HEAD
 echo "We're testing version on ExploreASL version ${RepositoryVersion}." >>  ${VersionFile}
 
 # Run SPM test (no output?, fix that)
@@ -79,6 +108,15 @@ if ${bSPMTest}; then
 
 	# Clean up temporary files
 	rm -rf ${TestDataSetWorkspaceDir}
+=======
+echo "We're testing version on ExploreASL version ${RepositoryVersion}." >> VersionFile
+
+# Run SPM test (no output?, fix that)
+if ${bSPMTest}; then
+	echo "bSPMTest was conducted in ExploreASL version ${RepositoryVersion}." >> VersionFile
+	cd ${XASLDIR}
+    nice -n 10 ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_SPM('${TestDataSetWorkspaceDir}', false);exit;"
+>>>>>>> 4690c8f9 ( #1247 added Version summary and pulling/resetting flavor and dataset to clean)
 fi
 
 # Run UnitTest
@@ -87,9 +125,14 @@ if ${bUnitTest}; then
 	git pull
 	UnitVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
+<<<<<<< HEAD
 	echo "Unit test directory was tested on version ${UnitVersion}." >>  ${VersionFile}
 
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_UnitTesting(false);exit;"
+=======
+	echo "Unit test directory was tested on version ${UnitVersion}." >> VersionFile
+    nice -n 10 ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_UnitTesting(false);exit;"
+>>>>>>> 4690c8f9 ( #1247 added Version summary and pulling/resetting flavor and dataset to clean)
 	mv ${UnitTestingDir}/*results.mat ${ResultDirToday}
 	mv ${UnitTestingDir}/*comparison.tsv ${ResultDirToday}
 fi
@@ -100,12 +143,19 @@ if ${bFlavorTest}; then
 	git pull
 	FlavorVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
+<<<<<<< HEAD
 	echo "Flavor database test directory was tested  on version ${FlavorVersion}." >>  ${VersionFile}
 
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_Flavors();exit;"
 	mv ${XASLDIR}/Testing/*results.mat ${ResultDirToday}
 	mv ${XASLDIR}/Testing/*comparison.tsv ${ResultDirToday}
 	mv ${XASLDIR}/Testing/*flavor_loggingtable.tsv ${ResultDirToday}
+=======
+	echo "Flavor database test directory was tested  on version ${FlavorVersion}." >> VersionFile
+    nice -n 10 ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();config=spm_jsonread('${FlavorTestConfig}');xASL_test_Flavors(config, false, false);exit;"
+	mv ${XASLDIR}/Testing/*results.mat ${ResultDirToday}
+	mv ${XASLDIR}/Testing/*comparison.tsv ${ResultDirToday}
+>>>>>>> 4690c8f9 ( #1247 added Version summary and pulling/resetting flavor and dataset to clean)
 fi
 
 if ${bTestDataSet}; then
@@ -115,16 +165,24 @@ if ${bTestDataSet}; then
 	git pull
 	TestDataSet=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
+<<<<<<< HEAD
 	rm -rf ${TestDataSetWorkspaceDir}
 	cp -R ${TestDataSetSourceDir} ${TestDataSetWorkspaceDir} 
 	cd ${TestDataSetWorkspaceDir}
 	echo "TestDataSet directory was tested on version ${bTestDataSet}." >> ${VersionFile}
+=======
+	echo "TestDataSet directory was tested on version ${bTestDataSet}." >> VersionFile
+	rm -rf ${TestDataSetWorkspaceDir}
+	cp -R ${TestDataSetSourceDir} ${TestDataSetWorkspaceDir} 
+	cd ${TestDataSetWorkspaceDir}
+>>>>>>> 4690c8f9 ( #1247 added Version summary and pulling/resetting flavor and dataset to clean)
 
 	# create an array of all folders in the reference directory
 	FolderArray=(*/)
 	lengthDir="${#FolderArray[@]}"
 	cd ${XASLDIR}
 
+<<<<<<< HEAD
 	# Run all test
 	for (( i=0; i<${lengthDir}; i++ ));
 	do
@@ -135,6 +193,47 @@ if ${bTestDataSet}; then
 	nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_CompareReference('${ReferenceTSV}','${TestDataSetWorkspaceDir}');exit;"
 	mv ${TestDataSetWorkspaceDir}/*.tsv ${ResultDirToday}
 	mv ${TestDataSetWorkspaceDir}/*ResultsTable.mat ${ResultDirToday}
+=======
+	# automatic status and lock file removal to ensure all steps are run
+	echo "removing lock and status folders from ${TestDataSetWorkspaceDir}/*/derivatives/ExploreASL/lock/*/*/*/locked"
+	for ((i=0; i<${lengthDir}; i++));
+	do
+		rm -fd ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/locked;
+		rm -f ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/*.status 
+	done
+
+	# DEBUGGING
+	# Set to true if you want an interactive slurm shell to test if the environmental variables are passed on correctly. 
+	if false; then
+		srun --export=ALL,WORKER=1,NWORKERS=${lengthDir},{XASLDIR}=${XASLDIR},DATAFOLDER=${TestDataSetWorkspaceDir}${FolderArray[0]} --job-name 'interactive-shell' --cpus-per-task 2 --mem-per-cpu 8 --time 0:00:30 --pty bash
+	fi
+
+	if bParallel; then
+		# Make a seperate slurm job for every folder in the test directory to speed up process.
+		for (( i=0; i<${lengthDir}; i++ ));
+		do
+			sbatch -W --export=ALL,WORKER=${i},NWORKERS=${lengthDir},XASLDIR=${XASLDIR},DATAFOLDER=${TestDataSetWorkspaceDir}${FolderArray[i]} --job-name 'xASL_'.${i}.${lengthDir}.run $MyScript
+		done
+		wait 
+	# alternatively 
+	# while `squeue -u mshammer | wc -l` >= 2; do 
+	# sleep 5m
+	# done
+	else
+		for (( i=0; i<${lengthDir}; i++ ));
+		do
+			nice -n 10 ${Matlab} -nodesktop -nosplash -r "cd('$XASLDIR');ExploreASL('${TestDataSetWorkspaceDir}/${FolderArray[i]}', 0, 1);exit;"
+		done
+	fi
+
+	# Debugging, dont run this yet
+	if true; then
+		# Compare results to Reference Values
+		nice -n 10 `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_CompareReference('${ReferenceTSV}','${TestDataSetWorkspaceDir}');exit;"`
+		mv ${TestDataSetWorkspaceDir}/*.tsv ${ResultDirToday}
+		mv ${TestDataSetWorkspaceDir}/*ResultsTable.mat ${ResultDirToday}
+	fi
+>>>>>>> 4690c8f9 ( #1247 added Version summary and pulling/resetting flavor and dataset to clean)
 
 	# Clean up temporary files
 	rm -rf ${TestDataSetWorkspaceDir}
@@ -142,6 +241,7 @@ fi
 
 if ${bCompile}; then
 	mkdir ${ResultDirToday}/compilation
+<<<<<<< HEAD
 	nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_dev_MakeStandalone('${ResultDirToday}/compilation','${TestDataSetWorkspaceDir}');exit;"
 fi
 
@@ -156,6 +256,21 @@ if ${bEmail}; then
 	# Email when outputfile exists and is not empty, delete empty output if exists
 	if [ -s ${RepositoryVersion}_Results.txt ]; then
 		echo "Sending email to ${EmailAdress}" >> ${VersionFile}
+=======
+	nice -n 10 `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_dev_MakeStandalone('${ResultDirToday}/compilation','${TestDataSetWorkspaceDir}');exit;"`
+fi
+
+if ${bSummary}; then
+	nice -n 10 `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_Summarize('${ResultDirToday}');exit;"`
+fi
+
+if ${bEmail}; then
+	echo "bEmail was ${bEmail} "
+	cd ${ResultDirToday}
+	# Email when outputfile exists and is not empty, delete empty output if exists
+	if [ -s ${RepositoryVersion}_Results.txt ]; then
+		echo "Sending email to ${EmailAdress}"
+>>>>>>> 4690c8f9 ( #1247 added Version summary and pulling/resetting flavor and dataset to clean)
 		mail -s 'xASL git commit detected' -a ${RepositoryVersion}_Results.txt m.hammer@amsterdamumc.nl <<< 'Git commit ${RepositoryVersion} resulted in changes in the test results.\n Changes are attached in the text file.' 
 		exit 0
 	else 
@@ -163,4 +278,8 @@ if ${bEmail}; then
 		rm ${RepositoryVersion}_Results.txt 
 		exit 0
 	fi 
+<<<<<<< HEAD
 fi
+=======
+fi
+>>>>>>> 4690c8f9 ( #1247 added Version summary and pulling/resetting flavor and dataset to clean)
