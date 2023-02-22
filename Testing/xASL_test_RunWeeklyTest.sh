@@ -1,6 +1,6 @@
 #!/bin/bash
-# Script to run all weekly tests in order
-# Turn on/off the booleans to activate certain tests
+# Script to run all weekly tests.
+# Turn on/off the booleans to activate certain tests.
 
 # Set variables for Workerscript
 MyScript=/scratch/mshammer/ExploreASL/Testing/xASL_test_RunInstance.sh
@@ -11,18 +11,21 @@ Matlab=matlab-R2019b
 scratchDir=/scratch/radv/mshammer
 XASLDIR=${scratchDir}/ExploreASL
 ReferenceTSV=${XASLDIR}/Testing/Reference/ReferenceValues.tsv
-TestDataSetSourceDir=${scratchDir}/TestDataSets
-TestDataSetWorkspaceDir=${TMP}/TestDataSetWorkspace
-UnitTestingDir=${scratchDir}/Testing
 FlavorTestConfig=${scratchDir}/WeeklyTest/FlavorConfig.json
+FlavorDir=${scratchDir}/FlavorDatabase
+TestDataSetSourceDir=${scratchDir}/TestDataSets
+UnitTestingDir=${scratchDir}/Testing
 ResultMasterDir=${scratchDir}/WeeklyTest/Results
+
+# Temporary Folders.
+TestDataSetWorkspaceDir=${TMP}/TestDataSetWorkspace
 
 # Email adress to send results to
 EmailAdress=m.hammer@amsterdamumc.nl
 
 # Booleans
 bPull=false
-bSPMTest=false
+bSPMTest=true
 bUnitTest=true
 bFlavorTest=true
 bTestDataSet=true
@@ -31,12 +34,12 @@ bSummary=true
 bEmail=false
 bParallel=false
 
-
-
 # Make the results directory timed conform ISO 8601
 today=$(date +"%FT%H:%M%:z") 
 ResultDirToday=${ResultMasterDir}/${today}
 mkdir ${ResultDirToday}
+VersionFile=${ResultDirToday}/VersionsTested.txt
+touch VersionFile
 
 # Initialize some variables
 cd ${XASLDIR}
@@ -60,19 +63,22 @@ fi
 
 # Get current Commit hash
 RepositoryVersion=`git rev-parse --short HEAD` 
-echo "We're testing version ${RepositoryVersion}"
+echo "We're testing version on ExploreASL version ${RepositoryVersion}." >> VersionFile
 
 # Run SPM test (no output?, fix that)
 if ${bSPMTest}; then
-	echo "bSPMTest was ${bSPMTest}"
+	echo "bSPMTest was conducted in ExploreASL version ${RepositoryVersion}." >> VersionFile
 	cd ${XASLDIR}
     nice -n 10 ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_SPM('${TestDataSetWorkspaceDir}', false);exit;"
 fi
 
 # Run UnitTest
 if ${bUnitTest}; then
-	echo "bUnitTest was ${bUnitTest}"
+	cd ${UnitTestingDir}
+	git pull
+	UnitVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
+	echo "Unit test directory was tested on version ${UnitVersion}." >> VersionFile
     nice -n 10 ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_UnitTesting(false);exit;"
 	mv ${UnitTestingDir}/*results.mat ${ResultDirToday}
 	mv ${UnitTestingDir}/*comparison.tsv ${ResultDirToday}
@@ -80,18 +86,25 @@ fi
 
 # Run Flavor Test Parallelize?
 if ${bFlavorTest}; then
-	echo "bFlavorTest was ${bFlavorTest} "
+	cd ${FlavorDir}
+	git pull
+	FlavorVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
+	echo "Flavor database test directory was tested  on version ${FlavorVersion}." >> VersionFile
     nice -n 10 ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();config=spm_jsonread('${FlavorTestConfig}');xASL_test_Flavors(config, false, false);exit;"
 	mv ${XASLDIR}/Testing/*results.mat ${ResultDirToday}
 	mv ${XASLDIR}/Testing/*comparison.tsv ${ResultDirToday}
 fi
 
 if ${bTestDataSet}; then
-	echo "bTestDataSet was ${bTestDataSet} "
 	# Run Explore ASL on the TestDataSet Directory
 	# Copy to a reference location and go there
-	rm -r ${TestDataSetWorkspaceDir}
+	cd ${TestDataSetSourceDir}
+	git pull
+	TestDataSet=`git rev-parse --short HEAD` 
+	cd ${XASLDIR}
+	echo "TestDataSet directory was tested on version ${bTestDataSet}." >> VersionFile
+	rm -rf ${TestDataSetWorkspaceDir}
 	cp -R ${TestDataSetSourceDir} ${TestDataSetWorkspaceDir} 
 	cd ${TestDataSetWorkspaceDir}
 
@@ -141,7 +154,7 @@ if ${bTestDataSet}; then
 	fi
 
 	# Clean up temporary files
-	rm -r ${TestDataSetWorkspaceDir}
+	rm -rf ${TestDataSetWorkspaceDir}
 fi
 
 if ${bCompile}; then
