@@ -85,6 +85,7 @@ fi
 # Run Flavor Test Parallelize?
 if ${bFlavorTest}; then
 	cd ${FlavorDir}
+	# TODO : remove rawdata and Derivatives folders for clean rerun.
 	git pull
 	FlavorVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
@@ -92,6 +93,7 @@ if ${bFlavorTest}; then
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();config=spm_jsonread('${FlavorTestConfig}');xASL_test_Flavors(config, false, false);exit;"
 	mv ${XASLDIR}/Testing/*results.mat ${ResultDirToday}
 	mv ${XASLDIR}/Testing/*comparison.tsv ${ResultDirToday}
+	# TODO : remove rawdata and Derivatives folders for clean rerun.
 fi
 
 if ${bTestDataSet}; then
@@ -115,8 +117,8 @@ if ${bTestDataSet}; then
 	echo "removing lock and status folders from ${TestDataSetWorkspaceDir}/*/derivatives/ExploreASL/lock/*/*/*/locked"
 	for ((i=0; i<${lengthDir}; i++));
 	do
-		rm -fd ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/locked;
-		rm -f ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/*.status 
+		rm -d ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/locked;
+		rm  ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/*.status 
 	done
 
 	# Run all test
@@ -125,14 +127,10 @@ if ${bTestDataSet}; then
 		nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('$XASLDIR');ExploreASL('${TestDataSetWorkspaceDir}/${FolderArray[i]}', 0, 1);exit;"
 	done
 
-
-	# Debugging, dont run this yet
-	if true; then
-		# Compare results to Reference Values
-		nice -n 10 `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_CompareReference('${ReferenceTSV}','${TestDataSetWorkspaceDir}');exit;"`
-		mv ${TestDataSetWorkspaceDir}/*.tsv ${ResultDirToday}
-		mv ${TestDataSetWorkspaceDir}/*ResultsTable.mat ${ResultDirToday}
-	fi
+	# Compare results to Reference Values
+	nice -n 10 `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_CompareReference('${ReferenceTSV}','${TestDataSetWorkspaceDir}');exit;"`
+	mv ${TestDataSetWorkspaceDir}/*.tsv ${ResultDirToday}
+	mv ${TestDataSetWorkspaceDir}/*ResultsTable.mat ${ResultDirToday}
 
 	# Clean up temporary files
 	rm -rf ${TestDataSetWorkspaceDir}
