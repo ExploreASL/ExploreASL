@@ -25,7 +25,7 @@ function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids
 % EXAMPLE: outParms = xASL_bids_parms2BIDS(inXasl, inBids);
 %          outParms = xASL_bids_parms2BIDS(inXasl, [], 1, 0);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
 %% Admin
@@ -49,9 +49,10 @@ end
 %% 1) Define field names that need to be convert/renamed/merged
 
 % Fields with these names need to have the time converted between XASL legacy and BIDS, and define their recommended range in ms
-convertTimeFieldsXASL = {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
-convertTimeFieldsRange = [0.5        5                10            10                 10                   10              5                  100       10   100        5                  5;...% Minimum in ms
-                          500        20000            10000         5000               5000                 5000            400               5000      500  5000       400                10000];% Maximum in ms   
+convertTimeFieldsXASL =       {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
+convertTimeFieldsRange =       [0.5        5                10            10                 10                   10              5                  100       10   100        5                  5;...% Minimum in ms
+                                500        20000            10000         5000               5000                 5000            400                5000      500  5000       400                10000];% Maximum in ms   
+convertTimeFieldsAllowOutliers=[0          0                1             1                  1                    0               0                  0         0    0          0                  0]; % For multiple values, don't print a warning if mean value is within the range
 					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LookLocker' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'...
@@ -217,16 +218,26 @@ if ~isempty(inBids)
 							valueCheck = inBids.(FieldNameChanged);
 						end
 						
-						if max(valueCheck < convertTimeFieldsRange(1,iT)) || max(valueCheck > convertTimeFieldsRange(2,iT))
+						if min(valueCheck) < convertTimeFieldsRange(1,iT) || max(valueCheck) > convertTimeFieldsRange(2,iT)
 							if numel(valueCheck)==1
-								PrintString = ['a value of ' xASL_num2str(valueCheck)];
+								warningMessage = ['a value of ' xASL_num2str(valueCheck)];
 							else
-								PrintString = ['multiple values, from ' xASL_num2str(min(valueCheck)) ' to ' xASL_num2str(max(valueCheck))];
+								warningMessage = ['multiple values, from ' xASL_num2str(min(valueCheck)) ' to ' xASL_num2str(max(valueCheck))];
 							end
 							
-                            warning(['Field ' FieldNameChanged ' in xASL structure has ' PrintString...
+                            warningMessage = ['Field ' FieldNameChanged ' in xASL structure has ' warningMessage...
                                 ', which is outside of the recommended range <'...
-                                xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+                                xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.'];
+							
+							if numel(valueCheck) == 1 
+								% For a single value, always print the warning
+								warning(warningMessage);
+							elseif mean(valueCheck) < convertTimeFieldsRange(1, iT) || mean(valueCheck) > convertTimeFieldsRange(2, iT)
+								% For multiple values, check if the mean is also outside of the range
+								warning([warningMessage ' And the mean value is also ouside of the range.'])
+							else
+								fprintf([warningMessage ' But the mean is within the range.\n'])
+							end
 						end
 					end
 				else
