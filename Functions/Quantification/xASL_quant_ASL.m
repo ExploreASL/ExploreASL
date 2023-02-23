@@ -291,21 +291,34 @@ end
 fprintf('%s\n',' model with parameters:');
 
 if x.modules.asl.ApplyQuantification(3)
-	if isfield(x.Q,'LabelingDuration') && isfield(x.Q,'Initial_PLD')
-		% Prepare unique PLDs
-		[PLDs, index] = unique(x.Q.Initial_PLD, 'stable');
+	if isfield(x.Q, 'LabelingDuration') && isfield(x.Q, 'Initial_PLD')
+		% Prepare unique PLDs+LabDur combinations
+		
+		% First create a labeling duration vector of the same length
 		if length(x.Q.LabelingDuration)>1
-			LabDurs = x.Q.LabelingDuration(index)';
+			LabDurs = x.Q.LabelingDuration;
 		else
-			LabDurs = ones(size(PLDs))*x.Q.LabelingDuration;
+			LabDurs = ones(size(x.Q.Initial_PLD))*x.Q.LabelingDuration;
 		end
-        
+
+		PLDs = x.Q.Initial_PLD;
+
 		% Skip the first PLD of the block for Time-Encoded
 		if x.modules.asl.bTimeEncoded
+			% For timeencoded - a simple unique PLDs is enough
+			[PLDs, index] = unique(PLDs, 'stable');
+			LabDurs = x.Q.LabelingDuration(index)';
+
 			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
 			index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
 			PLDs = PLDs(index(:)');
 			LabDurs = LabDurs(index(:)');
+		else
+			% For normal multi-timepoint, we look for unique PLD+LabDur combinations
+			[~, indexNew, ~] = unique([PLDs(:), LabDurs(:)], 'stable', 'rows');
+			
+			PLDs = PLDs(indexNew);
+			LabDurs = LabDurs(indexNew);
 		end
 
 		% Print the prepared parameters

@@ -31,7 +31,7 @@ function xASL_wrp_ResampleASL(x)
 %
 % EXAMPLE: xASL_wrp_ResampleASL(x);
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2023 ExploreASL
 
 
 
@@ -284,14 +284,22 @@ for iSpace=1:2
 			% Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
 			% and we need the PLD vector now for the pairwise subtractions only
 			Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
+
+			% The labeling durations also need to be taken into account and unique combinations of PLDs with LDs should be considered
+			if numel(x.Q.Initial_PLD) == numel(x.Q.LabelingDuration)
+				Initial_LabDur_PWI = x.Q.LabelingDuration(1:2:end);
+			else
+				Initial_LabDur_PWI = ones(size(Initial_PLD_PWI)) * x.Q.LabelingDuration;
+			end
         
-			% After averaging across PLDs, we'll obtain these unique PLDs
-			Initial_PLD_PWI_averaged = unique(Initial_PLD_PWI, 'stable');
+			% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
+			% indexNew lists for each original position to where it should be averaged
+			[~, ~, indexNew] = unique([Initial_PLD_PWI, Initial_LabDur_PWI], 'stable', 'rows');
 			
             % MultiPLD PWI after averaging
-			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), length(Initial_PLD_PWI_averaged)); % preallocate PWI
-            for nPLD = 1:length(Initial_PLD_PWI_averaged)
-                PWI(:,:,:,nPLD) = xASL_stat_MeanNan(ASL_im(:,:,:,Initial_PLD_PWI == Initial_PLD_PWI_averaged(nPLD)), 4); % Averaged PWI4D 
+			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), max(indexNew)); % preallocate PWI
+            for nPLD = 1:length(max(indexNew))
+                PWI(:, :, :, nPLD) = xASL_stat_MeanNan(ASL_im(:, :, :, indexNew == nPLD), 4); % Averaged PWI4D 
             end
             
             % Save PWI

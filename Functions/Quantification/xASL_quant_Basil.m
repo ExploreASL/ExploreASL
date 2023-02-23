@@ -199,6 +199,8 @@ switch lower(x.Q.LabelingType)
 	case 'pasl'
 		% PASL model is assumed by default and does not need to be specified in the config file
 		fprintf('BASIL: PASL model\n');
+
+		% For PASL, there can be only a single LabelingDuration, so unique PLD+LabDur combinations are uniquely based on PLDs
 		TIs = (unique(x.Q.Initial_PLD, 'stable'))'/1000;
 
 		% Print all the TIs
@@ -236,33 +238,43 @@ switch lower(x.Q.LabelingType)
 		fprintf(FIDoptionFile, '--casl\n');
 		fprintf('BASIL: (P)CASL model\n');
 
-		% Keep only unique PLDs and apply the same to LabDurs
-		[PLDs, ind] = unique(x.Q.Initial_PLD, 'stable');
-        PLDs = PLDs'/1000;
-
+		% Prepare unique PLDs+LabDur combinations
+		
+		% First create a labeling duration vector of the same length
 		if length(x.Q.LabelingDuration)>1
-			LDs = (x.Q.LabelingDuration(ind))'/1000;
+			LabDurs = x.Q.LabelingDuration/1000;
 		else
-			LDs = ones(size(PLDs))*x.Q.LabelingDuration/1000;
+			LabDurs = ones(size(x.Q.Initial_PLD))*x.Q.LabelingDuration/1000;
 		end
+
+		PLDs = x.Q.Initial_PLD/1000;
 
 		% For Time-encoded, we skip the first volume per block
 		if x.modules.asl.bTimeEncoded
+			[PLDs, index] = unique(PLDs, 'stable');
+			LabDurs = x.Q.LabelingDuration(index)';
+
 			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-			ind = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
-			PLDs = PLDs(ind(:)');
-			LDs = LDs(ind(:)');
-		end		
+			index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
+			PLDs = PLDs(index(:)');
+			LabDurs = LabDurs(index(:)');
+		else
+			% For normal multi-timepoint, we look for unique PLD+LabDur combinations
+			[~, indexNew, ~] = unique([PLDs(:), LabDurs(:)], 'stable', 'rows');
+			
+			PLDs = PLDs(indexNew);
+			LabDurs = LabDurs(indexNew);
+		end
 		
 		if x.modules.asl.bMultiPLD
 			for iPLD = 1:length(PLDs)
 				fprintf(FIDoptionFile, '--pld%d=%.2f\n', iPLD, PLDs(iPLD));
 			end
-			for iLD = 1:length(LDs)
-				fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLD, LDs(iLD));
+			for iLabDurs = 1:length(LabDurs)
+				fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
 			end
 		else
-			fprintf(FIDoptionFile, '--tau=%.2f\n', LDs);
+			fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs);
 			fprintf(FIDoptionFile, '--pld=%.2f\n', PLDs);
 		end
 end
@@ -421,23 +433,32 @@ fprintf(FIDoptionFile, '--t2=%f\n', x.Q.T2/1000);
 
 %% 3. Basic acquisition parameters
 
-% Print all the PLDs and LabDurs - count that it was averaged over PLDs, but keep the initial order
-[PLDs, ind] = unique(x.Q.Initial_PLD, 'stable');
-PLDs = PLDs'/1000;
-
-% We assume that there's either only a single labeling duration, or a vector with the same length and order as PLDs (that is a BIDS requirement)
+% Prepare unique PLDs+LabDur combinations
+		
+% First create a labeling duration vector of the same length
 if length(x.Q.LabelingDuration)>1
-    LDs = (x.Q.LabelingDuration(ind))'/1000;
+	LabDurs = x.Q.LabelingDuration/1000;
 else
-    LDs = ones(size(PLDs))*x.Q.LabelingDuration/1000;
+	LabDurs = ones(size(x.Q.Initial_PLD))*x.Q.LabelingDuration/1000;
 end
 
-% For Time-encoded, we skip the first volume for each Hadamard block
+PLDs = x.Q.Initial_PLD/1000;
+
+% For Time-encoded, we skip the first volume per block
 if x.modules.asl.bTimeEncoded
+	[PLDs, index] = unique(PLDs, 'stable');
+	LabDurs = x.Q.LabelingDuration(index)';
+
 	numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-	ind = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
-    PLDs = PLDs(ind(:)');
-	LDs = LDs(ind(:)');
+	index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
+	PLDs = PLDs(index(:)');
+	LabDurs = LabDurs(index(:)');
+else
+	% For normal multi-timepoint, we look for unique PLD+LabDur combinations
+	[~, indexNew, ~] = unique([PLDs(:), LabDurs(:)], 'stable', 'rows');
+
+	PLDs = PLDs(indexNew);
+	LabDurs = LabDurs(indexNew);
 end
 
 %Echo Times
@@ -450,8 +471,8 @@ for iPLD = 1:length(PLDs)
     fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD, PLDs(iPLD));
     fprintf(FIDoptionFile, '--nte%d=%d\n', iPLD, nTE); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
 end
-for iLD = 1:length(LDs)
-    fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLD, LDs(iLD));
+for iLabDurs = 1:length(LabDurs)
+    fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
 end
 
 for iTE = 1:length(TEs) %We need a TE for each volume
