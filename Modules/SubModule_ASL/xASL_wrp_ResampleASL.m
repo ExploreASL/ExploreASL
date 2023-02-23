@@ -298,7 +298,7 @@ for iSpace=1:2
 			
             % MultiPLD PWI after averaging
 			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), max(indexNew)); % preallocate PWI
-            for nPLD = 1:length(max(indexNew))
+            for nPLD = 1:max(indexNew)
                 PWI(:, :, :, nPLD) = xASL_stat_MeanNan(ASL_im(:, :, :, indexNew == nPLD), 4); % Averaged PWI4D 
             end
             
