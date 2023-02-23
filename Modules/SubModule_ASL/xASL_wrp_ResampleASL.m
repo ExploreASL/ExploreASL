@@ -283,19 +283,27 @@ for iSpace=1:2
         if x.modules.asl.bMultiPLD 
 			% Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
 			% and we need the PLD vector now for the pairwise subtractions only
-			Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
+			if isfield(x.Q,'LookLocker')
+				Initial_PLD_PWI = x.Q.Initial_PLD(1:end/2); % assume acquistion of pairs, so we can just divide by half !!! change !!!
+			else
+				Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
+			end
 
 			% The labeling durations also need to be taken into account and unique combinations of PLDs with LDs should be considered
 			if numel(x.Q.Initial_PLD) == numel(x.Q.LabelingDuration)
-				Initial_LabDur_PWI = x.Q.LabelingDuration(1:2:end);
+				if isfield(x.Q,'LookLocker')
+					Initial_LabDur_PWI = x.Q.LabelingDuration(1:end/2); % assume acquistion of pairs, so we can just divide by half !!! change !!!
+				else
+					Initial_LabDur_PWI = x.Q.LabelingDuration(1:2:end);
+				end
 			else
 				Initial_LabDur_PWI = ones(size(Initial_PLD_PWI)) * x.Q.LabelingDuration;
 			end
         
 			% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
 			% indexNew lists for each original position to where it should be averaged
-			[~, ~, indexNew] = unique([Initial_PLD_PWI, Initial_LabDur_PWI], 'stable', 'rows');
-			
+			[~, ~, indexNew] = unique([Initial_PLD_PWI, Initial_LabDur_PWI], 'stable', 'rows');			
+
             % MultiPLD PWI after averaging
 			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), max(indexNew)); % preallocate PWI
             for nPLD = 1:max(indexNew)

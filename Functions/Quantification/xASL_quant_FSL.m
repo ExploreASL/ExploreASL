@@ -26,7 +26,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 % 1. Define paths
 % 2. Delete previous BASIL/Fabber output
 % 3. Write the PWI as Nifti file for Basil/Fabber to read as input
-% 4. Create option_file that contains options which are passed to the FSL command
+% 4. Create FIDoptionFile that contains options which are passed to the FSL command
 % 5. Run Basil and retrieve CBF output
 % 6. Scaling to physiological units
 % 7. Householding
@@ -94,7 +94,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
         xASL_io_SaveNifti(x.P.Path_PWI4D, pathFSLInput, PWI, [], 0); % use PWI4D path
     end
 
-    %% 4. Create option_file that contains options which are passed to the FSL command
+    %% 4. Create FIDoptionFile that contains options which are passed to the FSL command
 	% FSLOptions is a character array containing CLI args for the BASIL/FABBER command
 	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput);
         
@@ -458,7 +458,7 @@ if ~bUseFabber
 			if length(unique(x.Q.FlipAngle))>1
 				warning('Look-Locker quantification with multiple flip angles, e.g. QUASAR, is not implemented yet');
 			end
-			fprintf(option_file, '--FA=%f\n', x.Q.FlipAngle(1));
+			fprintf(FIDoptionFile, '--FA=%f\n', x.Q.FlipAngle(1));
 			fprintf('BASIL: Flip angle for Look-Locker readout: %f\n', x.Q.FlipAngle(1));
 		else
 			warning('BASIL: Unknown flip angle for Look-Locker\n');
@@ -546,10 +546,10 @@ if ~bUseFabber
 
 
 	% 	%% Aquisition options we might be able to use in the future
-	%   fprintf(option_file, '--sliceband=%i\n', sliceband);
+	%   fprintf(FIDoptionFile, '--sliceband=%i\n', sliceband);
 	%   fprintf('BASIL: Multi-band setup with number of slices per band: %i\n', slicedband);
 	%
-	% 	fprintf(option_file, '--t1im=%s\n', t1im)
+	% 	fprintf(FIDoptionFile, '--t1im=%s\n', t1im)
 	%   fprintf('BASIL: Using supplied T1 (tissue) image in BASIL: %s\n', $t1im)
 	%
 end

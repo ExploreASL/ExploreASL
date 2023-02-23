@@ -28,11 +28,11 @@ function [ControlIm, LabelIm, OrderContLabl] = xASL_quant_GetControlLabelOrder(A
 %% Get control-label order
 if exist('x','var') &&  isfield(x.Q,'LookLocker') % determine Look-Locker order and rearrange
 
-    NPLD = 8; % change this, just to test
-    NAverages = size(ASLTimeSeries,4)/NPLD;
+    NPLD = size(unique(x.Q.Initial_PLD),1); % change this, just to test
+    NAverages = size(ASLTimeSeries,4)/NPLD/2;
     for iPLD = 1 : NPLD
-        ControlIm(:,:,:,(1+NAverages/2*(iPLD-1)):(NAverages/2*iPLD)) = ASLTimeSeries(:,:,:,iPLD:2*NPLD:end-NPLD); % usual order
-        LabelIm(:,:,:,(1+NAverages/2*(iPLD-1)):(NAverages/2*iPLD))  = ASLTimeSeries(:,:,:,iPLD+NPLD:2*NPLD:end);
+        ControlIm(:,:,:,(1+NAverages*(iPLD-1)):NAverages*iPLD) = ASLTimeSeries(:,:,:,iPLD:2*NPLD:end-NPLD); % usual order
+        LabelIm(:,:,:,(1+NAverages*(iPLD-1)):NAverages*iPLD)  = ASLTimeSeries(:,:,:,iPLD+NPLD:2*NPLD:end);
         
     end
 else
