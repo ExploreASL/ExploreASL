@@ -30,7 +30,7 @@ bTestDataSet=true
 bCompile=true
 bSummary=true
 bEmail=false
-iNiceness=10
+iNiceness=0
 
 # Make the results directory timed conform ISO 8601
 today=$(date +"%FT%H:%M%:z") 
@@ -128,7 +128,7 @@ if ${bTestDataSet}; then
 	done
 
 	# Compare results to Reference Values
-	nice -n 10 `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_CompareReference('${ReferenceTSV}','${TestDataSetWorkspaceDir}');exit;"`
+	nice -n ${iNiceness} `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_CompareReference('${ReferenceTSV}','${TestDataSetWorkspaceDir}');exit;"`
 	mv ${TestDataSetWorkspaceDir}/*.tsv ${ResultDirToday}
 	mv ${TestDataSetWorkspaceDir}/*ResultsTable.mat ${ResultDirToday}
 
@@ -138,11 +138,11 @@ fi
 
 if ${bCompile}; then
 	mkdir ${ResultDirToday}/compilation
-	nice -n 10 `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_dev_MakeStandalone('${ResultDirToday}/compilation','${TestDataSetWorkspaceDir}');exit;"`
+	nice -n ${iNiceness} `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_dev_MakeStandalone('${ResultDirToday}/compilation','${TestDataSetWorkspaceDir}');exit;"`
 fi
 
 if ${bSummary}; then
-	nice -n 10 `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_Summarize('${ResultDirToday}');exit;"`
+	nice -n ${iNiceness} `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_Summarize('${ResultDirToday}');exit;"`
 fi
 
 if ${bEmail}; then
