@@ -30,7 +30,7 @@ bTestDataSet=true
 bCompile=false
 bSummary=true
 bEmail=false
-iNiceness=10
+iNiceness=0
 
 # Make the results directory timed conform ISO 8601
 today=$(date +"%FT%H:%M%:z") 
