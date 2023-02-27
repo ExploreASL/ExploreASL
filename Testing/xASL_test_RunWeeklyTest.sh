@@ -76,6 +76,9 @@ if ${bSPMTest}; then
 
 	cd ${XASLDIR}
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_SPM('${TestDataSetWorkspaceDir}', false);exit;"
+
+	# Clean up temporary files
+	rm -rf ${TestDataSetWorkspaceDir}
 fi
 
 # Run UnitTest
@@ -85,7 +88,6 @@ if ${bUnitTest}; then
 	UnitVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
 	echo "Unit test directory was tested on version ${UnitVersion}." >>  ${VersionFile}
-
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_UnitTesting(false);exit;"
 	mv ${UnitTestingDir}/*results.mat ${ResultDirToday}
 	mv ${UnitTestingDir}/*comparison.tsv ${ResultDirToday}
