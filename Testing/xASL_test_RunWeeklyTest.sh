@@ -30,7 +30,7 @@ bTestDataSet=true
 bCompile=false
 bSummary=true
 bEmail=false
-iNiceness=0
+iNiceness=10 # 0 in testing, 10 at weekend.
 
 # Make the results directory timed conform ISO 8601
 today=$(date +"%FT%H:%M%:z") 
@@ -88,6 +88,7 @@ if ${bUnitTest}; then
 	UnitVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
 	echo "Unit test directory was tested on version ${UnitVersion}." >>  ${VersionFile}
+
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_UnitTesting(false);exit;"
 	mv ${UnitTestingDir}/*results.mat ${ResultDirToday}
 	mv ${UnitTestingDir}/*comparison.tsv ${ResultDirToday}
