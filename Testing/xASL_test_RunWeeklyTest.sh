@@ -15,7 +15,7 @@ TestDataSetSourceDir=${scratchDir}/TestDataSets
 UnitTestingDir=${scratchDir}/Testing
 ResultMasterDir=${scratchDir}/WeeklyTest/Results
 
-# Temporary Folders.
+# Temporary Folders, ALL CONTENT WILL BE REMOVED FROM THIS FOLDER.
 TestDataSetWorkspaceDir=${TMP}/TestDataSetWorkspace
 
 # Email adress to send results to
@@ -37,7 +37,7 @@ today=$(date +"%FT%H:%M%:z")
 ResultDirToday=${ResultMasterDir}/${today}
 mkdir ${ResultDirToday}
 VersionFile=${ResultDirToday}/VersionsTested.txt
-touch VersionFile
+touch ${VersionFile}
 
 # Initialize some variables
 cd ${XASLDIR}
@@ -61,13 +61,23 @@ fi
 
 # Get current Commit hash
 RepositoryVersion=`git rev-parse --short HEAD` 
-echo "We're testing version on ExploreASL version ${RepositoryVersion}." >> VersionFile
+echo "We're testing version on ExploreASL version ${RepositoryVersion}." >>  ${VersionFile}
 
 # Run SPM test (no output?, fix that)
 if ${bSPMTest}; then
-	echo "bSPMTest was conducted in ExploreASL version ${RepositoryVersion}." >> VersionFile
+	# Run Explore ASL on the TestDataSet Directory
+	# Copy to a reference location and go there
+	cd ${TestDataSetSourceDir}
+	git pull
+	rm -rf ${TestDataSetWorkspaceDir}
+	cp -R ${TestDataSetSourceDir} ${TestDataSetWorkspaceDir} 
+	echo "SPMTest was conducted in ExploreASL version ${RepositoryVersion}." >>  ${VersionFile}
+
 	cd ${XASLDIR}
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_SPM('${TestDataSetWorkspaceDir}', false);exit;"
+
+	# Clean up temporary files
+	rm -rf ${TestDataSetWorkspaceDir}
 fi
 
 # Run UnitTest
@@ -76,7 +86,7 @@ if ${bUnitTest}; then
 	git pull
 	UnitVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
-	echo "Unit test directory was tested on version ${UnitVersion}." >> VersionFile
+	echo "Unit test directory was tested on version ${UnitVersion}." >>  ${VersionFile}
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_UnitTesting(false);exit;"
 	mv ${UnitTestingDir}/*results.mat ${ResultDirToday}
 	mv ${UnitTestingDir}/*comparison.tsv ${ResultDirToday}
@@ -89,7 +99,7 @@ if ${bFlavorTest}; then
 	git pull
 	FlavorVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
-	echo "Flavor database test directory was tested  on version ${FlavorVersion}." >> VersionFile
+	echo "Flavor database test directory was tested  on version ${FlavorVersion}." >>  ${VersionFile}
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();config=spm_jsonread('${FlavorTestConfig}');xASL_test_Flavors(config, false, false);exit;"
 	mv ${XASLDIR}/Testing/*results.mat ${ResultDirToday}
 	mv ${XASLDIR}/Testing/*comparison.tsv ${ResultDirToday}
@@ -103,7 +113,7 @@ if ${bTestDataSet}; then
 	git pull
 	TestDataSet=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
-	echo "TestDataSet directory was tested on version ${bTestDataSet}." >> VersionFile
+	echo "TestDataSet directory was tested on version ${bTestDataSet}." >> ${VersionFile}
 	rm -rf ${TestDataSetWorkspaceDir}
 	cp -R ${TestDataSetSourceDir} ${TestDataSetWorkspaceDir} 
 	cd ${TestDataSetWorkspaceDir}
