@@ -30,7 +30,7 @@ bTestDataSet=true
 bCompile=true
 bSummary=true
 bEmail=false
-iNiceness=0
+iNiceness=10 # 0 in testing, 10 at weekend.
 
 # Make the results directory timed conform ISO 8601
 today=$(date +"%FT%H:%M%:z") 
@@ -87,6 +87,7 @@ if ${bUnitTest}; then
 	UnitVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
 	echo "Unit test directory was tested on version ${UnitVersion}." >>  ${VersionFile}
+
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_UnitTesting(false);exit;"
 	mv ${UnitTestingDir}/*results.mat ${ResultDirToday}
 	mv ${UnitTestingDir}/*comparison.tsv ${ResultDirToday}
@@ -100,6 +101,7 @@ if ${bFlavorTest}; then
 	FlavorVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
 	echo "Flavor database test directory was tested  on version ${FlavorVersion}." >>  ${VersionFile}
+
     nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();config=spm_jsonread('${FlavorTestConfig}');xASL_test_Flavors(config, false, false);exit;"
 	mv ${XASLDIR}/Testing/*results.mat ${ResultDirToday}
 	mv ${XASLDIR}/Testing/*comparison.tsv ${ResultDirToday}
@@ -113,10 +115,10 @@ if ${bTestDataSet}; then
 	git pull
 	TestDataSet=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
-	echo "TestDataSet directory was tested on version ${bTestDataSet}." >> ${VersionFile}
 	rm -rf ${TestDataSetWorkspaceDir}
 	cp -R ${TestDataSetSourceDir} ${TestDataSetWorkspaceDir} 
 	cd ${TestDataSetWorkspaceDir}
+	echo "TestDataSet directory was tested on version ${bTestDataSet}." >> ${VersionFile}
 
 	# create an array of all folders in the reference directory
 	FolderArray=(*/)
@@ -138,7 +140,7 @@ if ${bTestDataSet}; then
 	done
 
 	# Compare results to Reference Values
-	nice -n ${iNiceness} `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_CompareReference('${ReferenceTSV}','${TestDataSetWorkspaceDir}');exit;"`
+	nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_CompareReference('${ReferenceTSV}','${TestDataSetWorkspaceDir}');exit;"
 	mv ${TestDataSetWorkspaceDir}/*.tsv ${ResultDirToday}
 	mv ${TestDataSetWorkspaceDir}/*ResultsTable.mat ${ResultDirToday}
 
@@ -148,19 +150,20 @@ fi
 
 if ${bCompile}; then
 	mkdir ${ResultDirToday}/compilation
-	nice -n ${iNiceness} `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_dev_MakeStandalone('${ResultDirToday}/compilation','${TestDataSetWorkspaceDir}');exit;"`
+	nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_dev_MakeStandalone('${ResultDirToday}/compilation','${TestDataSetWorkspaceDir}');exit;"
 fi
 
 if ${bSummary}; then
-	nice -n ${iNiceness} `${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_Summarize('${ResultDirToday}');exit;"`
+	nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_Summarize('${ResultDirToday}');exit;"
 fi
 
 if ${bEmail}; then
-	echo "bEmail was ${bEmail} "
+	echo "bEmail was ${bEmail}" >> ${VersionFile}
 	cd ${ResultDirToday}
+
 	# Email when outputfile exists and is not empty, delete empty output if exists
 	if [ -s ${RepositoryVersion}_Results.txt ]; then
-		echo "Sending email to ${EmailAdress}"
+		echo "Sending email to ${EmailAdress}" >> ${VersionFile}
 		mail -s 'xASL git commit detected' -a ${RepositoryVersion}_Results.txt m.hammer@amsterdamumc.nl <<< 'Git commit ${RepositoryVersion} resulted in changes in the test results.\n Changes are attached in the text file.' 
 		exit 0
 	else 
