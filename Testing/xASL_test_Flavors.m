@@ -221,7 +221,9 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
     savePathTSV = fullfile(testConfig.pathExploreASL,'Testing', [TimeString, '_flavor_comparison.tsv']);
 
 	save(savePathMat,'flavors','testConfig');
-    xASL_tsvWrite(table2cell(flavors.comparisonTable), savePathTSV);
+    if ~isempty(flavors.comparisonTable)
+        xASL_tsvWrite(table2cell(flavors.comparisonTable), savePathTSV);
+    end 
     % Clear console window
     clc
     
