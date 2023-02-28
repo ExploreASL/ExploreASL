@@ -136,7 +136,7 @@ if ${bTestDataSet}; then
 	# Run all test
 	for (( i=0; i<${lengthDir}; i++ ));
 	do
-		nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('$XASLDIR');ExploreASL('${TestDataSetWorkspaceDir}/${FolderArray[i]}', 0, 1);exit;"
+		nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('$XASLDIR');ExploreASL();ExploreASL('${TestDataSetWorkspaceDir}/${FolderArray[i]}', 0, 1, false);exit;"
 	done
 
 	# Compare results to Reference Values
