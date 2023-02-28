@@ -215,10 +215,16 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
     flavors = xASL_test_IgnoreSomeFields(flavors, testConfig);
     
     % Save path
-    savePath = fullfile(testConfig.pathExploreASL,'Testing','results.mat');
-    
-	save(savePath,'flavors','testConfig');
-    
+    TimeString = datestr(now,'yyyy-mm-dd_HH_MM');
+    TimeString(end-2) = 'h';
+    savePathMat = fullfile(testConfig.pathExploreASL,'Testing', [TimeString, '_flavor_results.mat']);
+    savePathTSV = fullfile(testConfig.pathExploreASL,'Testing', [TimeString, '_flavor_comparison.tsv']);
+
+	save(savePathMat,'flavors','testConfig');
+    if ~isempty(flavors.comparisonTable)
+        xASL_tsvWrite(table2cell(flavors.comparisonTable), savePathTSV);
+    end 
+
     % Clear console window
     clc
     
