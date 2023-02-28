@@ -101,11 +101,6 @@ else
 	system(testConfig.cmdCloneFlavors);
 end
 
-% Check for flavor list
-if ~isfield(testConfig,'flavorList')
-	testConfig.flavorList = xASL_adm_GetFileList(testConfig.pathFlavorDatabase, [], false, [], true);
-end
-
 % Load database JSON
 if xASL_exist(fullfile(testConfig.pathFlavorDatabase,'flavors.json'),'file')
 	databaseInfo = spm_jsonread(fullfile(testConfig.pathFlavorDatabase,'flavors.json'));
@@ -114,6 +109,17 @@ else
 	error('The flavors.json file is missing...');
 end
     
+% Check for flavor list
+if ~isfield(testConfig,'flavorList')
+    List = {};
+    for iFlavor=1:length(flavors.data)
+        if flavors.data(iFlavor).bTesting
+            List{end+1,1} = flavors.data(iFlavor).name;
+        end
+    end
+    testConfig.flavorList = List;
+end    
+
 % Logging table
 flavors.loggingTable = array2table(zeros(0,3), 'VariableNames',{'message','stack','name'});
 flavors.comparisonTable = array2table(zeros(0,4), 'VariableNames',{'flavor','dataset','name','message'});
