@@ -37,6 +37,7 @@ today=$(date +"%FT%H:%M%:z")
 ResultDirToday=${ResultMasterDir}/${today}
 mkdir ${ResultDirToday}
 VersionFile=${ResultDirToday}/VersionsTested.txt
+LogFile=${ResultDirToday}/LogFile.txt
 touch ${VersionFile}
 
 # Initialize some variables
@@ -124,14 +125,6 @@ if ${bTestDataSet}; then
 	FolderArray=(*/)
 	lengthDir="${#FolderArray[@]}"
 	cd ${XASLDIR}
-
-	# automatic status and lock file removal to ensure all steps are run
-	echo "removing lock and status folders from ${TestDataSetWorkspaceDir}/*/derivatives/ExploreASL/lock/*/*/*/locked"
-	for ((i=0; i<${lengthDir}; i++));
-	do
-		rm -d ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/locked;
-		rm  ${TestDataSetWorkspaceDir}/${FolderArray[i]}derivatives/ExploreASL/lock/*/*/*/*.status 
-	done
 
 	# Run all test
 	for (( i=0; i<${lengthDir}; i++ ));
