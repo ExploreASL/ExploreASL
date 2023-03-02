@@ -111,13 +111,30 @@ end
     
 % Check for flavor list
 if ~isfield(testConfig,'flavorList')
-    List = {};
+    testConfig.directoryList = xASL_adm_GetFileList(testConfig.pathFlavorDatabase, [], false, [], true);
+
+    % Generate a list of flavors that should be tested from flavors.json
+    flavorList = {};
     for iFlavor=1:length(flavors.data)
         if flavors.data(iFlavor).bTesting
-            List{end+1,1} = flavors.data(iFlavor).name;
+            flavorList{end+1,1} = flavors.data(iFlavor).name;
         end
     end
-    testConfig.flavorList = List;
+    testConfig.flavorList = flavorList;
+
+    % Check if fields are missing in directory
+    testConfig.missingFields = setdiff(testConfig.flavorList, testConfig.directoryList);
+    if ~isempty(testConfig.missingFields)
+        warning(['Flavors specified in flavors.json are missing in directory'])
+        display(testConfig.missingFields);
+    end
+
+    % Notify of ignored flavors 
+    testConfig.ignoredFields = setdiff(testConfig.directoryList, testConfig.flavorList);
+    if ~isempty(testConfig.ignoredFields)
+        fprintf('The following flavors will be ignored as specified in flavor.json');
+        display(testConfig.ignoredFields);
+    end
 end    
 
 % Logging table
