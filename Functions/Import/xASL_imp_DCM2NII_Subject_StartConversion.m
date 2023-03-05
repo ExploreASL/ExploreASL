@@ -1,4 +1,4 @@
-function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors)
+function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, scanFields)
 %xASL_imp_DCM2NII_Subject_StartConversion Start of DCM2NII subject conversion.
 %
 % FORMAT: [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors)
@@ -30,7 +30,7 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
     first_match = [];
     if bSkipThisOne
         summary_line = sprintf(',"skipped",,,,,,,,');
-        globalCounts.skipped_scans(iSubject, iVisit, iSession, iScan) = 1;
+        globalCounts.skipped_scans(scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan) = 1;
     else
         nii_files = {};
         xASL_adm_CreateDir(destdir);

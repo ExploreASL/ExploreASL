@@ -169,7 +169,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
     % Conversion
     [thisSubject.globalCounts, x, ~, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = ...
         xASL_imp_DCM2NII_Subject_StartConversion(...
-        thisSubject.globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors);
+        thisSubject.globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, scanFields);
 
 
     %% 4.7 Store JSON files
