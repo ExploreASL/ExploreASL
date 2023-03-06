@@ -10,7 +10,7 @@ nameTPM{3} = 'infant-neo';
 pathMaps = fullfile(pathExploreASL,'External','SPMmodified','MapsAdded');
 pathSPM = fullfile(pathExploreASL,'External','SPMmodified');
 pathTemplates = fullfile(pathExploreASL,'Maps','Templates');
-pathAtlases = fullfile(pathExploreASL,'External','AtlasesNonCommercial');
+pathAtlases = fullfile(pathExploreASL,'External','Atlases');
 
 %% Prepare a 6-component template that can be used for SPM12 segmentation
 % TPM 1GM,2WM,3CSF,4cavity,5skull,6air

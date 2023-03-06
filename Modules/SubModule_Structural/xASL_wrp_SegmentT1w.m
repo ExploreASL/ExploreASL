@@ -582,7 +582,7 @@ matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp
 matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
 
 if x.modules.structural.bHammersCAT12
-    matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {fullfile(x.opts.MyPath, 'External', 'AtlasesNonCommercial', 'HammersCAT12.nii')};
+    matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {fullfile(x.opts.MyPath, 'External', 'Atlases', 'HammersCAT12.nii')};
 else
     matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
 end
