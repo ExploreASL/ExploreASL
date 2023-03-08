@@ -92,9 +92,9 @@ function [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
     % args.bAutomaticallyDetectFSL=1;
     
     if bUseFabber
-        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl -@ ' xASL_adm_UnixPath(pathBasilOptions, ispc)], x);
+        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl --optfile ' xASL_adm_UnixPath(pathBasilOptions, ispc)], x);
     else
-        [~, resultFSL] = xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput, ispc) ' -@ ' xASL_adm_UnixPath(pathBasilOptions, ispc) ' -o ' xASL_adm_UnixPath(dirBasilOutput, ispc) ' ' BasilOptions], x);
+        [~, resultFSL] = xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathBasilInput, ispc) ' --optfile ' xASL_adm_UnixPath(pathBasilOptions, ispc) ' -o ' xASL_adm_UnixPath(dirBasilOutput, ispc) ' ' BasilOptions], x);
     end
     
     % Check if FSL failed
@@ -189,7 +189,6 @@ FIDoptionFile = fopen(pathBasilOptions, 'w+');
 BasilOptions = '';
 
 fprintf(FIDoptionFile, '# Basil options written by ExploreASL\n');
-fprintf(FIDoptionFile, '--iaf=diff\n'); % as input is PWI
 
 %% 2. Basic tissue parameters
 fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
@@ -357,24 +356,24 @@ if isfield(x,'BasilSpatial') && x.Q.BasilSpatial
 end
 
 if isfield(x.Q,'BasilInferT1') && x.Q.BasilInferT1
-	fprintf(FIDoptionFile, '--infert1\n');
 	fprintf('BASIL: Instructing BASIL to infer variable T1 values\n');
+    BasilOptions = [BasilOptions ' --infert1'];
 end
 
 if isfield(x.Q,'BasilInferATT') && x.Q.BasilInferATT
-	fprintf(FIDoptionFile, '--inferart\n');
 	fprintf('BASIL: Infer arterial component');
 	fprintf('BASIL: Variable arterial component arrival time');
+    BasilOptions = [BasilOptions ' --inferart'];
 end
 
 if isfield(x.Q,'BasilExch')
-	fprintf('BASIL: Using exchange model: %s\n', x.Q.BasilExch);
-	fprintf(FIDoptionFile, '--exch=%s\n', x.Q.BasilExch);
+	fprintf('BASIL: Using exchange model: well-mixed as default%s\n', x.Q.BasilExch);
+    BasilOptions = [BasilOptions ' --exch=mix'];
 end
 
 if isfield(x.Q,'BasilDisp')
-	fprintf('BASIL: Using dispersion model: %s\n', x.Q.BasilDisp);
-	fprintf(FIDoptionFile, '--disp=%s\n', x.Q.BasilDisp);
+	fprintf('BASIL: Using dispersion model: Gamma as default %s\n', x.Q.BasilDisp);
+    BasilOptions = [BasilOptions ' --disp=gamma'];
 end
 
 if isfield(x.Q,'BasilDebug') && x.Q.BasilDebug
@@ -412,6 +411,7 @@ fprintf(FIDoptionFile, '--model=asl_multite\n');
 fprintf(FIDoptionFile, '--infertexch\n');
 fprintf(FIDoptionFile, '--save-var\n');
 fprintf(FIDoptionFile, '--save-residuals\n');
+fprintf(FIDoptionFile, '--allow-bad-voxels\n');
 fprintf(FIDoptionFile, '--save-model-fit\n');
 fprintf(FIDoptionFile, '--noise=white\n');
 
