@@ -42,7 +42,7 @@ x.D.tempOutputDir = fullfile(x.D.derivatives, 'tempSourceUnzip');
 
 xASL_delete(x.D.tempOutputDir, true);
 %% Unpacking
-unpackedFiles = xASL_adm_UnzipRecursive(x.D.sourcedata, x.D.tempOutputDir, bRecurse, 0);
+unpackedFiles = xASL_adm_UnzipRecursive(x.D.sourcedata, x.D.tempOutputDir, bRecurse, false);
 
 if isempty(unpackedFiles)
     warning('No files were unpacked')
@@ -52,16 +52,16 @@ end
 
 
 % Main function that does the unzipping. 
-function unpackedFiles = xASL_adm_UnzipRecursive(dirIn, dirOut, bRecurse, bRemove)
+function unpackedFiles = xASL_adm_UnzipRecursive(dirIn, dirOut, bRecurse, bRemoveSource)
 
     xASL_adm_CreateDir(dirOut);
-    unpackedFiles = xASL_sub_Unzip(dirIn, dirOut, 1, bRemove);
+    unpackedFiles = xASL_sub_Unzip(dirIn, dirOut, 1, bRemoveSource);
 
     if ~bRecurse
         return
     end
 
-    directoryList = xASL_adm_GetFileList(dirOut,[],[],[],true);
+    directoryList = xASL_adm_GetFileList(dirOut, [], [], [], true);
 
     for iDir=1:length(directoryList)
         filePath = directoryList{iDir};
@@ -71,7 +71,7 @@ function unpackedFiles = xASL_adm_UnzipRecursive(dirIn, dirOut, bRecurse, bRemov
 end
 
 
-function unpackedFiles = xASL_sub_Unzip(srcDir, destDir, bOverwrite, bRemove)
+function unpackedFiles = xASL_sub_Unzip(srcDir, destDir, bOverwrite, bRemoveSource)
     if nargin<2 
         warning('not enough input variables')
     end
@@ -80,15 +80,15 @@ function unpackedFiles = xASL_sub_Unzip(srcDir, destDir, bOverwrite, bRemove)
         bOverwrite = false;
     end
 
-    if nargin<4 || isempty(bRemove)
-        bRemove = false;
+    if nargin<4 || isempty(bRemoveSource)
+        bRemoveSource = false;
     end
 
     % Search for all files
     unpackedFiles = [];
 
     % Looks for case insensitive .zip or .gz files excluding .nii.gz (and in theory .nii.zip). 
-    fileList = xASL_adm_GetFileList(srcDir,'(?i).+(?<!\.nii)(\.zip|\.gz)$',[],[],false);
+    fileList = xASL_adm_GetFileList(srcDir, '(?i).+(?<!\.nii)(\.zip|\.gz)$', [], [], false);
 
     for iFile=1:length(fileList)
         [ ~, name, ext ] = fileparts(fileList{iFile});
@@ -100,7 +100,7 @@ function unpackedFiles = xASL_sub_Unzip(srcDir, destDir, bOverwrite, bRemove)
             if bOverwrite || ~exist(destpath,'file') 
                 X = gunzip(srcpath, destDir);
             end
-            if bRemove
+            if bRemoveSource
                 xASL_delete(srcpath);
             end
         elseif strcmpi(ext,'.zip')
@@ -108,7 +108,7 @@ function unpackedFiles = xASL_sub_Unzip(srcDir, destDir, bOverwrite, bRemove)
             if bOverwrite || ~exist(destpath,'file')
                 X = unzip(srcpath, destDir);
             end
-            if bRemove
+            if bRemoveSource
                 xASL_delete(srcpath);
             end
         end
