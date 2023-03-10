@@ -86,7 +86,9 @@ function unpackedFiles = xASL_sub_Unzip(srcDir, destDir, bOverwrite, bRemove)
 
     % Search for all files
     unpackedFiles = [];
-    fileList = xASL_adm_GetFileList(srcDir,[],[],[],false);
+
+    % Looks for case insensitive .zip or .gz files excluding .nii.gz (and in theory .nii.zip). 
+    fileList = xASL_adm_GetFileList(srcDir,'(?i).+(?<!\.nii)(\.zip|\.gz)$',[],[],false);
 
     for iFile=1:length(fileList)
         [ ~, name, ext ] = fileparts(fileList{iFile});
@@ -94,16 +96,12 @@ function unpackedFiles = xASL_sub_Unzip(srcDir, destDir, bOverwrite, bRemove)
         X = {};
 
         if strcmpi(ext,'.gz')
-            % Don't unpack .nii.gz archives
-            [~, ~, ext2] = fileparts(srcpath(1:end-3));
-            if ~strcmpi(ext2,'.nii')
-                destpath = fullfile(destDir, name );           
-                if bOverwrite || ~exist(destpath,'file') 
-                    X = gunzip(srcpath, destDir);
-                end
-                if bRemove
-                    xASL_delete(srcpath);
-                end
+            destpath = fullfile(destDir, name );           
+            if bOverwrite || ~exist(destpath,'file') 
+                X = gunzip(srcpath, destDir);
+            end
+            if bRemove
+                xASL_delete(srcpath);
             end
         elseif strcmpi(ext,'.zip')
             destpath = fullfile(destDir, name );
@@ -112,7 +110,6 @@ function unpackedFiles = xASL_sub_Unzip(srcDir, destDir, bOverwrite, bRemove)
             end
             if bRemove
                 xASL_delete(srcpath);
-            
             end
         end
         if ~isempty(X)
