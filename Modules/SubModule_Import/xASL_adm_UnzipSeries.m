@@ -30,10 +30,6 @@ if nargin > 2
 end
 
 %% Check x fields
-if ~isfield(x.D, 'ROOT')
-    warning('x.D.ROOT parameter missing');
-end
-
 if ~isfield(x.D, 'sourcedata')
     warning('x.D.sourcedata missing, skipping enpacking');
     return;
@@ -57,9 +53,6 @@ end
 
 % Main function that does the unzipping. 
 function unpackedFiles = xASL_adm_UnzipRecursive(dirIn, dirOut, bRecurse, bRemove)
-
-    fprintf(dirIn);
-    fprintf('\n');
 
     xASL_adm_CreateDir(dirOut);
     unpackedFiles = xASL_sub_Unzip(dirIn, dirOut, 1, bRemove);
