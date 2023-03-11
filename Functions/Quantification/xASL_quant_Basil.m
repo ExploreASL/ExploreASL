@@ -252,7 +252,7 @@ switch lower(x.Q.LabelingType)
 		% For Time-encoded, we skip the first volume per block
 		if x.modules.asl.bTimeEncoded
 			[PLDs, index] = unique(PLDs, 'stable');
-			LabDurs = x.Q.LabelingDuration(index)';
+			LabDurs = LabDurs(index)';
 
 			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
 			index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
@@ -447,7 +447,7 @@ PLDs = x.Q.Initial_PLD/1000;
 % For Time-encoded, we skip the first volume per block
 if x.modules.asl.bTimeEncoded
 	[PLDs, index] = unique(PLDs, 'stable');
-	LabDurs = x.Q.LabelingDuration(index)';
+	LabDurs = LabDurs(index)';
 
 	numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
 	index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
