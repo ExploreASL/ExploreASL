@@ -149,7 +149,7 @@ else
 		if  x.M0_usesASLtiming
 			% in this case, the M0 readout has the exact same timing as the ASL readout
 			% this is the case e.g. for Siemens 2D EPI
-			NetTR = x.Q.LabelingDuration+x.Q.Initial_PLD+SliceReadoutTime(SliceIM);
+			NetTR = max(x.Q.LabelingDuration) + max(x.Q.Initial_PLD) + SliceReadoutTime(SliceIM);
 
 			fprintf('%s\n','2D sliceWise M0 readout assumed, same timing as ASL slices readout used');
 		elseif ~x.M0_usesASLtiming
