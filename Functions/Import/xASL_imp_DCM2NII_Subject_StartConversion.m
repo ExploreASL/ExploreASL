@@ -1,7 +1,7 @@
 function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, scanFields)
 %xASL_imp_DCM2NII_Subject_StartConversion Start of DCM2NII subject conversion.
 %
-% FORMAT: [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors)
+% FORMAT: [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, scanFields)
 %
 % INPUT:
 %   globalCounts           - Converted, skipped & missing scans (REQUIRED, STRUCT)
@@ -13,6 +13,7 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
 %   scanpath               - Scan path (CHAR ARRAY, PATH, REQUIRED)
 %   scan_name              - Scan name (CHAR ARRAY, REQUIRED)
 %   dcm2niiCatchedErrors   - DCM2NII catched errors (STRUCT, REQUIRED)
+%   scanFields             - struct containing iSubject, iVisit, iSession, iScan
 %
 % OUTPUT:
 %   Almost the same as input + nii_files & first_match
