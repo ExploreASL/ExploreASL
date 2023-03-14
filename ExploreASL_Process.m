@@ -146,7 +146,15 @@ function [x] = ExploreASL_Process(x)
     
     % -----------------------------------------------------------------------------
     
+    %%      Zip derivatives
+    % xASL_module_Population also zips all, so in that case the zipping
+    % here would be skipped
+
+    % Input check
+    if x.opts.nWorkers>1 % don't run population module when ExploreASL is parallelized
+        fprintf('%s\n', 'Not zipping NIfTIs because running ExploreASL in parallel mode');
+    else
+        xASL_adm_GzipAllFiles(x.D.ROOT, [], [], fullfile(x.opts.MyPath, 'External'));
+    end
+
 end
-
-
-
