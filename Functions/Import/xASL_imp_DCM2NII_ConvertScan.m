@@ -5,10 +5,18 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
-%   x.modules.import.imPar - Structure with import parameters (REQUIRED, STRUCT)
+%   matches                - matched files with tokens
+%   thisSubject            - current iteration subjectID
+%   thisVisit              - current iteration visit
+%   thisRun                - current iteration run
+%   dcm2niiCatchedErrors   - DCM2NII catched errors (STRUCT, REQUIRED)
+%   scanFields             - struct containing iSubject, iVisit, iSession, iScan
+%
+%   x.modules.import.imPar - Structure with import parameters (STRUCT, REQUIRED)
 %
 % OUTPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
+%   PrintDICOMFields       - (REQUIRED, STRUCT)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run DCM2NII for one individual scan.
