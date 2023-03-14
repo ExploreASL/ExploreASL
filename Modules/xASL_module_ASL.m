@@ -262,7 +262,9 @@ end
 % Run this when the data hasn't been touched yet
 % The first three states are here, because the first two are run only conditionally
 
-% NOTE THAT THIS PART IS BEING PHASED OUT, AND NOW PROCESSED IN `xASL_bids_parseM0`
+% NOTE THAT THIS PART IS BEING PHASED OUT, AND NOW PROCESSED IN
+% `xASL_bids_parseM0` (BIDS->Legacy conversion). We keep this here only for
+% backward compatibility, for data imported a long time ago
 if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mutex.HasState(StateName{3})
 	% Split the M0 and dummy scans from the ASL time-series
 	xASL_io_SplitASL(x.P.Path_ASL4D, x.modules.asl.M0PositionInASL4D, x.modules.asl.DummyScanPositionInASL4D);
