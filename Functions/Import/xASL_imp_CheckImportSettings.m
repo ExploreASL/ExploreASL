@@ -49,7 +49,25 @@ function [x] = xASL_imp_CheckImportSettings(x)
         fprintf('If you want to overwrite, first remove the full subject folder...');
     end
 
+
+
+
+
+    
+    %% Manage .nii vs .nii.gz extensions
+    lastHierarchy = x.modules.import.imPar.folderHierarchy{end};
+    % Remove $ first
+    if strcmp(lastHierarchy(end), '$')
+        lastHierarchy = lastHierarchy(1:end-1);
+    end
+    % Fix .nii vs .nii.gz
+    if strcmp(lastHierarchy(end-4:end), '\.nii')
+        lastHierarchy = [lastHierarchy(1:end-5) '(\.nii|\.nii\.gz)'];
+    elseif strcmp(lastHierarchy(end-8:end), '\.nii\.gz')
+        lastHierarchy = [lastHierarchy(1:end-9) '(\.nii|\.nii\.gz)'];
+    end
+    % Return $
+    x.modules.import.imPar.folderHierarchy{end} = [lastHierarchy '$'];
+
+
 end
-
-
-
