@@ -41,7 +41,8 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
         
         % Create directory if it does not exist already
         sessionPerfusionDirectory = fullfile(x.modules.import.imPar.BidsRoot,['sub-' bidsLabel.subject], sessionLabel,'perf');
-        xASL_adm_CreateDir(sessionPerfusionDirectory);
+        % xASL_adm_CreateDir(sessionPerfusionDirectory);
+        % This folder is created before copying the respective files
         
         inSessionPath = fullfile(x.modules.import.imPar.TempRoot, nameSubjectSession, listRuns{iRun});
         outSessionPath = fullfile(x.modules.import.imPar.BidsRoot, ['sub-' bidsLabel.subject], sessionLabel);
@@ -53,7 +54,8 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
         sessionLabel = '';
 
         % Only one session - no session labeling
-		xASL_adm_CreateDir(fullfile(x.modules.import.imPar.BidsRoot, ['sub-' bidsLabel.subject], bidsPar.stringPerfusion));
+		% xASL_adm_CreateDir(fullfile(x.modules.import.imPar.BidsRoot, ['sub-' bidsLabel.subject], bidsPar.stringPerfusion));
+        % This folder is created before copying the respective files
 
 		inSessionPath = fullfile(x.modules.import.imPar.TempRoot, nameSubjectSession, listRuns{iRun});
         outSessionPath = fullfile(x.modules.import.imPar.BidsRoot, ['sub-' bidsLabel.subject]);
