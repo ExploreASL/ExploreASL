@@ -13,7 +13,7 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
 %   scanpath               - Scan path (CHAR ARRAY, PATH, REQUIRED)
 %   scan_name              - Scan name (CHAR ARRAY, REQUIRED)
 %   dcm2niiCatchedErrors   - DCM2NII catched errors (STRUCT, REQUIRED)
-%   scanFields             - struct containing iSubject, iVisit, iSession, iScan
+%   scanFields             - struct containing iSubject, iVisit, iSession, iScan (REQUIRED)
 %
 % OUTPUT:
 %   Almost the same as input + nii_files & first_match
