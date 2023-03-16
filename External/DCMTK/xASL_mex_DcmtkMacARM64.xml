@@ -43,7 +43,7 @@
 		LINKEXPORT="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maca64/mexFunction.map&quot;" 
 		LINKEXPORTVER="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maca64/c_exportsmexfileversion.map&quot;" 
 		LINKEXPORTCPP="-Wl,-U,_mexCreateMexFunction -Wl,-U,_mexDestroyMexFunction -Wl,-U,_mexFunctionAdapter -Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maca64/cppMexFunction.map&quot;" 
-		LINKLIBS="-L&quot;$MATLABROOT/bin/maca64&quot; /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libdcmdata.a /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libofstd.a /opt/homebrew/Cellar/dcmtk/3.6.7/lib/liboflog.a -lm -lpthread -lmx -lmex -Bstatic -lmat -lstdc++ -L&quot;$MATLABROOT/extern/bin/$ARCH&quot;  -lMatlabDataArray -lMatlabEngine" 
+ 		LINKLIBS="-L&quot;$MATLABROOT/bin/maca64&quot; /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libdcmdata.a /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libofstd.a /opt/homebrew/Cellar/dcmtk/3.6.7/lib/liboflog.a /opt/homebrew/opt/libiconv/lib/libiconv.a -lm /opt/homebrew/opt/zlib/lib/libz.a /Users/hjmutsaerts/ExploreASL/libxml2/libxml2.a -lpthread -lmx -lmex -Bstatic -lmat -lstdc++ -L&quot;$MATLABROOT/extern/bin/$ARCH&quot;  -lMatlabDataArray -lMatlabEngine" 
 		LDOPTIMFLAGS="-O" 
 		LDDEBUGFLAGS="-g" 
 		OBJEXT=".o" 
