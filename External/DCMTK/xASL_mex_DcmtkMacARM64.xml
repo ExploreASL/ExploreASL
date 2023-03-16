@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config 
+	Name="Xcode Clang++" 
+	ShortName="Clang++" 
+	Manufacturer="Apple" 
+	Version="" 
+	Language="C++" 
+	Priority="A" 
+	Location="$XCODE_DIR">
+	<Details 
+		CompilerExecutable="$CXX" 
+		CompilerDefines="$DEFINES" 
+		CompilerFlags="$CXXFLAGS" 
+		OptimizationFlags="$CXXOPTIMFLAGS" 
+		DebugFlags="$CXXDEBUGFLAGS" 
+		IncludeFlags="$INCLUDE" 
+		LinkerExecutable="$LDXX" 
+		LinkerFlags="$LDFLAGS $LDTYPE" 
+		LinkerLibraries="$LINKLIBS" 
+		LinkerOptimizationFlags="$LDOPTIMFLAGS" 
+		LinkerDebugFlags="$LDDEBUGFLAGS" 
+		CompilerDefineFormatter="-D%s" 
+		LinkerLibrarySwitchFormatter="-l%s" 
+		LinkerPathFormatter="-L%s"/>
+	<vars 
+		CMDLINE100="$CXX -c $DEFINES $INCLUDE $CXXFLAGS $OPTIM $SRC -o $OBJ" 
+		CMDLINE200="$LDXX $LDFLAGS $LDTYPE $LINKOPTIM $LINKEXPORT $LINKEXPORTVER $LINKEXPORTCPP $OBJS $CXXLIBS $LINKLIBS -o $EXE" 
+		CC="$XCRUN_DIR/xcrun -sdk macosx$SDKVER clang" 
+		CXX="$XCRUN_DIR/xcrun -sdk macosx$SDKVER clang++" 
+		DEFINES="$MATLABMEX" 
+		MATLABMEX="-DMATLAB_MEX_FILE " 
+		MACOSX_DEPLOYMENT_TARGET="13.1" 
+		CFLAGS="-fno-common -arch arm64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -fexceptions -v -isysroot $ISYSROOT" 
+		CXXFLAGS="$CFLAGS -fobjc-arc -std=c++11 -stdlib=libc++ " 
+		INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;/opt/homebrew/Cellar/dcmtk/3.6.7/include/&quot; -I&quot;$MATLABROOT/simulink/include&quot;" 
+		CXXOPTIMFLAGS="-O2 -fwrapv -DNDEBUG" 
+		CXXDEBUGFLAGS="-g" 
+		LD="$CC" 
+		LDXX="$CXX" 
+		LDFLAGS="-static -Wl,-twolevel_namespace -undefined error -arch arm64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -Wl,-syslibroot,$ISYSROOT -framework Cocoa $LDBUNDLE " 
+		LDTYPE="-shared"
+        LDBUNDLE="" 
+		LINKEXPORT="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maca64/mexFunction.map&quot;" 
+		LINKEXPORTVER="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maca64/c_exportsmexfileversion.map&quot;" 
+		LINKEXPORTCPP="-Wl,-U,_mexCreateMexFunction -Wl,-U,_mexDestroyMexFunction -Wl,-U,_mexFunctionAdapter -Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maca64/cppMexFunction.map&quot;" 
+		LINKLIBS="-L&quot;$MATLABROOT/bin/maca64&quot; /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libdcmdata.a /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libofstd.a /opt/homebrew/Cellar/dcmtk/3.6.7/lib/liboflog.a -lm -lpthread -lmx -lmex -Bstatic -lmat -lstdc++ -L&quot;$MATLABROOT/extern/bin/$ARCH&quot;  -lMatlabDataArray -lMatlabEngine" 
+		LDOPTIMFLAGS="-O" 
+		LDDEBUGFLAGS="-g" 
+		OBJEXT=".o" 
+		LDEXT=".mexmaca64" 
+		SETENV="CC=&quot;$CC&quot;
+			    CXX=&quot;$CXX&quot;
+				CFLAGS=&quot;$CFLAGS $DEFINES&quot;
+				CXXFLAGS=&quot;$CXXFLAGS $DEFINES&quot;
+				COPTIMFLAGS=&quot;$CXXOPTIMFLAGS&quot;
+				CXXOPTIMFLAGS=&quot;$CXXOPTIMFLAGS&quot;
+				CDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
+				CXXDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
+				LD=&quot;$LD&quot;
+				LDXX=&quot;$LDXX&quot;
+				LDFLAGS=&quot;$LDFLAGS $LDTYPE $LINKLIBS $LINKEXPORT&quot;
+				LDDEBUGFLAGS=&quot;$LDDEBUGFLAGS&quot;" 
+		DEVELOPER_DIR_CHECK="" 
+		XCODE_DIR="/Applications/Xcode.app/Contents/Developer" 
+		XCRUN_DIR="/usr/bin" 
+		XCODE_AGREED_VERSION="9.4.1" 
+		ISYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk" 
+		SDKVER="13.1" 
+		CLANG_VERSION="9.1.0"/>
+	<client>
+		<engine 
+			LINKLIBS="$LINKLIBS -leng -L&quot;$MATLABROOT/extern/bin/$ARCH&quot; -L&quot;/opt/homebrew/Cellar/dcmtk/3.6.7/lib/&quot; /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libdcmdata.a -lMatlabDataArray -lMatlabEngine" 
+			LDBUNDLE="" 
+			LINKEXPORT="" 
+			LINKEXPORTVER="" 
+			LINKEXPORTCPP="" 
+			LDEXT=""
+            LDTYPE=""/>
+		<mbuild 
+			CMDLINE150="$MATLABROOT/bin/maca64/macbundle $EXENAME &quot;$EXEDIR&quot;" 
+			CMDLINE200="$LDXX $LDFLAGS $OBJS $LINKOPTIM $LINKEXPORT $CXXLIBS $LINKLIBS -o &quot;$EXEDIR$EXENAME.app/Contents/MacOS/$EXENAME&quot;" 
+			MACOSX_DEPLOYMENT_TARGET="13.1" 
+			CXXFLAGS="-fexceptions -fno-common -arch arm64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -isysroot $ISYSROOT " 
+			DEFINES="-DUNIX -DX13 -DMACA64 -UMX_COMPAT_SC" 
+			LDFLAGS="-arch arm64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -Wl,-syslibroot,$ISYSROOT $LDTYPE $LINKEXPORT -framework CoreFoundation -bind_at_load " 
+			LINKLIBS="-L&quot;$MATLABROOT/runtime/maca64&quot; -L&quot;$MATLABROOT/extern/bin/maca64&quot; -lMatlabDataArray -lMatlabCppSharedLib -lmwmclmcrrt" 
+			INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/extern/include/cpp&quot;" 
+			MATLABMEX="" 
+			LDEXT="" 
+			LINKEXPORT="" 
+			LINKEXPORTVER="" 
+			LINKEXPORTCPP="" 
+			LDTYPE=""/>
+	</client>
+	<locationFinder>
+		<!--Check for faulty DEVELOPER_DIR environment variable -->
+		<DEVELOPER_DIR_CHECK>
+			<or>
+				<not>
+					<envVarExists name="DEVELOPER_DIR"/>
+				</not>
+				<dirExists name="$$" diagnostic="The environment variable DEVELOPER_DIR indicates a folder that does not exist. Please correct or delete this variable before using MEX."/>
+			</or>
+		</DEVELOPER_DIR_CHECK>
+		<!-- User needs to run "!sudo xcode-select -switch /Applications/Xcode.app/"
+         to configure xcrun.  This creates the file /usr/share/xcode-select/xcode_dir_path -->
+		<XCODE_DIR>
+			<and diagnostic="Xcode appears to be installed, but it has not been configured.  Run &quot; xcode-select -switch /Applications/Xcode.app &quot;.  You must be an administrator of this computer to complete this action.">
+				<cmdReturns name="xcode-select -print-path"/>
+				<dirExists name="$$"/>
+			</and>
+		</XCODE_DIR>
+		<XCRUN_DIR>
+			<and>
+				<cmdReturns name="which xcrun"/>
+				<dirExists name="$$"/>
+			</and>
+		</XCRUN_DIR>
+		<!-- User needs to agree to license of the version (or higher) that we support -->
+		<XCODE_AGREED_VERSION>
+			<and diagnostic="Xcode is installed, but its license has not been accepted. Run Xcode and accept its license agreement.">
+				<or>
+					<cmdReturns name="defaults read com.apple.dt.Xcode IDEXcodeVersionForAgreedToGMLicense"/>
+					<cmdReturns name="defaults read /Library/Preferences/com.apple.dt.Xcode IDEXcodeVersionForAgreedToGMLicense"/>
+				</or>
+				<cmdReturns name="
+agreed=$$ 
+ if echo $agreed | grep -E &apos;[\.\&quot;]&apos; &gt;/dev/null; then 
+ lhs=`expr &quot;$agreed&quot; : &apos;\([0-9]*\)[\.].*&apos;` 
+  rhs=`expr &quot;$agreed&quot; : &apos;[0-9]*[\.]\(.*\)$&apos;` 
+ if echo $rhs | grep -E &apos;[\.&quot;]&apos; &gt;/dev/null; then 
+ rhs=`expr &quot;$rhs&quot; : &apos;\([0-9]*\)[\.].*&apos;` 
+ fi 
+ if [ $lhs -gt 4 ] || ( [ $lhs -eq 4 ] &amp;&amp; [ $rhs -ge 3 ] ); then 
+ echo $agreed 
+ else 
+ exit 1
+ fi 
+ fi"/>
+			</and>
+		</XCODE_AGREED_VERSION>
+		<ISYSROOT>
+			<cmdReturns name="xcrun -sdk macosx --show-sdk-path"/>
+		</ISYSROOT>
+		<SDKVER>
+			<cmdReturns name="xcrun -sdk macosx --show-sdk-version"/>
+		</SDKVER>
+		<CLANG_VERSION>
+			<cmdReturns name="clang --version | grep -Eo &apos;[0-9]+\.[0-9]+\.[0-9]&apos;|head -1"/>
+		</CLANG_VERSION>
+	</locationFinder>
+	<env INCLUDE="$XCODE_DIR/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1;$XCODE_DIR/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/$CLANG_VERSION/include;$XCODE_DIR/Toolchains/XcodeDefault.xctoolchain/usr/include;$ISYSROOT/usr/include;$ISYSROOT/System/Library/Frameworks"/>
+	<MATLAB release="R2018b"/>
+</config>
