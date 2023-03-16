@@ -334,7 +334,7 @@ function [bAborted, x] = runIteration(db)
         if ~AlreadyProcessed
             % Print the ExploreASL separator line
             fprintf('\n[\b==============================================================================================]\b\n');
-            [StartIndex, EndIndex] = regexp(diaryFileEx, '(?i)\/ASL_\d*\/'); %to find the name of the session inside diaryFileEx: ASL_with any digit after
+            [StartIndex, EndIndex] = regexp(diaryFileEx, '(?i)\/ASL_\d+\/'); %to find the name of the session inside diaryFileEx: ASL_with any digit after
              if ~isempty(StartIndex) %writes the session only for ASL module
                 session = diaryFileEx(StartIndex(end)+1:EndIndex(end)-1); %isolate "ASL_1 or ASL_2 etc
                 fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Session: ' session ', Module: ' x.settings.MUTEXID ',  ' datestr(now) ' ===']);

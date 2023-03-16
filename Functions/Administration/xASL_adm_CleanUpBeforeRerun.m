@@ -74,7 +74,7 @@ try
     if bAllSubjects
         warning('Cleaning data from all subjects!');
         SubjectID = '.*';
-        SessionID = {'ASL_\d*'};
+        SessionID = {'ASL_\d+'};
         SubjectDir = AnalysisDir;
         SessionDir = AnalysisDir;
         nSessions = 1;
