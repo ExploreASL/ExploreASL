@@ -24,12 +24,6 @@ function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSession
 % Copyright (C) 2015-2021 ExploreASL
 
 %% 1. Administration
-if ~isfield(x, 'SESSIONS')
-    SESSIONS = 'ASL_1';
-else
-    SESSIONS = x.SESSIONS;
-end
-
 currentSubjectRegExp = x.dataset.subjectRegexp;
 if strcmp(currentSubjectRegExp(1), '^')
     currentSubjectRegExp = currentSubjectRegExp(2:end);
@@ -37,8 +31,10 @@ end
 if strcmp(currentSubjectRegExp(end), '$')
     currentSubjectRegExp = currentSubjectRegExp(1:end-1);
 end
-% 2. Look for processed files from which to determine the amount of sessions present
-SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '_' currentSubjectRegExp '_ASL_\d+(\.nii|\.nii\.gz)$'], 'FPList', [0 Inf]);
+
+%% 2. Look for processed files from which to determine the amount of sessions present
+SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '_' currentSubjectRegExp '_ASL_\d+\.nii$'], 'FPList', [0 Inf]);
+
 
 %% 3. Obtain nSessions
 if isempty(SessionList) % If no files found, search for subject files instead of session files
@@ -54,13 +50,13 @@ else % If files found, continue with defining sessions from SessionList
         NewList{iSession,1} = SessionList{iSession}(1,IndexStart:IndexEnd); % create a cell array containings characters of all session numbers present
     end
     
-    UniqueSessions = unique(NewList); % determine unique session numbers
+    SESSIONS = sort(unique(NewList)); % determine unique session numbers
     % 4. define nSessions as highest unique session number
-    nSessions = numel(UniqueSessions);
+    nSessions = numel(SESSIONS);
     bSessionsMissing = 0;
 
     for iSession = 1:nSessions
-        iSessionName = char(UniqueSessions(iSession));
+        iSessionName = char(SESSIONS(iSession));
         iSessionNumber = iSessionName(5:end); % Session number
         CountSessionNumbers(iSession)= sum(~cellfun('isempty',strfind(NewList,iSessionNumber))); % Counts amount of individual session numbers
     end
@@ -72,11 +68,6 @@ else % If files found, continue with defining sessions from SessionList
     end
 end
 
-if numel(SESSIONS)<nSessions
-    for iSession=1:nSessions
-        SESSIONS{iSession} = ['ASL_' num2str(iSession)];
-    end
-end
 
 
 end
