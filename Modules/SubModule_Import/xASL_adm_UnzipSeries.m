@@ -1,4 +1,4 @@
-function [x] = xASL_adm_UnzipSeries(x, bRecurse)
+function [unpackedFiles] = xASL_adm_UnzipSeries(sourcedataDir, tempDerivativeDir, bRecurse)
 % Function to unzip the the series of a folder for further processing
 %
 % FORMAT: x = xASL_adm_UnzipSeries(x[,false, false])
@@ -21,28 +21,26 @@ function [x] = xASL_adm_UnzipSeries(x, bRecurse)
 % __________________________________
 % Copyright 2015-2023 ExploreASL
 
-if nargin < 2 || isempty(bRecurse)
+if nargin < 2 
+    error('Not enough input parameters');
+end
+
+if nargin < 3 || isempty(bRecurse)
 	bRecurse = true;
 end
 
-if nargin > 2
+if nargin > 3
 	error('Maximum number of parameters is 3.');
 end
 
-%% Check x fields
-if ~isfield(x.D, 'sourcedata')
-    warning('x.D.sourcedata missing, skipping enpacking');
-    return;
-elseif ~isfield(x.D, 'derivatives')
-    warning('x.D.derivatives missing, skipping unpacking');
-    return;
+if strcmpi(sourcedataDir, tempDerivativeDir)
+    error('Input and output directory cannot be the same!');
 end
 
-x.D.tempOutputDir = fullfile(x.D.derivatives, 'tempSourceUnzip');
+xASL_delete(tempDerivativeDir, true);
 
-xASL_delete(x.D.tempOutputDir, true);
 %% Unpacking
-unpackedFiles = xASL_adm_UnzipRecursive(x.D.sourcedata, x.D.tempOutputDir, bRecurse, false);
+unpackedFiles = xASL_adm_UnzipRecursive(sourcedataDir, tempDerivativeDir, bRecurse, false);
 
 if isempty(unpackedFiles)
     warning('No files were unpacked')
