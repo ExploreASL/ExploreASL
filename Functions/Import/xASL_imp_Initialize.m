@@ -51,11 +51,15 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     if ~isfield(imPar, 'BidsRoot') || isempty(imPar.BidsRoot)
         imPar.BidsRoot = fpath;
     end
+    if ~isfield(imPar, 'TempUnzip') || isempty(imPar.TempUnzip) 
+        imPar.TempUnzip = fpath;
+    end
 
     %% 3. Finalize the directories
     imPar.RawRoot = fullfile(imPar.RawRoot, imPar.studyID, 'sourcedata');
     imPar.DerivativesRoot = fullfile(imPar.TempRoot, imPar.studyID, 'derivatives');
-    imPar.TempRoot = fullfile(imPar.DerivativesRoot, 'ExploreASL', 'temp');
+    imPar.TempRoot = fullfile(imPar.DerivativesRoot, 'ExploreASL', 'tempRoot');
+    imPar.TempUnzip = fullfile(imPar.DerivativesRoot, 'ExploreASL', 'tempUnzip');
     imPar.LockRoot = fullfile(imPar.DerivativesRoot, 'ExploreASL', 'lock');
     imPar.BidsRoot = fullfile(imPar.BidsRoot, imPar.studyID, 'rawdata');
 

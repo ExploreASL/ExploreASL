@@ -96,6 +96,11 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
             % Get current run name
             x.modules.import.imPar.sessionNames{iSession} = thisRun.name;
             
+            % Run Local unzipping on zipped folders
+            if x.modules.import.imPar.zipped == true
+                xASL_adm_UnzipSeries(x.modules.imPar.RawRoot, x.modules.import.imPar.TempUnzip, 1);
+            end
+
             % Find empty sessions
             scanFields.emptySession = false;
             if sum(iSession==indexEmptySession)

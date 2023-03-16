@@ -36,7 +36,8 @@ function x = xASL_wrp_DCM2NII(x)
     
     %% 2. Create the temp directory for DCM2NII
     xASL_adm_CreateDir(x.modules.import.imPar.TempRoot);
-    
+    xASL_adm_CreateDir(x.modules.import.imPar.TempUnzip);
+
     % Initialization of an empty catched errors struct
     dcm2niiCatchedErrors = struct;
 
@@ -79,10 +80,11 @@ function xASL_imp_DCM2NII_CleanUp(x, dcm2niiCatchedErrors)
         SaveJSON = fullfile(x.modules.import.imPar.TempRoot, 'dcm2niiCatchedErrors.json');
         xASL_delete(SavePath);
         xASL_delete(SaveJSON);
+        xASL_delete(x.modules.import.imPar.TempUnzip);
         save(SavePath,'dcm2niiCatchedErrors');
         spm_jsonwrite(SaveJSON, dcm2niiCatchedErrors);
     end
-    
+
     fprintf('\n');
 
 
