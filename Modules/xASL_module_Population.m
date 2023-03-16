@@ -90,6 +90,11 @@ StateName{11} = '100_GZipAllFiles';
 
 x.S.TemplateNumberName = ['_n' xASL_num2str(x.dataset.nSubjects)];
 
+% Define sessions
+x.S.InputDataStr = x.S.DataTypes{1};
+[nSessions, bSessionsMissing, x.SESSIONS] = xASL_adm_GetPopulationSessions(x);
+
+
 %% ------------------------------------------------------------------------------------------------------------
 %% 1    Create template images
 if ~x.mutex.HasState(StateName{1})
