@@ -654,13 +654,17 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
         xASL_io_SaveNifti(NiftiPaths{indexSortedFile(1)}, pathOut, IM, [], 0);
         % Special treatment for Hadamard encoded files
         EchoTimes = cell(size(NiftiPaths,2),1);
+		bHadamardFME = false;
         for iFileCheck = 1:size(NiftiPaths,2)
             % Get JSON
             [jsonPathX, jsonNameX] = xASL_fileparts(NiftiPaths{iFileCheck});
             if exist(fullfile(jsonPathX, [jsonNameX '.json']),'file')
                 tmpCheckJSON = xASL_io_ReadJson(fullfile(jsonPathX, [jsonNameX '.json']));
                 % Check if FME Hadamard
-				bHadamardFME = xASL_imp_CheckIfFME(tmpCheckJSON, []);
+				% Check only once, once we find it for a single volume, then continue to assume it is FME for all volumes
+				if ~bHadamardFME
+					bHadamardFME = xASL_imp_CheckIfFME(tmpCheckJSON, []);
+				end
 				
 				% Check if vendor is Siemens and contains a multi-TE setup
 				bMultiTE = 0;
