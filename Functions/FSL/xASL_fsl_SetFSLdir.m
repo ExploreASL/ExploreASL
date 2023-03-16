@@ -50,6 +50,24 @@ if isfield(x,'FSLdir') && isfield(x,'RootFSLdir') && ~isempty(x.FSLdir) && ~isem
     FSLdir = x.FSLdir;
     RootWSLdir = x.RootFSLdir;
     return;
+elseif isfield(x, 'FSLdir') && ~isfield(x, 'RootFSLdir') && ~ispc
+
+    FSLdir = x.FSLdir;
+
+    if length(FSLdir)>7 && strcmp(FSLdir(end-6:end), fullfile('bin', 'fsl'))
+        FSLdir = fileparts(FSLdir);
+    end
+
+    if length(FSLdir)>17 && strcmp(FSLdir(end-16:end), fullfile('fsl', 'share', 'fsl', 'bin'))
+        FSLdir = FSLdir(1:end-14);
+        % some new FSL distributions also have a share/fsl/bin folder that might be
+        % defaulted to by the OS, which doesn't have the 'etc' subfolder so
+        % this would crash later on
+    end
+
+    RootWSLdir = FSLdir;
+
+    return
 end
 
 %% Detect OS
@@ -76,6 +94,14 @@ bSuccess = bSuccess==0;
 
 if bSuccess
     RootFSLdir{end+1} = fileparts(result2);
+
+    if length(RootFSLdir{end})>17 && strcmp(RootFSLdir{end}(end-16:end), fullfile('fsl', 'share', 'fsl', 'bin'))
+        RootFSLdir{end} = RootFSLdir{end}(1:end-14);
+        % some new FSL distributions also have a share/fsl/bin folder that might be
+        % defaulted to by the OS, which doesn't have the 'etc' subfolder so
+        % this would crash later on
+    end
+
 end
 
 if bAutomaticallyDetectFSL
