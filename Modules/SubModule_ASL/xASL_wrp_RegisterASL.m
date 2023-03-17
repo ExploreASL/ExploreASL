@@ -198,7 +198,7 @@ end
 xASL_delete(x.P.Path_mean_PWI_Clipped_sn_mat);
 xASL_delete(x.P.Path_mean_PWI_Clipped);
 xASL_delete(x.P.Path_mean_control);
-if strcmp(x.P.SessionID,'ASL_1') || x.dataset.nSessions==1
+if strcmp(x.P.SessionID,x.SESSIONS{1}) || x.dataset.nSessions==1
     xASL_delete(x.D.Path_PseudoTissue);
     xASL_delete(x.D.Bias_Native);
     xASL_delete(x.D.Vasc_Native);
@@ -293,7 +293,7 @@ end
 % If no T1 flow field exists, create an identity flowfield
 % So we can still process ASL images without the
 % structural module
-if ~xASL_exist(x.P.Path_y_ASL,'file') || strcmp(x.P.SessionID,'ASL_1') || x.dataset.nSessions==1
+if ~xASL_exist(x.P.Path_y_ASL,'file') || strcmp(x.P.SessionID, x.SESSIONS{1}) || x.dataset.nSessions==1
     xASL_im_CreateASLDeformationField(x, true);
 end
 

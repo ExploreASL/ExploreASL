@@ -1,4 +1,4 @@
-function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwrite, ResampleDir, SubRegExp)
+function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwrite, ResampleDir, SubRegExp, sessionFolder)
 %xASL_im_SplitImageLabels Extract individual label/regions from image(s)
 %
 % FORMAT: xASL_im_SplitImageLabels(ImagePaths, LabelTable[, OutputFolder, bOverwrite, ResampleDir, SubRegExp])
@@ -19,6 +19,9 @@ function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwri
 %   SubRegExp       - regular expression of subject name/ID inside the
 %                     filepath, used when resampling to standard space
 %                     e.g. x.dataset.subjectRegexp (OPTIONAL, DEFAULT = empty).
+%   sessionFolder   - name of the first session subfolder that contains the y_ASL flowfield, e.g., 'ASL_1',
+%                     'ASL_2', or 'ASL_n'. Within ExploreASL, use x.SESSIONS{1} 
+%                     (OPTIONAL, DEFAULT = 'ASL_1')
 %
 % OUTPUT: 
 %  variables        - n/a
@@ -46,6 +49,11 @@ function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwri
 % Copyright 2015-2020 ExploreASL
     
 
+if nargin<7 || isempty(sessionFolder)
+    warning('No session folder provided, hint: x.SESSIONS{1} within ExploreASL');
+    fprintf('%s\n', 'Defaulting to ASL_1');
+    sessionFolder = 'ASL_1';
+end
 if nargin<6 || isnumeric(SubRegExp)
     SubRegExp = [];
 end
@@ -150,7 +158,7 @@ for iImage=1:length(ImagePaths)
                 [~, FileType] = xASL_fileparts(FileName);
                 
                 PathOut = fullfile(ResampleDir, [FileType '_' SubjectID '.nii']);
-                Path_y_ASL = fullfile(FileName(1:EndIndex), 'ASL_1', 'y_ASL.nii');
+                Path_y_ASL = fullfile(FileName(1:EndIndex), sessionFolder, 'y_ASL.nii');
                 if ~xASL_exist(Path_y_ASL)
                     warning(['file didnt exist: ' Path_y_ASL]);
                 elseif ~xASL_exist(FileName)

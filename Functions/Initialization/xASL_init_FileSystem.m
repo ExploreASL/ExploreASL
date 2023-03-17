@@ -101,6 +101,7 @@ if isfield(x.P,'SubjectID')
     end
 
     if ~isfield(x.P,'SessionID')
+        fprintf('%s\n', 'No sessions found, defaulting to a single ASL_1 session');
         x.P.SessionID = 'ASL_1';
     end
 

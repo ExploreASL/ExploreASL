@@ -86,7 +86,7 @@ else
     x.dataset.subjectRegexp = strrep(x.dataset.subjectRegexp,'\\','\');
     % add the visit-postfix as option
     x.dataset.subjectRegexp = strrep(x.dataset.subjectRegexp,'$','');
-    x.dataset.subjectRegexp = [x.dataset.subjectRegexp '(|_\d*)$'];
+    x.dataset.subjectRegexp = [x.dataset.subjectRegexp '(|_\d+)$'];
     % Then load subjects
     x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(x.D.ROOT, x.dataset.subjectRegexp, 'List', [0 Inf], true)); % find dirs
 end
@@ -111,12 +111,13 @@ end
 
 if ~isfield(x,'SESSIONS')
     x.SESSIONS = '';
-    SessionPathList = xASL_adm_GetFileList(x.D.ROOT, '^(ASL|func)_\d*$', 'FPListRec', [0 Inf],1);
+    SessionPathList = xASL_adm_GetFileList(x.D.ROOT, '^(ASL|func)_\d+$', 'FPListRec', [0 Inf],1);
     for iSess=1:length(SessionPathList)
         [~, x.SESSIONS{end+1}]  = fileparts(SessionPathList{iSess});
     end
     x.SESSIONS = unique(x.SESSIONS);
-    if  isempty(x.SESSIONS)
+    if isempty(x.SESSIONS)
+        fprintf('%s\n', 'No sessions found, defaulting to a single ASL_1 session');
         x.SESSIONS{1} = 'ASL_1'; % default session
     end
 end
