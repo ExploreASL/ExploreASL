@@ -115,7 +115,7 @@ if exist(PathTSV, 'file')
         else
             fprintf('Missing session_id column in pre-existing participant.tsv, creating\n');
             
-            CellArrayOrig = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(CellArrayOrig, 1);
+            CellArrayOrig = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(CellArrayOrig, x.SESSIONS, 1);
 
         end
     end
@@ -203,7 +203,7 @@ CellArray(IsEmpty) = {'n/a'};
 
 %% -------------------------------------------------------------------------------------------
 %% 7) Sort rows on subjects
-CellArray(2:end,:) = sortrows(CellArray(2:end,:), 1, 2);
+CellArray(2:end,:) = sortrows(CellArray(2:end,:), [1 2]);
 
         
 
@@ -237,7 +237,7 @@ function [MatrixOut] = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(MatrixIn, 
 
 
     %% Admin
-    if nargin<2 || isempty(bHasHeader)
+    if nargin<3 || isempty(bHasHeader)
         bHasHeader = false;
     end
 
@@ -260,22 +260,10 @@ function [MatrixOut] = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(MatrixIn, 
         SessionRows = (SubjectNumbers-1)+iSession; % for each session, we create the respective rows
         
         % Now create the new matrix
-        MatrixOut(addrow+SessionRows, 1) = MatrixIn(:,1); % Repeat the subjects
-        MatrixOut(addrow+SessionRows, 2) = SESSIONS(iSession); % Repeat the sessions in a new session column
-        MatrixOut(addrow+SessionRows, 3:numberColumns+2) = MatrixIn(:,3:numberColumns); % Repeat the data
+        MatrixOut(addRow+SessionRows, 1) = MatrixIn(:,1); % Repeat the subjects
+        MatrixOut(addRow+SessionRows, 2) = SESSIONS(iSession); % Repeat the sessions in a new session column
+        MatrixOut(addRow+SessionRows, 3:numberColumns+2) = MatrixIn(:,2:numberColumns); % Repeat the data
     end
 
 
-
-
-
 end
-
-
-
-
-
-
-
-
-
