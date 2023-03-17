@@ -45,7 +45,7 @@ function xASL_qc_WADQCDC(x, iSubject, ScanType)
 
 %% Loop over Scantypes
 ScanTypes = {'Structural', 'ASL', 'func', 'dwi'};
-SubPath = {x.SUBJECTS{iSubject}, fullfile(x.SUBJECTS{iSubject}, 'ASL_1'), fullfile(x.SUBJECTS{iSubject}, 'func'), fullfile(x.SUBJECTS{iSubject}, 'dwi')};
+SubPath = {x.SUBJECTS{iSubject}, fullfile(x.SUBJECTS{iSubject}, x.SESSIONS{1}), fullfile(x.SUBJECTS{iSubject}, 'func'), fullfile(x.SUBJECTS{iSubject}, 'dwi')};
 NIfTIname = {'T1', 'ASL4D', 'func', 'dwi'};
 
 if nargin>2 && ~isempty(ScanType)

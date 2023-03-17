@@ -49,7 +49,7 @@ end
 %% Define Scantypes
 ScanTypes = {'Structural', 'ASL', 'func', 'dwi'};
 SubPath = {x.SUBJECTS{iSubject}, fullfile(x.SUBJECTS{iSubject},...
-    'ASL_1'), fullfile(x.SUBJECTS{iSubject}, 'func'), fullfile(x.SUBJECTS{iSubject}, 'dwi')};
+    x.SESSIONS{1}), fullfile(x.SUBJECTS{iSubject}, 'func'), fullfile(x.SUBJECTS{iSubject}, 'dwi')};
 NIfTIname = {'T1', 'ASL4D', 'func', 'dwi'};
 
 %% Define scanType to process
