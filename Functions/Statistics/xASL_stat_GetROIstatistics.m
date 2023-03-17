@@ -39,6 +39,11 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %              in a [1.5 1.5 1.5] mm MNI space,
 %              with several ASL-specific adaptions:
 %
+%              0. Administration
+%              0.a Manage masking
+%              0.b Obtain ASL sequence
+%              0.c Define number of sessions to use
+%              0.d Determine whether group mask exists
 %              1. Skip ROI masks that are smaller than 1 mL
 %                 as this would be too noisy for ASL (ignored when x.S.IsASL==false)
 %              2. Expand each ROI mask such that it has sufficient WM
@@ -58,6 +63,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %                    Here we mask out susceptibility artifacts (including
 %                    outside FoV) for all ASL computations, and also mask
 %                    out vascular artifacts for computing the mean.
+%              5. Housekeeping
 %
 %              While other artifacts/FoV can be masked out on population
 %              level (i.e. >0.95 subjects need to have a valid signal in a
@@ -78,7 +84,12 @@ function [x] = xASL_stat_GetROIstatistics(x)
 
 
 %% ------------------------------------------------------------------------------------------------------------
-%% Administration
+%% 0 Administration
+
+% Below, at 0.c xASL_adm_GetPopulationSessions redefines x.SESSIONS based
+% on the specific x.S.InputDataStr datatype, whereas in the Population
+% module this should stay the same as it was
+SESSIONSoriginal = x.SESSIONS;
 
 if x.S.InputNativeSpace
 	% Native space
@@ -108,7 +119,7 @@ if ~isfield(x.S,'NamesROI')
 	return;
 end
 
-%% Manage masking
+%% 0.a Manage masking
 if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
     x.S.bMasking = [1 1 1 1]; % default
 elseif isequal(x.S.bMasking, 0)
@@ -142,7 +153,7 @@ else
 end
 
 
-%% Obtain ASL sequence
+%% 0.b Obtain ASL sequence
 x = xASL_adm_DefineASLSequence(x);
 
 bWarnedPVWMH = false;
@@ -175,11 +186,12 @@ else
 	x.S.InputMasks = logical(x.S.InputMasks);
 end
 
-%% Define number of sessions to use
 
+%% 0.c Define number of sessions to use
 [nSessions, bSessionsMissing, x.SESSIONS] = xASL_adm_GetPopulationSessions(x); % obtain number of Sessions by determining amount of input files present in the Population folder
 
-%% Determine whether group mask exists
+
+%% 0.d Determine whether group mask exists
 if x.S.InputNativeSpace
 	x.S.bMasking(1) = 0; % disable susceptibility masking
 else
@@ -661,8 +673,16 @@ for iSubject=1:x.dataset.nSubjects
 	end % for iSess=1:nSessions
 end % for iSub=1:x.dataset.nSubjects
 
+%% 5. Housekeeping
 x.S.NamesROI = namesROIuse;
 fprintf('\n');
+
+% Resetting x.SESSIONS, see above at 0 and 0.c:
+% At 0.c xASL_adm_GetPopulationSessions redefines x.SESSIONS based
+% on the specific x.S.InputDataStr datatype, whereas in the Population
+% module this should stay the same as it was
+
+x.SESSIONS = SESSIONSoriginal;
 
 end
 
