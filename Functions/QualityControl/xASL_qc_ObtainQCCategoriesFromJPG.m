@@ -25,7 +25,7 @@ for iQC=1:length(QCnames)
     if exist(DirName{iQC},'dir')
         FileList = xASL_adm_GetFileList(DirName{iQC}, 'Tra_qCBF.*jpg$', 'List',[0 Inf]);
         for iList=1:length(FileList)
-            [StartInd, EndInd] = regexp(FileList{iList},'ASL_\d*');
+            [StartInd, EndInd] = regexp(FileList{iList},'ASL_\d+');
             SessionID = FileList{iList}(StartInd:EndInd);
             SubjectID = FileList{iList}(length('Tra_qCBF_')+1:StartInd-2);
             QCcategory{iNext,1} = SubjectID;

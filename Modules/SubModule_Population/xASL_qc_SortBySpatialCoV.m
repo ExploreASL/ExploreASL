@@ -61,7 +61,7 @@ PathTSV = fullfile(x.S.StatsDir, FileList{end});
 subjectList = CellTSV(3:end,1);
 
 % If the subjectlist doesn't have sessions mentioned, we include them
-if isempty(regexpi(subjectList{1}, 'ASL_\d*'))
+if isempty(regexpi(subjectList{1}, 'ASL_\d+'))
     indexSession = find(strcmpi(CellTSV(1,:),'session'));
     if ~isempty(indexSession)
         sessionList = CellTSV(3:end,indexSession);
