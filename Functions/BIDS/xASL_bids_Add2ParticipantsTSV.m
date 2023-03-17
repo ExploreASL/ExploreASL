@@ -247,8 +247,8 @@ function [MatrixOut] = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(MatrixIn, 
     %% Create the header (if needed)
     if bHasHeader
         MatrixOut(1, 1) = MatrixIn(1, 1); % subject header
-        MatrixOut(1, 1) = 'session'; % session header
-        MatrixOut(1, 3:numberColumns+2) = MatrixIn(1, 3:numberColumns); % data headers
+        MatrixOut{1, 2} = 'session'; % session header
+        MatrixOut(1, 3:numberColumns+2) = MatrixIn(1, 2:numberColumns); % data headers
 
         addRow = 1; % we reserve a row to the new matrix below, for the header
     else
