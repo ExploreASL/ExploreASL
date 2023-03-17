@@ -65,7 +65,7 @@ if size(DataIn, 1)==x.dataset.nSubjectsSessions && size(DataIn, 1)~=x.dataset.nS
         warning('Session column missing, too few columns, skipping');
         return;
     else % check if the sessions are the same in DataIn and x.SESSIONS
-        TempSessionNames = sort(unique(DataIn(:,2)));
+        TempSessionNames = sort(unique(DataIn(:,2)))';
         if length(TempSessionNames)~=length(x.SESSIONS)
             % check if the number of defined sessions differ between DataIn
             % and x.SESSIONS
@@ -241,14 +241,13 @@ function [MatrixOut] = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(MatrixIn, 
         bHasHeader = false;
     end
 
-    SubjectNumbers = 1:size(MatrixIn,1); % Obtain subject numbers 1 2 3 ... n
     numberColumns = size(MatrixIn,2); % Obtain the size of the matrix (number of data points)
 
     %% Create the header (if needed)
     if bHasHeader
         MatrixOut(1, 1) = MatrixIn(1, 1); % subject header
         MatrixOut{1, 2} = 'session'; % session header
-        MatrixOut(1, 3:numberColumns+2) = MatrixIn(1, 2:numberColumns); % data headers
+        MatrixOut(1, 3:numberColumns+1) = MatrixIn(1, 2:numberColumns); % data headers
 
         addRow = 1; % we reserve a row to the new matrix below, for the header
     else
@@ -256,13 +255,15 @@ function [MatrixOut] = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(MatrixIn, 
     end
 
     %% Create the new matrix
+    SubjectNumbers = 1:size(MatrixIn(addRow+1,:),1); % Obtain subject numbers 1 2 3 ... n
+
     for iSession=1:length(SESSIONS) % repeat this for each session
         SessionRows = (SubjectNumbers-1)+iSession; % for each session, we create the respective rows
         
         % Now create the new matrix
-        MatrixOut(addRow+SessionRows, 1) = MatrixIn(:,1); % Repeat the subjects
+        MatrixOut(addRow+SessionRows, 1) = MatrixIn(addRow+1:end,1); % Repeat the subjects
         MatrixOut(addRow+SessionRows, 2) = SESSIONS(iSession); % Repeat the sessions in a new session column
-        MatrixOut(addRow+SessionRows, 3:numberColumns+2) = MatrixIn(:,2:numberColumns); % Repeat the data
+        MatrixOut(addRow+SessionRows, 3:numberColumns+1) = MatrixIn(addRow+1:end,2:numberColumns); % Repeat the data
     end
 
 
