@@ -27,7 +27,7 @@ x.S.NamesROI = {'GM_vol' 'WM_vol' 'CSF_vol' 'WMH_vol' 'WMH_count'}; % 'Bone (L)'
 x.S.output_ID = 'volume';
 x.S.unit = 'L';
 
-fprintf('%s\n',['Printing csv-files with ' x.S.output_ID ' statistics...  ']);
+fprintf('%s\n',['Printing tsv-files with ' x.S.output_ID ' statistics...  ']);
 
 
 for iSubject=1:x.dataset.nSubjects
