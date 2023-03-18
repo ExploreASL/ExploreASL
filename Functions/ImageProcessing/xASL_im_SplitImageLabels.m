@@ -1,7 +1,7 @@
 function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwrite, ResampleDir, SubRegExp, sessionFolder)
 %xASL_im_SplitImageLabels Extract individual label/regions from image(s)
 %
-% FORMAT: xASL_im_SplitImageLabels(ImagePaths, LabelTable[, OutputFolder, bOverwrite, ResampleDir, SubRegExp])
+% FORMAT: xASL_im_SplitImageLabels(ImagePaths, LabelTable[, OutputFolder, bOverwrite, ResampleDir, SubRegExp, sessionFolder])
 %
 % INPUT:
 %   ImagePaths      - cell containing paths to label images (REQUIRED)
@@ -42,7 +42,7 @@ function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwri
 % EXAMPLE: LabelTable as separate TSV-file: 
 %          xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.PopDir,'^4V_(?!MAP).*\.nii$', 'FPList'), '/ExampleTerritoryLabels.tsv', x.D.PopDir);
 %          LabelTable as cell: 
-%          xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.ROOT,'^4V\.nii$', 'FPListRec'), {1, 'ICA-L'; 2 'ICA-R'; 3, 'POS-L'; 4, 'POS-R'}, [], 1, x.D.PopDir, x.dataset.subjectRegexp);
+%          xASL_im_SplitImageLabels(xASL_adm_GetFileList(x.D.ROOT,'^4V\.nii$', 'FPListRec'), {1, 'ICA-L'; 2 'ICA-R'; 3, 'POS-L'; 4, 'POS-R'}, [], 1, x.D.PopDir, x.dataset.subjectRegexp, 'ASL_1');
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
