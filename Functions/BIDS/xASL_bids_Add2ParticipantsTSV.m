@@ -106,18 +106,17 @@ if exist(PathTSV, 'file')
     
     % 3B) Check participants.tsv columns
     if isempty(SubjectIndex)
-        warning('Missing participant_id column in pre-existing participant.tsv');
+        warning('Missing participant_id column in pre-existing participants.tsv, skipping');
         return;
     elseif isempty(SessionIndex)
-        if HadSessions
-            warning('DataIn had sessions but participant.tsv had not, skipping');
-            return;
-        else
-            fprintf('Missing session_id column in pre-existing participant.tsv, creating\n');
-            
+%         if HadSessions
+%             warning('DataIn had sessions but participants.tsv had not, skipping');
+%             return;
+%         else
+            warning('Missing session_id column in pre-existing participants.tsv, creating');
+            fprintf('Please check that the format of participants.tsv is correct!\n');
             CellArrayOrig = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(CellArrayOrig, x.SESSIONS, 1);
-
-        end
+%         end
     end
     % 3C) Sort columns to start with participant_id & session_id
     SubjectIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(participant|subject).*id*$')), lower(CellArrayOrig(1,:))));
@@ -202,7 +201,7 @@ CellArray(IsEmpty) = {'n/a'};
 
 
 %% -------------------------------------------------------------------------------------------
-%% 7) Sort rows on subjects
+%% 7) Sort rows on subjects & sessions
 CellArray(2:end,:) = sortrows(CellArray(2:end,:), [1 2]);
 
         
@@ -255,10 +254,11 @@ function [MatrixOut] = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(MatrixIn, 
     end
 
     %% Create the new matrix
-    SubjectNumbers = 1:size(MatrixIn(addRow+1,:),1); % Obtain subject numbers 1 2 3 ... n
+    SubjectNumbers = 1:size(MatrixIn(addRow+1:end,:),1); % Obtain subject numbers 1 2 3 ... n
+    nSessions = length(SESSIONS);
 
-    for iSession=1:length(SESSIONS) % repeat this for each session
-        SessionRows = (SubjectNumbers-1)+iSession; % for each session, we create the respective rows
+    for iSession=1:nSessions % repeat this for each session
+        SessionRows = (SubjectNumbers-1).*nSessions+iSession; % for each session, we create the respective rows
         
         % Now create the new matrix
         MatrixOut(addRow+SessionRows, 1) = MatrixIn(addRow+1:end,1); % Repeat the subjects
