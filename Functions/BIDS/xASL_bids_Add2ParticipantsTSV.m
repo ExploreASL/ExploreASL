@@ -38,10 +38,10 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_bids_Add2ParticipantsTSV(MeanMotion, 'MeanMotion', x);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
-% Get path to particiapnts TSV file
+% Get path to participants.tsv
 PathTSV = fullfile(x.D.ROOT, 'participants.tsv');
 
 
@@ -65,12 +65,13 @@ if size(DataIn, 1)==x.dataset.nSubjectsSessions && size(DataIn, 1)~=x.dataset.nS
         warning('Session column missing, too few columns, skipping');
         return;
     else % check if the sessions are the same in DataIn and x.SESSIONS
-        TempSessionNames = sort(unique(DataIn(:,2)))';
-        if length(TempSessionNames)~=length(x.SESSIONS)
+        tempSessionNames = xASL_adm_SortStringNumbers(unique(DataIn(:,2)))';
+
+        if length(tempSessionNames)~=length(x.SESSIONS)
             % check if the number of defined sessions differ between DataIn
             % and x.SESSIONS
             warning('Not the same number of sessions, might go wrong');
-        elseif ~min(strcmp(x.SESSIONS, TempSessionNames))
+        elseif ~min(strcmp(x.SESSIONS, tempSessionNames))
             % check if any of the sessions definitions differ between
             % x.SESSIONS & DataIn
             warning('Not the same sessions, might go wrong');
