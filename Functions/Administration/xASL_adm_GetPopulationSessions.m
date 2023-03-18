@@ -50,7 +50,7 @@ else % If files found, continue with defining sessions from SessionList
         NewList{iSession,1} = SessionList{iSession}(1,IndexStart:IndexEnd); % create a cell array containings characters of all session numbers present
     end
     
-    SESSIONS = sort(unique(NewList)); % determine unique session numbers
+    SESSIONS = xASL_adm_SortStringNumbers(unique(NewList)); % determine unique session numbers
     % 4. define nSessions as highest unique session number
     nSessions = numel(SESSIONS);
     bSessionsMissing = 0;
