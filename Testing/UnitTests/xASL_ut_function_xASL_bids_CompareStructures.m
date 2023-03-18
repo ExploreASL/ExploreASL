@@ -239,12 +239,12 @@ fid2 = fopen(fullfile(workingDir,'datasetB','test_2B.txt'), 'wt');
 fclose('all');
 
 % Write identical JSON files
-spm_jsonwrite(fullfile(workingDir,'datasetA','test_json_identical.txt'),testJSONa);
-spm_jsonwrite(fullfile(workingDir,'datasetB','test_json_identical.txt'),testJSONa);
+xASL_io_WriteJson(fullfile(workingDir,'datasetA','test_json_identical.txt'),testJSONa);
+xASL_io_WriteJson(fullfile(workingDir,'datasetB','test_json_identical.txt'),testJSONa);
 
 % Write not identical JSON files
-spm_jsonwrite(fullfile(workingDir,'datasetA','test_json_not_identical.txt'),testJSONa);
-spm_jsonwrite(fullfile(workingDir,'datasetB','test_json_not_identical.txt'),testJSONb);
+xASL_io_WriteJson(fullfile(workingDir,'datasetA','test_json_not_identical.txt'),testJSONa);
+xASL_io_WriteJson(fullfile(workingDir,'datasetB','test_json_not_identical.txt'),testJSONb);
 
 % Write identical TSV files
 xASL_tsvWrite(testTSVa,fullfile(workingDir,'datasetA','test_tsv_identical.tsv'));

@@ -82,7 +82,7 @@ function xASL_imp_DCM2NII_CleanUp(x, dcm2niiCatchedErrors)
         xASL_delete(SaveJSON);
         xASL_delete(x.modules.import.imPar.TempUnzip);
         save(SavePath,'dcm2niiCatchedErrors');
-        spm_jsonwrite(SaveJSON, dcm2niiCatchedErrors);
+        xASL_io_WriteJson(SaveJSON, dcm2niiCatchedErrors);
     end
 
     fprintf('\n');

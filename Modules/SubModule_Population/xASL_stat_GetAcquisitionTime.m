@@ -51,7 +51,7 @@ function x = xASL_stat_GetAcquisitionTime(x)
             Parms = xASL_adm_LoadParms(PathMAT,[],0);
 			
 			%PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D.json');
-			%Parms = spm_jsonread(PathJSON);
+			%Parms = xASL_io_ReadJson(PathJSON);
 		           
             if isfield(Parms,'AcquisitionTime')
                 AcquisitionTime{iSubjSess,3} = min(Parms.AcquisitionTime);

@@ -11,7 +11,7 @@ function [IsValid] = xASL_qc_CheckValidityJSON(PathJSON)
 % DESCRIPTION:  This function loads a QC JSON (simply JSON file, won't
 %               take any exotic files) and simply check whether there is any empty value
 %               after a key. If this is the case, it will throw a warning, which will skip
-%               reading this JSON by the compiled spm_jsonread, avoiding the crash that
+%               reading this JSON by the xASL_io_ReadJson, avoiding the crash that
 %               this may result in.
 %
 % EXAMPLE:      [IsValid] = xASL_qc_CheckValidityJSON(PathJSON);

@@ -401,7 +401,7 @@ try
             for iQC=1:length(ListQCjson)
                 xASL_TrackProgress(iQC, length(ListQCjson));
                 if exist(ListQCjson{iQC}, 'file')
-                    QCmat = spm_jsonread(ListQCjson{iQC});
+                    QCmat = xASL_io_ReadJson(ListQCjson{iQC});
                     for iMod=iModule % SAME CODE AS ABOVE
                         if iMod~=3 % if not a Population module
                             if isfield(QCmat, RemoveFields{iMod})
@@ -410,7 +410,7 @@ try
                         end
                     end
                     xASL_delete(ListQCjson{iQC});
-                    spm_jsonwrite(ListQCjson{iQC}, QCmat);
+                    xASL_io_WriteJson(ListQCjson{iQC}, QCmat);
                 end
             end
             fprintf('\n');

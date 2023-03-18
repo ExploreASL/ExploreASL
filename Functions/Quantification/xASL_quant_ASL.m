@@ -307,7 +307,7 @@ if x.modules.asl.ApplyQuantification(3)
 		if x.modules.asl.bTimeEncoded
 			% For timeencoded - a simple unique PLDs is enough
 			[PLDs, index] = unique(PLDs, 'stable');
-			LabDurs = x.Q.LabelingDuration(index)';
+			LabDurs = LabDurs(index)';
 
 			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
 			index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';

@@ -30,7 +30,7 @@ function [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfF
         % Check if we have the corresponding JSON file
         if exist(fullfile(resultPath, [resultFile '.json']), 'file')
             % Load the JSON
-            resultJSON = spm_jsonread(fullfile(resultPath, [resultFile '.json']));
+            resultJSON = xASL_io_ReadJson(fullfile(resultPath, [resultFile '.json']));
             % Determine if we have the specific FME Hadamard sequence from Bremen
 			bTimeEncodedFME = xASL_imp_CheckIfFME(resultJSON, [], bTimeEncoded);
 			

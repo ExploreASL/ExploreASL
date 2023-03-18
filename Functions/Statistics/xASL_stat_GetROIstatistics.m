@@ -74,7 +74,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      x = xASL_stat_GetROIstatistics(x);
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2023 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------------------
@@ -367,9 +367,9 @@ for iSubject=1:x.dataset.nSubjects
 				end
 
 				if xASL_exist(x.P.Path_PVwm,'file')
-					pWM = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVgm),x.S.masks.WBmask);
+					pWM = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVwm),x.S.masks.WBmask);
 				else
-					fprintf('%s\n',[x.P.Path_PVgm ' missing...']);
+					fprintf('%s\n',[x.P.Path_PVwm ' missing...']);
 					continue;
 				end
 

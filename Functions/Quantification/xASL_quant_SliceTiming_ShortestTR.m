@@ -40,7 +40,7 @@ function [x] = xASL_quant_SliceTiming_ShortestTR(x)
             %  Load original file to get nSlices
 			imASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
 			nSlices = size(imASL.dat,3);
-            x.Q.SliceReadoutTime = (ASL_parms.RepetitionTime-x.Q.LabelingDuration-x.Q.Initial_PLD)/nSlices;
+            x.Q.SliceReadoutTime = (max(ASL_parms.RepetitionTime)-max(x.Q.LabelingDuration)-max(x.Q.Initial_PLD))/nSlices;
         else
             warning('ASL_parms.RepetitionTime expected but did not exist!');
         end

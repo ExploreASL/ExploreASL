@@ -67,7 +67,7 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
     end
     
     % Read ASL JSON file
-    jsonASL = spm_jsonread(fullfile(perfDirectory,[droSubject,'_asl.json']));
+    jsonASL = xASL_io_ReadJson(fullfile(perfDirectory,[droSubject,'_asl.json']));
     
     %% Switch software versions
     softwareVersion = jsonASL.DROSoftwareVersion;
@@ -95,7 +95,7 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
             jsonASL.TotalAcquiredPairs = 1;
 
             % Write JSON file
-            spm_jsonwrite(fullfile(perfDirectory,[droSubject,'_asl.json']),jsonASL);
+            xASL_io_WriteJson(fullfile(perfDirectory,[droSubject,'_asl.json']),jsonASL);
 
             %% dataset_description.json
 
@@ -106,7 +106,7 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
             [jsonDescription] = xASL_bids_CreateDatasetDescriptionTemplate(jsonTemplate,exploreaslVersion);
 
             % Write dataset_description file
-            spm_jsonwrite(fullfile(droTestPatient,'rawdata','dataset_description.json'),jsonDescription);
+            xASL_io_WriteJson(fullfile(droTestPatient,'rawdata','dataset_description.json'),jsonDescription);
 
             %% sourceStructure.json
 
@@ -118,7 +118,7 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
             sourceStructure.bMatchDirectories = true;
 
             % Write sourceStructure file
-            spm_jsonwrite(fullfile(droTestPatient,'sourceStructure.json'),sourceStructure);
+            xASL_io_WriteJson(fullfile(droTestPatient,'sourceStructure.json'),sourceStructure);
 
             %% studyPar.json
 
@@ -136,7 +136,7 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
             studyPar.ASLContext = 'm0scan,control,label';
 
             % Write sourceStructure file
-            spm_jsonwrite(fullfile(droTestPatient,'studyPar.json'),studyPar);
+            xASL_io_WriteJson(fullfile(droTestPatient,'studyPar.json'),studyPar);
             
         otherwise
             warning('Unknown DRO version...');

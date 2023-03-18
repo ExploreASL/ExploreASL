@@ -116,7 +116,7 @@ for iList=1:length(ListsAre)
     if isstruct(eval(ListsAre{iList})) && ~isempty(fields(eval(ListsAre{iList})))
         SavePath = fullfile(AnalysisDir, [ListsAre{iList} '.json']);
         xASL_delete(SavePath);
-        spm_jsonwrite(SavePath, eval(ListsAre{iList}));
+        xASL_io_WriteJson(SavePath, eval(ListsAre{iList}));
     end
 
 end

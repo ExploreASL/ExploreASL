@@ -351,7 +351,7 @@ xASL_Move(fullfile(tempDir,'Sub1','ASL_1','sub-001_acq-001_asl.json'),fullfile(t
 xASL_Move(fullfile(tempDir,'Sub1','ASL_1','sub-001_acq-001_asl.nii.gz'),fullfile(tempDir,'Sub1','ASL_1','ASL4D.nii.gz'))
 
 % Add studyPar JSON
-spm_jsonwrite(studyParPath,studyParJSON);
+xASL_io_WriteJson(studyParPath,studyParJSON);
 xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
@@ -431,7 +431,7 @@ testPatientDestination = fullfile(TestRepository,'UnitTesting','working_director
 xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Add studyPar JSON
-spm_jsonwrite(studyParPath,studyParJSON);
+xASL_io_WriteJson(studyParPath,studyParJSON);
 xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
@@ -526,10 +526,10 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
-spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
+xASL_io_WriteJson(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
 
 % Add studyPar JSON
-spm_jsonwrite(studyParPath,studyParJSON);
+xASL_io_WriteJson(studyParPath,studyParJSON);
 xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
@@ -596,7 +596,7 @@ end
 
 % Check dataPar.json
 if exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'file')
-    testContent = spm_jsonread(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'));
+    testContent = xASL_io_ReadJson(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'));
     if isfield(testContent,'x')
         if isfield(testContent.x,'S')
             if isfield(testContent.x.S,'Atlases')
@@ -646,10 +646,10 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
-spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
+xASL_io_WriteJson(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
 
 % Add studyPar JSON
-spm_jsonwrite(studyParPath,studyParJSON);
+xASL_io_WriteJson(studyParPath,studyParJSON);
 xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
@@ -722,7 +722,7 @@ droSubject = 'sub-001'; % DRO subject
 xASL_Copy(droTestPatientSource,droTestPatient);
 
 % Add studyPar JSON
-spm_jsonwrite(studyParPath,studyParJSON);
+xASL_io_WriteJson(studyParPath,studyParJSON);
 xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
@@ -866,7 +866,7 @@ xASL_delete(fullfile(droTestPatient,'rawdata',subjectName,'perf'),true);
 xASL_delete(fullfile(droTestPatient,'rawdata',subjectName,'ground_truth'),true);
 
 % Add studyPar JSON
-spm_jsonwrite(studyParPath,studyParJSON);
+xASL_io_WriteJson(studyParPath,studyParJSON);
 xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
@@ -1033,10 +1033,10 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
-spm_jsonwrite(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
+xASL_io_WriteJson(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
 
 % Add studyPar JSON
-spm_jsonwrite(studyParPath,studyParJSON);
+xASL_io_WriteJson(studyParPath,studyParJSON);
 xASL_Move(studyParPath,fullfile(droTestPatient,'studyPar.json'))
 
 % Fallback
@@ -1093,7 +1093,7 @@ end
 
 % Check dataPar.json
 if exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'file')
-    testContent = spm_jsonread(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'));
+    testContent = xASL_io_ReadJson(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'));
     if isfield(testContent,'x')
         if isfield(testContent.x,'S')
             if isfield(testContent.x.S,'Atlases')

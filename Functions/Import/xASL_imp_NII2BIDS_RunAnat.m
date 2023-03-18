@@ -85,7 +85,7 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
             xASL_Move([anatPath '.nii'], anatNiiPath, 1);
 
             % Load the JSON
-            jsonAnat = spm_jsonread([anatPath '.json']);
+            jsonAnat = xASL_io_ReadJson([anatPath '.json']);
 
             % Save the JSON
             jsonAnat = xASL_bids_BIDSifyAnatJSON(jsonAnat, studyPar);
@@ -93,7 +93,7 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
             jsonAnat = xASL_bids_JsonCheck(jsonAnat, '');
             
             jsonWritePath = [anatOutLabel '_' iAnatType{1} '.json'];
-            spm_jsonwrite(jsonWritePath, jsonAnat);
+            xASL_io_WriteJson(jsonWritePath, jsonAnat);
         end
     end
 

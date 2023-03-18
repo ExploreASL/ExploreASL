@@ -1,6 +1,6 @@
 function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExploreASL)
 %xASL_bids_CreateDatasetDescriptionTemplate This script creates a JSON structure which can be saved
-% using spm_jsonwrite to get a dataset_description.json template.
+% using xASL_io_WriteJson to get a dataset_description.json template.
 %
 % FORMAT: [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExploreASL)
 % 
@@ -9,11 +9,11 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExplo
 %   versionExploreASL - ExploreASL version (STRING, REQUIRED)
 %
 % OUTPUT:
-%   json        - JSON structure which can be saved using spm_jsonwrite (dataset_description.json template)
+%   json        - JSON structure which can be saved using xASL_io_WriteJson (dataset_description.json template)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  This script creates a JSON structure which can be saved
-%               using spm_jsonwrite to get a dataset_description.json template.
+%               using xASL_io_WriteJson to get a dataset_description.json template.
 %               Missing fields that are required are added. BIDSVersion checked against the current configured version.
 %               Remaining fields will be validated. Other fields not belonging to dataset_description.json are ignored.
 %

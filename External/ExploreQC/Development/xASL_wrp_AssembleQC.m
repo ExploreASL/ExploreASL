@@ -26,7 +26,7 @@ for iFile=1:length(FileList)
         if IsValid
             [~, Ffile] = fileparts(FileList{iFile});
             SubjectName = ['QC' Ffile(15:end)];
-            qc = spm_jsonread(FileList{iFile});
+            qc = xASL_io_ReadJson(FileList{iFile});
             
             Fields1 = fields(qc);
             for iField1=1:length(Fields1)

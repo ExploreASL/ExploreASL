@@ -102,7 +102,7 @@ end
 % Load JSON file
 if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSON values overwrite the existing values
 
-	JSONParms = spm_jsonread(JSONPath);
+	JSONParms = xASL_io_ReadJson(JSONPath);
 
     % Convert parameters to BIDS
 	Parms = xASL_bids_parms2BIDS(Parms, JSONParms, 0, 1);

@@ -79,7 +79,7 @@ for iSubject=1:x.dataset.nSubjects
 		end
 		if exist(PathMAT,'file') || exist(PathJSON,'file')
 			Parms = xASL_adm_LoadParms(PathMAT,[],0);
-			% Parms = spm_jsonread(PathJSON);
+			% Parms = xASL_io_ReadJson(PathJSON);
 		else
 			continue; % skip this iSujectSession as its missing
 		end

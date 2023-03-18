@@ -75,6 +75,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     %% Get xASL parameters
     sourcePar = convertCellArrayToStruct(sourcePar);
 
+	bidsPar = struct();
     %% Analyze parameters                                                   % Exemplary dataset in ExploreASL flavor library
 	if ~isempty(strfind(sourcePar.tSequenceFileName,'SiemensSeq'))
 		bidsPar.SequenceType = 'Siemens'; % Not really a BIDS field

@@ -40,7 +40,7 @@ PathJSON = fullfile(Fpath, [Ffile '.json']);
 
 PathM0 = fullfile(Fpath, 'M0.nii');
 
-JSON = spm_jsonread(PathJSON);
+JSON = xASL_io_ReadJson(PathJSON);
 if isfield(JSON, 'M0Type')
     switch JSON.M0Type
         %% Option 1. Included
@@ -73,7 +73,7 @@ if isfield(JSON, 'M0Type')
 			else
 				JSON.M0 = 'separate_scan';
 				JSON = rmfield(JSON,'M0Type');
-				spm_jsonwrite(PathJSON, JSON);
+				xASL_io_WriteJson(PathJSON, JSON);
 			end
         %% Option 3. Estimate
 		% If a single M0 values is provided then keep it, just rename the field
@@ -82,7 +82,7 @@ if isfield(JSON, 'M0Type')
                 JSON.M0 = JSON.M0Estimate;
 				JSON = rmfield(JSON,'M0Type');
 				JSON = rmfield(JSON,'M0Estimate');
-                spm_jsonwrite(PathJSON, JSON);
+                xASL_io_WriteJson(PathJSON, JSON);
             else
                 warning(['Field M0_value missing in ' PathJSON]);
             end
@@ -94,7 +94,7 @@ if isfield(JSON, 'M0Type')
         case {'use_control_as_m0', 'UseControlAsM0'}
 			JSON.M0 = 'UseControlAsM0';
 			JSON = rmfield(JSON,'M0Type');
-			spm_jsonwrite(PathJSON, JSON);
+			xASL_io_WriteJson(PathJSON, JSON);
 			% Then we need to verify that either background suppression is disabled or enabled with timings provided
 			if ~isfield(JSON, 'BackgroundSuppression')
 				warning(['M0 is defined as UserControlAsM0, but missing field BackgroundSuppression in ' PathJSON]);
@@ -122,7 +122,7 @@ if isfield(JSON, 'M0Type')
 				end
 			end
 			
-			spm_jsonwrite(PathJSON, JSON);
+			xASL_io_WriteJson(PathJSON, JSON);
         otherwise
             error(['Invalid M0Type in ' PathJSON]);
         end

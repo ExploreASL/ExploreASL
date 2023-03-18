@@ -578,7 +578,7 @@ for iList=1:length(Dlist) % iterate over example datasets
             else % check the volumetric parameters
                 [~, TempTable] = xASL_bids_csv2tsvReadWrite(ResultFile{iFile}{end});
                 % Backward compatibility:
-                % Volumetrics used to be saved as '_(L)', but this is converted by spm_jsonread to its HEX counterpart '_0x28L0x29'
+                % Volumetrics used to be saved as '_(L)', but this is converted by xASL_io_ReadJson to its HEX counterpart '_0x28L0x29'
                 % Now we always save to _L to avoid this. For backward compatibility we still check the old options here
                 IndexGM = find(cellfun(@(y) ~isempty(regexpi(y,'(GM_volume_L|GM_volume_(L)|GM_volume_0x28L0x29)')), TempTable(1,:)));
                 IndexWM = find(cellfun(@(y) ~isempty(regexpi(y,'(WM_volume_L|WM_volume_(L)|WM_volume_0x28L0x29)')), TempTable(1,:)));
