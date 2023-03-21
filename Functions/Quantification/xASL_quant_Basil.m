@@ -299,10 +299,8 @@ end
 	 
 %% 4. Model fiting parameters
 
-% This helps avoid failure on the structural-space image
-fprintf(FIDoptionFile, '--allow-bad-voxels\n');
-
-fprintf(FIDoptionFile, '--save-model-fit\n');
+% This helps avoid failure on the structural-space image (we do not perform non-native space quantification yet)
+% fprintf(FIDoptionFile, '--allow-bad-voxels\n'); 
 
 switch lower(x.Q.LabelingType)
 	case 'pasl'
