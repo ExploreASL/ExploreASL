@@ -40,6 +40,7 @@ end
 % This is executed first in case there are issues with the file
 if verLessThan('matlab', '9.10')
 	txt = jsonencode(json);
+	txt = xASL_sub_PrettyPrint(txt);
 else
 	txt = jsonencode(json, 'PrettyPrint', true);
 end
@@ -59,3 +60,14 @@ end
 fclose(fileID);
 
 end
+
+
+%% Get the data of this flavor
+function txt = xASL_sub_PrettyPrint(txt)
+
+	txt = strrep(txt, '",', ['",'  newline]);
+	txt = strrep(txt, '],', ['],'  newline]);
+	txt = strrep(txt, '},', ['},'  newline]);
+
+end
+
