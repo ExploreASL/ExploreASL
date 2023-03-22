@@ -27,7 +27,7 @@ bSPMTest=true
 bUnitTest=true
 bFlavorTest=true
 bTestDataSet=true
-bCompile=true
+bCompile=false
 bSummary=true
 bEmail=false
 iNiceness=10 # 0 in testing, 10 at weekend.
@@ -103,7 +103,7 @@ if ${bFlavorTest}; then
 	cd ${XASLDIR}
 	echo "Flavor database test directory was tested  on version ${FlavorVersion}." >>  ${VersionFile}
 
-    nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();config=spm_jsonread('${FlavorTestConfig}');xASL_test_Flavors(config, false, false);exit;"
+    nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_Flavors([], false, false);exit;"
 	mv ${XASLDIR}/Testing/*results.mat ${ResultDirToday}
 	mv ${XASLDIR}/Testing/*comparison.tsv ${ResultDirToday}
 	# TODO : remove rawdata and Derivatives folders for clean rerun.
