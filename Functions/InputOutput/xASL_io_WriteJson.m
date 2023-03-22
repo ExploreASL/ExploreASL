@@ -38,7 +38,11 @@ end
 
 %% 1. Encode the content to text.
 % This is executed first in case there are issues with the file
-txt = jsonencode(json, 'PrettyPrint', true);
+if verLessThan('matlab', '9.10')
+	txt = jsonencode(json);
+else
+	txt = jsonencode(json, 'PrettyPrint', true);
+end
 
 %% 2. Open the JSON file for writing and save it
 fileID = fopen(pathJSON,'w+');
