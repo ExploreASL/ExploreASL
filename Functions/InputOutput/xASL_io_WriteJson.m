@@ -62,7 +62,7 @@ fclose(fileID);
 end
 
 
-%% Get the data of this flavor
+%% Add newlines to make json output readable
 function txt = xASL_sub_PrettyPrint(txt)
 
 	txt = strrep(txt, '",', ['",'  newline]);
