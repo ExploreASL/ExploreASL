@@ -1,7 +1,7 @@
-function [outputString] = xASL_adm_SortStringNumbers(inputString,numberPatternInString)
+function [outputString] = xASL_adm_SortStringNumbers(inputString, numberPatternInString)
 %xASL_adm_SortStringNumbers Sort strings based on numbers
 %
-% FORMAT: [outputString] = xASL_adm_SortStringNumbers(inputString[,numberPatternInString])
+% FORMAT: [outputString] = xASL_adm_SortStringNumbers(inputString[, numberPatternInString])
 %
 % INPUT:
 %   inputString             - cell array with strings that need numerical sorting (REQUIRED)
@@ -30,7 +30,6 @@ function [outputString] = xASL_adm_SortStringNumbers(inputString,numberPatternIn
         error('numberPatternInString should contain a numerical descriptor %d');
     end
 
-
     % First sort alphabetically
     % (although numberPatternInString must support this)
     outputString = sort(inputString);
@@ -38,12 +37,8 @@ function [outputString] = xASL_adm_SortStringNumbers(inputString,numberPatternIn
     % Then obtain numbers from text
     numberSorting = cellfun(@(x)sscanf(x, numberPatternInString), outputString);
 
-
     % sort them, and get the sorting order
       [~, sortOrder] = sort(numberSorting);
     % use to this sorting order to sort the filenames
       outputString = outputString(sortOrder);
-
-
-
 end

@@ -1,7 +1,7 @@
 function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 %xASL_bids_Add2ParticipantsTSV Add data to participants.tsv
 %
-% FORMAT: xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
+% FORMAT: xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x[, bOverwrite])
 %
 % INPUT:
 %   DataIn      - cell array with data to be added to participants.tsv, (REQUIRED)
@@ -58,7 +58,6 @@ end
 % This part checks if the DataIn has an invalid size.
 % After this part, the columns should be 1) subject, 2) session/run, 3)
 % data value
-HadSessions = false;
 if size(DataIn, 1)==x.dataset.nSubjectsSessions && size(DataIn, 1)~=x.dataset.nSubjects
     % Sessions found
     if size(DataIn,2)<3 % A session column should exist
@@ -76,7 +75,6 @@ if size(DataIn, 1)==x.dataset.nSubjectsSessions && size(DataIn, 1)~=x.dataset.nS
             % x.SESSIONS & DataIn
             warning('Not the same sessions, might go wrong');
         end
-        HadSessions = true;
     end
 elseif size(DataIn, 1)==x.dataset.nSubjects
     % No sessions found
@@ -110,14 +108,9 @@ if exist(PathTSV, 'file')
         warning('Missing participant_id column in pre-existing participants.tsv, skipping');
         return;
     elseif isempty(SessionIndex)
-%         if HadSessions
-%             warning('DataIn had sessions but participants.tsv had not, skipping');
-%             return;
-%         else
             warning('Missing session_id column in pre-existing participants.tsv, creating');
             fprintf('Please check that the format of participants.tsv is correct!\n');
             CellArrayOrig = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(CellArrayOrig, x.SESSIONS, 1);
-%         end
     end
     % 3C) Sort columns to start with participant_id & session_id
     SubjectIndex = find(cellfun(@(y) ~isempty(regexp(y,'^(participant|subject).*id*$')), lower(CellArrayOrig(1,:))));
