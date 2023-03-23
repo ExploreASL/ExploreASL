@@ -24,7 +24,7 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
     %% Start the conversion if this scan should not be skipped
     first_match = [];
@@ -43,6 +43,11 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
             % overwrite
             if x.modules.import.imPar.bOverwrite || ~xASL_exist(first_match,'file') % this will check both .nii & .nii.gz
                 xASL_Copy(scanpath, first_match, x.modules.import.imPar.bOverwrite, x.modules.import.imPar.bVerbose);
+				
+				[jsonDir, jsonFile, ~] = xASL_fileparts(scanpath);
+				if xASL_exist(fullfile(jsonDir, [jsonFile '.json']), 'file')
+					xASL_Copy(fullfile(jsonDir, [jsonFile '.json']), fullfile(destdir, [scan_name '.json']), x.modules.import.imPar.bOverwrite, x.modules.import.imPar.bVerbose);
+				end
                 % gzip if required
                 xASL_adm_GzipAllFiles(fileparts(first_match));
             end
