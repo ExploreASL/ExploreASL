@@ -38,12 +38,13 @@ end
 
 %% 1. Encode the content to text.
 % This is executed first in case there are issues with the file
-if verLessThan('matlab', '9.10')
+% Our version of PrettyPrint is preferred to avoid printing each vector to several lines
+%if verLessThan('matlab', '9.10')
 	txt = jsonencode(json);
 	txt = xASL_sub_PrettyPrint(txt);
-else
-	txt = jsonencode(json, 'PrettyPrint', true);
-end
+%else
+%	txt = jsonencode(json, 'PrettyPrint', true);
+%end
 
 %% 2. Open the JSON file for writing and save it
 fileID = fopen(pathJSON,'w+');
