@@ -69,6 +69,12 @@ function txt = xASL_sub_PrettyPrint(txt)
 	txt = strrep(txt, '",', ['",'  newline]);
 	txt = strrep(txt, '],', ['],'  newline]);
 	txt = strrep(txt, '},', ['},'  newline]);
+	txt = strrep(txt, ':false,', [':false,'  newline]);
+	txt = strrep(txt, ':true,', [':true,'  newline]);
 
+	txt = regexprep(txt, ':(\d+),', [':$1,'  newline]);
+	txt = regexprep(txt, ':(\d+\.\d+),', [':$1,'  newline]);
+	txt = regexprep(txt, ':(\d+\.\d+E-\d+),', [':$1,'  newline]);
+	txt = regexprep(txt, ':(\d+\.\d+E\d+),', [':$1,'  newline]);
 end
 
