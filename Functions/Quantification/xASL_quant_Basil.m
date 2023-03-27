@@ -372,14 +372,38 @@ if isfield(x.Q,'BasilInferATT') && x.Q.BasilInferATT
     BasilOptions = [BasilOptions ' --inferart'];
 end
 
-if isfield(x.Q,'BasilExch')
-	fprintf('BASIL: Using exchange model: well-mixed as default%s\n', x.Q.BasilExch);
+if ~isfield(x.Q,'BasilExch')
+	fprintf('BASIL: Using exchange model: simple single compartment with T1 of blood, per white paper as default%s\n', x.Q.BasilExch);
+    BasilOptions = [BasilOptions ' --exch=simple'];
+elseif isfield(x.Q,'BasilExch') && strcmp(x.Q.BasilSpatial,'simple')
+	fprintf('BASIL: Using exchange model: simple single compartment with T1 of blood, per white paper%s\n', x.Q.BasilExch);
+    BasilOptions = [BasilOptions ' --exch=simple'];
+elseif isfield(x.Q,'BasilExch') && strcmp(x.Q.BasilSpatial,'mix')
+	fprintf('BASIL: Using exchange model: well-mixed%s\n', x.Q.BasilExch);
     BasilOptions = [BasilOptions ' --exch=mix'];
+elseif isfield(x.Q,'BasilExch') && strcmp(x.Q.BasilSpatial,'mix')
+	fprintf('BASIL: Using exchange model: a two compartment exchange model following Parkes & Tofts%s\n', x.Q.BasilExch);
+    BasilOptions = [BasilOptions ' --exch=2cpt'];
+elseif isfield(x.Q,'BasilExch') && strcmp(x.Q.BasilSpatial,'mix')
+	fprintf('BASIL: Using exchange model: isngle pass approximiation from St. Lawrence%s\n', x.Q.BasilExch);
+    BasilOptions = [BasilOptions ' --exch=spa'];
 end
 
-if isfield(x.Q,'BasilDisp')
-	fprintf('BASIL: Using dispersion model: Gamma as default %s\n', x.Q.BasilDisp);
+if ~isfield(x.Q,'BasilDisp')
+	fprintf('BASIL: Using no dispersion model as default %s\n', x.Q.BasilDisp);
+    BasilOptions = [BasilOptions ' --disp=none'];
+elseif isfield(x.Q,'BasilDisp') && strcmp(x.Q.BaselDisp,'none')
+	fprintf('BASIL: Using no dispersion model %s\n', x.Q.BasilDisp);
+    BasilOptions = [BasilOptions ' --disp=none'];
+elseif isfield(x.Q,'BasilDisp') && strcmp(x.Q.BaselDisp,'gamma')
+	fprintf('BASIL: Using dispersion model: Gamma %s\n', x.Q.BasilDisp);
     BasilOptions = [BasilOptions ' --disp=gamma'];
+elseif isfield(x.Q,'BasilDisp') && strcmp(x.Q.BaselDisp,'gauss')
+	fprintf('BASIL: Using dispersion model: Temporal Gaussian dispersion kernel%s\n', x.Q.BasilDisp);
+    BasilOptions = [BasilOptions ' --disp=gauss'];
+elseif isfield(x.Q,'BasilDisp') && strcmp(x.Q.BaselDisp,'gamma')
+	fprintf('BASIL: Using dispersion model: Spatial Gaussian dispersion kernel%s\n', x.Q.BasilDisp);
+    BasilOptions = [BasilOptions ' --disp=sgauss'];
 end
 
 if isfield(x.Q,'BasilDebug') && x.Q.BasilDebug
