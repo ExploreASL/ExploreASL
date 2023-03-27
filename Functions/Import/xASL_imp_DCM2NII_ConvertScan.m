@@ -82,15 +82,14 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
 %     % Defaults
     bOneScanIsEnough = false; % PM: THIS USED TO BE TRUE FOR ANATOMICAL SCANS
     bPutInSessionFolder = true; % THIS USED TO BE FALSE FOR ANATOMICAL SCANS
-    switch scan_name
-        case {'ASL4D', 'M0', 'ASL4D_RevPE', 'func_bold'}
-            bPutInSessionFolder = true;
-            bAnatomical = false;        
-        case {'T1w' 'T2w' 'T1', 'WMH_SEGM', 'FLAIR', 'T2', 'T1c'}
-%             bPutInSessionFolder = false;
-            bAnatomical = true;
-        otherwise
-            error('Unrecognized scantype');
+    if ~isempty(regexpi(scan_name, '^ASL4D.*')) || ~isempty(regexpi(scan_name, '^M0.*')) || ~isempty(regexpi(scan_name, '^func_bold$'))
+		bPutInSessionFolder = true;
+		bAnatomical = false;
+	elseif ~isempty(regexpi(scan_name, '^T1.+')) || ~isempty(regexpi(scan_name, '^T2.+')) || ~isempty(regexpi(scan_name, '^FLAIR$')) || ~isempty(regexpi(scan_name, '^WMH_SEGM$'))
+		%             bPutInSessionFolder = false;
+		bAnatomical = true;
+	else
+		error('Unrecognized scantype');
     end
 
     

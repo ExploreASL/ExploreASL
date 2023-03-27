@@ -70,6 +70,10 @@ else
 end
 
 %% 4. Convert certain DICOM fields
+if isfield(jsonInMerged,'NumberOfExcitations') && ~isfield(jsonInMerged, 'TotalAcquiredPairs') && ~isempty(regexpi(jsonInMerged.Manufacturer, 'GE'))
+	jsonInMerged.TotalAcquiredPairs = jsonInMerged.NumberOfExcitations;
+end
+
 % TotalAcquiredPairs - use only the maximum values from DICOM
 if isfield(jsonInMerged,'TotalAcquiredPairs') && ~isempty(jsonInMerged.TotalAcquiredPairs) && length(jsonInMerged.TotalAcquiredPairs)>1
 	jsonInMerged.TotalAcquiredPairs = max(jsonInMerged.TotalAcquiredPairs);
