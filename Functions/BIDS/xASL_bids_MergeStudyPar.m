@@ -47,11 +47,11 @@ function jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,bidsModality)
     % List of required fields
     switch bidsModality
         case 'asl'
-            fieldList = {'Manufacturer', 'TotalAcquiredPairs', 'FlipAngle'};
+            fieldList = {'Manufacturer', 'MagneticFieldStrength', 'TotalAcquiredPairs', 'FlipAngle'};
         case 'm0'
-            fieldList = {'Manufacturer', 'FlipAngle'};
+            fieldList = {'Manufacturer', 'MagneticFieldStrength', 'FlipAngle'};
         otherwise
-            fieldList = {'Manufacturer'};
+            fieldList = {'Manufacturer', 'MagneticFieldStrength'};
     end
     
     % Iterate over fields
