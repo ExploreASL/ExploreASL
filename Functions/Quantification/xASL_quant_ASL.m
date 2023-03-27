@@ -1,4 +1,4 @@
-function [ScaleImage, CBF, ATT, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
+function [ScaleImage, CBF, ATT, CBV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
 %xASL_quant_ASL Perform a multi-step quantification of single or multi-PLD with or without BASIL
 % FORMAT: [ScaleImage[, CBF, ATT, Tex]] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
 %
@@ -150,10 +150,9 @@ else
         error('Wrong PLD definition!');
     end
 
-
     if bUseBasilQuantification
         % Here we perform FSL BASIL
-		[PWI, ATT, Tex] = xASL_quant_Basil(PWI, x);
+		[PWI, ATT, CBV, Tex] = xASL_quant_Basil(PWI, x);
 		
 		% If resultFSL is not 0, something went wrong
         % This will issue a warning inside xASL_quant_Basil

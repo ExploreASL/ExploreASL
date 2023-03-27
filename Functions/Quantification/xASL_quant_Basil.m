@@ -1,4 +1,4 @@
-function [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
+function [CBF_nocalib, ATT_map, CBV_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
 %xASL_quant_Basil Perform quantification using FSL BASIL
 %
 % FORMAT: [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
@@ -135,6 +135,14 @@ function [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
 		pathBasilATT = pathBasilATT{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 		ATT_map = xASL_io_Nifti2Im(pathBasilATT);
 	end
+    
+    pathBasilCBV = xASL_adm_GetFileList(dirBasilOutput, '^mean_fblood\.nii$', 'FPListRec');
+	if ~isempty(pathBasilCBV)
+		pathBasilCBV = pathBasilCBV{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+		CBV_map = xASL_io_Nifti2Im(pathBasilCBV);
+	else
+		CBV_map = NaN;
+    end
     
     pathFabberTex = xASL_adm_GetFileList(dirBasilOutput, '^mean_T_exch\.nii$', 'FPListRec');
 	if ~isempty(pathFabberTex)
@@ -357,8 +365,8 @@ end
 
 
 %% 5. Extra features on demand
-if isfield(x,'BasilSpatial') && x.Q.BasilSpatial
-	fprintf('BASIL: Instructing BASIL to use automated spatial smoothing\n');
+if ~isfield(x,'BasilSpatial') || isfield(x,'BasilSpatial') && isequal(x.Q.BasilSpatial,1)
+	fprintf('BASIL: Instructing BASIL to use automated spatial smoothing by default\n');
 	BasilOptions = [BasilOptions ' --spatial'];
 end
 
