@@ -57,7 +57,15 @@ function loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, loggingTable)
         end
         
         % 3. Manual curation for certain flavors
-        xASL_test_Flavors_ManualFlavors(testConfig.flavorList, testConfig.pathFlavorDatabase, iFlavor);
+
+        try
+            xASL_test_Flavors_ManualFlavors(testConfig.flavorList, testConfig.pathFlavorDatabase, iFlavor);
+        catch ME
+            xFlavor.logging.message = ME.message;
+            xFlavor.logging.name = testConfig.flavorList{iFlavor};
+            xFlavor.logging.stack = ME.stack;
+        end 
+        
         
         % 4. Convert NII+JSON -> BIDS
         try
