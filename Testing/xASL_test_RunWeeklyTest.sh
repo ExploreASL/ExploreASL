@@ -103,7 +103,7 @@ if ${bFlavorTest}; then
 	cd ${XASLDIR}
 	echo "Flavor database test directory was tested  on version ${FlavorVersion}." >>  ${VersionFile}
 
-    nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_Flavors([], false, false);exit;"
+    nice -n ${iNiceness} ${Matlab} -nodesktop -nosplash -r "cd('${XASLDIR}');ExploreASL();xASL_test_Flavors();exit;"
 	mv ${XASLDIR}/Testing/*results.mat ${ResultDirToday}
 	mv ${XASLDIR}/Testing/*comparison.tsv ${ResultDirToday}
 	# TODO : remove rawdata and Derivatives folders for clean rerun.
