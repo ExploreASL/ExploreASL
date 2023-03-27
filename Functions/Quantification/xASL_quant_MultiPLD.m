@@ -1,4 +1,4 @@
-function [ScaleImage, CBF, ATT, Tex] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
+function [ScaleImage, CBF, ATT, CBV, Tex] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
 %xASL_quant_MultiPLD % Perform a multi-step quantification using BASIL
 % FORMAT: [ScaleImage[, CBF, ATT, Tex]] = xASL_quant_MultiPLD(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
 %
@@ -124,7 +124,7 @@ else
     end
     
     % BASIL/FABBER quantification
-    [PWI, ATT, Tex] = xASL_quant_Basil(PWI, x);
+    [PWI, ATT, CBV, Tex] = xASL_quant_Basil(PWI, x);
 
 end
 

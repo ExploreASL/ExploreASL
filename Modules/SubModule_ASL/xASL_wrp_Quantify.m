@@ -80,6 +80,7 @@ end
 iStringCBF = regexpi(pathOutputCBF, 'CBF');
 iStringCBF = iStringCBF(end);
 pathOutputATT = [pathOutputCBF(1:(iStringCBF-1)) 'ATT' pathOutputCBF((iStringCBF+3):end)];
+pathOutputCBV = [pathOutputCBF(1:(iStringCBF-1)) 'CBV' pathOutputCBF((iStringCBF+3):end)];
 pathOutputTex = [pathOutputCBF(1:(iStringCBF-1)) 'Tex' pathOutputCBF((iStringCBF+3):end)];
 
 if nargin<4 || isempty(M0Path)
@@ -439,7 +440,7 @@ if ~x.modules.asl.bMultiPLD % single PLD quantification
 elseif x.Q.bUseBasilQuantification
     % perform BASIL multi-PLD quantification
     fprintf('%s\n', 'Performing multi PLD quantification using BASIL');
-    [~, CBF, ATT, Tex] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
+    [~, CBF, ATT, CBV, Tex] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
 else
     % multi-PLD quantification without BASIL
     error('Multi PLD quantification without BASIL not implemented yet');
@@ -467,6 +468,11 @@ xASL_io_SaveNifti(PWI_Path, pathOutputCBF, CBF, 32, 0);
 if numel(ATT) > 1 || ~isnan(ATT)
 	% Save the ATT file
 	xASL_io_SaveNifti(PWI_Path, pathOutputATT, ATT, 32, 0);
+end
+
+if numel(CBV) > 1 || ~isnan(CBV)
+	% Save the ATT file
+	xASL_io_SaveNifti(PWI_Path, pathOutputCBV, CBV, 32, 0);
 end
 
 if numel(Tex) > 1 || ~isnan(Tex)
