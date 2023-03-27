@@ -178,7 +178,7 @@ end
 % Rename field PostLabelDelay
 if isfield(jsonOut,'PostLabelDelay')
 	if isfield(jsonOut,'PostLabelingDelay') && ~isequal(jsonOut.PostLabelDelay, jsonOut.PostLabelingDelay)
-		warning(['Both PostLabelDelay (' num2str(jsonOut.PostLabelDelay) ') and PostLabelingDelay (' num2str(jsonOut.PostLabelingDelay) ') are defined. Using ' num2str(jsonOut.PostLabelingDelay)]);
+		warning(['Both PostLabelDelay (' xASL_num2str(jsonOut.PostLabelDelay) ') and PostLabelingDelay (' xASL_num2str(jsonOut.PostLabelingDelay) ') are defined. Using ' xASL_num2str(jsonOut.PostLabelingDelay)]);
 	else
 		jsonOut.PostLabelingDelay = jsonOut.PostLabelDelay;
 	end
