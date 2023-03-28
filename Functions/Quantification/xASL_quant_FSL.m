@@ -207,6 +207,40 @@ function [BasilOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI
 % __________________________________
 % Copyright 2015-2023 ExploreASL 
 
+%% 0. Admin
+if ~bUseFabber
+	% Set BASIL dataPar options
+	if ~isfield(x.Q,'BASIL')
+		x.Q.BASIL = [];
+	end
+
+	if ~isfield(x.Q.BASIL,'bSpatial') || isempty(x.Q.BASIL.bSpatial)
+		fprintf('BASIL: Setting default option bSpatial = true\n');
+		x.Q.BASIL.bSpatial = true;
+	end
+
+	if ~isfield(x.Q.BASIL,'bInferT1') || isempty(x.Q.BASIL.bInferT1)
+		fprintf('BASIL: Setting default option bInferT1 = false\n');
+		x.Q.BASIL.bInferT1 = false;
+	end
+
+	if ~isfield(x.Q.BASIL,'bInferArt') || isempty(x.Q.BASIL.bInferArt)
+		fprintf('BASIL: Setting default option bInferArt = true\n');
+		x.Q.BASIL.bInferArt = true;
+	end
+
+	if ~isfield(x.Q.BASIL,'Exch') || isempty(x.Q.BASIL.Exch)
+		fprintf('BASIL: Setting default option Exch = simple\n');
+		x.Q.BASIL.Exch = 'simple';
+	end
+
+	if ~isfield(x.Q.BASIL,'Disp') || isempty(x.Q.BASIL.Disp)
+		fprintf('BASIL: Setting default option Disp = none\n');
+		x.Q.BASIL.Disp = 'none';
+	end
+
+end
+
 %% 1. Create the options file
 % BasilOptions is a character array containing CLI args for the Basil command
 BasilOptions = '';
@@ -477,55 +511,54 @@ else
 	%     end
 
 
-	%% 5. Extra features on demand
-	if ~isfield(x,'BasilSpatial') || isfield(x,'BasilSpatial') && isequal(x.Q.BasilSpatial,1)
-		fprintf('BASIL: Instructing BASIL to use automated spatial smoothing by default\n');
+	%% 5. Extra BASIL fitting options
+	if x.Q.BASIL.bSpatial
+		fprintf('BASIL: Use automated spatial smoothing\n');
 		BasilOptions = [BasilOptions ' --spatial'];
 	end
 
-	if isfield(x.Q,'BasilInferT1') && x.Q.BasilInferT1
-		fprintf('BASIL: Instructing BASIL to infer variable T1 values\n');
+	if x.Q.BASIL.bInferT1
+		fprintf('BASIL: Infer variable T1 values\n');
 		BasilOptions = [BasilOptions ' --infert1'];
 	end
 
-	if isfield(x.Q,'BasilInferATT') && x.Q.BasilInferATT
-		fprintf('BASIL: Infer arterial component');
-		fprintf('BASIL: Variable arterial component arrival time');
+	if x.Q.BASIL.bInferArt
+		fprintf('BASIL: Infer arterial BV and arrival time\n');
 		BasilOptions = [BasilOptions ' --inferart'];
 	end
 
-	if ~isfield(x.Q,'BasilExch')
-		fprintf('BASIL: Using exchange model: simple single compartment with T1 of blood, per white paper as default%s\n', x.Q.BasilExch);
-		BasilOptions = [BasilOptions ' --exch=simple'];
-	elseif isfield(x.Q,'BasilExch') && strcmp(x.Q.BasilSpatial,'simple')
-		fprintf('BASIL: Using exchange model: simple single compartment with T1 of blood, per white paper%s\n', x.Q.BasilExch);
-		BasilOptions = [BasilOptions ' --exch=simple'];
-	elseif isfield(x.Q,'BasilExch') && strcmp(x.Q.BasilSpatial,'mix')
-		fprintf('BASIL: Using exchange model: well-mixed%s\n', x.Q.BasilExch);
-		BasilOptions = [BasilOptions ' --exch=mix'];
-	elseif isfield(x.Q,'BasilExch') && strcmp(x.Q.BasilSpatial,'mix')
-		fprintf('BASIL: Using exchange model: a two compartment exchange model following Parkes & Tofts%s\n', x.Q.BasilExch);
-		BasilOptions = [BasilOptions ' --exch=2cpt'];
-	elseif isfield(x.Q,'BasilExch') && strcmp(x.Q.BasilSpatial,'mix')
-		fprintf('BASIL: Using exchange model: isngle pass approximiation from St. Lawrence%s\n', x.Q.BasilExch);
-		BasilOptions = [BasilOptions ' --exch=spa'];
+	switch (x.Q.BASIL.Exch)
+		case 'simple'
+			fprintf('BASIL Exchange model: Simple single compartment with T1 of blood, per white paper\n');
+			BasilOptions = [BasilOptions ' --exch=simple'];
+		case 'mix'
+			fprintf('BASIL Exchange model: Well-mixed\n');
+			BasilOptions = [BasilOptions ' --exch=mix'];
+		case '2cpt'
+			fprintf('BASIL Exchange model: A two compartment exchange model following Parkes & Tofts\n');
+			BasilOptions = [BasilOptions ' --exch=2cpt'];
+		case 'spa'
+			fprintf('BASIL Exchange model: A single pass approximation from St. Lawrence\n');
+			BasilOptions = [BasilOptions ' --exch=spa'];
+		otherwise
+			warning(['BASIL Exchange model: ' x.Q.BASIL.Exch ' not recognized.'])
 	end
 
-	if ~isfield(x.Q,'BasilDisp')
-		fprintf('BASIL: Using no dispersion model as default %s\n', x.Q.BasilDisp);
-		BasilOptions = [BasilOptions ' --disp=none'];
-	elseif isfield(x.Q,'BasilDisp') && strcmp(x.Q.BaselDisp,'none')
-		fprintf('BASIL: Using no dispersion model %s\n', x.Q.BasilDisp);
-		BasilOptions = [BasilOptions ' --disp=none'];
-	elseif isfield(x.Q,'BasilDisp') && strcmp(x.Q.BaselDisp,'gamma')
-		fprintf('BASIL: Using dispersion model: Gamma %s\n', x.Q.BasilDisp);
-		BasilOptions = [BasilOptions ' --disp=gamma'];
-	elseif isfield(x.Q,'BasilDisp') && strcmp(x.Q.BaselDisp,'gauss')
-		fprintf('BASIL: Using dispersion model: Temporal Gaussian dispersion kernel%s\n', x.Q.BasilDisp);
-		BasilOptions = [BasilOptions ' --disp=gauss'];
-	elseif isfield(x.Q,'BasilDisp') && strcmp(x.Q.BaselDisp,'gamma')
-		fprintf('BASIL: Using dispersion model: Spatial Gaussian dispersion kernel%s\n', x.Q.BasilDisp);
-		BasilOptions = [BasilOptions ' --disp=sgauss'];
+	switch (x.Q.BASIL.Disp)
+		case 'none'
+			fprintf('BASIL Dispersion model: none\n');
+			BasilOptions = [BasilOptions ' --disp=none'];
+		case 'gamma'
+			fprintf('BASIL Dispersion model: Gamma\n');
+			BasilOptions = [BasilOptions ' --disp=gamma'];
+		case 'gauss'
+			fprintf('BASIL Dispersion model: Temporal Gaussian dispersion kernel\n');
+			BasilOptions = [BasilOptions ' --disp=gauss'];
+		case 'sgauss'
+			fprintf('BASIL Dispersion model: Spatial Gaussian dispersion kernel\n');
+			BasilOptions = [BasilOptions ' --disp=sgauss'];
+		otherwise
+			warning(['BASIL Dispersion model: ' x.Q.BASIL.Disp ' not recognized.'])
 	end
 
 	if isfield(x.Q,'BasilDebug') && x.Q.BasilDebug
