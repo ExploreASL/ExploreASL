@@ -61,9 +61,9 @@ function [x] = xASL_imp_CheckImportSettings(x)
         lastHierarchy = lastHierarchy(1:end-1);
     end
     % Fix .nii vs .nii.gz
-    if numel(lastHierarchy) > 4 && strcmp(lastHierarchy(end-4:end), '\.nii')
+    if length(lastHierarchy) > 4 && strcmp(lastHierarchy(end-4:end), '\.nii')
         lastHierarchy = [lastHierarchy(1:end-5) '(\.nii|\.nii\.gz)'];
-    elseif numel(lastHierarchy) > 8 && strcmp(lastHierarchy(end-8:end), '\.nii\.gz')
+    elseif length(lastHierarchy) > 8 && strcmp(lastHierarchy(end-8:end), '\.nii\.gz')
         lastHierarchy = [lastHierarchy(1:end-9) '(\.nii|\.nii\.gz)'];
     end
     % Return $

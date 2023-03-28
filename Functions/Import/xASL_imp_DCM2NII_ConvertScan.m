@@ -82,10 +82,16 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
 %     % Defaults
     bOneScanIsEnough = false; % PM: THIS USED TO BE TRUE FOR ANATOMICAL SCANS
     bPutInSessionFolder = true; % THIS USED TO BE FALSE FOR ANATOMICAL SCANS
-    if ~isempty(regexpi(scan_name, '^ASL4D.*')) || ~isempty(regexpi(scan_name, '^M0.*')) || ~isempty(regexpi(scan_name, '^func_bold$'))
+    if ~isempty(regexpi(scan_name, '^ASL4D.*$', 'once'))
+		if isempty(regexpi(scan_name, '^ASL4D$', 'once'))
+			warning(['Scan name ' scan_name ' deviates from ASL4D - please check if that is what you want.']);
+		end
 		bPutInSessionFolder = true;
 		bAnatomical = false;
-	elseif ~isempty(regexpi(scan_name, '^T1.+')) || ~isempty(regexpi(scan_name, '^T2.+')) || ~isempty(regexpi(scan_name, '^FLAIR$')) || ~isempty(regexpi(scan_name, '^WMH_SEGM$'))
+	elseif ~isempty(regexpi(scan_name, '^(M0.*|func_bold)$', 'once'))
+		bPutInSessionFolder = true;
+		bAnatomical = false;
+	elseif ~isempty(regexpi(scan_name, '^(T1.+|T2.+|FLAIR|WMH_SEGM)$', 'once'))
 		%             bPutInSessionFolder = false;
 		bAnatomical = true;
 	else
