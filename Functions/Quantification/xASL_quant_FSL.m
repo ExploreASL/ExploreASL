@@ -86,16 +86,28 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     end
 
     %% 4. Create option_file that contains options which are passed to the FSL command
-    % basil_options is a character array containing CLI args for the Basil/Fabber command
+    % Define basic paths
+
+	% Path to the options file
+	cmdlineOptions = [' --optfile ' xASL_adm_UnixPath(pathFSLOptions, ispc)];
+
+	% Path to input and output
+	if bUseFabber
+		cmdlineOptions = [cmdlineOptions ' --output=' xASL_adm_UnixPath(pathFSLOutput, ispc)];
+		cmdlineOptions = [cmdlineOptions ' --data=', xASL_adm_UnixPath(pathFSLInput, ispc)];
+	else
+		cmdlineOptions = [cmdlineOptions ' -o ' xASL_adm_UnixPath(pathFSLOutput, ispc)];
+		cmdlineOptions = [cmdlineOptions ' -i ' xASL_adm_UnixPath(pathFSLInput, ispc)];
+	end
+	
+	% basil_options is a character array containing CLI args for the Basil/Fabber command
 	BasilOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, dirFSLOutput);
         
     %% 5. Run Basil and retrieve CBF output
-    % args.bAutomaticallyDetectFSL=1;
-    
     if bUseFabber
-        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl --optfile ' xASL_adm_UnixPath(pathFSLOptions, ispc)], x);
+        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl' cmdlineOptions ' ' BasilOptions], x);
     else
-        [~, resultFSL] = xASL_fsl_RunFSL(['basil -i ' xASL_adm_UnixPath(pathFSLInput, ispc) ' --optfile ' xASL_adm_UnixPath(pathFSLOptions, ispc) ' -o ' xASL_adm_UnixPath(pathFSLOutput, ispc) ' ' BasilOptions], x);
+        [~, resultFSL] = xASL_fsl_RunFSL(['basil' cmdlineOptions ' ' BasilOptions], x);
     end
     
     % Check if FSL failed
@@ -173,7 +185,7 @@ end
 
 
 
-function [BasilOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, dirFSLOutput)
+function [BasilOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
 if bUseFabber
 	%% FABBER
 	% Save a Fabber options file for FSL command
@@ -187,16 +199,10 @@ if bUseFabber
 	% basil_options is a character array containing CLI args for the Basil command
 	BasilOptions = '';
 
-	FIDoptionFile = fopen(pathFabberOptions, 'w+');
-
-	[~,PWIfileName, ext] = fileparts(pathFabberInput);
-	PWIfile = [PWIfileName ext];
-
+	FIDoptionFile = fopen(pathFSLOptions, 'w+');
 	fprintf(FIDoptionFile, '# Fabber options written by ExploreASL\n');
-	%fprintf(FIDoptionFile, 'fabber_asl\n');
-	fprintf(FIDoptionFile, ['--output=' dirFSLOutput '\n']);
 	fprintf(FIDoptionFile, '--method=vb\n');
-	fprintf(FIDoptionFile, '--data=%s\n', PWIfile);
+
 	fprintf(FIDoptionFile, '--model=asl_multite\n');
 	fprintf(FIDoptionFile, '--infertexch\n');
 	fprintf(FIDoptionFile, '--save-var\n');
