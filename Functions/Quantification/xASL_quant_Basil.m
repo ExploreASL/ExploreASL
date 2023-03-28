@@ -1,7 +1,7 @@
-function [CBF_nocalib, ATT_map, CBV_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
+function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
 %xASL_quant_Basil Perform quantification using FSL BASIL
 %
-% FORMAT: [CBF_nocalib, ATT_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
+% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
 % 
 % INPUT:
 %   PWI             - image matrix of perfusion-weighted image (REQUIRED)
@@ -10,8 +10,9 @@ function [CBF_nocalib, ATT_map, CBV_map, Tex_map, resultFSL] = xASL_quant_Basil(
 % OUTPUT:
 % CBF_nocalib       - Quantified CBF image
 %                     (if there is no FSL/BASIL installed, we return the original PWI)
-% ATT_Map           - ATT map (if possible to calculate with multi-PLD)
-% Tex_map         - Time of exchange map of transport across BBB (if possible to calculate with multi-TE)
+% ATT_map           - ATT map (if possible to calculate with multi-PLD)
+% ABV_map           - arterial blood volume map (if possible to calculate with multi-PLD)
+% Tex_map           - Time of exchange map of transport across BBB (if possible to calculate with multi-TE)
 % resultFSL         - describes if the execution was successful
 %                     (0 = successful, NaN = no FSL/BASIL found, 1 or other = something failed)
 %
@@ -34,7 +35,7 @@ function [CBF_nocalib, ATT_map, CBV_map, Tex_map, resultFSL] = xASL_quant_Basil(
 % EXAMPLE: CBF_nocalib = xASL_quant_Basil(PWI, x);
 %
 % __________________________________
-% Copyright 2015-2022 ExploreASL 
+% Copyright 2015-2023 ExploreASL 
     
 
     %% Admin
@@ -117,13 +118,13 @@ function [CBF_nocalib, ATT_map, CBV_map, Tex_map, resultFSL] = xASL_quant_Basil(
     
     pathBasilCBF = xASL_adm_GetFileList(dirBasilOutput, '^mean_ftiss\.nii$', 'FPListRec');
     
-	if isempty(pathBasilCBF) 
+	if isempty(pathBasilCBF)
 		if bUseFabber
 			error('FSL FABBER failed');
 		else
 			error('FSL BASIL failed');
 		end
-    end
+	end
    
     pathBasilCBF = pathBasilCBF{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
        
@@ -135,15 +136,15 @@ function [CBF_nocalib, ATT_map, CBV_map, Tex_map, resultFSL] = xASL_quant_Basil(
 		ATT_map = xASL_io_Nifti2Im(pathBasilATT);
 	else
 		ATT_map = NaN;
-    end
+	end
     
-    pathBasilCBV = xASL_adm_GetFileList(dirBasilOutput, '^mean_fblood\.nii$', 'FPListRec');
-	if ~isempty(pathBasilCBV)
-		pathBasilCBV = pathBasilCBV{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
-		CBV_map = xASL_io_Nifti2Im(pathBasilCBV);
+    pathBasilABV = xASL_adm_GetFileList(dirBasilOutput, '^mean_fblood\.nii$', 'FPListRec');
+	if ~isempty(pathBasilABV)
+		pathBasilABV = pathBasilABV{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+		ABV_map = xASL_io_Nifti2Im(pathBasilABV);
 	else
-		CBV_map = NaN;
-    end
+		ABV_map = NaN;
+	end
     
     pathFabberTex = xASL_adm_GetFileList(dirBasilOutput, '^mean_T_exch\.nii$', 'FPListRec');
 	if ~isempty(pathFabberTex)
@@ -151,7 +152,7 @@ function [CBF_nocalib, ATT_map, CBV_map, Tex_map, resultFSL] = xASL_quant_Basil(
 		Tex_map = xASL_io_Nifti2Im(pathFabberTex);
 	else
 		Tex_map = NaN;
-    end
+	end
 	
     %% 6. Scaling to physiological units
     % Note different to xASL_quant_SinglePLD since Fabber has T1 in seconds
@@ -160,6 +161,10 @@ function [CBF_nocalib, ATT_map, CBV_map, Tex_map, resultFSL] = xASL_quant_Basil(
     CBF_nocalib = CBF_nocalib .* 6000 .* x.Q.Lambda ./ x.Q.LabelingEfficiency;
     % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
     % & old Siemens sequence also didn't need the 1 gr->100 gr conversion
+
+	if numel(ABV_map) > 1
+		ABV_map = ABV_map .* 6000 .* x.Q.Lambda ./ x.Q.LabelingEfficiency;
+	end
     
     %% 7. Householding
     xASL_delete(pathBasilInput);

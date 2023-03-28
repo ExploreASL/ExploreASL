@@ -54,7 +54,7 @@ function xASL_wrp_Quantify(x, PWI_Path, pathOutputCBF, M0Path, SliceGradientPath
 %     Comparison of 3 T and 7 T ASL techniques for concurrent functional perfusion and BOLD studies
 %     Neuroimage. 2017; 156:363-376.
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2023 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------
@@ -80,8 +80,8 @@ end
 iStringCBF = regexpi(pathOutputCBF, 'CBF');
 iStringCBF = iStringCBF(end);
 pathOutputATT = [pathOutputCBF(1:(iStringCBF-1)) 'ATT' pathOutputCBF((iStringCBF+3):end)];
-pathOutputCBV = [pathOutputCBF(1:(iStringCBF-1)) 'CBV' pathOutputCBF((iStringCBF+3):end)];
 pathOutputTex = [pathOutputCBF(1:(iStringCBF-1)) 'Tex' pathOutputCBF((iStringCBF+3):end)];
+pathOutputABV = [pathOutputCBF(1:(iStringCBF-1)) 'ABV' pathOutputCBF((iStringCBF+3):end)];
 
 if nargin<4 || isempty(M0Path)
     M0Path = x.P.Pop_Path_M0;
@@ -437,10 +437,11 @@ if ~x.modules.asl.bMultiPLD % single PLD quantification
     [~, CBF] = xASL_quant_SinglePLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
 	ATT = NaN;
 	Tex = NaN;
+	ABV = NaN;
 elseif x.Q.bUseBasilQuantification
     % perform BASIL multi-PLD quantification
     fprintf('%s\n', 'Performing multi PLD quantification using BASIL');
-    [~, CBF, ATT, CBV, Tex] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
+    [~, CBF, ATT, ABV, Tex] = xASL_quant_MultiPLD(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs multi-PLD BASIL, but only in native space!
 else
     % multi-PLD quantification without BASIL
     error('Multi PLD quantification without BASIL not implemented yet');
@@ -470,9 +471,9 @@ if numel(ATT) > 1 || ~isnan(ATT)
 	xASL_io_SaveNifti(PWI_Path, pathOutputATT, ATT, 32, 0);
 end
 
-if numel(CBV) > 1 || ~isnan(CBV)
-	% Save the ATT file
-	xASL_io_SaveNifti(PWI_Path, pathOutputCBV, CBV, 32, 0);
+if numel(ABV) > 1 || ~isnan(ABV)
+	% Save the ABV file
+	xASL_io_SaveNifti(PWI_Path, pathOutputABV, ABV, 32, 0);
 end
 
 if numel(Tex) > 1 || ~isnan(Tex)
@@ -521,10 +522,14 @@ if x.Q.bUseBasilQuantification
     xASL_spm_deformations(x, {x.P.Path_CBF}, {x.P.Pop_Path_CBF}, [], [], AffineTransfPath, x.P.Path_y_ASL);
 	if xASL_exist(x.P.Path_ATT,'file')
 		xASL_spm_deformations(x, {x.P.Path_ATT}, {x.P.Pop_Path_ATT}, [], [], AffineTransfPath, x.P.Path_y_ASL);
-    end
+	end
     
-    if xASL_exist(x.P.Path_Tex,'file')
+	if xASL_exist(x.P.Path_Tex,'file')
 		xASL_spm_deformations(x, {x.P.Path_Tex}, {x.P.Pop_Path_Tex}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+	end
+
+	if xASL_exist(x.P.Path_ABV,'file')
+		xASL_spm_deformations(x, {x.P.Path_ABV}, {x.P.Pop_Path_ABV}, [], [], AffineTransfPath, x.P.Path_y_ASL);
 	end
 end
 end
