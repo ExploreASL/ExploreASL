@@ -41,7 +41,7 @@ function xASL_wrp_GetROIstatistics(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_wrp_GetROIstatistics(x);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------------------
@@ -126,6 +126,8 @@ elseif ~isempty(strfind(x.S.InputDataStr,'T1'))
     x.S.unit = 'mL';
 elseif ~isempty(strfind(x.S.InputDataStr,'Tex'))
     x.S.unit = 's';
+elseif ~isempty(strfind(x.S.InputDataStr,'ABV'))
+    x.S.unit = 'mL/100g/min';
 elseif ~isempty(strfind(x.S.InputDataStr,'TT'))
     x.S.unit = 's';	
 elseif ~isempty(strfind(x.S.InputDataStr,'ATT'))
