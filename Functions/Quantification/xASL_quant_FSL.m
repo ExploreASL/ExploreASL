@@ -182,42 +182,75 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     
 end
 
-
-
-
 function [BasilOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
+%xASL_sub_FSLOptions generates the options and saves them in a file and returns some commandline options as well
+%
+% FORMAT: [BasilOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
+% 
+% INPUT:
+%   pathFSLOptions  - filepath to the options file (REQUIRED)
+%   x               - struct containing pipeline environment parameters (REQUIRED)
+%   bUseFabber      - Use FABBER, alternative BASIL (REQUIRED)
+%
+% OUTPUT:
+% BasilOptions      - command-line options
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Options-file is saved and commandline options returned in a single string
+%
+% 1. Create the options file
+% 2. Basic model and tissue parameters
+% 6. Save and close the options file
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: [BasilOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
+%
+% __________________________________
+% Copyright 2015-2023 ExploreASL 
+
+%% 1. Create the options file
+% BasilOptions is a character array containing CLI args for the Basil command
+BasilOptions = '';
+
+FIDoptionFile = fopen(pathFSLOptions, 'w+');
 if bUseFabber
-	%% FABBER
-	% Save a Fabber options file for FSL command
-	% 1. Create an option file
-	% 2. Basic tissue parameters
-	% 3. Basic acquisition parameters
-	% 4. Model fiting parameters
-	% 5. Save Fabber options file
-
-	%% 1. Create option_file that contains options which are passed to Fabber
-	% basil_options is a character array containing CLI args for the Basil command
-	BasilOptions = '';
-
-	FIDoptionFile = fopen(pathFSLOptions, 'w+');
 	fprintf(FIDoptionFile, '# Fabber options written by ExploreASL\n');
-	fprintf(FIDoptionFile, '--method=vb\n');
+else
+	fprintf(FIDoptionFile, '# Basil options written by ExploreASL\n');
+end
 
+%% 2. Basic model and tissue parameters
+% Basic model options
+if bUseFabber
+	fprintf(FIDoptionFile, '--method=vb\n');
 	fprintf(FIDoptionFile, '--model=asl_multite\n');
-	fprintf(FIDoptionFile, '--infertexch\n');
+	fprintf(FIDoptionFile, '--infertexch\n'); % Fit Tex
+	fprintf(FIDoptionFile, '--inferitt\n');   % Fit ATT
+end
+
+% Basic fitting and output options
+if bUseFabber
 	fprintf(FIDoptionFile, '--save-var\n');
 	fprintf(FIDoptionFile, '--save-residuals\n');
 	fprintf(FIDoptionFile, '--allow-bad-voxels\n');
 	fprintf(FIDoptionFile, '--save-model-fit\n');
 	fprintf(FIDoptionFile, '--noise=white\n');
+end
 
-	%% 2. Basic tissue parameters
-	fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
-	fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
+% Basic tissue parameters
+fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
+fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
 
+if bUseFabber
+	% T2-times needed for multi-TE quantification
 	fprintf(FIDoptionFile, '--t2b=%f\n', x.Q.T2art/1000);
 	fprintf(FIDoptionFile, '--t2=%f\n', x.Q.T2/1000);
+end
 
+%% REDO
+if bUseFabber
+	% 3. Basic acquisition parameters
+	% 4. Model fiting parameters
+	
 	%% 3. Basic acquisition parameters
 
 	% Prepare unique PLDs+LabDur combinations
@@ -270,34 +303,15 @@ if bUseFabber
 	%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
 	%fprintf(FIDoptionFile, '--repeats=1\n');
 
-	% 4. Model fiting parameters (ATT map)
-	fprintf(FIDoptionFile, '--inferitt');
-
-	%% 5. Save Fabber options file
-	fclose(FIDoptionFile);
+	
 
 else
 	%% BASIL
 	% Save a Basil options file and store CLI options for Basil
-	% 1. Create an option file
-	% 2. Basic tissue parameters
 	% 3. Basic acquisition parameters
 	% 4. Model fiting parameters
 	% 5. Extra features on demand
-	% 6. Save BASIL options file
-
-	%% 1. Create option_file that contains options which are passed to Fabber
-	% basil_options is a character array containing CLI args for the Basil command
-
-	FIDoptionFile = fopen(pathFSLOptions, 'w+');
-	BasilOptions = '';
-
-	fprintf(FIDoptionFile, '# Basil options written by ExploreASL\n');
-
-	%% 2. Basic tissue parameters
-	fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
-	fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
-
+	
 	%% 3. Basic acquisition parameters
 
 	% Labelling type - PASL or pCASL
@@ -517,10 +531,10 @@ else
 	if isfield(x.Q,'BasilDebug') && x.Q.BasilDebug
 		BasilOptions = [BasilOptions ' --devel'];
 	end
-
-
-	%% 6. Save Basil options file
-	fclose(FIDoptionFile);
-
+	
 end
+
+%% 6. Save Basil options file
+fclose(FIDoptionFile);
+
 end
