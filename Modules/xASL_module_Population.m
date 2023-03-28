@@ -52,7 +52,7 @@ end
 % Default datatypes
 if ~isfield(x.S,'DataTypes') || isempty(x.S.DataTypes)
 	x.S.DataTypes = {'qCBF'}; % Default
-	% Alternatives: 'Tex' 'ATT' 'SD' 'M0'
+	% Alternatives: 'Tex' 'ATT' 'SD' 'M0' 'ABV'
 	% These can be added in the dataPar manually
 end
 

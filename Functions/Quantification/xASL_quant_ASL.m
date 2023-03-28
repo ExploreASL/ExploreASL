@@ -1,6 +1,6 @@
-function [ScaleImage, CBF, ATT, CBV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
+function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
 %xASL_quant_ASL Perform a multi-step quantification of single or multi-PLD with or without BASIL
-% FORMAT: [ScaleImage[, CBF, ATT, Tex]] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
+% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex]] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
 %
 % INPUT:
 %   PWI             - 3D (single PLD) or 4D (multi PLD) image matrix of perfusion-weighted image (REQUIRED)
@@ -15,6 +15,7 @@ function [ScaleImage, CBF, ATT, CBV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNu
 % ScaleImage        - image matrix containing net/effective quantification scale factor
 % CBF               - Quantified CBF image
 % ATT               - Estimated ATT map (if multi-PLD, otherwise empty)
+% ABV               - Estimated arterialBloodVolume map (if multi-PLD, otherwise empty)
 % Tex               - Estimated map of time of exchange across BBB (if multi-TE is available, otherwise empty)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script performs a multi-step quantification, by
@@ -41,7 +42,7 @@ function [ScaleImage, CBF, ATT, CBV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNu
 %              imSliceNumber)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [ScaleImage, CBF] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x);
+% EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification);
 % __________________________________
 % Copyright (c) 2015-2023 ExploreASL
 
@@ -152,7 +153,7 @@ else
 
     if bUseBasilQuantification
         % Here we perform FSL BASIL
-		[PWI, ATT, CBV, Tex] = xASL_quant_Basil(PWI, x);
+		[PWI, ATT, ABV, Tex] = xASL_quant_Basil(PWI, x);
 		
 		% If resultFSL is not 0, something went wrong
         % This will issue a warning inside xASL_quant_Basil
@@ -262,6 +263,9 @@ if ~x.modules.asl.ApplyQuantification(3)
 	% Convert to double precision if not done previously
 	M0_im = double(M0_im);
 	PWI = double(PWI);
+	if numel(ABV) > 1
+		ABV = double(ABV);
+	end
 end
 
 M0_im = repmat(M0_im,MatchSizeM0);
@@ -277,6 +281,8 @@ end
 %% 6    Apply quantification
 if x.modules.asl.ApplyQuantification(6)
     CBF = PWI.*ScaleImage;
+	if numel(ABV) > 1
+		ABV = ABV.*ScaleImage;
 else
     CBF = PWI;
 end
