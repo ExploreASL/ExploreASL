@@ -1,7 +1,7 @@
-function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
-%xASL_quant_Basil Perform quantification using FSL BASIL
+function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI, x)
+%xASL_quant_FSL Perform quantification using FSL BASIL/FABBER
 %
-% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_Basil(PWI, x)
+% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI, x)
 % 
 % INPUT:
 %   PWI             - image matrix of perfusion-weighted image (REQUIRED)
@@ -32,14 +32,14 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_Basil(
 % 7. Householding
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: CBF_nocalib = xASL_quant_Basil(PWI, x);
+% EXAMPLE: CBF_nocalib = xASL_quant_FSL(PWI, x);
 %
 % __________________________________
 % Copyright 2015-2023 ExploreASL 
     
 
     %% Admin
-    fprintf('%s\n','Quantification CBF using FSL BASIL:');   
+    fprintf('%s\n','Quantification CBF using FSL BASIL/FABBER:');   
 
 	Tex_map = [];
 	ATT_map = [];
@@ -108,7 +108,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_Basil(
 			error('FSL BASIL was not found, exiting...');
 		end
     elseif resultFSL~=0
-		if bUserFabber
+		if bUseFabber
 			error('Something went wrong running FSL FABBER...');
 		else
 			error('Something went wrong running FSL BASIL...');

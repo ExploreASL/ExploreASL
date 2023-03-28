@@ -152,14 +152,14 @@ else
     end
 
     if bUseBasilQuantification
-        % Here we perform FSL BASIL
-		[PWI, ATT, ABV, Tex] = xASL_quant_Basil(PWI, x);
+        % Here we perform FSL quantification
+		[PWI, ATT, ABV, Tex] = xASL_quant_FSL(PWI, x);
 		
 		% If resultFSL is not 0, something went wrong
-        % This will issue a warning inside xASL_quant_Basil
+        % This will issue a warning inside xASL_quant_FSL
 	else
-        % This part should only run when we don't use FSL BASIL
-        % or as a fallback when FSL BASIL crashed
+        % This part should only run when we don't use FSL BASIL/FABBER
+        % or as a fallback when FSL BASIL/FABBER crashed
         
         %% 2    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'LabelingDuration')
@@ -185,7 +185,7 @@ else
 	ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
 	% Throw warning if no Philips scans, but some of the scale slopes are not 1:
-	if isempty(regexpi(x.Q.Vendor, 'Philips'))
+	if isempty(regexpi(x.Q.Vendor, 'Philips', 'once'))
 		if isfield(ASL_parms,'RescaleSlopeOriginal') && ASL_parms.RescaleSlopeOriginal~=1
 			warning('We detected a RescaleSlopeOriginal~=1, verify that this is not a Philips scan!!!');
 		end
@@ -198,7 +198,7 @@ else
 	end
 
 	% Set GE specific scalings
-	if ~isempty(regexpi(x.Q.Vendor,'GE'))
+	if ~isempty(regexpi(x.Q.Vendor, 'GE', 'once'))
 		if ~isfield(x.Q,'NumberOfAverages')
 			% GE accumulates signal instead of averaging by NEX, therefore division by NEX is required
 			error('GE-data assumed, "NumberOfAverages" should be a BIDS field, but was not found')
@@ -208,7 +208,7 @@ else
 
 		% For some reason the older GE Alsop Work in Progress (WIP) version
 		% has a different scale factor than the current GE product sequence
-		if isfield(x.Q,'SoftwareVersions')
+		if isfield(x.Q, 'SoftwareVersions')
 			softwareVersions = xASL_str2num(x.Q.SoftwareVersions(1:2));
 		else
 			softwareVersions = 0;
@@ -228,7 +228,7 @@ else
 		fprintf('%s\n',['Quantification corrected for GE scale factor ' xASL_num2str(qnt_GEscaleFactor) ' for NSA=' xASL_num2str(x.Q.NumberOfAverages)]);
 
 		% Set Philips specific scaling
-	elseif ~isempty(regexpi(x.Q.Vendor,'Philips'))
+	elseif ~isempty(regexpi(x.Q.Vendor,'Philips', 'once'))
 		% Philips has specific scale & rescale slopes
 		% If these are not corrected for, only relative CBF quantification can be performed,
 		% i.e. scaled to wholebrain, the wholebrain perfusion cannot be calculated.
@@ -283,6 +283,7 @@ if x.modules.asl.ApplyQuantification(6)
     CBF = PWI.*ScaleImage;
 	if numel(ABV) > 1
 		ABV = ABV.*ScaleImage;
+	end
 else
     CBF = PWI;
 end
