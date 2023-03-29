@@ -101,7 +101,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 	end
 	
 	% basil_options is a character array containing CLI args for the Basil/Fabber command
-	BasilOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, dirFSLOutput);
+	BasilOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI);
         
     %% 5. Run Basil and retrieve CBF output
     if bUseFabber
@@ -559,10 +559,6 @@ else
 			BasilOptions = [BasilOptions ' --disp=sgauss'];
 		otherwise
 			warning(['BASIL Dispersion model: ' x.Q.BASIL.Disp ' not recognized.'])
-	end
-
-	if isfield(x.Q,'BasilDebug') && x.Q.BasilDebug
-		BasilOptions = [BasilOptions ' --devel'];
 	end
 	
 end

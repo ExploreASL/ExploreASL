@@ -15,7 +15,7 @@ function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNu
 % ScaleImage        - image matrix containing net/effective quantification scale factor
 % CBF               - Quantified CBF image
 % ATT               - Estimated ATT map (if multi-PLD, otherwise empty)
-% ABV               - Estimated arterialBloodVolume map (if multi-PLD, otherwise empty)
+% ABV               - Estimated arterial blood volume map (if multi-PLD, otherwise empty)
 % Tex               - Estimated map of time of exchange across BBB (if multi-TE is available, otherwise empty)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script performs a multi-step quantification, by
