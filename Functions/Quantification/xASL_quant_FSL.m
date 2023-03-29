@@ -169,7 +169,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     % & old Siemens sequence also didn't need the 1 gr->100 gr conversion
 
 	if numel(ABV_map) > 1
-		ABV_map = ABV_map .* 6000 .* x.Q.Lambda ./ x.Q.LabelingEfficiency;
+		ABV_map = ABV_map ./ x.Q.LabelingEfficiency;
 	end
     
     %% 7. Householding
