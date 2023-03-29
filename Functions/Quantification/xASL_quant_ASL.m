@@ -76,6 +76,7 @@ if x.modules.asl.bMultiPLD && ~bUseBasilQuantification
 end
 
 ScaleImage = 1; % initializing (double data format by default in Matlab)
+ScaleImageABV = 1;
 
 % Convert to double precision to increase quantification precision
 % This is especially useful with the large factors that we can multiply and
@@ -225,6 +226,7 @@ else
         % division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
 
 		ScaleImage = ScaleImage./qnt_GEscaleFactor;
+		ScaleImageABV = ScaleImageABV./qnt_GEscaleFactor;
 		fprintf('%s\n',['Quantification corrected for GE scale factor ' xASL_num2str(qnt_GEscaleFactor) ' for NSA=' xASL_num2str(x.Q.NumberOfAverages)]);
 
 		% Set Philips specific scaling
@@ -237,6 +239,7 @@ else
 
 		if scaleFactor
 			ScaleImage = ScaleImage .* scaleFactor;
+			ScaleImageABV = ScaleImageABV .* scaleFactor;
 		end
 
 		% Siemens specific scalings
@@ -244,6 +247,7 @@ else
 		if ~strcmpi(x.Q.Vendor,'Siemens_JJ_Wang') && strcmpi(x.Q.M0,'separate_scan')
 			% Some Siemens readouts divide M0 by 10, others don't
 			ScaleImage = ScaleImage./10;
+			ScaleImageABV = ScaleImageABV./10;
 			fprintf('%s\n','M0 corrected for Siemens scale factor 10')
 		end
 	end
@@ -254,6 +258,7 @@ end
 % Match sizes
 MatchSizeM0 = round([size(PWI,1)./size(M0_im,1) size(PWI,2)./size(M0_im,2) size(PWI,3)./size(M0_im,3) size(PWI,4)./size(M0_im,4) size(PWI,5)./size(M0_im,5) size(PWI,6)./size(M0_im,6) size(PWI,7)./size(M0_im,7)]);
 MatchSizeSI = round([size(PWI,1)./size(ScaleImage,1) size(PWI,2)./size(ScaleImage,2) size(PWI,3)./size(ScaleImage,3) size(PWI,4)./size(ScaleImage,4) size(PWI,5)./size(ScaleImage,5) size(PWI,6)./size(ScaleImage,6) size(PWI,7)./size(ScaleImage,7)]);
+MatchSizeSIABV = round([size(PWI,1)./size(ScaleImageABV,1) size(PWI,2)./size(ScaleImageABV,2) size(PWI,3)./size(ScaleImageABV,3) size(PWI,4)./size(ScaleImageABV,4) size(PWI,5)./size(ScaleImageABV,5) size(PWI,6)./size(ScaleImageABV,6) size(PWI,7)./size(ScaleImageABV,7)]);
 
 if sum(MatchSizeM0==0) || sum(MatchSizeSI==0)
     error('PWI dimensions too small compared to M0 and/or ScaleImage dimensions');
@@ -268,13 +273,15 @@ if ~x.modules.asl.ApplyQuantification(3)
 	end
 end
 
-M0_im = repmat(M0_im,MatchSizeM0);
-ScaleImage = repmat(ScaleImage,MatchSizeSI);
+M0_im = repmat(M0_im, MatchSizeM0);
+ScaleImage = repmat(ScaleImage, MatchSizeSI);
+ScaleImageABV = repmat(ScaleImageABV, MatchSizeSIABV);
 
 if ~x.modules.asl.ApplyQuantification(5)
     fprintf('%s\n','We skip the PWI/M0 division');
 else
     ScaleImage = ScaleImage./M0_im;
+	ScaleImageABV = ScaleImageABV./M0_im;
 end
 
 
@@ -282,7 +289,7 @@ end
 if x.modules.asl.ApplyQuantification(6)
     CBF = PWI.*ScaleImage;
 	if numel(ABV) > 1
-		ABV = ABV.*ScaleImage;
+		ABV = ABV.*ScaleImageABV;
 	end
 else
     CBF = PWI;

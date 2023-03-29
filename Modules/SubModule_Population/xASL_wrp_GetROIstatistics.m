@@ -127,7 +127,7 @@ elseif ~isempty(strfind(x.S.InputDataStr,'T1'))
 elseif ~isempty(strfind(x.S.InputDataStr,'Tex'))
     x.S.unit = 's';
 elseif ~isempty(strfind(x.S.InputDataStr,'ABV'))
-    x.S.unit = 'mL/100g/min';
+    x.S.unit = '%%';% Doubled % is needed in printf use
 elseif ~isempty(strfind(x.S.InputDataStr,'TT'))
     x.S.unit = 's';	
 elseif ~isempty(strfind(x.S.InputDataStr,'ATT'))
