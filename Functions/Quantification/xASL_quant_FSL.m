@@ -211,7 +211,7 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
 
 %% 0. Admin
 if ~bUseFabber
-	% Set BASIL dataPar options
+	% Set BASIL dataPar options and their defaults
 	if ~isfield(x.Q,'BASIL')
 		x.Q.BASIL = [];
 	end
@@ -239,6 +239,10 @@ if ~bUseFabber
 	if ~isfield(x.Q.BASIL,'Disp') || isempty(x.Q.BASIL.Disp)
 		fprintf('BASIL: Setting default option Disp = none\n');
 		x.Q.BASIL.Disp = 'none';
+	end
+
+	if ~isfield(x.Q.BASIL, 'ATTSD')
+		x.Q.BASIL.ATTSD = 1.0;
 	end
 
 end
@@ -282,13 +286,10 @@ if bUseFabber
 	fprintf(FIDoptionFile, '--t2=%f\n', x.Q.T2/1000);
 end
 
+%% 3. Basic acquisition parameters
+
 %% REDO
 if bUseFabber
-	% 3. Basic acquisition parameters
-	% 4. Model fiting parameters
-	
-	%% 3. Basic acquisition parameters
-
 	% Prepare unique PLDs+LabDur combinations
 
 	% First create a labeling duration vector of the same length
@@ -338,17 +339,8 @@ if bUseFabber
 	% Right now, we assume that we have averaged over PLDs
 	%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
 	%fprintf(FIDoptionFile, '--repeats=1\n');
-
-	
-
 else
 	%% BASIL
-	% Save a Basil options file and store CLI options for Basil
-	% 3. Basic acquisition parameters
-	% 4. Model fiting parameters
-	% 5. Extra features on demand
-	
-	%% 3. Basic acquisition parameters
 
 	% Labelling type - PASL or pCASL
 	switch lower(x.Q.LabelingType)
@@ -454,11 +446,11 @@ else
 		end
 	end
 
-	%% 4. Model fiting parameters
-
-	% This helps avoid failure on the structural-space image (we do not perform non-native space quantification yet)
-	% fprintf(FIDoptionFile, '--allow-bad-voxels\n');
-
+	
+end
+%%%%%%%% REDO ABOVE
+%% 4. Model fiting parameters
+if ~bUseFabber
 	switch lower(x.Q.LabelingType)
 		case 'pasl'
 			% Default initial ATT for PASL is 0.7
@@ -470,16 +462,11 @@ else
 
 	if x.modules.asl.bMultiPLD
 		% Multi-PLD or Time Encoded data allows to fit arrival times
-
-		% Set the variance of ATT estimation
-		if ~isfield(x.Q, 'BasilATTSD')
-			x.Q.BasilATTSD = 1.0;
-		end
 		fprintf(FIDoptionFile, '--batsd=%f\n', x.Q.BasilATTSD);
 	end
-	
 end
-%%%%%%%% REDO ABOVE
+
+
 %% 5. Extra BASIL fitting options
 if ~bUseFabber
 	if x.Q.BASIL.bSpatial
