@@ -175,10 +175,19 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     %% 7. Householding
 	% Basils Output is in the subfolder '/FSL_Output' which contains multiple steps if there are multiple iterations, and always contains
     % a symbolic link (symlink) to the foldername of the latest iteration/step ('stepX_latest').
-    xASL_delete(pathFSLInput);
-	xASL_delete(pathFSLOptions);
-	xASL_delete(pathFSLOutput);
-	%xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
+	if ~isfield(x.Q, 'BASIL')
+		x.Q.BASIL = [];
+	end
+	if ~isfield(x.Q.BASIL, 'bCleanUp') || isempty(x.Q.BASIL.bCleanUp)
+		x.Q.BASIL.bCleanUp = true;
+	end
+	
+	if x.Q.BASIL.bCleanUp
+		xASL_delete(pathFSLInput);
+		xASL_delete(pathFSLOptions);
+		xASL_delete(pathFSLOutput);
+		%xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
+	end
     
 end
 
@@ -367,9 +376,6 @@ switch lower(x.Q.LabelingType)
 				fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD, PLDs(iPLD));
 				fprintf(FIDoptionFile, '--nte%d=%d\n', iPLD, nTE); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
 			end
-			for iLabDurs = 1:length(LabDurs)
-				fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
-			end
 
 			for iTE = 1:length(TEs) %We need a TE for each volume
 				fprintf(FIDoptionFile, '--te%d=%.2f\n', iTE, TEs(iTE));
@@ -383,19 +389,24 @@ switch lower(x.Q.LabelingType)
 			fprintf(FIDoptionFile, '--casl\n');
 			fprintf('BASIL: (P)CASL model\n');
 
+			% For BASIL, PLDs are specified
 			if x.modules.asl.bMultiPLD
 				for iPLD = 1:length(PLDs)
 					fprintf(FIDoptionFile, '--pld%d=%.2f\n', iPLD, PLDs(iPLD));
 				end
-				for iLabDurs = 1:length(LabDurs)
-					fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
-				end
 			else
-				fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs);
 				fprintf(FIDoptionFile, '--pld=%.2f\n', PLDs);
 			end
 		end
 
+		% Print labeling durations
+		if x.modules.asl.bMultiPLD
+			for iLabDurs = 1:length(LabDurs)
+				fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
+			end
+		else
+			fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs);
+		end
 end
 
 if ~bUserFabber
