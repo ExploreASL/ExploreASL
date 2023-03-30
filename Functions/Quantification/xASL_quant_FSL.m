@@ -459,7 +459,7 @@ if ~bUseFabber
 
 	if x.modules.asl.bMultiPLD
 		% Multi-PLD or Time Encoded data allows to fit arrival times
-		fprintf(FIDoptionFile, '--batsd=%f\n', x.Q.BasilATTSD);
+		fprintf(FIDoptionFile, '--batsd=%f\n', x.Q.BASIL.ATTSD);
 	end
 end
 
