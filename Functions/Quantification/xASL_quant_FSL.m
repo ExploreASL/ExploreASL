@@ -100,14 +100,14 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 		cmdlineOptions = [cmdlineOptions ' -i ' xASL_adm_UnixPath(pathFSLInput, ispc)];
 	end
 	
-	% basil_options is a character array containing CLI args for the Basil/Fabber command
-	BasilOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI);
+	% FSLOptions is a character array containing CLI args for the BASIL/FABBER command
+	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI);
         
     %% 5. Run Basil and retrieve CBF output
     if bUseFabber
-        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl' cmdlineOptions ' ' BasilOptions], x);
+        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl' cmdlineOptions ' ' FSLOptions], x);
     else
-        [~, resultFSL] = xASL_fsl_RunFSL(['basil' cmdlineOptions ' ' BasilOptions], x);
+        [~, resultFSL] = xASL_fsl_RunFSL(['basil' cmdlineOptions ' ' FSLOptions], x);
     end
     
     % Check if FSL failed
@@ -182,10 +182,10 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     
 end
 
-function [BasilOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
+function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
 %xASL_sub_FSLOptions generates the options and saves them in a file and returns some commandline options as well
 %
-% FORMAT: [BasilOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
+% FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
 % 
 % INPUT:
 %   pathFSLOptions  - filepath to the options file (REQUIRED)
@@ -193,16 +193,18 @@ function [BasilOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI
 %   bUseFabber      - Use FABBER, alternative BASIL (REQUIRED)
 %
 % OUTPUT:
-% BasilOptions      - command-line options
+% FSLOptions      - command-line options
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Options-file is saved and commandline options returned in a single string
 %
+% 0. Admin
 % 1. Create the options file
 % 2. Basic model and tissue parameters
+% 5. Extra BASIL fitting options
 % 6. Save and close the options file
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [BasilOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
+% EXAMPLE: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
 %
 % __________________________________
 % Copyright 2015-2023 ExploreASL 
@@ -242,14 +244,14 @@ if ~bUseFabber
 end
 
 %% 1. Create the options file
-% BasilOptions is a character array containing CLI args for the Basil command
-BasilOptions = '';
+% FSLOptions is a character array containing CLI args for the Basil command
+FSLOptions = '';
 
 FIDoptionFile = fopen(pathFSLOptions, 'w+');
 if bUseFabber
-	fprintf(FIDoptionFile, '# Fabber options written by ExploreASL\n');
+	fprintf(FIDoptionFile, '# FABBER options written by ExploreASL\n');
 else
-	fprintf(FIDoptionFile, '# Basil options written by ExploreASL\n');
+	fprintf(FIDoptionFile, '# BASIL options written by ExploreASL\n');
 end
 
 %% 2. Basic model and tissue parameters
@@ -511,35 +513,40 @@ else
 	%     end
 
 
-	%% 5. Extra BASIL fitting options
+	
+	
+end
+%%%%%%%% REDO ABOVE
+%% 5. Extra BASIL fitting options
+if ~bUseFabber
 	if x.Q.BASIL.bSpatial
 		fprintf('BASIL: Use automated spatial smoothing\n');
-		BasilOptions = [BasilOptions ' --spatial'];
+		FSLOptions = [FSLOptions ' --spatial'];
 	end
 
 	if x.Q.BASIL.bInferT1
 		fprintf('BASIL: Infer variable T1 values\n');
-		BasilOptions = [BasilOptions ' --infert1'];
+		FSLOptions = [FSLOptions ' --infert1'];
 	end
 
 	if x.Q.BASIL.bInferArt
 		fprintf('BASIL: Infer arterial BV and arrival time\n');
-		BasilOptions = [BasilOptions ' --inferart'];
+		FSLOptions = [FSLOptions ' --inferart'];
 	end
 
 	switch (x.Q.BASIL.Exch)
 		case 'simple'
 			fprintf('BASIL Exchange model: Simple single compartment with T1 of blood, per white paper\n');
-			BasilOptions = [BasilOptions ' --exch=simple'];
+			FSLOptions = [FSLOptions ' --exch=simple'];
 		case 'mix'
 			fprintf('BASIL Exchange model: Well-mixed\n');
-			BasilOptions = [BasilOptions ' --exch=mix'];
+			FSLOptions = [FSLOptions ' --exch=mix'];
 		case '2cpt'
 			fprintf('BASIL Exchange model: A two compartment exchange model following Parkes & Tofts\n');
-			BasilOptions = [BasilOptions ' --exch=2cpt'];
+			FSLOptions = [FSLOptions ' --exch=2cpt'];
 		case 'spa'
 			fprintf('BASIL Exchange model: A single pass approximation from St. Lawrence\n');
-			BasilOptions = [BasilOptions ' --exch=spa'];
+			FSLOptions = [FSLOptions ' --exch=spa'];
 		otherwise
 			warning(['BASIL Exchange model: ' x.Q.BASIL.Exch ' not recognized.'])
 	end
@@ -547,23 +554,22 @@ else
 	switch (x.Q.BASIL.Disp)
 		case 'none'
 			fprintf('BASIL Dispersion model: none\n');
-			BasilOptions = [BasilOptions ' --disp=none'];
+			FSLOptions = [FSLOptions ' --disp=none'];
 		case 'gamma'
 			fprintf('BASIL Dispersion model: Gamma\n');
-			BasilOptions = [BasilOptions ' --disp=gamma'];
+			FSLOptions = [FSLOptions ' --disp=gamma'];
 		case 'gauss'
 			fprintf('BASIL Dispersion model: Temporal Gaussian dispersion kernel\n');
-			BasilOptions = [BasilOptions ' --disp=gauss'];
+			FSLOptions = [FSLOptions ' --disp=gauss'];
 		case 'sgauss'
 			fprintf('BASIL Dispersion model: Spatial Gaussian dispersion kernel\n');
-			BasilOptions = [BasilOptions ' --disp=sgauss'];
+			FSLOptions = [FSLOptions ' --disp=sgauss'];
 		otherwise
 			warning(['BASIL Dispersion model: ' x.Q.BASIL.Disp ' not recognized.'])
 	end
-	
 end
 
-%% 6. Save Basil options file
+%% 6. Close options file
 fclose(FIDoptionFile);
 
 end
