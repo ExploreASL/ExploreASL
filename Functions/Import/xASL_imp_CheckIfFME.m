@@ -72,4 +72,9 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded)
 		end
 				
 	end
+
+	% Or protocol name
+	if isfield(jsonIn,'ProtocolName') && ~isempty(regexpi(char(jsonIn.ProtocolName), 'fme_gammastar_Had(4|8)', 'once'))
+		bTimeEncodedFME = true;
+	end
 end

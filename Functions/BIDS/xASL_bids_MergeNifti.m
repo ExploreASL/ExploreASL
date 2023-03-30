@@ -655,6 +655,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
         % Special treatment for Hadamard encoded files
         EchoTimes = cell(size(NiftiPaths,2),1);
 		bHadamardFME = false;
+		bMultiTE = 0;
         for iFileCheck = 1:size(NiftiPaths,2)
             % Get JSON
             [jsonPathX, jsonNameX] = xASL_fileparts(NiftiPaths{iFileCheck});
@@ -667,8 +668,8 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 				end
 				
 				% Check if vendor is Siemens and contains a multi-TE setup
-				bMultiTE = 0;
-				if isfield(tmpCheckJSON,'Manufacturer') && strcmpi(tmpCheckJSON.Manufacturer,'Siemens')
+				
+				if isfield(tmpCheckJSON,'Manufacturer') && strcmpi(tmpCheckJSON.Manufacturer,'Siemens') && isfield(tmpCheckJSON,'PhoenixProtocol')
 					parameterList = xASL_bids_PhoenixProtocolReader(tmpCheckJSON.PhoenixProtocol);
 					bidsPar = xASL_bids_PhoenixProtocolAnalyzer(parameterList);
 					if isfield(bidsPar,'EchoTime') && length(unique(bidsPar.EchoTime)) > 1
@@ -677,8 +678,8 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 				end
 				
 				% For FME Hadamard case, we merge echo times
-				if bHadamardFME || bMultiTE
-					if isfield(tmpCheckJSON,'EchoTime')
+				if isfield(tmpCheckJSON,'EchoTime')
+					if bHadamardFME || bMultiTE
 						EchoTimes{iFileCheck,1} = tmpCheckJSON.EchoTime;
 					end
 				end
