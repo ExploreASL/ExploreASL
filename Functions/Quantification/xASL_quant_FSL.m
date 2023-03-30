@@ -287,101 +287,97 @@ if bUseFabber
 end
 
 %% 3. Basic acquisition parameters
+switch lower(x.Q.LabelingType)
+	case 'pasl'
+		% PASL model is assumed by default and does not need to be specified in the config file
+		fprintf('BASIL: PASL model\n');
 
-%% REDO
-if bUseFabber
-	% Prepare unique PLDs+LabDur combinations
+		% For PASL, there can be only a single LabelingDuration, so unique PLD+LabDur combinations are uniquely based on PLDs
+		TIs = (unique(x.Q.Initial_PLD, 'stable'))'/1000;
 
-	% First create a labeling duration vector of the same length
-	if length(x.Q.LabelingDuration)>1
-		LabDurs = x.Q.LabelingDuration/1000;
-	else
-		LabDurs = ones(size(x.Q.Initial_PLD))*x.Q.LabelingDuration/1000;
-	end
-
-	PLDs = x.Q.Initial_PLD/1000;
-
-	% For Time-encoded, we skip the first volume per block
-	if x.modules.asl.bTimeEncoded
-		[PLDs, index] = unique(PLDs, 'stable');
-		LabDurs = LabDurs(index)';
-
-		numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-		index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
-		PLDs = PLDs(index(:)');
-		LabDurs = LabDurs(index(:)');
-	else
-		% For normal multi-timepoint, we look for unique PLD+LabDur combinations
-		[~, indexNew, ~] = unique([PLDs(:), LabDurs(:)], 'stable', 'rows');
-
-		PLDs = PLDs(indexNew);
-		LabDurs = LabDurs(indexNew);
-	end
-
-	%Echo Times
-	nTE = length(unique(x.EchoTime));
-	NVolumes = size(PWI,4);
-	TEs = round(x.EchoTime(1:NVolumes)'/1000,4); % To keep 4 decimal digits
-
-	% Plotting the values into the doc (PLD=ti, LD=tau)
-	for iPLD = 1:length(PLDs)
-		fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD, PLDs(iPLD));
-		fprintf(FIDoptionFile, '--nte%d=%d\n', iPLD, nTE); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
-	end
-	for iLabDurs = 1:length(LabDurs)
-		fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
-	end
-
-	for iTE = 1:length(TEs) %We need a TE for each volume
-		fprintf(FIDoptionFile, '--te%d=%.2f\n', iTE, TEs(iTE));
-	end
-
-	% Right now, we assume that we have averaged over PLDs
-	%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
-	%fprintf(FIDoptionFile, '--repeats=1\n');
-else
-	%% BASIL
-
-	% Labelling type - PASL or pCASL
-	switch lower(x.Q.LabelingType)
-		case 'pasl'
-			% PASL model is assumed by default and does not need to be specified in the config file
-			fprintf('BASIL: PASL model\n');
-
-			% For PASL, there can be only a single LabelingDuration, so unique PLD+LabDur combinations are uniquely based on PLDs
-			TIs = (unique(x.Q.Initial_PLD, 'stable'))'/1000;
-
-			% Print all the TIs
-			if x.modules.asl.bMultiPLD
-				% For Time-encoded, we skip the first volume
-				if x.modules.asl.bTimeEncoded
-					numberBlocks = numel(TIs)/x.Q.TimeEncodedMatrixSize;
-					ind = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
-					TIs = TIs(ind(:)');
-				end
-				for iTI = 1:length(TIs)
-					fprintf(FIDoptionFile, '--ti%d=%.2f\n', iTI, TIs(iTI));
-				end
-
-			else
-				fprintf(FIDoptionFile, '--ti=%.2f\n', TIs);
+		% Print all the TIs
+		if x.modules.asl.bMultiPLD
+			% For Time-encoded, we skip the first volume
+			if x.modules.asl.bTimeEncoded
+				numberBlocks = numel(TIs)/x.Q.TimeEncodedMatrixSize;
+				ind = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
+				TIs = TIs(ind(:)');
+			end
+			for iTI = 1:length(TIs)
+				fprintf(FIDoptionFile, '--ti%d=%.2f\n', iTI, TIs(iTI));
 			end
 
-			% Either print bolus duration or unspecify it
-			if isfield(x.Q,'LabelingDuration') && x.Q.LabelingDuration
-				if length(unique(x.Q.LabelingDuration))>1
-					warning('PASL multi-PLD currently supports only a single Labeling Duration');
-				end
-				fprintf(FIDoptionFile, '--tau=%.2f\n', x.Q.LabelingDuration(1)/1000);
+		else
+			fprintf(FIDoptionFile, '--ti=%.2f\n', TIs);
+		end
+
+		% Either print bolus duration or unspecify it
+		if isfield(x.Q,'LabelingDuration') && x.Q.LabelingDuration
+			if length(unique(x.Q.LabelingDuration))>1
+				warning('PASL multi-PLD currently supports only a single Labeling Duration');
+			end
+			fprintf(FIDoptionFile, '--tau=%.2f\n', x.Q.LabelingDuration(1)/1000);
+		else
+			% Bolus duration not know. If multi-TI, then try to infer it
+			if length(TIs) > 1
+				fprintf(FIDoptionFile, '--infertau\n');
+				fprintf('BASIL: Infer bolus duration component\n')
+			end
+		end
+
+	case {'casl','pcasl'}
+		if bUseFabber
+			% Prepare unique PLDs+LabDur combinations
+
+			% First create a labeling duration vector of the same length
+			if length(x.Q.LabelingDuration)>1
+				LabDurs = x.Q.LabelingDuration/1000;
 			else
-				% Bolus duration not know. If multi-TI, then try to infer it
-				if length(TIs) > 1
-					fprintf(FIDoptionFile, '--infertau\n');
-					fprintf('BASIL: Infer bolus duration component\n')
-				end
+				LabDurs = ones(size(x.Q.Initial_PLD))*x.Q.LabelingDuration/1000;
 			end
 
-		case {'casl','pcasl'}
+			PLDs = x.Q.Initial_PLD/1000;
+
+			% For Time-encoded, we skip the first volume per block
+			if x.modules.asl.bTimeEncoded
+				[PLDs, index] = unique(PLDs, 'stable');
+				LabDurs = LabDurs(index)';
+
+				numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
+				index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
+				PLDs = PLDs(index(:)');
+				LabDurs = LabDurs(index(:)');
+			else
+				% For normal multi-timepoint, we look for unique PLD+LabDur combinations
+				[~, indexNew, ~] = unique([PLDs(:), LabDurs(:)], 'stable', 'rows');
+
+				PLDs = PLDs(indexNew);
+				LabDurs = LabDurs(indexNew);
+			end
+
+			%Echo Times
+			nTE = length(unique(x.EchoTime));
+			NVolumes = size(PWI,4);
+			TEs = round(x.EchoTime(1:NVolumes)'/1000,4); % To keep 4 decimal digits
+
+			% Plotting the values into the doc (PLD=ti, LD=tau)
+			for iPLD = 1:length(PLDs)
+				fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD, PLDs(iPLD));
+				fprintf(FIDoptionFile, '--nte%d=%d\n', iPLD, nTE); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
+			end
+			for iLabDurs = 1:length(LabDurs)
+				fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
+			end
+
+			for iTE = 1:length(TEs) %We need a TE for each volume
+				fprintf(FIDoptionFile, '--te%d=%.2f\n', iTE, TEs(iTE));
+			end
+
+			% Right now, we assume that we have averaged over PLDs
+			%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
+			%fprintf(FIDoptionFile, '--repeats=1\n');
+		else
+
 			% Specify that we run the PCASL/CASL model
 			fprintf(FIDoptionFile, '--casl\n');
 			fprintf('BASIL: (P)CASL model\n');
@@ -425,8 +421,11 @@ else
 				fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs);
 				fprintf(FIDoptionFile, '--pld=%.2f\n', PLDs);
 			end
-	end
+		end
 
+end
+
+if ~bUserFabber
 	% Right now, we assume that we have averaged over PLDs
 	%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
 	fprintf(FIDoptionFile, '--repeats=1\n');
@@ -445,10 +444,8 @@ else
 			warning('BASIL: Unknown flip angle for Look-Locker\n');
 		end
 	end
-
-	
 end
-%%%%%%%% REDO ABOVE
+
 %% 4. Model fiting parameters
 if ~bUseFabber
 	switch lower(x.Q.LabelingType)
