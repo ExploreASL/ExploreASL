@@ -52,6 +52,7 @@ fprintf('%s\n', 'Performing quantification');
 
 ATT = [];
 Tex = [];
+ABV = [];
 
 if nargin<5 || isempty(bUseBasilQuantification)
 	if x.modules.asl.bMultiPLD

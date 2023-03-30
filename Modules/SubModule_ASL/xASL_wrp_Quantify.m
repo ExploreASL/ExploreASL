@@ -460,12 +460,12 @@ if numel(ATT) > 1
 	xASL_io_SaveNifti(PWI_Path, pathOutputATT, ATT, 32, 0);
 end
 
-if numel(ABV) > 1 || ~isnan(ABV)
+if numel(ABV) > 1 
 	% Save the ABV file
 	xASL_io_SaveNifti(PWI_Path, pathOutputABV, ABV, 32, 0);
 end
 
-if numel(Tex) > 1 || ~isnan(Tex)
+if numel(Tex) > 1
 	% Save the Tex file
 	xASL_io_SaveNifti(PWI_Path, pathOutputTex, Tex, 32, 0);
 end
