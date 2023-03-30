@@ -477,43 +477,6 @@ else
 		end
 		fprintf(FIDoptionFile, '--batsd=%f\n', x.Q.BasilATTSD);
 	end
-
-
-	% 	%% FIXME Aquisition options we might be able to use in the future
-	%     %fprintf(option_file, '--sliceband=%i\n', sliceband);
-	%     %fprintf('BASIL: Multi-band setup with number of slices per band: %i\n', slicedband);
-	%
-	% 	%fprintf(option_file, '--t1im=%s\n', t1im)
-	%     %fprintf('BASIL: Using supplied T1 (tissue) image in BASIL: %s\n', $t1im)
-
-	%     %% Noise specification
-	%     % For small numbers of time points we need an informative noise prior.
-	%     % The user can specify an assumed SNR for this, or give prior estimated noise standard deviation below.
-	%     if ~isfield(x.Q,'BasilSNR') || ~x.Q.BasilSNR
-	%         x.Q.BasilSNR = 10;
-	%     end
-	%
-	%     if size(PWI, 4) < 5
-	%         x.Q.BasilNoisePrior = 1;
-	%         fprintf('BASIL: Small number of volumes (%i < 5): informative noise prior will be used\n', size(PWI, 4));
-	%     end
-	%     if isfield(x.Q,'BasilNoisePrior') && x.Q.BasilNoisePrior
-	%         % Use an informative noise prior
-	%         if ~isfield(x.Q,'BasilNoiseSD') || ~x.Q.BasilNoiseSD
-	%             fprintf('BASIL: Using SNR of %f to set noise std dev\n', x.Q.BasilSNR);
-	%             % Estimate signal magntiude FIXME brain mask assume half of voxels
-	%             mag_max = max(PWI, [], 4);
-	%             brain_mag = 2*xASL_stat_MeanNan(mag_max(:));
-	%             fprintf('BASIL: Mean maximum signal across brain: %f\n', brain_mag);
-	%             % This will correspond to whole brain CBF (roughly) - about 0.5 of GM
-	%             x.Q.BasilNoiseSD = sqrt(brain_mag * 2 / x.Q.BasilSNR);
-	%         end
-	%         fprintf('BASIL: Using a prior noise std.dev. of: %f\n', x.Q.BasilNoiseSD);
-	%         fprintf(FIDoptionFile, '--prior-noise-stddev=%f\n', x.Q.BasilNoiseSD);
-	%     end
-
-
-	
 	
 end
 %%%%%%%% REDO ABOVE
@@ -567,6 +530,31 @@ if ~bUseFabber
 		otherwise
 			warning(['BASIL Dispersion model: ' x.Q.BASIL.Disp ' not recognized.'])
 	end
+	
+	% 	%% Aquisition options we might be able to use in the future
+	%   fprintf(option_file, '--sliceband=%i\n', sliceband);
+	%   fprintf('BASIL: Multi-band setup with number of slices per band: %i\n', slicedband);
+	%
+	% 	fprintf(option_file, '--t1im=%s\n', t1im)
+	%   fprintf('BASIL: Using supplied T1 (tissue) image in BASIL: %s\n', $t1im)
+	%
+	%   % For small numbers of time points we need an informative noise prior.
+	%   % The user can specify an assumed SNR for this, or give prior estimated noise standard deviation below.
+	%   if ~isfield(x.Q.BASIL,'SNR') || isempty(x.Q.BASIL.SNR)
+	%       x.Q.BASIL.SNR = 0; %Otherwise, a reasonable default is 10
+	%   end
+	%
+	%   if x.Q.BASIL.SNR
+	%       fprintf('BASIL: Using SNR of %f to set noise std dev\n', x.Q.BasilSNR);
+	%       % Estimate signal magntiude FIXME brain mask assume half of voxels
+	%       mag_max = max(PWI, [], 4);
+	%       brain_mag = 2*xASL_stat_MeanNan(mag_max(:));
+	%       fprintf('BASIL: Mean maximum signal across brain: %f\n', brain_mag);
+	%       % This will correspond to whole brain CBF (roughly) - about 0.5 of GM
+	%       imNoiseSD = sqrt(brain_mag * 2 / x.Q.BasilSNR);
+	%       fprintf('BASIL: Using a prior noise std.dev. of: %f\n', imNoiseSD);
+	%       fprintf(FIDoptionFile, '--prior-noise-stddev=%f\n', imNoiseSD);
+	%     end
 end
 
 %% 6. Close options file
