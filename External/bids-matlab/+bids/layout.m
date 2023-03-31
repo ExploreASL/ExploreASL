@@ -150,23 +150,29 @@ function BIDS = layout(root, tolerant)
   fprintf('Parsing BIDS scans:    ');
   for iSub = 1:numel(sub)
       xASL_TrackProgress(iSub, numel(sub));
-      sess = cellstr(bids.internal.file_utils('List', ...
-                                              fullfile(BIDS.dir, sub{iSub}), ...
-                                              'dir', ...
-                                              '^ses-.*$'));
-  
-	  for iSess = 1:numel(sess)
-		  if isempty(BIDS.subjects)
-             BIDS.subjects = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
-          else
-             BIDS.subjects(end + 1) = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
-		  end
-		  
-		  % Add session name to the total session list
-          if ~isempty(sess{iSess})
-            sessTotal{end+1,1} = sess{iSess};
+      try
+          sess = cellstr(bids.internal.file_utils('List', ...
+                                                  fullfile(BIDS.dir, sub{iSub}), ...
+                                                  'dir', ...
+                                                  '^ses-.*$'));
+      
+	      for iSess = 1:numel(sess)
+		      if isempty(BIDS.subjects)
+                 BIDS.subjects = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
+              else
+                 BIDS.subjects(end + 1) = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
+		      end
+		      
+		      % Add session name to the total session list
+              if ~isempty(sess{iSess})
+                sessTotal{end+1,1} = sess{iSess};
+              end
           end
-	  end
+      catch ME
+          warning(['BIDS matlab error for ' sub{iSub}]);
+          fprintf('%s\n', ME.message);
+          fprintf('=======================\n\n\n');
+      end
   end
   fprintf('\n');
   fprintf('Note that any warnings may have only printed once if they were repeated for multiple scans\n');
