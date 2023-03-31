@@ -395,7 +395,16 @@ function subject = parse_perf(subject)
                             end
                             
                             % M0 sidecar filename
-                            m0_json_sidecar_filename = [m0_basename '.json'];
+                            if size(m0_basename,1)==0
+                                warning([subject.name ': something wrong with the M0 file']);
+                                m0_json_sidecar_filename = '';
+                            elseif size(m0_basename,1)>1
+                                warning([subject.name ': Multiple M0 files found, please check which one should be used, this may go wrong']);
+                                m0_json_sidecar_filename = '';
+                            else
+                                m0_json_sidecar_filename = [m0_basename '.json'];
+                            end
+
                             if ~exist(fullfile(pth, m0_json_sidecar_filename), 'file')
                                 WarningID = ['BIDSLAYOUT:Missing' m0_json_sidecar_filename'];
                                 warning(WarningID, ['Missing: ' m0_json_sidecar_filename]); % will print this warning unless WarningID has been set OFF
