@@ -38,10 +38,13 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncod
 					numberPLDs = timeEncodedMatrixSize;
 					numberRepetitions = int32(size(imASL,4)/numberTEs/numberPLDs);
 					% Check if the PLDs are interleaved or just repeated
-					if numel(vectorPLD) > numberPLDs
-						for iRepetition = 2:floor(numel(vectorPLD)/numberPLDs)
-							if ~isequal(vectorPLD(1:numberPLDs),vectorPLD((1:numberPLDs)+numberPLDs*(iRepetition-1)))
-								interleavedPLDs = true;
+					% This is not done for gammastar version
+					if ~isfield(resultJSON, 'PulseSequenceDetails') || isempty(regexpi(resultJSON.PulseSequenceDetails, 'fme_gammastar', 'once'))
+						if numel(vectorPLD) > numberPLDs
+							for iRepetition = 2:floor(numel(vectorPLD)/numberPLDs)
+								if ~isequal(vectorPLD(1:numberPLDs),vectorPLD((1:numberPLDs)+numberPLDs*(iRepetition-1)))
+									interleavedPLDs = true;
+								end
 							end
 						end
 					end
@@ -69,16 +72,15 @@ function xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncod
 					% Save the JSON with the updated echo times
 					xASL_io_WriteJson(fullfile(resultPath, [resultFile '.json']),resultJSON);
 				elseif numberRepetitions > 1
-					if ~interleavedPLDs 
-						error('Import of FME TimeEncoded with single-TE and multi-Repetitions not yet implemented for non-interleaved PLDs');
+					if interleavedPLDs 
+						% Reorder Repetitions and PLDs - first cycle PLDs afterwards Repetitions
+						vectorOldOrder = zeros(size(imASL,4),1);
+						for iRepetition = 1:(double(numberRepetitions))
+							vectorOldOrder((1:numberPLDs)+(iRepetition-1)*numberPLDs) = (iRepetition-1)+1:numberRepetitions:size(imASL,4);
+						end
+						imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
+						xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
 					end
-					% Reorder Repetitions and PLDs - first cycle PLDs afterwards Repetitions
-					vectorOldOrder = zeros(size(imASL,4),1);
-					for iRepetition = 1:(double(numberRepetitions))
-						vectorOldOrder((1:numberPLDs)+(iRepetition-1)*numberPLDs) = (iRepetition-1)+1:numberRepetitions:size(imASL,4);
-					end
-					imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
-					xASL_io_SaveNifti(nii_files{1},nii_files{1},imASL);
 				end
                 
             else
