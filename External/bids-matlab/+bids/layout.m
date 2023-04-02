@@ -150,23 +150,29 @@ function BIDS = layout(root, tolerant)
   fprintf('Parsing BIDS scans:    ');
   for iSub = 1:numel(sub)
       xASL_TrackProgress(iSub, numel(sub));
-      sess = cellstr(bids.internal.file_utils('List', ...
-                                              fullfile(BIDS.dir, sub{iSub}), ...
-                                              'dir', ...
-                                              '^ses-.*$'));
-  
-	  for iSess = 1:numel(sess)
-		  if isempty(BIDS.subjects)
-             BIDS.subjects = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
-          else
-             BIDS.subjects(end + 1) = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
-		  end
-		  
-		  % Add session name to the total session list
-          if ~isempty(sess{iSess})
-            sessTotal{end+1,1} = sess{iSess};
+      try
+          sess = cellstr(bids.internal.file_utils('List', ...
+                                                  fullfile(BIDS.dir, sub{iSub}), ...
+                                                  'dir', ...
+                                                  '^ses-.*$'));
+      
+	      for iSess = 1:numel(sess)
+		      if isempty(BIDS.subjects)
+                 BIDS.subjects = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
+              else
+                 BIDS.subjects(end + 1) = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
+		      end
+		      
+		      % Add session name to the total session list
+              if ~isempty(sess{iSess})
+                sessTotal{end+1,1} = sess{iSess};
+              end
           end
-	  end
+      catch ME
+          warning(['BIDS matlab error for ' sub{iSub}]);
+          fprintf('%s\n', ME.message);
+          fprintf('=======================\n\n\n');
+      end
   end
   fprintf('\n');
   fprintf('Note that any warnings may have only printed once if they were repeated for multiple scans\n');
@@ -395,7 +401,16 @@ function subject = parse_perf(subject)
                             end
                             
                             % M0 sidecar filename
-                            m0_json_sidecar_filename = [m0_basename '.json'];
+                            if size(m0_basename,1)==0
+                                warning([subject.name ': something wrong with the M0 file']);
+                                m0_json_sidecar_filename = '';
+                            elseif size(m0_basename,1)>1
+                                warning([subject.name ': Multiple M0 files found, please check which one should be used, this may go wrong']);
+                                m0_json_sidecar_filename = '';
+                            else
+                                m0_json_sidecar_filename = [m0_basename '.json'];
+                            end
+
                             if ~exist(fullfile(pth, m0_json_sidecar_filename), 'file')
                                 WarningID = ['BIDSLAYOUT:Missing' m0_json_sidecar_filename'];
                                 warning(WarningID, ['Missing: ' m0_json_sidecar_filename]); % will print this warning unless WarningID has been set OFF
