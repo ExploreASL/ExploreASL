@@ -409,7 +409,7 @@ switch lower(x.Q.LabelingType)
 		end
 end
 
-if ~bUserFabber
+if ~bUseFabber
 	% Right now, we assume that we have averaged over PLDs
 	%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
 	fprintf(FIDoptionFile, '--repeats=1\n');
