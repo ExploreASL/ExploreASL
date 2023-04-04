@@ -177,7 +177,7 @@ xASL_adm_BreakString('CHECK THE BIDS CONVERSION');
 
 %% 4. Run BIDS->Legacy import
 xASL_adm_BreakString('RUN BIDS TO LEGACY');
-xASL_test_Flavors_BIDS2LEGACY(testConfig);
+flavors.loggingTable = xASL_test_Flavors_BIDS2LEGACY(testConfig, flavors.loggingTable);
 
 %% 5. Check the the BIDS->Legacy import results
 xASL_adm_BreakString('CHECK THE LEGACY CONVERSION');
@@ -219,13 +219,18 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
     TimeString(end-2) = 'h';
     savePathMat = fullfile(testConfig.pathExploreASL,'Testing', [TimeString, '_flavor_results.mat']);
     savePathTSV = fullfile(testConfig.pathExploreASL,'Testing', [TimeString, '_flavor_comparison.tsv']);
+    savePathLogging = fullfile(testConfig.pathExploreASL,'Testing', [TimeString, '_flavor_loggingtable.tsv']);
 
 	save(savePathMat,'flavors','testConfig');
     if ~isempty(flavors.comparisonTable)
         xASL_tsvWrite(table2cell(flavors.comparisonTable), savePathTSV);
     end 
+    
+    if ~isempty(flavors.loggingTable)
+        xASL_tsvWrite(table2cell(flavors.loggingTable), savePathLogging);
+    end 
 
-    % Clear console window
+	% Clear console window
     clc
     
     % Print tables

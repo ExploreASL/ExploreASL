@@ -27,7 +27,14 @@ function loggingTable = xASL_test_Flavors_ExploreASL(testConfig,loggingTable)
             pathExploreASLflavor = fullfile(pathDerivatives,'ExploreASL');
             if exist(pathExploreASLflavor,'dir')
                 % Run ExploreASL structural and ASL module (don't run the population module)
-                xFlavor = ExploreASL(currentFlavor, 0, [1 1 0], 0);
+                try
+                    xFlavor = ExploreASL(currentFlavor, 0, [1 1 0], 0);
+                catch ME
+                    xFlavor.logging.message = ME.message;
+                    xFlavor.logging.name = testConfig.flavorList{iList};
+                    xFlavor.logging.stack = ME.stack;
+                end 
+                
                 if isfield(xFlavor,'logging')
                     loggingTable = xASL_test_AddLoggingEntryToTable(testConfig.flavorList{iList},loggingTable,xFlavor.logging);
                 end

@@ -1,4 +1,4 @@
-function xASL_test_Flavors_BIDS2LEGACY(testConfig)
+function loggingTable = xASL_test_Flavors_BIDS2LEGACY(testConfig, loggingTable)
 %xASL_test_Flavors_BIDS2LEGACY Test the BIDS to Legacy conversion
 %
 % FORMAT: xASL_test_Flavors_BIDS2LEGACY(testConfig)
@@ -24,7 +24,18 @@ function xASL_test_Flavors_BIDS2LEGACY(testConfig)
             diary('off');
             fclose('all');
             % Run the legacy conversion
-            ExploreASL(currentFlavor);
+            try
+                xFlavor = ExploreASL(currentFlavor);
+            catch ME
+                xFlavor.logging.message = ME.message;
+                xFlavor.logging.name = testConfig.flavorList{iList};
+                xFlavor.logging.stack = ME.stack;
+            end
+
+            if isfield(xFlavor,'logging')
+                loggingTable = xASL_test_AddLoggingEntryToTable(testConfig.flavorList{iList},loggingTable,xFlavor.logging);
+            end
+
         end
     end
 
