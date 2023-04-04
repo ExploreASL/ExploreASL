@@ -230,7 +230,7 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
         xASL_tsvWrite(table2cell(flavors.loggingTable), savePathLogging);
     end 
 
-	% Clear console window
+    % Clear console window
     clc
     
     % Print tables
