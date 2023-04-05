@@ -52,7 +52,7 @@ function [x] = xASL_init_DefineStudyData(x)
 %
 % EXAMPLE: x = xASL_init_DefineStudyData(x);
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
 % ------------------------------------------------------------------------------------------------
@@ -115,11 +115,13 @@ if ~isfield(x,'SESSIONS')
     for iSess=1:length(SessionPathList)
         [~, x.SESSIONS{end+1}]  = fileparts(SessionPathList{iSess});
     end
-    x.SESSIONS = xASL_adm_SortStringNumbers(unique(x.SESSIONS));
+    
     if isempty(x.SESSIONS)
         fprintf('%s\n', 'No sessions found, defaulting to a single ASL_1 session');
         x.SESSIONS{1} = 'ASL_1'; % default session
-    end
+	else
+		x.SESSIONS = xASL_adm_SortStringNumbers(unique(x.SESSIONS));
+	end
 end
 
 % ------------------------------------------------------------------------------------------------
