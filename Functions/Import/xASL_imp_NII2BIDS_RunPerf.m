@@ -33,7 +33,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 % Copyright 2015-2023 ExploreASL
 
     %% 1. Define the pathnames
-	if (length(listRuns)>1) || (str2num(listRuns{iRun}(5:end))>1)
+	if length(listRuns)>1 || xASL_str2num(listRuns{1}(5:end))>1
 		aslLegacyLabel = 'ASL4D';
 		subjectSessionLabel = ['sub-' subjectSessionLabel];
         runLabel = ['_run-' listRuns{iRun}(5:end)];
