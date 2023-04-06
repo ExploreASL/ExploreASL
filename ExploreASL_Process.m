@@ -153,8 +153,12 @@ function [x] = ExploreASL_Process(x)
     % Input check
     if x.opts.nWorkers>1 % don't run population module when ExploreASL is parallelized
         fprintf('%s\n', 'Not zipping NIfTIs because running ExploreASL in parallel mode');
-    else
-        xASL_adm_GzipAllFiles(x.D.ROOT, [], [], fullfile(x.opts.MyPath, 'External'));
+	else
+		if isfield(x.D,'ROOT') && ~isempty(x.D.ROOT)
+			xASL_adm_GzipAllFiles(x.D.ROOT, [], [], fullfile(x.opts.MyPath, 'External'));
+		elseif isfield(x.dir,'DatasetRoot') && ~isempty(x.dir.DatasetRoot)
+			xASL_adm_GzipAllFiles(x.dir.DatasetRoot, [], [], fullfile(x.opts.MyPath, 'External'));
+		end
     end
 
 end
