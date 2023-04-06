@@ -25,8 +25,13 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
 
     %% Get Matlab version
     Software.Matlab = version;
-    Software.Matlab = Software.Matlab(1:(find(ismember(Software.Matlab, '.'), 1, 'first')+1));
-    % Extract matlab version until one char after first dot
+    IndicesAre = find(Software.Matlab=='.');
+    if length(IndicesAre)<2
+        warning('Something wrong with the Matlab version');
+    else
+        Software.Matlab = Software.Matlab(1:IndicesAre(2)-1);
+    end
+    % Extract matlab version until just before the second dot
 
     
     %% Get SPM version
