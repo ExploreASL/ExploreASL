@@ -1,4 +1,4 @@
-function xASL_qc_GenerateReport(x)
+function [x,config] = xASL_qc_GenerateReport(x, subject)
 % xASL_qc_GenerateReport Print output QC
 %
 % FORMAT: xASL_qc_GenerateReport(x)
@@ -21,7 +21,7 @@ function xASL_qc_GenerateReport(x)
 % Copyright (C) 2015-2023 ExploreASL
 
 % Determine x.mat file
-PathX = fullfile(x.dir.SUBJECTDIR,'x.mat');
+PathX = fullfile(x.dir.xASLDerivatives, subject, 'x.mat');
 
 % Check if x.mat file exists already
 if ~exist(PathX, 'file')
@@ -31,12 +31,8 @@ end
 
 x = xASL_adm_LoadX(x, PathX, false); % Assume memory x is newer than x.mat
 
-% Determine subject and session
-SuSeID = [x.SUBJECT '_' x.SESSIONS{1}];
-iSubjSess = (1)*x.dataset.nSessions+1;
-
 % Make sure that the directory exists
-PrintDir = fullfile(x.D.ROOT, x.SUBJECT);
+PrintDir = fullfile(x.dir.xASLDerivatives, subject);
 xASL_adm_CreateDir(PrintDir);
 
 % Delete existing xASL report files
@@ -45,12 +41,8 @@ if ~isempty(ExistingPrintFiles)
     xASL_delete(ExistingPrintFiles{1});
 end
 
-% Determine font size
-if ispc
-    fontsize = 10;
-elseif isunix || ismac
-    fontsize = 8;
-end
+% Set defaults
+settings = xASL_sub_defaultSettings();
 
 %% Print the title
 fprintf('Printing ExploreASL PDF report:   \n');
@@ -61,30 +53,22 @@ set(spm_fig,'windowstyle','normal');
 spm_figure('Clear','Graphics');
 
 %% Print the Title
-PrintImage('Design/ExploreASL_logoHeader.png', spm_fig, [0 0.96 1 0.04]);
-NewLine = PrintBold('ExploreASL QC summary report ', spm_fig, [0 0.96 1 0], fontsize+2);
+logoPath = fullfile(x.opts.MyPath, 'Design/ExploreASL_logoHeader.png');
+xASL_sub_PrintImage(logoPath, spm_fig, [0 0.96 1 0.04]);
+line = xASL_sub_PrintText('ExploreASL QC summary report ', spm_fig, [0 0.96 1 0], settings);
 
 %% Print the Footer
-PrintBold('This report was automatically generated with ExploreASL', spm_fig,  [0 0.02 1 0], fontsize+2);
+xASL_sub_PrintText('This report was automatically generated with ExploreASL', spm_fig,  [0 0.02 1 0], settings);
 
 %% Load Pdf configuration
 config = xASL_adm_LoadPDFConfig(x);
 
 % Load participants data
-PatientInfo = xASL_adm_readParticipantsTSV(x);
-NewLine = xASL_vis_PrintPatient(PatientInfo, spm_fig, NewLine, fontsize);
+PatientInfo = xASL_sub_readParticipantsTSV(x);
+line = xASL_sub_PrintPatient(PatientInfo, spm_fig, line, settings);
 
-%% Collect field name & field values to print
-OutputFields = fieldnames(x.Output);
-Paragraphs = GetValues(x, OutputFields, iSubjSess);
-
-for iField=1:length(Paragraphs) 
-    NewLine = PrintParagraph(x, config, Paragraphs{iField}, OutputFields{iField}, spm_fig, NewLine, fontsize);
-end
-
-%% Print Graphs
-PrintImage('~/filler.png', spm_fig, [0.70 0.35 0.3 0.3]);
-PrintImage('~/filler.png', spm_fig, [0.70 0.65 0.3 0.3]);
+%% Parse JSON and create the file
+[line, settings] = xASL_sub_parseJson(config, x, spm_fig, line, settings);
 
 PrintFile = 'xASL_Report';
 PrintPath = fullfile(PrintDir, PrintFile); 
@@ -100,20 +84,30 @@ end
 
 %% ================================================================================================================================================
 %% ================================================================================================================================================
-function sResult = xASL_qc_CheckConfigStruct(ConfigStruct, subModule, QCParm, QCOption, AlternativeString)
-    % Checks if value exists in config struct, then compares it 
-    if nargin<5 || isempty(AlternativeString)
-        AlternativeString= '';
-    end
+function [line, settings] = xASL_sub_parseJson(json, x, figure, line, settings)
+    fields = fieldnames(json);
+    for iField=1:length(fields)
+        currentField=json.(fields{iField});
 
-    if isfield(ConfigStruct.(subModule).(QCParm), (QCOption)) 
-        sResult = ConfigStruct.(subModule).(QCParm).(QCOption);
-    else
-        sResult = AlternativeString;
+        if ~isfield(currentField, 'type')
+            error([currentField, 'containts no field type']);
+        end
+
+        switch currentField.type
+            case 'text' 
+                line = xASL_sub_PrintText(currentField, figure, line, settings);
+            case 'qc'
+                line = xASL_sub_PrintQC(currentField, fields{iField}, x, figure, line, settings);
+            case 'image'
+                xASL_sub_PrintImage(currentField, figure);  
+            case 'settings'
+                settings = xASL_sub_loadSettings(currentField, settings);  
+        end  
+
     end
 end
 
-function PatientInfo = xASL_adm_readParticipantsTSV(x)
+function PatientInfo = xASL_sub_readParticipantsTSV(x)
     %Check if participant data exists.
     ExistsParticipants = xASL_adm_GetFileList(x.D.ROOT, 'participants.tsv');
 
@@ -133,109 +127,146 @@ function PatientInfo = xASL_adm_readParticipantsTSV(x)
     
 end
 
-function line = xASL_vis_PrintPatient(PatientInfo, figure, line, fontsize)
+function line = xASL_sub_PrintPatient(PatientInfo, figure, line, settings)
     if isempty(PatientInfo)
         fprintf ("no patient info found to be printed")
         return
     end
-    line = PrintBold('Participant Information', figure, line, fontsize );
+    line = xASL_sub_PrintText('Participant Information', figure, line, settings );
     for iEntry=1:size(PatientInfo,2)
         if strcmp(PatientInfo{1, iEntry},'participant_id')
-            line = PrintText(['Participant: ', PatientInfo{2, iEntry}], figure, line, fontsize );
+            line = xASL_sub_PrintText(['Participant: ', PatientInfo{2, iEntry}], figure, line, settings );
         elseif strcmp(PatientInfo{1, iEntry},'age')
-            line = PrintText(['Participant age: ', num2str(PatientInfo{2, iEntry})], figure, line, fontsize );
+            line = xASL_sub_PrintText(['Participant age: ', num2str(PatientInfo{2, iEntry})], figure, line, settings );
         elseif strcmp(PatientInfo{1, iEntry},'sex')
-            line = PrintText(['Participant sex: ', PatientInfo{2, iEntry}], figure, line, fontsize );
+            line = xASL_sub_PrintText(['Participant sex: ', PatientInfo{2, iEntry}], figure, line, settings );
         end
     end
 
 end
 
-function Values = GetValues(x, OutputFields, iSubjSess)
-    nOutputFields = length(OutputFields);
-
-    for iField=1:nOutputFields
-        if length(x.Output.(OutputFields{iField}))<iSubjSess
-            Ind = 1; 
-        else
-            Ind = iSubjSess;
-        end
-        StrucFields{iField} = sort(fieldnames(x.Output.(OutputFields{iField})(Ind)));
-        for iV=1:length(StrucFields{iField})     
-                Values{iField}(iV).name = StrucFields{iField}{iV};
-                Values{iField}(iV).value = x.Output.(OutputFields{iField})(Ind).(StrucFields{iField}{iV});
-        end
-    end 
-end
-
-function line = PrintParagraph(x, config, Contents, ModName, figure, line, fontsize)
+function line = xASL_sub_PrintQC(json, name, x, figure, line, settings)
     % Printing header/title
-    line = PrintBold(ModName, figure, line, fontsize);    
-    for ii=1:size(Contents,2) % iterating over text lines
+    json.name = name;
 
-        TempName = Contents(ii).name;
-    
-        % Prepare text to print
-        if ~isstruct(Contents(ii).value) % no extra layer
-            TempValue  = Contents(ii).value;
-            if isnumeric(TempValue) || islogical(TempValue)
-                TempValue = num2str(TempValue, 4); 
-            end
+    % Stop if module does not exists in output
+    if ~isfield(x.Output, (json.module))
+        return     
+    end
 
-        else % add extra layer
-            TempFields = fieldnames(x.Output.(ModName).(Contents(ii).name));
-            TempValue = '';
-            for iK=1:length(TempFields)
-                TempName = [TempName  '/' TempFields{iK}];
-                TV2 = x.Output.(ModName).(Contents(ii).name).(TempFields{iK});
-                if  isnumeric(TV2)
-                    TV2 = num2str(TV2); 
-                end
-                TempValue = [TempValue ' ' TV2];
-            end
+    % Stop if field does not exists in output
+    if ~isfield(x.Output.(json.module), json.name)
+        return     
+    end
+
+    % Use field specific settings if they exists
+    settings.fontName = 'monospace';
+    if isfield(json, 'settings')
+        settings = xASL_sub_loadSettings(json.settings, settings);
+    end
+
+    % Print only if visibility exists and is true. 
+    if isfield(json, "visible")  && json.visible 
+        
+        TempValue = x.Output.(json.module).(json.name);
+        
+        if ~isfield(json, 'alias') 
+            json.alias = name;
         end
 
-        if sum(strcmp(fieldnames(config.(ModName)),TempName))
-            % Print only if visibility exists and is true. 
-            if isfield(config.(ModName).(TempName), "Visible")  && config.(ModName).(TempName).Visible 
-
-                % Define the variables from Output
-                TempRange = xASL_qc_CheckConfigStruct(config, ModName, TempName, "Range");
-                TempUnit  = xASL_qc_CheckConfigStruct(config, ModName, TempName, "Unit");
-                TempAlias = xASL_qc_CheckConfigStruct(config, ModName, TempName, "Alias", TempName);
-
-                if size(TempValue, 1) == 1
-                    TextString = sprintf([sprintf('%-20s',[TempAlias,':']), sprintf('%8s',TempValue),sprintf('%-12s', [TempUnit, ' ' , TempRange]), ' \n']);
-                end
-                line = PrintText(TextString, figure, line, fontsize);
-            end
+        if ~isfield(json, 'unit') 
+            json.unit = '';
         end
+
+        if isfield(json, 'range') 
+            [range] = strsplit(json.range, '-');
+            if (TempValue < str2double(range{1})) | (TempValue > str2double(range{2}))
+                settings.color = 'r';
+            end
+        else
+            json.range = '';
+        end
+
+        if isnumeric(TempValue)
+            TempValue = num2str(TempValue);
+        end
+
+        if size(TempValue, 1) == 1
+            TextString = sprintf([sprintf('%-20s',[json.alias,':']), sprintf('%8s',TempValue),sprintf('%-12s', [json.unit, ' ' , json.range]), ' \n']);
+        end
+
+        line = xASL_sub_PrintText(TextString, figure, line, settings);
     end
 end
 
-function line = NewLine(line);
+function line = xASL_sub_PrintText(input, figure, line, settings)
+    switch class(input)
+        case {'string', 'char'} 
+            String = input;
+        case 'struct'
+            String = input.text;
+            if isfield(input, 'settings')
+                settings = xASL_sub_loadSettings(input.settings, settings);
+            end
+        otherwise
+            class(input)
+            error('xASL_sub_PrintText couldnt find string of printable text')
+    end
+    line = xASL_sub_NewLine(line);
+    ax=axes('Position', line ,'Visible', settings.axesVisible, 'Parent', figure);
+    text(0,0, String, 'Parent', ax, 'FontSize', settings.fontSize,'FontWeight', settings.fontWeight, 'Color', settings.color, 'FontName', settings.fontName, 'Interpreter', 'none', 'VerticalAlignment','top');
+end
+
+function xASL_sub_PrintImage(input, figure, position)
+    switch nargin
+    case 2
+        position = [str2num(input.position) str2num(input.size)];
+        ImagePath = input.filePath;
+    case 3
+        ImagePath = input;
+    end
+    ax=axes('Position', position, 'Visible', 'off', 'Parent', figure);
+    [img, ~, alphachannel] = imread(ImagePath);
+    fg= imshow(img);
+    fg.AlphaData=alphachannel;
+    clear fg
+end
+
+function line = xASL_sub_NewLine(line);
     line(2) = line(2) - 0.016;
     if line(2) < 0 
         warning('No space left on page!');
     end
 end
 
-function line = PrintBold(String, figure, line, fontsize)
-    line = NewLine(line);
-    ax=axes('Position', line ,'Visible','off','Parent',figure);
-    text(0,1, String, 'FontSize', fontsize, 'FontWeight', 'bold', 'Interpreter', 'none', 'Parent', ax, 'VerticalAlignment','top');
+function [settings] = xASL_sub_loadSettings(json, settings)
+    if isfield(json, 'color')
+        settings.color = json.color;
+    end  
+    if isfield(json, 'HorizontalAlignment')
+        settings.HorizontalAlignment = json.HorizontalAlignment;
+    end  
+    if isfield(json, 'fontWeight')
+        settings.fontWeight = json.fontWeight;
+    end  
+    if isfield(json, 'fontSize')
+        settings.fontSize = str2num(json.fontSize);
+    end   
+    if isfield(json, 'axesVisible')
+        settings.axesVisible = json.axesVisible;
+    end   
+
 end
 
-function line = PrintText(String, figure, line, fontsize)
-    line = NewLine(line);
-    ax=axes('Position', line ,'Visible','off','Parent',figure);
-    text(0,1, String, 'FontSize', fontsize, 'Interpreter', 'none', 'Parent', ax, 'VerticalAlignment','top');
-end
-
-function PrintImage(ImagePath, figure, Canvas)
-    ax=axes('Position', Canvas, 'Visible', 'off', 'Parent', figure);
-    [img, ~, alphachannel] = imread(ImagePath);
-    fg= imshow(img);
-    fg.AlphaData=alphachannel;
-    clear fg
+function [settings] = xASL_sub_defaultSettings()
+    settings.color = 'k';
+    settings.HorizontalAlignment = 'left';
+    settings.fontWeight = 'normal';
+    settings.axesVisible = 'off';
+    settings.fontName = 'default';
+    if ispc
+        settings.fontSize = 10;
+    elseif isunix || ismac
+        settings.fontSize = 8;
+    end 
 end

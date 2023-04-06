@@ -1,110 +1,204 @@
-{
-	"Structural": {
-		"T1w_SNR_GM_Ratio": {
-			"Visible": true,
-			"Alias": "GM SNR"
-		},
-		"T1w_CNR_GM_WM_Ratio": {
-			"Visible": true
-		},
-		"T1w_GM_vol_mL": {
-			"Range": "500-800",
-			"Visible": true,
-			"Unit": "mL"
-		},
-		"T1w_WM_vol_mL": {
-			"Range": "300-600",
-			"Visible": true,
-			"Unit": "mL"
-		},
-		"T1w_CSF_vol_mL": {
-			"Range": "150-300",
-			"Visible": true,
-			"Unit": "mL"
-		},
-		"T1w_GM_ICV_Ratio": {
-			"Visible": true,
-			"Range": "0-1"
-		},
-		"T1w_WM_ICV_Ratio": {
-			"Visible": true,
-			"Range": "0-1"
-		},
-		"T1w_CSF_ICV_Ratio": {
-			"Visible": true,
-			"Range": "0-1"
-		},
-		"Version_CAT12": {
-			"Visible": true
-		},
-		"Version_ExploreASL": {
-			"Visible": true
-		},
-		"Version_LST": {
-			"Visible": true
-		},
-		"Version_Matlab": {
-			"Visible": true
-		},
-		"Version_SPM12": {
-			"Visible": true
-		}
+{   
+    "GlobalSettings": {
+        "type": "settings",
+		"fontSize": "8",
+        "fontName": "default",
+        "fontWeight": "normal",
+        "color": "k",
+        "axesVisible": "off",
+        "HorizontalAlignment": "left"
 	},
-	"ASL": {
-		"CBF_GM_Median_mL100gmin": {
-			"Range": "50-120",
-			"Visible": true,
-			"Alias": "Median CBF",
-			"Unit": "mL/100g/min"
-		},
-		"LabelingType": {
-			"Visible": true
-		},
-		"NumberOfAverages": {
-			"Visible": true,
-			"Range": ""
-		},
-		"Initial_PLD_ms": {
-			"Unit": "mS",
-			"Visible": true
-		},
-		"MotionMean_mm": {
-			"Visible": true,
-			"Alias": "Mean Motion",
-			"Unit": "mm"
-		},
-		"MotionSD_mm": {
-			"Visible": true,
-			"Alias": "SD Motion",
-			"Unit": "mm"
-		},
-		"MotionMax_mm": {
-			"Visible": true,
-			"Alias": "Max Motion",
-			"Unit": "mm"
-		},
-		"M0": {
-			"Visible": true
-		},
-		"VoxelSize_mm": {
-			"Visible": true,
-			"Unit": "mm"
-		},
-		"LabelingDuration_ms": {
-			"Visible": true,
-			"Unit": "ms"
-		},
-		"SpatialCoV_GM_Perc": {
-			"Visible": true
-		},
-		"Sequence": {
-			"Visible": true
-		},
-		"Vendor": {
-			"Visible": true
-		},
-		"PeakSNR_Ratio": {
-            "Visible": true
-        }
-	}
+    "ArbitratryImage": {
+        "type" : "image",
+        "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
+        "position" : "[0.70 0.35]",
+        "size"     : "[0.3 0.3]"    
+    },
+    "anotherImage": {
+        "type" : "image",
+        "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoSmall.png",
+        "position" : "[0.70 0.65]",
+        "size"     : "[0.3 0.3]"    
+    },
+    "Structural Title": {
+        "type" : "text",
+        "settings":{
+            "fontSize":"10",
+            "fontWeight":"bold"
+        },
+        "text":"Structural Module"
+    },
+     "T1w_SNR_GM_Ratio": {
+        "type" : "qc",
+        "module" : "Structural",
+        "visible": true,
+        "alias": "GM SNR"
+    },
+    "T1w_CNR_GM_WM_Ratio": {
+        "type" : "qc",
+        "module" : "Structural",
+        "visible": true
+    },
+    "T1w_GM_vol_mL": {
+        "type" : "qc",
+        "module" : "Structural",
+        "range": "500-800",
+        "visible": true,
+        "Unit": "mL"
+    },
+    "T1w_WM_vol_mL": {
+        "type" : "qc",
+        "module" : "Structural",
+        "range": "300-600",
+        "visible": true,
+        "Unit": "mL"
+    },
+    "T1w_CSF_vol_mL": {
+        "type" : "qc",
+        "module" : "Structural",
+        "range": "150-300",
+        "visible": true,
+        "Unit": "mL"
+    },
+    "T1w_GM_ICV_Ratio": {
+        "type" : "qc",
+        "module" : "Structural",
+        "visible": true,
+        "range": "0-1"
+    },
+    "T1w_WM_ICV_Ratio": {
+        "type" : "qc",
+        "module" : "Structural",
+        "visible": true,
+        "range": "0-1"
+    },
+    "T1w_CSF_ICV_Ratio": {
+        "type" : "qc",
+        "module" : "Structural",
+        "visible": true,
+        "range": "0-1"
+    },
+    "Version_CAT12": {
+        "type" : "qc",
+        "module" : "Structural",
+        "visible": true
+    },
+    "Version_ExploreASL": {
+        "type" : "qc",
+        "module" : "Structural",
+        "visible": true
+    },
+    "Version_LST": {
+        "type" : "qc",
+        "module" : "Structural",
+        "visible": true
+    },
+    "Version_Matlab": {
+        "type" : "qc",
+        "module" : "Structural",
+        "visible": true
+    },
+    "Version_SPM12": {
+        "type" : "qc",
+        "module" : "Structural",
+        "visible": true
+    },
+    "ASLTitle": {
+        "type" : "text",
+        "settings":{
+            "fontSize":"10",
+            "fontWeight":"Bold"
+        },
+        "text":"ASL Module"
+    },
+    "CBF_GM_Median_mL100gmin": {
+        "type" : "qc",
+        "module" : "ASL",
+        "range": "50-120",
+        "visible": true,
+        "alias": "Median CBF",
+        "Unit": "mL/100g/min"
+    },
+    "LabelingType": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true
+    },
+    "NumberOfAverages": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true,
+        "range": ""
+    },
+    "Initial_PLD_ms": {
+        "type" : "qc",
+        "module" : "ASL",
+        "Unit": "mS",
+        "visible": true
+    },
+    "MotionMean_mm": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true,
+        "alias": "Mean Motion",
+        "Unit": "mm"
+    },
+    "MotionSD_mm": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true,
+        "alias": "SD Motion",
+        "Unit": "mm"
+    },
+    "MotionMax_mm": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true,
+        "alias": "Max Motion",
+        "Unit": "mm"
+    },
+    "M0": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true
+    },
+    "VoxelSize_mm": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true,
+        "Unit": "mm"
+    },
+    "LabelingDuration_ms": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true,
+        "Unit": "ms"
+    },
+    "SpatialCoV_GM_Perc": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true
+    },
+    "Sequence": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true
+    },
+    "Vendor": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true
+    },
+    "PeakSNR_Ratio": {
+        "type" : "qc",
+        "module" : "ASL",
+        "visible": true
+    },
+    "ArbitraryName": {
+        "type" : "text",
+        "settings":{
+            "fontSize":"12"
+        },
+        "text":"This is a standard text."
+    }
 }
