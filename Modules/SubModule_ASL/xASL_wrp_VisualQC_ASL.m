@@ -153,10 +153,6 @@ if nVolumes>10
     end
 end
 
-% Remove PWI4D in both native & standard space
-xASL_delete(x.P.Path_PWI4D);
-xASL_delete(x.P.Pop_Path_PWI4D);
-
 %% 7) Compute overlap (intersection)/DICE coefficient with T1w brainmask
 if xASL_exist(x.P.Path_mean_control,'file')
     % if mean control doesnt exist, changes are we have a 3D file, then
