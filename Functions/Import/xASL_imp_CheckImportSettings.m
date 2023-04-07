@@ -33,7 +33,7 @@ function [x] = xASL_imp_CheckImportSettings(x)
 		x.modules.import.imPar.dcm2nii_version = '20220720';
     end
     
-    if ~isfield(x.modules.import.imPar,'dcmExtFilter') || isempty(x.modules.import.imPar.dcmExtFilter)
+	if ~isfield(x.modules.import.imPar,'dcmExtFilter') || isempty(x.modules.import.imPar.dcmExtFilter)
         % dcmExtFilter: the last one is because some convertors save files without extension, 
 		% but there would be a dot/period before a bunch of numbers
 		x.modules.import.imPar.dcmExtFilter = '^(.*\.dcm|.*\.DCM|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
@@ -71,10 +71,9 @@ function [x] = xASL_imp_CheckImportSettings(x)
 	fprintf('%s\n', [num2str(nTokens) ' tokens detected in tokenOrdering']);
 
 	if nLeftBrackets~=nTokens
+		fprintf('Note that the () symbols are reserved to define tokens in folderHierarchy!');
 		error('Number of tokens of folderHierarchy and tokenOrdering should be the same');
 	end
-
-
 
 	%% Manage .nii vs .nii.gz extensions
 	if ~isempty(x.modules.import.imPar.folderHierarchy)
@@ -94,3 +93,4 @@ function [x] = xASL_imp_CheckImportSettings(x)
 	end
 
 end
+   
