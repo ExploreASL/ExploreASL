@@ -462,13 +462,17 @@ if ~bUseFabber
 	end
 
 	if x.Q.BASIL.bInferT1
-		fprintf('BASIL: Infer variable T1 values\n');
-		FSLOptions = [FSLOptions ' --infert1'];
+		if x.modules.asl.bMultiPLD
+			fprintf('BASIL: Infer variable T1 values\n');
+			FSLOptions = [FSLOptions ' --infert1'];
+		end
 	end
 
 	if x.Q.BASIL.bInferArt
-		fprintf('BASIL: Infer arterial BV and arrival time\n');
-		FSLOptions = [FSLOptions ' --inferart'];
+		if x.modules.asl.bMultiPLD
+			fprintf('BASIL: Infer arterial BV and arrival time\n');
+			FSLOptions = [FSLOptions ' --inferart'];
+		end
 	end
 
 	switch (x.Q.BASIL.Exch)
@@ -488,23 +492,29 @@ if ~bUseFabber
 			warning(['BASIL Exchange model: ' x.Q.BASIL.Exch ' not recognized.'])
 	end
 
-	switch (x.Q.BASIL.Disp)
-		case 'none'
-			fprintf('BASIL Dispersion model: none\n');
-			FSLOptions = [FSLOptions ' --disp=none'];
-		case 'gamma'
-			fprintf('BASIL Dispersion model: Gamma\n');
-			FSLOptions = [FSLOptions ' --disp=gamma'];
-		case 'gauss'
-			fprintf('BASIL Dispersion model: Temporal Gaussian dispersion kernel\n');
-			FSLOptions = [FSLOptions ' --disp=gauss'];
-		case 'sgauss'
-			fprintf('BASIL Dispersion model: Spatial Gaussian dispersion kernel\n');
-			FSLOptions = [FSLOptions ' --disp=sgauss'];
-		otherwise
-			warning(['BASIL Dispersion model: ' x.Q.BASIL.Disp ' not recognized.'])
+	if x.modules.asl.bMultiPLD
+		switch (x.Q.BASIL.Disp)
+			case 'none'
+				fprintf('BASIL Dispersion model: none\n');
+				FSLOptions = [FSLOptions ' --disp=none'];
+			case 'gamma'
+				fprintf('BASIL Dispersion model: Gamma\n');
+				FSLOptions = [FSLOptions ' --disp=gamma'];
+			case 'gauss'
+				fprintf('BASIL Dispersion model: Temporal Gaussian dispersion kernel\n');
+				FSLOptions = [FSLOptions ' --disp=gauss'];
+			case 'sgauss'
+				fprintf('BASIL Dispersion model: Spatial Gaussian dispersion kernel\n');
+				FSLOptions = [FSLOptions ' --disp=sgauss'];
+			otherwise
+				warning(['BASIL Dispersion model: ' x.Q.BASIL.Disp ' not recognized.'])
+		end
+	else
+		fprintf('BASIL Dispersion model: none\n');
+		FSLOptions = [FSLOptions ' --disp=none'];
 	end
-	
+
+
 	% 	%% Aquisition options we might be able to use in the future
 	%   fprintf(option_file, '--sliceband=%i\n', sliceband);
 	%   fprintf('BASIL: Multi-band setup with number of slices per band: %i\n', slicedband);
