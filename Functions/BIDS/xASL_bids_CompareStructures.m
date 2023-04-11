@@ -239,7 +239,7 @@ function [results,pathDatasetA,pathDatasetB,datasetA,datasetB,fileListA,fileList
     results.(datasetB) = struct;
 
     % Get files and folders of datasets A and B
-    if verLessThan('matlab', '9.1')
+    if verLessThan('matlab', '9.1') % Matlab version 2016
 		% dir does not work recursively in older versions
 		[filesA, filesB] = xASL_bids_CompareStructures_GetFileListsUnix(pathDatasetA,pathDatasetB);
 	else
