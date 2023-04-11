@@ -86,25 +86,14 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     end
 
     %% 4. Create option_file that contains options which are passed to the FSL command
-    % Define basic paths
-
-	% Path to the options file
-	cmdlineOptions = [' --optfile ' xASL_adm_UnixPath(pathFSLOptions, ispc)];
-
-	% Path to input and output
-	if ~bUseFabber
-		cmdlineOptions = [cmdlineOptions ' -o ' xASL_adm_UnixPath(pathFSLOutput, ispc)];
-		cmdlineOptions = [cmdlineOptions ' -i ' xASL_adm_UnixPath(pathFSLInput, ispc)];
-	end
-	
 	% FSLOptions is a character array containing CLI args for the BASIL/FABBER command
-	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput);
+	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput);
         
     %% 5. Run Basil and retrieve CBF output
     if bUseFabber
         [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl -@ ' xASL_adm_UnixPath(pathFSLOptions, ispc)], x);
     else
-        [~, resultFSL] = xASL_fsl_RunFSL(['basil' cmdlineOptions ' ' FSLOptions], x);
+        [~, resultFSL] = xASL_fsl_RunFSL(['basil ' FSLOptions], x);
     end
     
     % Check if FSL failed
@@ -188,15 +177,17 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     
 end
 
-function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput)
+function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput)
 %xASL_sub_FSLOptions generates the options and saves them in a file and returns some commandline options as well
 %
-% FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI)
+% FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput)
 % 
 % INPUT:
 %   pathFSLOptions  - filepath to the options file (REQUIRED)
 %   x               - struct containing pipeline environment parameters (REQUIRED)
 %   bUseFabber      - Use FABBER, alternative BASIL (REQUIRED)
+%   pathFSLInput    - Path to the data input file (REQUIRED)
+%   pathFSLOutput   - Path to the output directory (REQUIRED)
 %
 % OUTPUT:
 % FSLOptions      - command-line options
@@ -210,7 +201,7 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, 
 % 5. Extra BASIL fitting options
 % 6. Save and close the options file
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput)
+% EXAMPLE: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput)
 %
 % __________________________________
 % Copyright 2015-2023 ExploreASL 
@@ -255,7 +246,12 @@ end
 
 %% 1. Create the options file
 % FSLOptions is a character array containing CLI args for the Basil command
-FSLOptions = '';
+% Path to the options file
+if bUseFabber
+	FSLOptions = ['-@ ' xASL_adm_UnixPath(pathFSLOptions, ispc)];
+else
+	FSLOptions = ['--optfile ' xASL_adm_UnixPath(pathFSLOptions, ispc)];
+end
 
 FIDoptionFile = fopen(pathFSLOptions, 'w+');
 if bUseFabber
@@ -264,13 +260,22 @@ else
 	fprintf(FIDoptionFile, '# BASIL options written by ExploreASL\n');
 end
 
-%% 2. Basic model and tissue parameters
-% Basic model options
+% Define basic paths
 if bUseFabber
     [~,PWIfileName, ext] = fileparts(pathFSLInput);
     PWIfile = [PWIfileName ext];
 	fprintf(FIDoptionFile, '--output=FSL_Output\n');
     fprintf(FIDoptionFile, '--data=%s\n', PWIfile);
+
+else
+	% Path to input and output
+	FSLOptions = [FSLOptions ' -o ' xASL_adm_UnixPath(pathFSLOutput, ispc)];
+	FSLOptions = [FSLOptions ' -i ' xASL_adm_UnixPath(pathFSLInput, ispc)];
+end
+
+%% 2. Basic model and tissue parameters
+% Basic model options
+if bUseFabber
     fprintf(FIDoptionFile, '--method=vb\n');
 	fprintf(FIDoptionFile, '--model=asl_multite\n');
 	fprintf(FIDoptionFile, '--infertexch\n'); % Fit Tex
