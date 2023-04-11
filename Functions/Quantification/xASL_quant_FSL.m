@@ -91,7 +91,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
         
     %% 5. Run Basil and retrieve CBF output
     if bUseFabber
-        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl -@ ' xASL_adm_UnixPath(pathFSLOptions, ispc)], x);
+        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl ' FSLOptions], x);
     else
         [~, resultFSL] = xASL_fsl_RunFSL(['basil ' FSLOptions], x);
     end
