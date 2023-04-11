@@ -5,8 +5,11 @@ function xASL_wrp_RealignASL(x, bASL)
 % FORMAT: xASL_wrp_RealignASL(x[, bASL])
 %
 % INPUT:
-%   x               - structure containing fields with all information required to run this submodule (REQUIRED)
-%   bASL    - boolean that the input is a ASL-based imaging (true) or not (false, e.g. fMRI, DTI etc). (OPTIONAL, DEFAULT = true) 
+%   x                               - structure containing fields with all information required to run this submodule (REQUIRED)
+%   bASL                            - boolean that the input is a ASL-based imaging (true) or not (false, e.g. fMRI, DTI etc). (OPTIONAL, DEFAULT = true) 
+%   x.modules.aslSpikeRemovalAbsoluteThreshold   - absolute threshold for removing
+%                                                  motion spike volumes, in mm (OPTIONAL, DEFAULT = 0 = disabled; e.g., 0.05)
+%                                     
 %
 % OUTPUT: n/a (registration changes the NIfTI orientation header only,
 %              with the exception of the affine transformation, which is
@@ -50,10 +53,26 @@ end
 rpfile = fullfile( Fpath, ['rp_' Ffile '.txt']);
 rInputPath = fullfile( Fpath, ['r' Ffile Fext]);
 
-if ~isfield(x.modules.asl,'SpikeRemovalThreshold')
+if ~isfield(x.modules.asl,'SpikeRemovalThreshold') && ~isfield(x.modules.asl,'SpikeRemovalAbsoluteThreshold')
+    % we default to ENABLE
+
     fprintf('%s\n','x.modules.asl.SpikeRemovalThreshold was not defined yet, default setting = 0.01 used');
-    x.modules.asl.SpikeRemovalThreshold   = 0.01; % default threshold, decreased this from 0.05 to 0.01,
+    x.modules.asl.SpikeRemovalThreshold = 0.01; % default threshold, decreased this from 0.05 to 0.01,
     % since we want to remove Spikes, perhaps except very small spikes
+    x.modules.asl.SpikeRemovalAbsoluteThreshold = 0; % disable by default
+    bSpikeRemoval = 0;
+
+elseif ~isfield(x.modules.asl,'SpikeRemovalAbsoluteThreshold')
+    x.modules.asl.SpikeRemovalAbsoluteThreshold = 0; % disable by default
+    bSpikeRemoval = 0;
+
+elseif x.modules.asl.SpikeRemovalAbsoluteThreshold<0 || x.modules.asl.SpikeRemovalAbsoluteThreshold>1
+    warning('Invalid x.modules.asl.SpikeRemovalAbsoluteThreshold');
+    fprintf('%s\n', ['set to ' xASL_num2str(x.modules.asl.SpikeRemovalAbsoluteThreshold)]);
+    fprintf('%s\n', 'Should be between 0:1');
+else
+    bSpikeRemoval = 1;
+    bENABLE = 0;
 end
 
 %% Set defaults for ENABLE
@@ -89,6 +108,20 @@ if isfield(x.Q,'LookLocker') && x.Q.LookLocker
 	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' as Look-Locker correction is not implemented.']);
 end
 
+
+%% File management
+% Here we define the files created in this wrapper, and delete them if they
+% pre-exist
+pathSave_NDV = fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.P.SubjectID '_' x.P.SessionID '.mat']);
+jpgfile_Motion = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID '_' x.P.SessionID '_motion.jpg']);
+jpgfile_ThresholdFree = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_threshold_free_spike_detection.jpg']);
+jpgfile_MotionSorted = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_PWI_motion_sorted.jpg']);
+
+xASL_delete(pathSave_NDV);
+xASL_delete(jpgfile_Motion);
+xASL_delete(jpgfile_ThresholdFree);
+xASL_delete(jpgfile_MotionSorted);
+
 if ~bMoCoPossible
     return; % no sense to run this function without motion correction
 end
@@ -99,7 +132,8 @@ if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE
     % as we are still developing this feature
     bENABLE = false;
     bZigZag = false;
-elseif bASL
+elseif bASL && ~bSpikeRemoval
+    % we default to ENABLE
 	bENABLE = true;
 	bZigZag = true;
 else
@@ -117,11 +151,13 @@ if nFrames <= 2
     bZigZag = false; % Minimum number of frames for ZigZag is > 2 (1 control-label pair)
 end
 
-
+if ~usejava('jvm')
+    fprintf('%s\n', 'No JavaVM detected, skipping plotting motion & exclusion matrix');
+end
 
 
 %% ----------------------------------------------------------------------------------------
-%% 1 Estimate motion
+%% 1. Estimate motion
 	fprintf('SPM motion estimation');
 	
 	% Issue warning if empty image
@@ -177,7 +213,7 @@ end
 
 
 %% ----------------------------------------------------------------------------------------
-%% 2 Calculate and plot position and motion parameters
+%% 2. Calculate and plot position and motion parameters
 	fprintf('%s\n','Calculate & plot position & motion parameters');
 	
 	% Summarize real-world realign parameters into net displacement vector (NDV)
@@ -202,11 +238,9 @@ end
 	close all;
 	if usejava('jvm') % only if JVM loaded
 		fig = figure('Visible','off');
-	else
-		fprintf('Warning, skipping motion plot, JVM missing\n');
 	end
 	
-	for ii=1:2
+	for ii=1:2 % 1 = absolute displacement 2 = relative displacement==motion
 		tx{ii} = FD{ii}(:,1); ty{ii} = FD{ii}(:,2); tz{ii}  = FD{ii}(:,3); % translations
 		rx{ii} = FD{ii}(:,4); ry{ii} = FD{ii}(:,5); rz{ii}  = FD{ii}(:,6); % rotations (pitch, roll, yaw)
 		
@@ -257,15 +291,9 @@ end
 	end
 
 %% ----------------------------------------------------------------------------------------
-%% 3) Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
+%% 3. Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
 
-if bENABLE
-    % Sort motion of control-label pairs
-    MotionTime = NDV{2}; % motion
-    MotionTime = MotionTime(1:2:end-1)+MotionTime(2:2:end); % additive motion for each control-label pair
-    MotionTime(:,2) = 1:length(MotionTime);
-    MotionTimeSort = sortrows(MotionTime,1);
-    
+if bENABLE || bSpikeRemoval
     % Resample ASL image (apply motion estimation)
     xASL_delete(rInputPath);
     matlabbatch{1}.spm.spatial.realign.write.data = {InputPath};
@@ -285,7 +313,7 @@ if bENABLE
     
     % Load ASL-image
     IM = xASL_io_Nifti2Im(rInputPath);
-    
+
     if  bASL % if subtractive/pairwise data
         [~, ~, OrderContLabl] = xASL_quant_GetControlLabelOrder(IM);
         
@@ -294,7 +322,18 @@ if bENABLE
         else
             IM = IM(:,:,:,2:2:end)-IM(:,:,:,1:2:end-1); % control-label order doesn't matter for one-sample ttest p-values
         end
-    end
+    end    
+end
+
+
+if ~bENABLE && ~bSpikeRemoval
+    fprintf('%s\n', 'Skipping ENABLE');
+elseif bENABLE
+    % Sort motion of control-label pairs
+    MotionTime = NDV{2}; % motion
+    MotionTime = MotionTime(1:2:end-1)+MotionTime(2:2:end); % additive motion for each control-label pair
+    MotionTime(:,2) = 1:length(MotionTime);
+    MotionTimeSort = sortrows(MotionTime,1);
     
     
     fprintf('Running ENABLE:   ');
@@ -328,7 +367,22 @@ if bENABLE
     
     mintValuePlot = zeros(1,length(tValue));
     mintValuePlot(mintValue+1:end)=min(tValue);
-    
+end
+
+
+%% ----------------------------------------------------------------------------------------
+%% 4. Set volumes to exclude
+if bSpikeRemoval
+    fprintf('%s\n', ['Running spike removal with threshold ' xASL_num2str(x.modules.asl.SpikeRemovalAbsoluteThreshold) ' mm']);
+    exclusion = (NDV{2}>x.modules.asl.SpikeRemovalAbsoluteThreshold)';
+    % Merge control and label
+    exclusionPairs = (exclusion(1:2:end-1) + exclusion(2:2:end))>0;
+    % Recreate controls
+    exclusion(1:2:end-1) = exclusionPairs;
+    % Recreate labels
+    exclusion(2:2:end) = exclusionPairs;
+
+elseif bENABLE
     % Detect frames for exclusion
     if bASL % if ASL
         exclusion = zeros(1, length(MotionTimeSort)*2);
@@ -348,8 +402,13 @@ if bENABLE
             exclusion(ExcludeFrames) = 1;
         end
     end
-    
-    if usejava('jvm') % only if JVM loaded
+end
+
+
+if usejava('jvm') % only if JVM loaded
+    if bENABLE || bSpikeRemoval
+    %% ----------------------------------------------------------------------------------------
+    %% 5. Plot exclusion matrix
         % Save threshold-free spike detection
         hold on
         subplot(3,1,3);
@@ -359,24 +418,23 @@ if bENABLE
         ylabel('Exclusion matrix');
         axis([1 length(NDV{ii}) 0 ceil(max(NDV{ii}))]); % fix X-axes to be same for subplots
     end
-else
-    fprintf('ENABLE was skipped...\n');
+
+    %% ----------------------------------------------------------------------------------------
+    %% 6. Save motion plot
+	fprintf('Saving motion plot to %s\n', jpgfile_Motion);
+    
+	xASL_adm_CreateDir(fileparts(jpgfile_Motion));
+    saveas(fig, jpgfile_Motion, 'jpg');
+	close all;
+	clear fig;
 end
 
-	if usejava('jvm') % only if JVM loaded
-		jpgfile = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID '_' x.P.SessionID '_motion.jpg']);
-		fprintf('Saving motion plot to %s\n', jpgfile);
-        
-		xASL_adm_CreateDir(fileparts(jpgfile));
-        saveas(fig, jpgfile, 'jpg');
-		close all;
-		clear fig;
-	end
-
-% Only run if ENABLE is on
 if bENABLE
     tValue(1:3) = tValue(4); % for nicer plotting
-    
+
+    %% ----------------------------------------------------------------------------------------
+    %% 6. Save ENABLE sorting plot
+
     if usejava('jvm') % only if JVM loaded
         fig = figure('Visible','off');
         plot([1:length(tValue)],tValue,'b',[1:length(tValue)],mintValuePlot * max(tValue),'r');
@@ -384,21 +442,38 @@ if bENABLE
         ylabel('mean voxel-wise 1-sample t-test p-value');
         PercExcl    = round((sum(exclusion)/length(exclusion)*100)*10)/10;
         title(['Threshold free motion spike exclusion (red, ' num2str(PercExcl) '%) for ' x.P.SubjectID '_' x.P.SessionID]);
-        jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_threshold_free_spike_detection.jpg']);
-        fprintf('Saving motion plot to %s\n',jpgfile);
         
-        xASL_adm_CreateDir(fileparts(jpgfile));
-        saveas(fig, jpgfile, 'jpg');
+        fprintf('Saving motion plot to %s\n', jpgfile_ThresholdFree);
+        
+        xASL_adm_CreateDir(fileparts(jpgfile_ThresholdFree));
+        saveas(fig, jpgfile_ThresholdFree, 'jpg');
         close all;
         clear fig;
     end
+end
+
+
     
+
+    %% ----------------------------------------------------------------------------------------
+    %% 7. Save QC images before and after volume-spikes exclusion
+
+Slice2Show = floor(size(IM,3)*0.67); % e.g. slice 11/17
+
+if bSpikeRemoval
+    % display full timeseries without despiking
+    ExampleIm_Full = xASL_im_rotate(xASL_stat_MeanNan(IM(:,:,Slice2Show,:), 4), 90);
+    % display timeseries with removing spike volumes
+    ExampleIm_noSpikes = xASL_im_rotate(xASL_stat_MeanNan(IM(:,:,Slice2Show,~exclusionPairs), 4), 90);
+    TotalCheck = [ExampleIm_Full ExampleIm_noSpikes];
+
+elseif bENABLE
     % Save 7 images, 3 before & 3 after exclusion
     IndexIs = [1 round(mintValue/3)  round(mintValue/2) mintValue];
     diffIndex = (length(tValue)-mintValue)/3;
     IndexIs(5:7) = [mintValue+diffIndex mintValue+2*diffIndex length(tValue)];
     IndexIs = round(IndexIs);
-    Slice2Show = floor(size(IM,3)*0.67); % e.g. slice 11/17
+    
     % pre-allocation for more efficient memory usage
     ExampleIM = zeros(size(SortIM,1), size(SortIM,2), length(IndexIs));
     ExampleIM = single(ExampleIM);
@@ -406,26 +481,34 @@ if bENABLE
         ExampleIM(:,:,iVolume) = xASL_stat_MeanNan(SortIM(:,:,Slice2Show,1:IndexIs(iVolume)), 4);
     end
     TotalCheck = xASL_vis_TileImages(xASL_im_rotate(ExampleIM,90), 4);
-    
+end
+   
+if bSpikeRemoval || bENABLE
     % Find intensities
     SortValues = sort(TotalCheck(isfinite(TotalCheck)));
-    MinValue = SortValues(max(1,round(0.001*length(SortValues))));
-    MaxValue = SortValues(round(0.999*length(SortValues)));
+    MinValue = SortValues(max(1,round(0*length(SortValues))));
+    MaxValue = SortValues(round(0.975*length(SortValues)));
     
     TotalCheck(TotalCheck<MinValue) = MinValue;
     TotalCheck(TotalCheck>MaxValue) = MaxValue;
     
-    jpgfile = fullfile( x.D.MotionDir,['rp_' x.P.SubjectID '_' x.P.SessionID '_PWI_motion_sorted.jpg']);
-    fprintf('Saving motion plot to %s\n',jpgfile);
-    xASL_vis_Imwrite(TotalCheck, jpgfile);
-    
-    %% ----------------------------------------------------------------------------------------
-    %% 4 Remove spike frames from nifti
-    
-    fprintf('Remove spike frames from nifti\n');
-    
-    if sum(exclusion)>0 % only if spikes have been detected
-        
+    fprintf('Saving motion plot to %s\n', jpgfile_MotionSorted);
+    xASL_vis_Imwrite(TotalCheck, jpgfile_MotionSorted);
+end
+
+
+%% ----------------------------------------------------------------------------------------
+%% 8. Remove spike volumes from NIfTI
+
+if bENABLE || bSpikeRemoval
+
+    if sum(exclusion)==0
+        fprintf('No spike volumes detected for removal from NIfTI\n');
+    elseif sum(exclusion)<0
+        warning('Illegal exclusion matrix');
+    else % only if spikes have been detected
+        fprintf('Remove spike volumes from NIfTI\n');
+
         % Load nifti
         TempIm = xASL_io_Nifti2Im(InputPath);
         
@@ -443,9 +526,9 @@ if bENABLE
         % Save in single precision, since conversion back to INT16 would
         % otherwise loose precious precision
         % PM: can this be simplified to same format as original??
-        xASL_io_SaveNifti(x.P.Path_ASL4D,x.P.Path_despiked_ASL4D,NewIm,32,0);
+        xASL_io_SaveNifti(x.P.Path_ASL4D, x.P.Path_despiked_ASL4D, NewIm, 32, 0);
         
-        % Do same for *.mat
+        % Do same for *.mat motion sidecars
         LoadParms = load(x.P.Path_ASL4D_mat, '-mat');
         mat = LoadParms.mat;
         
@@ -467,15 +550,16 @@ end
 
 xASL_delete(rInputPath); % delete temporary image
 
+%% ----------------------------------------------------------------------------------------
+%% 9. Save motion statistics before excluding motion spikes
 % Save results for later summarization in analysis module
 xASL_adm_CreateDir(x.D.MotionDir);
-pathSave = fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.P.SubjectID '_' x.P.SessionID '.mat']);
-save(pathSave, 'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue');
+save(pathSave_NDV, 'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue');
 
-    %% ----------------------------------------------------------------------------------------
-    %% 5 Print motion statistics after excluding motion spikes
+%% ----------------------------------------------------------------------------------------
+%% 10. Save motion statistics after excluding motion spikes
     
-    if bENABLE && sum(exclusion)>0
+    if sum(exclusion)>0
         for ii=1:2
             NDV_SpikesRemoved{ii} = NDV{ii}(~exclusion);
             
@@ -486,7 +570,7 @@ save(pathSave, 'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclu
             MAD_NDV_SpikesRemoved{ii} = xASL_stat_MadNan(NDV_SpikesRemoved{ii},0); % median absolute deviation from median
         end
         
-        save(pathSave, 'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue', ...
+        save(pathSave_NDV, 'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue', ...
         'NDV_SpikesRemoved','median_NDV_SpikesRemoved','mean_NDV_SpikesRemoved','max_NDV_SpikesRemoved','SD_NDV_SpikesRemoved','MAD_NDV_SpikesRemoved');
     end
 
