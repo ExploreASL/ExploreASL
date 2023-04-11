@@ -57,22 +57,13 @@ function [x] = ExploreASL_Initialize(varargin)
     
 
     % Validate the Matlab version
-    Software.Matlab = version;
-    IndicesAre = find(Software.Matlab=='.');
-    if length(IndicesAre)<2
-        warning('Something wrong with the Matlab version');
-    else
-        matlabVersionFirst = str2num(Software.Matlab(1:IndicesAre(1)-1));
-        matlabVersionSecond = str2num(Software.Matlab(IndicesAre(1)+1:IndicesAre(2)-1));
+	fprintf('%s\n', ['Matlab version detected: ' version]);
+	fprintf('%s\n', 'Minimal Matlab version required: 9.6 (R2019a)');
 
-        fprintf('%s\n', ['Matlab version detected: ' num2str(matlabVersionFirst) '.' num2str(matlabVersionSecond)]);
-        fprintf('%s\n', 'Minimal Matlab version required: 9.6 (R2019a)');
-
-        if matlabVersionFirst<9 || matlabVersionSecond<6
-            disp('<a href="https://nl.mathworks.com/support/requirements/previous-releases.html; ">Click here for the Matlab version overview</a>');
-            error('Too old Matlab version for ExploreASL');
-        end
-    end
+	if verLessThan('matlab', '9.6')
+		disp('<a href="https://nl.mathworks.com/support/requirements/previous-releases.html; ">Click here for the Matlab version overview</a>');
+		error('Too old Matlab version for ExploreASL');
+	end
 
     % Parse input parameters
     x = xASL_init_InputParsing(x,varargin{:});

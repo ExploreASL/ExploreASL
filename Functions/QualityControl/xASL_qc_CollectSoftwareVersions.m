@@ -15,7 +15,7 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
 %
 % EXAMPLE: x = xASL_qc_CollectSoftwareVersions(x);
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
+% Copyright (C) 2015-2023 ExploreASL
 
 
     %% Admin
@@ -25,12 +25,12 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
 
     %% Get Matlab version
     Software.Matlab = version;
-    IndicesAre = find(Software.Matlab=='.');
-    if length(IndicesAre)<2
-        warning('Something wrong with the Matlab version');
-    else
-        Software.Matlab = Software.Matlab(1:IndicesAre(2)-1);
-    end
+    [startIndex, endIndex] = regexp(Software.Matlab, '^\d*\.\d*\.');
+	if isempty(startIndex) || isempty(endIndex) || endIndex(1) < 2
+		warning('Something wrong with the Matlab version');
+	else
+		Software.Matlab = Software.Matlab(startIndex(1):endIndex(1)-1);
+	end
     % Extract matlab version until just before the second dot
 
     
