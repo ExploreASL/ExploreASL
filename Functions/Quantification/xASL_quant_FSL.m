@@ -226,8 +226,8 @@ if ~bUseFabber
 	end
 
 	if ~isfield(x.Q.BASIL,'bSpatial') || isempty(x.Q.BASIL.bSpatial)
-		fprintf('BASIL: Setting default option bSpatial = true\n');
-		x.Q.BASIL.bSpatial = true;
+		fprintf('BASIL: Setting default option bSpatial = false\n');
+		x.Q.BASIL.bSpatial = false;
 	end
 
 	if ~isfield(x.Q.BASIL,'bInferT1') || isempty(x.Q.BASIL.bInferT1)
