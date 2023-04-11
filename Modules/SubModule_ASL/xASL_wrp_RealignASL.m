@@ -7,7 +7,7 @@ function xASL_wrp_RealignASL(x, bASL)
 % INPUT:
 %   x                               - structure containing fields with all information required to run this submodule (REQUIRED)
 %   bASL                            - boolean that the input is a ASL-based imaging (true) or not (false, e.g. fMRI, DTI etc). (OPTIONAL, DEFAULT = true) 
-%   x.modules.aslSpikeRemovalAbsoluteThreshold   - absolute threshold for removing
+%   x.modules.asl.SpikeRemovalAbsoluteThreshold   - absolute threshold for removing
 %                                                  motion spike volumes, in mm (OPTIONAL, DEFAULT = 0 = disabled; e.g., 0.05)
 %                                     
 %
@@ -33,7 +33,7 @@ function xASL_wrp_RealignASL(x, bASL)
 %
 % EXAMPLE: xASL_wrp_RealignASL(x);
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
 %% ----------------------------------------------------------------------------------------
@@ -54,25 +54,27 @@ rpfile = fullfile( Fpath, ['rp_' Ffile '.txt']);
 rInputPath = fullfile( Fpath, ['r' Ffile Fext]);
 
 if ~isfield(x.modules.asl,'SpikeRemovalThreshold') && ~isfield(x.modules.asl,'SpikeRemovalAbsoluteThreshold')
-    % we default to ENABLE
 
     fprintf('%s\n','x.modules.asl.SpikeRemovalThreshold was not defined yet, default setting = 0.01 used');
     x.modules.asl.SpikeRemovalThreshold = 0.01; % default threshold, decreased this from 0.05 to 0.01,
     % since we want to remove Spikes, perhaps except very small spikes
     x.modules.asl.SpikeRemovalAbsoluteThreshold = 0; % disable by default
-    bSpikeRemoval = 0;
+    bSpikeRemoval = false;
 
 elseif ~isfield(x.modules.asl,'SpikeRemovalAbsoluteThreshold')
     x.modules.asl.SpikeRemovalAbsoluteThreshold = 0; % disable by default
-    bSpikeRemoval = 0;
-
-elseif x.modules.asl.SpikeRemovalAbsoluteThreshold<0 || x.modules.asl.SpikeRemovalAbsoluteThreshold>1
-    warning('Invalid x.modules.asl.SpikeRemovalAbsoluteThreshold');
-    fprintf('%s\n', ['set to ' xASL_num2str(x.modules.asl.SpikeRemovalAbsoluteThreshold)]);
-    fprintf('%s\n', 'Should be between 0:1');
+    bSpikeRemoval = false;
 else
-    bSpikeRemoval = 1;
-    bENABLE = 0;
+	% Here it is clear that SpikeRemovalThreshold is not existing, so it needs to be defaulted
+	x.modules.asl.SpikeRemovalThreshold = 0.01; % default threshold
+
+	if x.modules.asl.SpikeRemovalAbsoluteThreshold<0 || x.modules.asl.SpikeRemovalAbsoluteThreshold>1
+		warning('Invalid x.modules.asl.SpikeRemovalAbsoluteThreshold');
+		fprintf('%s\n', ['set to ' xASL_num2str(x.modules.asl.SpikeRemovalAbsoluteThreshold)]);
+		fprintf('%s\n', 'Should be between 0:1');
+	end
+
+	bSpikeRemoval = true;
 end
 
 %% Set defaults for ENABLE
@@ -132,9 +134,13 @@ if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE
     % as we are still developing this feature
     bENABLE = false;
     bZigZag = false;
-elseif bASL && ~bSpikeRemoval
-    % we default to ENABLE
-	bENABLE = true;
+elseif bASL
+    % we default to ENABLE if SpikeRemoval is off
+	if bSpikeRemoval
+		bENABLE = false;
+	else
+		bENABLE = true;
+	end
 	bZigZag = true;
 else
     % for non-ASL data we skip the outlier detection based on motion and
