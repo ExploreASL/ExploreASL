@@ -18,7 +18,7 @@ Reference manual and tutorials for each ExploreASL version are found on the [Git
 
 ## Installation
 
-To use **ExploreASL** within Matlab, you can download a stable release version from the [GitHub releases section](https://github.com/ExploreASL/ExploreASL/releases) or from [Zenodo](https://zenodo.org/record/3905263). Navigate within Matlab to the **ExporeASL** directory, to make **ExploreASL** the current working directory. To start ExploreASL from Matlab, type:
+To use **ExploreASL** within Matlab, you can download a stable release version from the [GitHub releases section](https://github.com/ExploreASL/ExploreASL/releases) or from [Zenodo](https://doi.org/10.5281/zenodo.7702237). Alternatively the software can also be found on [Dockerhub](https://hub.docker.com/r/exploreasl/xasl). Navigate within Matlab to the **ExporeASL** directory, to make **ExploreASL** the current working directory. To start ExploreASL from Matlab, type:
 
 ```
 ExploreASL
