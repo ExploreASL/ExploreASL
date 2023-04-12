@@ -146,6 +146,8 @@ elseif ~isnumeric(x.modules.asl.SpikeRemovalAbsoluteThreshold) || x.modules.asl.
     warning('Invalid x.modules.asl.SpikeRemovalAbsoluteThreshold');
     fprintf('%s\n', ['set to ' xASL_num2str(x.modules.asl.SpikeRemovalAbsoluteThreshold)]);
     fprintf('%s\n', 'Should be numeric and set between 0:1');
+    bSpikeRemoval = true;
+    bENABLE = false;    
 
 else % Here it is clear that SpikeRemovalThreshold exists, and has a correct value
     % If this is the case, we disable ENABLE
