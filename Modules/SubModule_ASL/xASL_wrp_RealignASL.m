@@ -53,34 +53,12 @@ end
 rpfile = fullfile( Fpath, ['rp_' Ffile '.txt']);
 rInputPath = fullfile( Fpath, ['r' Ffile Fext]);
 
-if ~isfield(x.modules.asl,'SpikeRemovalThreshold') && ~isfield(x.modules.asl,'SpikeRemovalAbsoluteThreshold')
 
-    fprintf('%s\n','x.modules.asl.SpikeRemovalThreshold was not defined yet, default setting = 0.01 used');
-    x.modules.asl.SpikeRemovalThreshold = 0.01; % default threshold, decreased this from 0.05 to 0.01,
-    % since we want to remove Spikes, perhaps except very small spikes
-    x.modules.asl.SpikeRemovalAbsoluteThreshold = 0; % disable by default
-    bSpikeRemoval = false;
-
-elseif ~isfield(x.modules.asl,'SpikeRemovalAbsoluteThreshold')
-    x.modules.asl.SpikeRemovalAbsoluteThreshold = 0; % disable by default
-    bSpikeRemoval = false;
-else
-	% Here it is clear that SpikeRemovalThreshold is not existing, so it needs to be defaulted
-	x.modules.asl.SpikeRemovalThreshold = 0.01; % default threshold
-
-	if x.modules.asl.SpikeRemovalAbsoluteThreshold<0 || x.modules.asl.SpikeRemovalAbsoluteThreshold>1
-		warning('Invalid x.modules.asl.SpikeRemovalAbsoluteThreshold');
-		fprintf('%s\n', ['set to ' xASL_num2str(x.modules.asl.SpikeRemovalAbsoluteThreshold)]);
-		fprintf('%s\n', 'Should be between 0:1');
-	end
-
-	bSpikeRemoval = true;
-end
-
-%% Set defaults for ENABLE
+%% Set defaults
 exclusion = NaN;
 PercExcl = NaN;
 MinimumtValue = NaN;
+
 
 %% Read basic image information
 tempnii = xASL_io_ReadNifti(InputPath);
@@ -129,33 +107,74 @@ if ~bMoCoPossible
 end
 
     
-if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE 
-    % ENABLE and ZigZag are temporarily disabled for multiPLD/TE
+%% Manage spike removal options: threshold-free (bENABLE) & fixed threshold (bSpikeRemoval)
+% bSpikeRemoval = boolean for removing spikes with a fixed threshold
+% (OPTIONAL, DEFAULTED to false)
+% SpikeRemovalAbsoluteThreshold = the fixed threshold (in mm; OPTIONAL, defaulted to 0)
+%
+% bENABLE = boolean for running ENABLE (OPTIONAL, defaulted to true)
+% SpikeRemovalThreshold = ENABLE's relative threshold (t-stats, OPTIONAL, DEFAULT =
+% 0.01)
+
+% SpikeRemovalThreshold is an optional field, by default we use ENABLE
+% So, here we check if it exists, but otherwise we default to disabling it
+
+if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE
+    % outlier exclusion is temporarily disabled for multiPLD/TE
     % as we are still developing this feature
+    fprintf('%s\n', 'multi-PLD or multi-TE detected, disabling outlier exclusion, not yet implemented');
+    bSpikeRemoval = false;
     bENABLE = false;
-    bZigZag = false;
-elseif bASL
-    % we default to ENABLE if SpikeRemoval is off
-	if bSpikeRemoval
-		bENABLE = false;
-	else
-		bENABLE = true;
-	end
-	bZigZag = true;
-else
-    % for non-ASL data we skip the outlier detection based on motion and
-    % skip the ZigZag
+
+elseif ~isfield(x.modules.asl,'SpikeRemovalThreshold') && ~isfield(x.modules.asl,'SpikeRemovalAbsoluteThreshold')
+
+    fprintf('%s\n','x.modules.asl.SpikeRemovalThreshold was not defined yet, default setting = 0.01 used');
+    x.modules.asl.SpikeRemovalThreshold = 0.01; % default threshold, decreased this from 0.05 to 0.01,
+    % since we want to remove Spikes, perhaps except very small spikes
+    x.modules.asl.SpikeRemovalAbsoluteThreshold = 0; % disable by default
+    bSpikeRemoval = false;
+    bENABLE = true;
+
+elseif ~isfield(x.modules.asl,'SpikeRemovalAbsoluteThreshold')
+    x.modules.asl.SpikeRemovalAbsoluteThreshold = 0; % disable by default
+    bSpikeRemoval = false;
+    bENABLE = true;
+
+elseif ~isnumeric(x.modules.asl.SpikeRemovalAbsoluteThreshold) || x.modules.asl.SpikeRemovalAbsoluteThreshold<0 || x.modules.asl.SpikeRemovalAbsoluteThreshold>1
+    % If the field exists (as evidenced by the previous elseif) we check if
+    % it has a correct value
+    warning('Invalid x.modules.asl.SpikeRemovalAbsoluteThreshold');
+    fprintf('%s\n', ['set to ' xASL_num2str(x.modules.asl.SpikeRemovalAbsoluteThreshold)]);
+    fprintf('%s\n', 'Should be numeric and set between 0:1');
+
+else % Here it is clear that SpikeRemovalThreshold exists, and has a correct value
+    % If this is the case, we disable ENABLE
+	bSpikeRemoval = true;
     bENABLE = false;
-	bZigZag = false;
 end
 
-if nFrames < 10 % Execute ENABLE if having at least 5 pairs/10 frames
+if nFrames < 10 % Only execute ENABLE if we have at least 5 control-label pairs (==10 volumes)
 	bENABLE = false;
 end
 
-if nFrames <= 2
-    bZigZag = false; % Minimum number of frames for ZigZag is > 2 (1 control-label pair)
+
+%% Manage zig-zag in motion correction
+if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE 
+    % ZigZag are temporarily disabled for multiPLD/TE
+    % as we are still developing this feature
+    fprintf('%s\n', 'multi-PLD or multi-TE detected, disabling zig-zag motion estimation, not yet implemented');    
+    bZigZag = false;
+
+elseif bASL && nFrames > 2
+    % we use zig-zag motion regression for ASL
+    % Minimum number of frames for ZigZag is > 2 (1 control-label pair)
+	bZigZag = true;
+    
+else
+    % for non-ASL data (e.g., fMRI) we disable zig-zag, but we still keep ENABLE
+	bZigZag = false;
 end
+
 
 if ~usejava('jvm')
     fprintf('%s\n', 'No JavaVM detected, skipping plotting motion & exclusion matrix');
@@ -188,33 +207,10 @@ end
 	% If previous realign parameters exist, delete them
 	xASL_delete(rpfile);
 	
-	% Run SPM
-	
-	% Calculating the motion for every first TE of each PLD and
-	% considering it the same for the other TEs from that PLD.
-	%
-	% if nFrames>2 && bASL && length(x.EchoTime)>1  %Multi TE
-	%     uniqueTE=uniquetol(x.EchoTime); %gives the number of unique TEs
-	%     NumTEs=numel(uniqueTE);
-	%     minTE=min(uniqueTE);
-	%     positionMinTE=find(x.EchoTime == minTE); %positions that have the min TE
-	%     ImInfo=spm_vol(InputPath);
-	%     ImInfoFirstTEs=ImInfo(positionMinTE);
-	%
-	%     if numel(unique(x.Q.Initial_PLD))==1 %multiTE + single PLD
-	%         spm_realign(ImInfoFirstTEs,flags,bZigZag);
-	%         MotionFirstTEs=load(rpfile);
-	%         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1); %repeats each row NumTEs times
-	%         save('rp_ASL4D.txt','MotionAllTEs','-ascii') %saves the rpfile again into .txt
-	%
-	%     elseif numel(unique(x.Q.Initial_PLD))>1 % multiTE + multiPLD=Hadamard
-	%         spm_realign(ImInfoFirstTEs,flags,bZigZag);
-	%         MotionFirstTEs=load(rpfile);
-	%         MotionAllTEs=repelem(MotionFirstTEs(:,:),NumTEs,1);
-	%         save('rp_ASL4D.txt','MotionAllTEs','-ascii')
-	%     end
-	
 	% Run motion correction for corresponding case
+    % Note that this is the adapted spm_realign, including zig-zag
+    % regression to account for ASL's potential control-label difference in
+    % average head position
 	spm_realign(spm_vol(InputPath), flags, bZigZag);
 
 
