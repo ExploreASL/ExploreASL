@@ -70,6 +70,12 @@ function imageType = xASL_bids_determineImageTypeGE(jsonPar)
     if length(jsonPar.ImageType) == 4 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
             strcmpi(jsonPar.ImageType{3},'CBF') && strcmpi(jsonPar.ImageType{4},'CBF')
         imageType = 'cbf';
+	end
+
+	% ["DERIVED", "PRIMARY", "CBF", "CBF", "REAL"] - CBF
+    if length(jsonPar.ImageType) == 5 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
+            strcmpi(jsonPar.ImageType{3},'CBF') && strcmpi(jsonPar.ImageType{4},'CBF') && strcmpi(jsonPar.ImageType{5},'REAL')
+        imageType = 'cbf';
     end
 
 end
