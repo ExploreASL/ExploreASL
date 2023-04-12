@@ -262,10 +262,8 @@ end
 
 % Define basic paths
 if bUseFabber
-    [~,PWIfileName, ext] = fileparts(pathFSLInput);
-    PWIfile = [PWIfileName ext];
-	fprintf(FIDoptionFile, '--output=FSL_Output\n');
-    fprintf(FIDoptionFile, '--data=%s\n', PWIfile);
+	fprintf(FIDoptionFile, '--output=%s\n', xASL_adm_UnixPath(pathFSLOutput, ispc));
+    fprintf(FIDoptionFile, '--data=%s\n', xASL_adm_UnixPath(pathFSLInput, ispc));
 
 else
 	% Path to input and output
