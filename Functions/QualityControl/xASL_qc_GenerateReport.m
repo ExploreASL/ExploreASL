@@ -29,7 +29,7 @@ if ~exist(PathX, 'file')
     return;
 end
 
-x = xASL_adm_LoadX(x, PathX, false); % Assume memory x is newer than x.mat
+x = xASL_adm_LoadX(x, PathX, true); % Assume memory x is newer than x.mat
 
 % Make sure that the directory exists
 PrintDir = fullfile(x.dir.xASLDerivatives, subject);
@@ -100,6 +100,8 @@ function [line, settings] = xASL_sub_parseJson(json, x, figure, line, settings)
                 line = xASL_sub_PrintQC(currentField, fields{iField}, x, figure, line, settings);
             case 'image'
                 xASL_sub_PrintImage(currentField, figure);  
+            case 'scan'
+                xASL_sub_PrintScan(currentField, x, figure);
             case 'settings'
                 settings = xASL_sub_loadSettings(currentField, settings);  
         end  
@@ -229,6 +231,38 @@ function xASL_sub_PrintImage(input, figure, position)
     [img, ~, alphachannel] = imread(ImagePath);
     fg= imshow(img);
     fg.AlphaData=alphachannel;
+    clear fg
+end
+
+function xASL_sub_PrintScan(input, x, figure)
+    position = [str2num(input.position) str2num(input.size)];
+    if ~isfield(x.P, input.name)
+        warning (['could not print', input.name, 'check if nifti exists in ExploreASL/Derivatives/Population']);
+        return
+    end
+    ImIn = {x.P.(input.name)};
+
+    ax=axes('Position', position, 'Visible', 'off', 'Parent', figure);
+    if isfield(input, 'overlay')
+        fields = fieldnames(input.overlay);
+        for iField=1:length(fields)
+            if isfield(x.P, fields(iField))
+                ImIn(end+1) = {x.P.(fields{iField})};
+            end
+        end
+    end
+    if isfield(input, 'slice')
+        x.S.TraSlices = [str2num(input.slice.TraSlice)];
+        x.S.CorSlices = [str2num(input.slice.CorSlice)];
+        x.S.SagSlices = [str2num(input.slice.SagSlice)];
+    else
+        x.S.TraSlices = [25, 50, 90];
+        x.S.SagSlices = [25, 50, 90];
+        x.S.CorSlices = [25, 50, 90];
+    end
+
+    img = xASL_vis_CreateVisualFig(x, ImIn, [], [], [], [], [], [], [], [], [], [], []);
+    fg= imshow(img);
     clear fg
 end
 

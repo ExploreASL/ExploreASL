@@ -11,14 +11,31 @@
     "ArbitratryImage": {
         "type" : "image",
         "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
-        "position" : "[0.70 0.35]",
+        "position" : "[0.70 0.05]",
         "size"     : "[0.3 0.3]"    
     },
     "anotherImage": {
         "type" : "image",
         "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoSmall.png",
-        "position" : "[0.70 0.65]",
+        "position" : "[0.70 0.35]",
         "size"     : "[0.3 0.3]"    
+    },
+    "ArbitraryScan": {
+        "type" : "scan",
+        "name" : "Pop_Path_rT1",
+        "position" : "[0.70 0.65]",
+        "size"     : "[0.3 0.3]",
+        "slice"    : {
+            "TraSlice" : "[50 75]",
+            "CorSlice" : "[50 75]",
+            "SagSlice" : "[50 75]"},
+        "overlay"  : {
+            "Pop_Path_qCBF" :{
+                "contour" :"true",
+                "opacity" : "0.3",
+                "color"   : "r"
+            }
+        }  
     },
     "Structural Title": {
         "type" : "text",
@@ -42,7 +59,7 @@
     "T1w_GM_vol_mL": {
         "type" : "qc",
         "module" : "Structural",
-        "range": "500-800",
+        "range": "1000-1200",
         "visible": true,
         "Unit": "mL"
     },
