@@ -226,13 +226,7 @@
         "ArbitratryImage": {
             "type" : "image",
             "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
-            "position" : "[0.70 0.05]",
-            "size"     : "[0.3 0.3]"    
-        },
-        "anotherImage": {
-            "type" : "image",
-            "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoSmall.png",
-            "position" : "[0.70 0.35]",
+            "position" : "[0.70 0.65]",
             "size"     : "[0.3 0.3]"    
         },
         "Structural Title": {
@@ -242,6 +236,39 @@
                 "fontWeight":"bold"
             },
             "text":"This is a supposed Secondary page"
+        },"RandomBlock": {
+            "type" : "block",
+            "position" : "[0.0 0.11]",
+            "size"     : "[0.33 0.33]",
+            "BlockImage1": {
+                "type" : "image",
+                "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoSmall.png",
+                "position" : "[0.5 0.0]",
+                "size"     : "[0.5 0.5]"    
+            },
+            "BlockImage2": {
+                "type" : "image",
+                "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoSmall.png",
+                "position" : "[0.5 0.5]",
+                "size"     : "[0.5 0.5]"    
+            },
+            "BlockText":{
+                "type" : "text",
+                "text" : "This is a text test in a block"
+            },
+            "BlockText2":{
+                "type" : "text",
+                "text" : "This is another line test in a block"
+            },
+            "BlockText3":{
+                "settings":
+                {
+                    "fontSize":"10",
+                    "fontWeight":"bold"
+                },
+                "type" : "text",
+                "text" : "This is a bold line test in a block"
+            }
         }
     }
 }

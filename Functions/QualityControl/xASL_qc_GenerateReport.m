@@ -42,16 +42,24 @@ if ~isempty(ExistingPrintFiles)
         xASL_delete(ExistingPrintFiles{iFile});
     end
 end
+% Delete existing xASL report files
+ExistingPrintFiles = xASL_adm_GetFileList(PrintDir, '^xASL_subImage.+$');
+if ~isempty(ExistingPrintFiles)
+    for iFile=1:size(ExistingPrintFiles)
+        xASL_delete(ExistingPrintFiles{iFile});
+    end
+end
 
 % Set defaults
 settings = xASL_sub_defaultSettings();
 
-%% Load Pdf configuration
+% Load Pdf configuration
 config = xASL_adm_LoadPDFConfig(x);
 
-%% Print the title
+% Print the title
 fprintf('Printing ExploreASL PDF report:   \n');
 
+% Parse the entire Json Stack automatically making all the pages.
 xASL_sub_parseJson(config, x, [], [], settings);
 
 end
@@ -59,9 +67,9 @@ end
 
 %% ================================================================================================================================================
 %% ================================================================================================================================================
-function settings = xASL_sub_printPage(json, x, settings)
+function  xASL_sub_printPage(json, x, settings)
 
-    clear Str spm_fig ax OutputFields StrucFields
+    clear spm_fig ax  
     spm_fig = spm_figure('Create','Graphics','visible','off');
     set(spm_fig,'windowstyle','normal'); 
     spm_figure('Clear','Graphics');
@@ -87,9 +95,33 @@ function settings = xASL_sub_printPage(json, x, settings)
     % Spm print adds _001 to the name of the file, I havent figured out how to get rid of this yet(ugly);
     spm_figure('Print',spm_fig, PrintPath, 'pdf');
 
-    clear ax spm_fig
+    clear spm_fig ax
 end
 
+
+function xASL_sub_parseBlock(input, x, figure, settings)
+    clear local_image
+    position = [str2num(input.position) str2num(input.size)];
+
+    local_image = figure;
+    set(local_image,'windowstyle','normal'); 
+
+    xASL_sub_parseJson(input, x, local_image, [0 0.96 1 0.04], settings);
+
+    PrintFile = 'xASL_subImage';
+    PrintPath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, PrintFile); 
+    
+    print(local_image, PrintPath, '-dpng')
+    
+    PrintPath = xASL_adm_GetFileList(fullfile(x.dir.xASLDerivatives, x.SUBJECT), '^xASL_subImage.+$');
+    if ~isempty(PrintPath)
+        for iFile=1:size(PrintPath)
+            PrintPath{end}
+            xASL_sub_PrintImage(PrintPath{end}, figure, position);
+        end
+    end
+    clear local_image
+end
 
 
 function [settings] = xASL_sub_parseJson(json, x, figure, line, settings)
@@ -102,7 +134,6 @@ function [settings] = xASL_sub_parseJson(json, x, figure, line, settings)
         end
 
         if ~isfield(currentField, 'type')
-            currentField
             error([currentField, 'containts no field type']);
         end
 
@@ -116,7 +147,9 @@ function [settings] = xASL_sub_parseJson(json, x, figure, line, settings)
             case 'scan'
                 xASL_sub_PrintScan(currentField, x, figure);
             case 'page'
-                settings = xASL_sub_printPage(currentField, x, settings);  
+                xASL_sub_printPage(currentField, x, settings);  
+            case 'block'
+                xASL_sub_parseBlock(currentField, x, figure, settings);
             case 'settings'
                 settings = xASL_sub_loadSettings(currentField, settings);  
         end  
@@ -197,7 +230,7 @@ function line = xASL_sub_PrintQC(json, name, x, figure, line, settings)
 
         if isfield(json, 'range') 
             [range] = strsplit(json.range, '-');
-            if (TempValue < str2double(range{1})) | (TempValue > str2double(range{2}))
+            if (TempValue < str2double(range{1})) || (TempValue > str2double(range{2}))
                 settings.color = 'r';
             end
         else
@@ -299,7 +332,7 @@ function [settings] = xASL_sub_loadSettings(json, settings)
         settings.fontWeight = json.fontWeight;
     end  
     if isfield(json, 'fontSize')
-        settings.fontSize = str2num(json.fontSize);
+        settings.fontSize = str2double(json.fontSize);
     end   
     if isfield(json, 'axesVisible')
         settings.axesVisible = json.axesVisible;
