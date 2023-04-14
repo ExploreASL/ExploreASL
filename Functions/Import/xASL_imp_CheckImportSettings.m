@@ -70,9 +70,8 @@ function [x] = xASL_imp_CheckImportSettings(x)
 	fprintf('%s\n', [num2str(nLeftBrackets) ' tokens detected in folderHierarchy']);
 	fprintf('%s\n', [num2str(nTokens) ' tokens detected in tokenOrdering']);
 
-	if nLeftBrackets~=nTokens
-		fprintf('Note that the () symbols are reserved to define tokens in folderHierarchy!');
-		error('Number of tokens of folderHierarchy and tokenOrdering should be the same');
+	if nLeftBrackets<nTokens
+		error('Number of tokens in folderHierarchy defined by () should be equal or higher than the length of tokenOrdering vector');
 	end
 
 	%% Manage .nii vs .nii.gz extensions
