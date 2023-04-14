@@ -456,13 +456,12 @@ if bENABLE
     end
 end
 
+%% ----------------------------------------------------------------------------------------
+%% 7. Save QC images before and after volume-spikes exclusion
 
-    
-
-    %% ----------------------------------------------------------------------------------------
-    %% 7. Save QC images before and after volume-spikes exclusion
-
-Slice2Show = floor(size(IM,3)*0.67); % e.g. slice 11/17
+if bSpikeRemoval || bENABLE
+	Slice2Show = floor(size(IM,3)*0.67); % e.g. slice 11/17
+end
 
 if bSpikeRemoval
     % display full timeseries without despiking
