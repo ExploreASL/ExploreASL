@@ -82,8 +82,8 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 	%% -----------------------------------------------------------------------------------------------------------------------------------------------------
 	%% 2. Prepare paths
     [Fpath, Ffile] = xASL_fileparts(inPath);
-    [paths] = xASL_sub_GetPaths(Fpath, Ffile);
-    [ASLlist] = xASL_sub_RestoreFromBackup(Fpath, Ffile, paths, iM0);
+    [paths] = xASL_io_SplitASL_sub_GetPaths(Fpath, Ffile);
+    [ASLlist] = xASL_io_SplitASL_sub_RestoreFromBackup(Fpath, Ffile, paths, iM0);
 
 	%% -----------------------------------------------------------------------------------------------------------------------------------------------------
 	%% 3. Check for dummy volumes
@@ -104,7 +104,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
     if ~xASL_exist(paths.ASL_Source,'file') % otherwise was already split
 
         %% 3. First concatenate NIfTIs
-        xASL_sub_ConcatenateNiftis(paths, ASLlist);
+        xASL_io_SplitASL_sub_ConcatenateNiftis(paths, ASLlist);
         
 		% Load the backup-file
 		tIM = xASL_io_Nifti2Im(paths.ASL_Source);
@@ -132,13 +132,13 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         xASL_io_SaveNifti(paths.ASL_Source,paths.ASL,tIM(:,:,:,ASLindices),[],false);
         
         %% 7. Split relevant JSON parameters/arrays
-        [jsonM0, jsonASL] = xASL_sub_SplitJSON(paths.ASL_Source_JSON, iM0, ASLindices, iDummy);
+        [jsonM0, jsonASL] = xASL_io_SplitASL_sub_SplitJSON(paths.ASL_Source_JSON, iM0, ASLindices, iDummy);
 
         %% 8. Split ASL4Dcontext.tsv
-		xASL_sub_SplitASLContext(paths.ASL_Source_TSV, paths.ASLTSV, iM0, ASLindices, iDummy);
+		xASL_io_SplitASL_sub_SplitASLContext(paths.ASL_Source_TSV, paths.ASLTSV, iM0, ASLindices, iDummy);
         
         %% 9. Modify JSON fields
-        [jsonM0, jsonASL] = xASL_sub_CheckJSONs(paths.ASL, jsonM0, jsonASL, iM0);
+        [jsonM0, jsonASL] = xASL_io_SplitASL_sub_CheckJSONs(paths.ASL, jsonM0, jsonASL, iM0);
         
         %% 10. Copy sidecars
         if exist(paths.ASL_Source_MAT,'file') && bCreateM0
@@ -163,8 +163,8 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 end
 
 
-%% xASL_sub_ConcatenateNiftis
-function xASL_sub_ConcatenateNiftis(paths, ASLlist)
+%% xASL_io_SplitASL_sub_ConcatenateNiftis
+function xASL_io_SplitASL_sub_ConcatenateNiftis(paths, ASLlist)
 
     if length(ASLlist)>1
         % Reconstruct the ASL4D first
@@ -219,8 +219,8 @@ function xASL_sub_ConcatenateNiftis(paths, ASLlist)
 end
 
 
-%% xASL_sub_RestoreFromBackup
-function [ASLlist] = xASL_sub_RestoreFromBackup(Fpath, Ffile, paths, iM0)
+%% xASL_io_SplitASL_sub_RestoreFromBackup
+function [ASLlist] = xASL_io_SplitASL_sub_RestoreFromBackup(Fpath, Ffile, paths, iM0)
 
     ASLlist = xASL_adm_GetFileList(Fpath, ['^' Ffile '(|_.)'  '(|_\d)' '\.nii$'], 'FPList', [0 Inf]);
   
@@ -250,8 +250,8 @@ function [ASLlist] = xASL_sub_RestoreFromBackup(Fpath, Ffile, paths, iM0)
 end
 
 
-%% xASL_sub_GetPaths
-function [paths] = xASL_sub_GetPaths(Fpath, Ffile)
+%% xASL_io_SplitASL_sub_GetPaths
+function [paths] = xASL_io_SplitASL_sub_GetPaths(Fpath, Ffile)
 
     % Path ASL & M0 NIFTI
     paths.M0 = fullfile(Fpath,'M0.nii');
@@ -279,8 +279,8 @@ function [paths] = xASL_sub_GetPaths(Fpath, Ffile)
 end
 
 
-%% xASL_sub_CheckJSONs
-function [jsonM0, jsonASL] = xASL_sub_CheckJSONs(ASLname, jsonM0, jsonASL, iM0)
+%% xASL_io_SplitASL_sub_CheckJSONs
+function [jsonM0, jsonASL] = xASL_io_SplitASL_sub_CheckJSONs(ASLname, jsonM0, jsonASL, iM0)
 
     % Check that both structs are not empty dummy structs
     if ~isempty(fieldnames(jsonASL)) && ~isempty(fieldnames(jsonM0))
@@ -304,8 +304,8 @@ function [jsonM0, jsonASL] = xASL_sub_CheckJSONs(ASLname, jsonM0, jsonASL, iM0)
 end
 
 
-%% xASL_sub_SplitJSON
-function [jsonM0, jsonASL] = xASL_sub_SplitJSON(BackupJSONPath, indicesM0, indicesASL, indicesDummy)
+%% xASL_io_SplitASL_sub_SplitJSON
+function [jsonM0, jsonASL] = xASL_io_SplitASL_sub_SplitJSON(BackupJSONPath, indicesM0, indicesASL, indicesDummy)
 
     % Make sure that we have column arrays
     if size(indicesM0,2)>size(indicesM0,1)
@@ -365,8 +365,8 @@ function [jsonM0, jsonASL] = xASL_sub_SplitJSON(BackupJSONPath, indicesM0, indic
 
 end
 
-%% xASL_sub_SplitASLContext
-function xASL_sub_SplitASLContext(BackupTSVPath, newTSVPath, indicesM0, indicesASL, indicesDummy)
+%% xASL_io_SplitASL_sub_SplitASLContext
+function xASL_io_SplitASL_sub_SplitASLContext(BackupTSVPath, newTSVPath, indicesM0, indicesASL, indicesDummy)
 
 % Make sure that we have column arrays
 if size(indicesM0,2)>size(indicesM0,1)
