@@ -64,7 +64,7 @@ function [x] = xASL_imp_CheckImportSettings(x)
 		nRightBrackets = nRightBrackets + numel(rightBracket);
 	end
 
-	nTokens = sum(x.modules.import.imPar.tokenOrdering>0);
+	nTokens = max(x.modules.import.imPar.tokenOrdering);
 
 	% Report this
 	fprintf('%s\n', [num2str(nLeftBrackets) ' tokens detected in folderHierarchy']);
