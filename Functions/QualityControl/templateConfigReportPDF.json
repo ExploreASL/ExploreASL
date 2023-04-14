@@ -10,6 +10,7 @@
 	},
     "TitlePage" : {
         "type" : "page",
+        "number" : "1",
         "ArbitratryImage": {
             "type" : "image",
             "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
@@ -223,13 +224,14 @@
     },
     "SecondaryPage" : {
         "type" : "page",
+        "number" :"2",
         "ArbitratryImage": {
             "type" : "image",
             "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
             "position" : "[0.70 0.65]",
             "size"     : "[0.3 0.3]"    
         },
-        "Structural Title": {
+        "StructuralTitle": {
             "type" : "text",
             "settings":{
                 "fontSize":"10",
@@ -269,6 +271,48 @@
                 "type" : "text",
                 "text" : "This is a bold line test in a block"
             }
+        },
+        "Afterblock": {
+            "type" : "text",
+            "settings":{
+                "fontSize":"10",
+                "fontWeight":"bold"
+            },
+            "text":"This is text printed after the block"
+        },"anotherBlock": {
+            "type" : "block",
+            "position" : "[0.0 0.44]",
+            "size"     : "[0.33 0.33]",
+            "BlockImage1": {
+                "type" : "image",
+                "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
+                "position" : "[0.5 0.0]",
+                "size"     : "[0.5 0.5]"    
+            },
+            "BlockImage2": {
+                "type" : "image",
+                "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
+                "position" : "[0.5 0.5]",
+                "size"     : "[0.5 0.5]"    
+            },
+            "BlockText":{
+                "type" : "text",
+                "text" : "This is a text test in another block"
+            },
+            "BlockText2":{
+                "type" : "text",
+                "text" : "This is another line test in aanother block"
+            },
+            "BlockText3":{
+                "settings":
+                {
+                    "fontSize":"10",
+                    "fontWeight":"bold"
+                },
+                "type" : "text",
+                "text" : "This is a bold line test in a block"
+            }
         }
+
     }
 }
