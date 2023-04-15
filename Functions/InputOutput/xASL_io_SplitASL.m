@@ -79,11 +79,13 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         return;
     end
     
+
 	%% -----------------------------------------------------------------------------------------------------------------------------------------------------
 	%% 2. Prepare paths
     [Fpath, Ffile] = xASL_fileparts(inPath);
     [paths] = xASL_io_SplitASL_sub_GetPaths(Fpath, Ffile);
     [ASLlist] = xASL_io_SplitASL_sub_RestoreFromBackup(Fpath, Ffile, paths, iM0);
+
 
 	%% -----------------------------------------------------------------------------------------------------------------------------------------------------
 	%% 3. Check for dummy volumes
@@ -126,7 +128,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 		if ~isempty(iDummy)
 			IndexASL(iDummy) = 0;
 		end
-        ASLindices          = ASLindices(logical(IndexASL));
+        ASLindices = ASLindices(logical(IndexASL));
 		
         %% 6. Save ASL4D NIfTI
         xASL_io_SaveNifti(paths.ASL_Source,paths.ASL,tIM(:,:,:,ASLindices),[],false);
@@ -163,6 +165,8 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 end
 
 
+% ==================================================================================
+% ==================================================================================
 %% xASL_io_SplitASL_sub_ConcatenateNiftis
 function xASL_io_SplitASL_sub_ConcatenateNiftis(paths, ASLlist)
 
@@ -219,6 +223,8 @@ function xASL_io_SplitASL_sub_ConcatenateNiftis(paths, ASLlist)
 end
 
 
+% ==================================================================================
+% ==================================================================================
 %% xASL_io_SplitASL_sub_RestoreFromBackup
 function [ASLlist] = xASL_io_SplitASL_sub_RestoreFromBackup(Fpath, Ffile, paths, iM0)
 
@@ -250,6 +256,8 @@ function [ASLlist] = xASL_io_SplitASL_sub_RestoreFromBackup(Fpath, Ffile, paths,
 end
 
 
+% ==================================================================================
+% ==================================================================================
 %% xASL_io_SplitASL_sub_GetPaths
 function [paths] = xASL_io_SplitASL_sub_GetPaths(Fpath, Ffile)
 
@@ -279,6 +287,8 @@ function [paths] = xASL_io_SplitASL_sub_GetPaths(Fpath, Ffile)
 end
 
 
+% ==================================================================================
+% ==================================================================================
 %% xASL_io_SplitASL_sub_CheckJSONs
 function [jsonM0, jsonASL] = xASL_io_SplitASL_sub_CheckJSONs(ASLname, jsonM0, jsonASL, iM0)
 
@@ -304,6 +314,8 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_sub_CheckJSONs(ASLname, jsonM0, js
 end
 
 
+% ==================================================================================
+% ==================================================================================
 %% xASL_io_SplitASL_sub_SplitJSON
 function [jsonM0, jsonASL] = xASL_io_SplitASL_sub_SplitJSON(BackupJSONPath, indicesM0, indicesASL, indicesDummy)
 
@@ -365,47 +377,48 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_sub_SplitJSON(BackupJSONPath, indi
 
 end
 
+
+% ==================================================================================
+% ==================================================================================
 %% xASL_io_SplitASL_sub_SplitASLContext
 function xASL_io_SplitASL_sub_SplitASLContext(BackupTSVPath, newTSVPath, indicesM0, indicesASL, indicesDummy)
 
-% Make sure that we have column arrays
-if size(indicesM0,2)>size(indicesM0,1)
-	indicesM0 = indicesM0';
-end
-if size(indicesASL,2)>size(indicesASL,1)
-	indicesASL = indicesASL';
-end
-if size(indicesDummy,2)>size(indicesDummy,1)
-	indicesDummy = indicesDummy';
-end
+    % Make sure that we have column arrays
+    if size(indicesM0,2)>size(indicesM0,1)
+	    indicesM0 = indicesM0';
+    end
+    if size(indicesASL,2)>size(indicesASL,1)
+	    indicesASL = indicesASL';
+    end
+    if size(indicesDummy,2)>size(indicesDummy,1)
+	    indicesDummy = indicesDummy';
+    end
+    
+    % Backup the TSV file
+    if xASL_exist(newTSVPath,'file') && (~isempty(indicesM0) || ~isempty(indicesDummy))
+	    xASL_Move(newTSVPath, BackupTSVPath);
+    end
+    
+    % Load backup JSON
+    if exist(BackupTSVPath,'file')
+	    % Read the original context file
+	    aslContext = xASL_tsvRead(BackupTSVPath);
+            
+	    % Remove non-ASL fields, but keep the header
+	    aslContext = aslContext([1;indicesASL+1]);
+	    
+	    % Save the new ASL context
+	    xASL_tsvWrite(aslContext, newTSVPath, true);
+	    
+	    % Check that all controls and labels come in pairs
+	    aslContext = aslContext(2:end);
+    
+	    bidsPar = xASL_bids_Config;
+	    nControls = numel(regexpi(strjoin(aslContext),bidsPar.stringControl));
+	    nLabels = numel(regexpi(strjoin(aslContext),bidsPar.stringLabel));
+	    if nControls ~= nLabels
+		    warning('After removing M0 volume and Dummy scans, non-matching number of volumes (control-label)');
+        end
+    end
 
-% Backup the TSV file
-if xASL_exist(newTSVPath,'file') && (~isempty(indicesM0) || ~isempty(indicesDummy))
-	xASL_Move(newTSVPath, BackupTSVPath);
 end
-
-% Load backup JSON
-if exist(BackupTSVPath,'file')
-	% Read the original context file
-	aslContext = xASL_tsvRead(BackupTSVPath);
-        
-	% Remove non-ASL fields, but keep the header
-	aslContext = aslContext([1;indicesASL+1]);
-	
-	% Save the new ASL context
-	xASL_tsvWrite(aslContext, newTSVPath, true);
-	
-	% Check that all controls and labels come in pairs
-	aslContext = aslContext(2:end);
-
-	bidsPar = xASL_bids_Config;
-	nControls = numel(regexpi(strjoin(aslContext),bidsPar.stringControl));
-	nLabels = numel(regexpi(strjoin(aslContext),bidsPar.stringLabel));
-	if nControls ~= nLabels
-		warning('After removing M0 volume and Dummy scans, non-matching number of volumes (control-label)');
-	end
-	
-end
-
-end
-
