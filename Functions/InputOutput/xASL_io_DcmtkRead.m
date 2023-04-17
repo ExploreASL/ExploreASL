@@ -21,11 +21,7 @@ function header = xASL_io_DcmtkRead(filepath, bPixel)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:
 % __________________________________
-% Copyright 2015-2020 ExploreASL
-%
-% 2018-12-17, Jan Petr
-%
-% $Id: ExploreASL_Import 2018-12-17 xASL ver 1.0.0 $
+% Copyright 2015-2023 ExploreASL
 
 if nargin == 1
 	bPixel = 0;
@@ -239,19 +235,55 @@ if isfield(header,'RealWorldValueMappingSequence')
 	end
 end
 
+if isfield(header, 'Private_0043_1083')
+	header.AssetRFactor = header.Private_0043_1083;
+end
+
+if isfield(header, 'Private_0043_192c')
+	header.EffectiveEchoSpacing = header.Private_0043_192c;
+end
+
+if isfield(header, 'Private_2001_1022')
+	header.MRSeriesWaterFatShift = header.Private_2001_1022;
+end
+
+if isfield(header, 'Private_2001_1013')
+	header.MRSeriesEPIFactor = header.Private_2001_1013;
+end
+
+if isfield(header, 'Private_0019_1028')
+	header.BandwidthPerPixelPhaseEncode = header.Private_0019_1028;
+end
+
+if isfield(header, 'Private_0019_109c')
+	header.GELabelingType = header.Private_0019_109c;
+end
+
+if isfield(header, 'Private_0043_10a5')
+	header.GELabelingDuration = header.Private_0043_10a5;
+end
+
+if isfield(header, 'Private_0029_1020')
+	header.PhoenixProtocol = header.Private_0029_1020;
+end
+
+if isfield(header, 'Private_0019_1029')
+	header.SiemensSliceTime = header.Private_0019_1029;
+end
+
 % Keep only those fields below...
 listFieldsKeep = {'RepetitionTime', 'EchoTime', 'RescaleSlope', 'RescaleIntercept',...
         'NumberOfTemporalPositions', 'NumberOfAverages', 'AcquisitionTime',...
-        'PixelData', 'MediaStorageSOPClassUID', 'Manufacturer',  'MRScaleSlope',...
+        'PixelData', 'MediaStorageSOPClassUID', 'Manufacturer', 'ManufacturersModelName', 'MRScaleSlope',...
 		'StudyDate', 'StudyInstanceUID', 'SeriesInstanceUID', 'ImageType',...
 	    'SeriesDescription', 'ProtocolName', 'SeriesTime', 'AcquisitionDate', 'SeriesDate',...
 		'AssetRFactor', 'EffectiveEchoSpacing', 'AcquisitionMatrix', 'MRSeriesWaterFatShift',...
 	    'MRSeriesEPIFactor', 'BandwidthPerPixelPhaseEncode', 'InPlanePhaseEncodingDirection',...
 	    'Rows', 'Columns', 'RescaleSlopeOriginal', 'RWVIntercept', 'RWVSlope',...
 	    'AcquisitionContrast', 'ComplexImageComponent', 'GELabelingType', 'PulseSequenceName',...
-		'InversionTime', 'GELabelingDuration', 'PhilipsNumberTemporalScans',...
+		'InversionTime', 'GELabelingDuration', 'PhilipsNumberTemporalScans', 'ProtocolName', ...
 		'PhilipsLabelControl', 'TemporalPositionIdentifier', 'PhoenixProtocol', 'SoftwareVersions',...
-		'SiemensSliceTime'};
+		'SiemensSliceTime', 'StudyID', 'SeriesNumber', 'AcquisitionNumber', 'InstanceNumber' };
 
 headerOld = header;
 header = struct;
