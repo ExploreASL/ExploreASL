@@ -46,7 +46,7 @@ function []                 = xASL_wrp_GetClusterCBFstats(x,printTitle,InputData
         xASL_io_SaveNifti( x.S.LabelMaskNII, x.S.LabelMaskNII, LabelIM, [], 0);
 
         if ~exist('InputDataStr','var')
-            x.S.InputDataStr            = 'qCBF_untreated'; % 'qCBF' 'SD' 'TT' 'ATT' 'Tex' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
+            x.S.InputDataStr            = 'qCBF_untreated'; % 'qCBF' 'SD' 'TT' 'ATT' 'Tex' 'ABV' 'M0' 'R1' 'ASL_HctCohort' 'ASL_HctCorrInd'
         else
             x.S.InputDataStr            = InputDataStr;
         end

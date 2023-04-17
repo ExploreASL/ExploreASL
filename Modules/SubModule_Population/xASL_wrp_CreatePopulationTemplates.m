@@ -83,7 +83,7 @@ function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, Spe
 %          xASL_wrp_CreatePopulationTemplates(x, 0, 1, {'qCBF' 'CBF' 1}, 1, 0, {{@xASL_stat_MeanNan} {'mean'}});
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
 % ----------------------------------------------------------------------------------------------------
@@ -283,7 +283,8 @@ if UsePredefined
     PreFixList{end+1}   = 'CoW_MAP';                            TemplateNameList{end+1}  = 'CoW_MAP';          SessionsExist(end+1)    = 0;
     PreFixList{end+1}   = 'HEMI';                               TemplateNameList{end+1}  = 'HEMI';             SessionsExist(end+1)    = 0;    
     PreFixList{end+1}   = 'TASL';                               TemplateNameList{end+1}  = 'TASL';             SessionsExist(end+1)    = 0;        
-    PreFixList{end+1}   = 'Tex';                                TemplateNameList{end+1}  = 'Tex';              SessionsExist(end+1)    = 1;        
+	PreFixList{end+1}   = 'Tex';                                TemplateNameList{end+1}  = 'Tex';              SessionsExist(end+1)    = 1;
+	PreFixList{end+1}   = 'ABV';                                TemplateNameList{end+1}  = 'ABV';              SessionsExist(end+1)    = 1;
     % % PM: Let this search for different scantypes in /PopDir NIfTIs, & run within those
 end
 

@@ -153,8 +153,6 @@ if nVolumes>10
     end
 end
 
-% Remove PWI4D in both native & standard space
-xASL_delete(x.P.Path_PWI4D);
 xASL_delete(x.P.Pop_Path_PWI4D);
 
 %% 7) Compute overlap (intersection)/DICE coefficient with T1w brainmask

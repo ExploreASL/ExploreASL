@@ -239,13 +239,13 @@ function [results,pathDatasetA,pathDatasetB,datasetA,datasetB,fileListA,fileList
     results.(datasetB) = struct;
 
     % Get files and folders of datasets A and B
-    [~, dateVersion] = version;
-    if xASL_str2num(dateVersion(end-4:end))>2016 % dir does not work recursively in older versions
+    if verLessThan('matlab', '9.1') % Matlab version 2016
+		% dir does not work recursively in older versions
+		[filesA, filesB] = xASL_bids_CompareStructures_GetFileListsUnix(pathDatasetA,pathDatasetB);
+	else
         filesA = dir(fullfile(pathDatasetA, '**','*.*'));
         filesB = dir(fullfile(pathDatasetB, '**','*.*'));
-    else
-        [filesA, filesB] = xASL_bids_CompareStructures_GetFileListsUnix(pathDatasetA,pathDatasetB);
-    end
+	end
 
     % Remove root path
     filesA = modifyFileList(filesA,pathDatasetA,ignoreLogs);

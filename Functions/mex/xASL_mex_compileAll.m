@@ -1,5 +1,5 @@
 function xASL_mex_compileAll()
-%xASL_mex_compileAll Compiles the whole xASL mex code
+%xASL_mex_compileAll Compiles all xASL-related c-code into MEX
 %
 % FORMAT: xASL_compile_all
 %
@@ -8,16 +8,19 @@ function xASL_mex_compileAll()
 % OUTPUT: n/a
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This script can be used to compile all the MEX files that are in the mex directory, in the SPMmodified
-%              and also the DCMTK files.
-%
+% DESCRIPTION: This script can be used to compile the following MEX files in the:
+%              1. SPM xASL subfolder
+%              2. xASL proper
+%              3. DCMtK
+%              4. SPM proper
+% 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     n/a
-%
-% REFERENCES:  n/a
+% EXAMPLE:     xASL_compile_all;
 % __________________________________
-% Copyright © 2015-2021 ExploreASL
+% Copyright © 2015-2023 ExploreASL
 
+
+%% Admin
 % Obtain the current path
 pathCurrent = matlab.desktop.editor.getActiveFilename;
 
@@ -27,37 +30,64 @@ pathCurrent = matlab.desktop.editor.getActiveFilename;
 % Go to the basic ExploreASL folder
 pathXASL = pathCurrent(1:end-14);
 
-% Setup for C++ compiling	
+% Detect environment
 if ispc
-    setenv('MW_MINGW64_LOC','c:\MinGW\64\')
+    fprintf('%s\n', 'Windows PC environment detected, trying recompiling...');
+    if ~exist('c:\MinGW\64\', 'dir')
+        error('No MinGW compilation tool found at the usual location, skipping');
+    end
+   
+    setenv('MW_MINGW64_LOC', 'c:\MinGW\64\');
+    environmentIs = 'w64';
+elseif ismac
+    [~, result] = system('uname -m');
+    if strcmp(strtrim(result),'arm64')
+        fprintf('%s\n', 'mac arm64 (Apple silicon M1/M2/etc processor) detected, trying recompiling...');
+        environmentIs = 'maca64';
+    else
+        fprintf('%s\n', 'mac i64 (intel processor) detected, trying recompiling...');
+        environmentIs = 'maci64';
+    end
+elseif isunix
+    fprintf('%s\n', 'Linux detected, trying recompiling...');
+    environmentIs = 'a64';
+else
+    error('Unknown or not supported environment, stopping compiling');
 end
 
+% Setup for C++ compiling
 mex -setup C++
 
-% Compile the xASL files in the SPM folder
+
+%% 1. Compile the xASL files in the SPM folder
+fprintf('%s\n', 'Compiling the SPM xASL folder...');
 cd(fullfile(pathXASL,'External','SPMmodified','xASL'));
 mex xASL_mex_chamfers3D.c
 mex xASL_mex_conv3Dsep.c
 
-% Compile the xASL files in the mex folder
+
+%% 2. Compile the xASL files in the mex folder
+fprintf('%s\n', 'Compiling the xASL proper folder...');
 cd(fullfile(pathXASL,'Functions','mex'));
 mex xASL_mex_conv3DsepGauss.c
 mex xASL_mex_dilate_erode_3D.c
 mex xASL_mex_dilate_erode_single.c
 mex xASL_mex_JointHist.c
 
-% Compile the xASL DICOM reading using the DCMTK library
+
+%% 3. Compile the xASL DICOM reading using the DCMTK library
+fprintf('%s\n', 'Compiling the DCMtK folder...');
 cd(fullfile(pathXASL,'External','DCMTK'));
-if ismac
-	mex -v -f xASL_mex_DcmtkMac.xml xASL_mex_DcmtkRead.cpp
-else
-    if isunix
+
+switch environmentIs
+    case 'maca64'
+        mex -v -f xASL_mex_DcmtkMacARM64.xml xASL_mex_DcmtkRead.cpp
+    case 'maci64'
+        mex -v -f xASL_mex_DcmtkMacINTEL64.xml xASL_mex_DcmtkRead.cpp
+    case 'a64'
         mex -v -f xASL_mex_DcmtkUnix.xml xASL_mex_DcmtkRead.cpp
-    end
-    
-    if ispc
-	mex -v -f xASL_mex_DcmtkWin.xml xASL_mex_DcmtkRead.cpp
-    end
+    case 'w64'
+	    mex -v -f xASL_mex_DcmtkWin.xml xASL_mex_DcmtkRead.cpp
 end
 
 end

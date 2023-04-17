@@ -5,10 +5,20 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
-%   x.modules.import.imPar - Structure with import parameters (REQUIRED, STRUCT)
+%   matches                - matched files with tokens (REQUIRED, CELL ARRAY OF CHARS)
+%   thisSubject            - current iteration subjectID (REQUIRED, INTEGER)
+%   thisVisit              - current iteration visit (REQUIRED, INTEGER)
+%   thisRun                - current iteration run (REQUIRED, INTEGER)
+%   dcm2niiCatchedErrors   - DCM2NII catched errors (STRUCT, REQUIRED)
+%   scanFields             - struct containing iSubject, iVisit, iSession, iScan (REQUIRED)
+%
+%   x.modules.import.imPar - Structure with import parameters (STRUCT, REQUIRED)
 %
 % OUTPUT:
-%   x                      - ExploreASL x structure (REQUIRED, STRUCT)
+%   x                      - ExploreASL x structure
+%   thisSubject            -
+%   dcm2niiCatchedErrors   -
+%   PrintDICOMFields       - 
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run DCM2NII for one individual scan.
@@ -28,7 +38,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
     %% 4.1 Initialize variables
@@ -169,7 +179,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
     % Conversion
     [thisSubject.globalCounts, x, ~, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = ...
         xASL_imp_DCM2NII_Subject_StartConversion(...
-        thisSubject.globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors);
+        thisSubject.globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, scanFields);
 
 
     %% 4.7 Store JSON files

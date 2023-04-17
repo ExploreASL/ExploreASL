@@ -14,7 +14,9 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 %              If dcm2niiX has already splitted the ASL4D NIfTI, this is reconstructed first.
 %              If no M0 exists, or only ASL splitting is desired, leave iM0 empty ([]).
 %              The dummy scans can be excluded from the ASL sequence during the splitting. Both iM0 and iDummy
-%              are the absolute positions of both in the original time series
+%              are the absolute positions of both in the original time series.
+%              If cbf images are included and there is a single other image like deltaM or control or label, then
+%              cbf image is excluded as a dummy.
 %
 %              Vendor product sequence examples:
 %              GE 3D spiral sometimes puts the M0 at the last volume of the series -> iM0 = [2];
@@ -23,15 +25,16 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 %              Some Siemens 3D GRASE puts a second Dummy control image -> iDummy = 2;
 %
 % 1. Input parameter admin 
-% 2. Prepare paths
-% 3. First concatenate NIfTIs
-% 4. Save M0 NIfTI
-% 5. Determine ASL indices
-% 6. Save ASL4D NIfTI
-% 7. Split relevant JSON parameters/arrays
-% 8. Split ASL4Dcontext.tsv
-% 9. Modify JSON fields
-% 10. Copy sidecars
+% 2.  Prepare paths
+% 3.  Check for dummy volumes
+% 4.  First concatenate NIfTIs
+% 5.  Save M0 NIfTI
+% 6.  Determine ASL indices
+% 7.  Save ASL4D NIfTI
+% 8.  Split relevant JSON parameters/arrays
+% 9.  Split ASL4Dcontext.tsv
+% 10. Modify JSON fields
+% 11. Copy sidecars
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: for moving the first two volumes to M0.nii:
@@ -45,7 +48,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 % EXAMPLE 5: for removing the 1st volume as dummy
 % xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [],1);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
     %% -----------------------------------------------------------------------------------------------------------------------------------------------------
     %% 1. Input parameter admin
@@ -76,16 +79,34 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
         return;
     end
     
+
 	%% -----------------------------------------------------------------------------------------------------------------------------------------------------
 	%% 2. Prepare paths
     [Fpath, Ffile] = xASL_fileparts(inPath);
-    [paths] = xASL_io_SplitASL_GetPaths(Fpath, Ffile);
-    [ASLlist] = xASL_io_SplitASL_RestoringFromBackup(Fpath, Ffile, paths, iM0);
-    
+    [paths] = xASL_io_SplitASL_sub_GetPaths(Fpath, Ffile);
+    [ASLlist] = xASL_io_SplitASL_sub_RestoreFromBackup(Fpath, Ffile, paths, iM0);
+
+
+	%% -----------------------------------------------------------------------------------------------------------------------------------------------------
+	%% 3. Check for dummy volumes
+	% Read ASL context and find 'cbf' volumes
+	aslContext = xASL_tsvRead(paths.ASLTSV);
+        
+	% Check if both cbf and deltam/control/label volumes exist
+	if sum(~cellfun(@isempty,regexpi(aslContext,'deltam|control|label'))) && ...
+	   sum(~cellfun(@isempty,regexpi(aslContext,'cbf')))
+		% Get the index of the CBF volume
+		indexCBF = find(~cellfun(@isempty,regexpi(aslContext,'cbf')))-1;
+
+		% Add it to the dummy list and sort again
+		iDummy = [iDummy, indexCBF'];
+		iDummy = sort(iDummy, 'ascend');
+	end
+	
     if ~xASL_exist(paths.ASL_Source,'file') % otherwise was already split
 
         %% 3. First concatenate NIfTIs
-        xASL_io_SplitASL_ConcatNiftis(paths, ASLlist);
+        xASL_io_SplitASL_sub_ConcatenateNiftis(paths, ASLlist);
         
 		% Load the backup-file
 		tIM = xASL_io_Nifti2Im(paths.ASL_Source);
@@ -107,19 +128,19 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 		if ~isempty(iDummy)
 			IndexASL(iDummy) = 0;
 		end
-        ASLindices          = ASLindices(logical(IndexASL));
+        ASLindices = ASLindices(logical(IndexASL));
 		
         %% 6. Save ASL4D NIfTI
         xASL_io_SaveNifti(paths.ASL_Source,paths.ASL,tIM(:,:,:,ASLindices),[],false);
         
         %% 7. Split relevant JSON parameters/arrays
-        [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(paths.ASL_Source_JSON, iM0, ASLindices, iDummy);
+        [jsonM0, jsonASL] = xASL_io_SplitASL_sub_SplitJSON(paths.ASL_Source_JSON, iM0, ASLindices, iDummy);
 
         %% 8. Split ASL4Dcontext.tsv
-		xASL_io_SplitASL_SplitASLContext(paths.ASL_Source_TSV, paths.ASLTSV, iM0, ASLindices, iDummy);
+		xASL_io_SplitASL_sub_SplitASLContext(paths.ASL_Source_TSV, paths.ASLTSV, iM0, ASLindices, iDummy);
         
         %% 9. Modify JSON fields
-        [jsonM0, jsonASL] = xASL_io_SplitASL_PostModify(paths.ASL, jsonM0, jsonASL, iM0);
+        [jsonM0, jsonASL] = xASL_io_SplitASL_sub_CheckJSONs(paths.ASL, jsonM0, jsonASL, iM0);
         
         %% 10. Copy sidecars
         if exist(paths.ASL_Source_MAT,'file') && bCreateM0
@@ -144,8 +165,10 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 end
 
 
-%% xASL_io_SplitASL_ConcatNiftis
-function xASL_io_SplitASL_ConcatNiftis(paths, ASLlist)
+% ==================================================================================
+% ==================================================================================
+%% xASL_io_SplitASL_sub_ConcatenateNiftis
+function xASL_io_SplitASL_sub_ConcatenateNiftis(paths, ASLlist)
 
     if length(ASLlist)>1
         % Reconstruct the ASL4D first
@@ -200,8 +223,10 @@ function xASL_io_SplitASL_ConcatNiftis(paths, ASLlist)
 end
 
 
-%% xASL_io_SplitASL_RestoringFromBackup
-function [ASLlist] = xASL_io_SplitASL_RestoringFromBackup(Fpath, Ffile, paths, iM0)
+% ==================================================================================
+% ==================================================================================
+%% xASL_io_SplitASL_sub_RestoreFromBackup
+function [ASLlist] = xASL_io_SplitASL_sub_RestoreFromBackup(Fpath, Ffile, paths, iM0)
 
     ASLlist = xASL_adm_GetFileList(Fpath, ['^' Ffile '(|_.)'  '(|_\d)' '\.nii$'], 'FPList', [0 Inf]);
   
@@ -231,8 +256,10 @@ function [ASLlist] = xASL_io_SplitASL_RestoringFromBackup(Fpath, Ffile, paths, i
 end
 
 
-%% xASL_io_SplitASL_GetPaths
-function [paths] = xASL_io_SplitASL_GetPaths(Fpath, Ffile)
+% ==================================================================================
+% ==================================================================================
+%% xASL_io_SplitASL_sub_GetPaths
+function [paths] = xASL_io_SplitASL_sub_GetPaths(Fpath, Ffile)
 
     % Path ASL & M0 NIFTI
     paths.M0 = fullfile(Fpath,'M0.nii');
@@ -260,8 +287,10 @@ function [paths] = xASL_io_SplitASL_GetPaths(Fpath, Ffile)
 end
 
 
-%% xASL_io_SplitASL_PostModify
-function [jsonM0, jsonASL] = xASL_io_SplitASL_PostModify(ASLname, jsonM0, jsonASL, iM0)
+% ==================================================================================
+% ==================================================================================
+%% xASL_io_SplitASL_sub_CheckJSONs
+function [jsonM0, jsonASL] = xASL_io_SplitASL_sub_CheckJSONs(ASLname, jsonM0, jsonASL, iM0)
 
     % Check that both structs are not empty dummy structs
     if ~isempty(fieldnames(jsonASL)) && ~isempty(fieldnames(jsonM0))
@@ -285,8 +314,10 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_PostModify(ASLname, jsonM0, jsonAS
 end
 
 
-%% xASL_io_SplitASL_SplitJSON
-function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, indicesM0, indicesASL, indicesDummy)
+% ==================================================================================
+% ==================================================================================
+%% xASL_io_SplitASL_sub_SplitJSON
+function [jsonM0, jsonASL] = xASL_io_SplitASL_sub_SplitJSON(BackupJSONPath, indicesM0, indicesASL, indicesDummy)
 
     % Make sure that we have column arrays
     if size(indicesM0,2)>size(indicesM0,1)
@@ -346,47 +377,48 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_SplitJSON(BackupJSONPath, indicesM
 
 end
 
-%% xASL_io_SplitASL_SplitJSON
-function xASL_io_SplitASL_SplitASLContext(BackupTSVPath, newTSVPath, indicesM0, indicesASL, indicesDummy)
 
-% Make sure that we have column arrays
-if size(indicesM0,2)>size(indicesM0,1)
-	indicesM0 = indicesM0';
-end
-if size(indicesASL,2)>size(indicesASL,1)
-	indicesASL = indicesASL';
-end
-if size(indicesDummy,2)>size(indicesDummy,1)
-	indicesDummy = indicesDummy';
-end
+% ==================================================================================
+% ==================================================================================
+%% xASL_io_SplitASL_sub_SplitASLContext
+function xASL_io_SplitASL_sub_SplitASLContext(BackupTSVPath, newTSVPath, indicesM0, indicesASL, indicesDummy)
 
-% Backup the TSV file
-if xASL_exist(newTSVPath,'file') && (~isempty(indicesM0) || ~isempty(indicesDummy))
-	xASL_Move(newTSVPath, BackupTSVPath);
+    % Make sure that we have column arrays
+    if size(indicesM0,2)>size(indicesM0,1)
+	    indicesM0 = indicesM0';
+    end
+    if size(indicesASL,2)>size(indicesASL,1)
+	    indicesASL = indicesASL';
+    end
+    if size(indicesDummy,2)>size(indicesDummy,1)
+	    indicesDummy = indicesDummy';
+    end
+    
+    % Backup the TSV file
+    if xASL_exist(newTSVPath,'file') && (~isempty(indicesM0) || ~isempty(indicesDummy))
+	    xASL_Move(newTSVPath, BackupTSVPath);
+    end
+    
+    % Load backup JSON
+    if exist(BackupTSVPath,'file')
+	    % Read the original context file
+	    aslContext = xASL_tsvRead(BackupTSVPath);
+            
+	    % Remove non-ASL fields, but keep the header
+	    aslContext = aslContext([1;indicesASL+1]);
+	    
+	    % Save the new ASL context
+	    xASL_tsvWrite(aslContext, newTSVPath, true);
+	    
+	    % Check that all controls and labels come in pairs
+	    aslContext = aslContext(2:end);
+    
+	    bidsPar = xASL_bids_Config;
+	    nControls = numel(regexpi(strjoin(aslContext),bidsPar.stringControl));
+	    nLabels = numel(regexpi(strjoin(aslContext),bidsPar.stringLabel));
+	    if nControls ~= nLabels
+		    warning('After removing M0 volume and Dummy scans, non-matching number of volumes (control-label)');
+        end
+    end
+
 end
-
-% Load backup JSON
-if exist(BackupTSVPath,'file')
-	% Read the original context file
-	aslContext = xASL_tsvRead(BackupTSVPath);
-        
-	% Remove non-ASL fields, but keep the header
-	aslContext = aslContext([1;indicesASL+1]);
-	
-	% Save the new ASL context
-	xASL_tsvWrite(aslContext, newTSVPath, true);
-	
-	% Check that all controls and labels come in pairs
-	aslContext = aslContext(2:end);
-
-	bidsPar = xASL_bids_Config;
-	nControls = numel(regexpi(strjoin(aslContext),bidsPar.stringControl));
-	nLabels = numel(regexpi(strjoin(aslContext),bidsPar.stringLabel));
-	if nControls ~= nLabels
-		warning('After removing M0 volume and Dummy scans, non-matching number of volumes (control-label)');
-	end
-	
-end
-
-end
-

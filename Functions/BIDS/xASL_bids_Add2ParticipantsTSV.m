@@ -70,7 +70,7 @@ if size(DataIn, 1)==x.dataset.nSubjectsSessions && size(DataIn, 1)~=x.dataset.nS
             % check if the number of defined sessions differ between DataIn
             % and x.SESSIONS
             warning('Not the same number of sessions, might go wrong');
-        elseif ~min(strcmp(x.SESSIONS, tempSessionNames))
+        elseif ~min(strcmp(x.SESSIONS(:), tempSessionNames(:)))
             % check if any of the sessions definitions differ between
             % x.SESSIONS & DataIn
             warning('Not the same sessions, might go wrong');

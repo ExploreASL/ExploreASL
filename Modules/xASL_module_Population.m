@@ -52,7 +52,7 @@ end
 % Default datatypes
 if ~isfield(x.S,'DataTypes') || isempty(x.S.DataTypes)
 	x.S.DataTypes = {'qCBF'}; % Default
-	% Alternatives: 'Tex' 'ATT' 'SD' 'M0'
+	% Alternatives: 'Tex' 'ATT' 'SD' 'M0' 'ABV'
 	% These can be added in the dataPar manually
 end
 
@@ -107,11 +107,15 @@ if ~x.mutex.HasState(StateName{1})
     SusceptPath = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility' x.S.TemplateNumberName '_bs-mean.nii']);
 
     if ~xASL_exist(SusceptPath, 'file')
-        warning('Susceptibility mask template was missing...');
+        if x.dataset.nSubjects<6 % in this case, a group template doesn't make sense and no warning is required
+            fprintf('Susceptibility mask template was missing...\n');
+        else
+            warning('Susceptibility mask template was missing...');
+        end
         
         if ~isempty(FoVPath)
             xASL_io_SaveNifti(FoVPath{1}, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}), [], false);
-            fprintf('Was replaced by FoV mask...\n');
+            fprintf('and was replaced by FoV mask...\n');
         end
     end
 

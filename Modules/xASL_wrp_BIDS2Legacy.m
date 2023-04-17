@@ -47,9 +47,9 @@ end
 
 % Creates the derivatives directory
 if exist(x.dir.xASLDerivatives, 'dir') && bOverwrite
-    fprintf('The derivatives directory already exists, overwriting...\n');
+    fprintf('%s\n', [x.dir.xASLDerivatives ' already exists, overwriting any pre-existing derivatives...']);
 elseif exist(x.dir.xASLDerivatives, 'dir')
-    fprintf('%s\n', [x.dir.xASLDerivatives ' exists, merging']);
+    fprintf('%s\n', [x.dir.xASLDerivatives ' exists, merging with new derivatives']);
 else
     xASL_adm_CreateDir(x.dir.xASLDerivatives);
 end

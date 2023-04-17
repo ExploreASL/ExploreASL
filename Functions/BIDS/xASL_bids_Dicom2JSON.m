@@ -132,6 +132,20 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			else
 				seriesNumberList(iJSON) = 0;
 			end
+
+			imageTypeList{iJSON} = '';
+			if isfield(tmpJSON, 'ImageType')
+				if iscell(tmpJSON.ImageType)
+					for iIT = 1:length(tmpJSON.ImageType)
+						imageTypeList{iJSON} = [imageTypeList{iJSON} tmpJSON.ImageType{iIT}];
+					end
+				else
+					imageTypeList{iJSON} = tmpJSON.ImageType;
+				end
+				imageTypeList{iJSON} = regexprep(imageTypeList{iJSON},'[^a-zA-Z]','');
+			end
+
+
 		end
 		% Create a cell of parms
 		parms{iJSON} = struct();
@@ -141,12 +155,14 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	% First sort by seriesNumber
 	[seriesNumberList,sortInstance] = sort(seriesNumberList,'ascend');
 	instanceNumberList = instanceNumberList(sortInstance);
+	imageTypeList = imageTypeList(sortInstance);
 	pathJSON = pathJSON(sortInstance);
 	
 	% Than sort by instance number but within the same series number
 	for iInstance = 1:length(instanceNumberList)
 		sameSeriesList = find(seriesNumberList == seriesNumberList(iInstance)); % Find the same instances
 		[instanceNumberList(sameSeriesList),sortInstance] = sort(instanceNumberList(sameSeriesList),'ascend');
+		imageTypeList(sameSeriesList) = imageTypeList(sameSeriesList(sortInstance));
 		pathJSON(sameSeriesList) = pathJSON(sameSeriesList(sortInstance));
 	end
 	
@@ -257,6 +273,11 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			else
 				currentSeriesNumber = 0;
 			end
+			if isfield(temp,'ImageType')
+				currentImageType = regexprep(temp.ImageType,'[^a-zA-Z]','');
+			else
+				currentImageType = '';
+			end
 			
 			% First find the first matching seriesNumber
 			parmsIndex = length(instanceNumberList);
@@ -271,6 +292,13 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				if (currentInstanceNumber >= instanceNumberList(iInst)) && currentInstanceNumber>0 && currentSeriesNumber==seriesNumberList(iInst)
 					parmsIndex = iInst;
 				end
+			end
+
+			% If there is a unique way to match the ImageType - then choose that
+			imageTypeMatch = regexpi(imageTypeList, currentImageType);
+			imageTypeMatch = ~cellfun(@isempty,imageTypeMatch);
+			if sum(imageTypeMatch) == 1
+				parmsIndex = find(imageTypeMatch == 1);
 			end
 			
 			%% -----------------------------------------------------------------------------
@@ -415,6 +443,10 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 		end
 		for indexInstance = 1:length(parms)
 			if instanceNumberList(indexInstance) > 0
+				parmsIndex = indexInstance;
+			end
+
+			if max(instanceNumberList) == 0
 				parmsIndex = indexInstance;
 			end
 			%% If no files were found previously (just directories etc.) then the manufacturer won't be identified and

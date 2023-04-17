@@ -21,7 +21,7 @@ function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePa
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
     %% Store JSON
     if exist(SavePathJSON{1}, 'file') && ~isempty(first_match)

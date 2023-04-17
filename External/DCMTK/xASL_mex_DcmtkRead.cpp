@@ -105,7 +105,7 @@ mxArray *MXAGetLongIntAsDouble(DcmItem * dcmItem, const DcmTagKey &theTagKey )
 		if ( dcmItem->findAndGetLongInt( theTagKey, diData ).bad() )
 		{
 			/* error getting the element */
-			sprintf( szErrMsgTxt, "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
+			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
 			mexWarnMsgTxt(szErrMsgTxt);
 			//mexErrMsgTxt(szErrMsgTxt);
 			pmxNumMat = NULL;
@@ -122,7 +122,7 @@ mxArray *MXAGetLongIntAsDouble(DcmItem * dcmItem, const DcmTagKey &theTagKey )
 	else
 	{
 		/* Warning element missing */
-		//sprintf( szErrMsgTxt, "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
+		//snprintf( szErrMsgTxt, 2048*sizeof(char), "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
 		//mexWarnMsgTxt( szErrMsgTxt );
 		pmxNumMat = NULL;//mxCreateNumericMatrix( 0, 0, mxDOUBLE_CLASS, mxREAL );
 	}
@@ -149,7 +149,7 @@ mxArray *MXAGetFloat64AsDouble( DcmItem * dcmItem, const DcmTagKey &theTagKey )
 		if ( dcmItem->findAndGetFloat64( theTagKey, f64Data ).bad() )
 		{
 			/* error getting the element */
-			sprintf( szErrMsgTxt, "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
+			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
 			mexWarnMsgTxt(szErrMsgTxt);
 			//mexErrMsgTxt(szErrMsgTxt);
 			pmxNumMat = NULL;
@@ -166,7 +166,7 @@ mxArray *MXAGetFloat64AsDouble( DcmItem * dcmItem, const DcmTagKey &theTagKey )
 	else
 	{
 		/* Warning element missing */
-		//sprintf( szErrMsgTxt, "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
+		//snprintf( szErrMsgTxt, 2048*sizeof(char), "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
 		//mexWarnMsgTxt( szErrMsgTxt );
 		pmxNumMat = NULL;//mxCreateNumericMatrix( 0, 0, mxDOUBLE_CLASS, mxREAL );
 	}
@@ -191,7 +191,7 @@ mxArray *MXAGetFloat32AsDouble( DcmItem * dcmItem, const DcmTagKey &theTagKey )
 		if ( dcmItem->findAndGetFloat32( theTagKey, f32Data, 0, OFTrue ).bad() )
 		{
 			/* error getting the element */
-			sprintf( szErrMsgTxt, "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
+			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
 			mexWarnMsgTxt(szErrMsgTxt);
 			//mexErrMsgTxt(szErrMsgTxt);
 			pmxNumMat = NULL;
@@ -208,7 +208,7 @@ mxArray *MXAGetFloat32AsDouble( DcmItem * dcmItem, const DcmTagKey &theTagKey )
 	else
 	{
 		/* Warning element missing */
-		//sprintf( szErrMsgTxt, "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
+		//snprintf( szErrMsgTxt, 2048*sizeof(char), "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
 		//mexWarnMsgTxt( szErrMsgTxt );
 		pmxNumMat = NULL;//mxCreateNumericMatrix( 0, 0, mxDOUBLE_CLASS, mxREAL );
 	}
@@ -235,7 +235,7 @@ mxArray *MXAGetFloat32ArrayAsDouble(DcmItem * dcmItem, const DcmTagKey &theTagKe
 		if ( dcmItem->findAndGetFloat32Array( theTagKey, pf32Data, &ul_nData ).bad() )
 		{
 			/* error getting the element */
-			sprintf( szErrMsgTxt, "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
+			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
 			mexWarnMsgTxt(szErrMsgTxt);
 			//mexErrMsgTxt(szErrMsgTxt);
 			pmxNumMat = NULL;
@@ -252,7 +252,7 @@ mxArray *MXAGetFloat32ArrayAsDouble(DcmItem * dcmItem, const DcmTagKey &theTagKe
 	else
 	{
 		/* Warning element missing */
-		//sprintf( szErrMsgTxt, "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
+		//snprintf( szErrMsgTxt, 2048*sizeof(char), "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
 		//mexWarnMsgTxt( szErrMsgTxt );
 		pmxNumMat = NULL;//mxCreateNumericMatrix( 0, 0, mxDOUBLE_CLASS, mxREAL );
 	}
@@ -279,7 +279,7 @@ mxArray *MXAGetFloat64ArrayAsDouble(DcmItem * dcmItem, const DcmTagKey &theTagKe
 		if ( dcmItem->findAndGetFloat64Array( theTagKey, pf64Data, &ul_nData ).bad() )
 		{
 			/* error getting the element */
-			sprintf( szErrMsgTxt, "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
+			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
 			mexWarnMsgTxt(szErrMsgTxt);
 			//mexErrMsgTxt(szErrMsgTxt);
 			pmxNumMat = NULL;
@@ -296,7 +296,7 @@ mxArray *MXAGetFloat64ArrayAsDouble(DcmItem * dcmItem, const DcmTagKey &theTagKe
 	else
 	{
 		/* Warning element missing */
-		//sprintf( szErrMsgTxt, "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
+		//snprintf( szErrMsgTxt, 2048*sizeof(char), "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
 		//mexWarnMsgTxt( szErrMsgTxt );
 		pmxNumMat = NULL;//mxCreateNumericMatrix( 0, 0, mxDOUBLE_CLASS, mxREAL );
 	}
@@ -323,7 +323,7 @@ mxArray *MXAGetInt16Array(DcmItem * dcmItem, const DcmTagKey &theTagKey )
 		if ( dcmItem->findAndGetUint16Array( theTagKey, pui16Data, &ul_nData ).bad() )
 		{
 			/* error getting the element */
-			sprintf( szErrMsgTxt, "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
+			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
 			mexWarnMsgTxt(szErrMsgTxt);
 			//mexErrMsgTxt(szErrMsgTxt);
 			pmxNumMat = NULL;
@@ -341,7 +341,7 @@ mxArray *MXAGetInt16Array(DcmItem * dcmItem, const DcmTagKey &theTagKey )
 	else
 	{
 		/* Warning element missing */
-		//sprintf( szErrMsgTxt, "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
+		//snprintf( szErrMsgTxt, 2048*sizeof(char), "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
 		//mexPrintf( szErrMsgTxt );
 		pmxNumMat = NULL;//mxCreateNumericMatrix( 0, 0, mxINT16_CLASS, mxREAL );
 	}
@@ -366,7 +366,7 @@ mxArray *MXAGetStringArray(DcmItem * dcmItem, const DcmTagKey &theTagKey )
 		if ( dcmItem->findAndGetOFStringArray( theTagKey, strData ).bad() )
 		{
 			/* error getting the element */
-			sprintf( szErrMsgTxt, "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
+			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
 			mexWarnMsgTxt(szErrMsgTxt);
 			//mexErrMsgTxt(szErrMsgTxt);
 			pmxStrMat = NULL;
@@ -380,7 +380,7 @@ mxArray *MXAGetStringArray(DcmItem * dcmItem, const DcmTagKey &theTagKey )
 	else
 	{
 		/* Warning element missing */
-		//sprintf( szErrMsgTxt, "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
+		//snprintf( szErrMsgTxt, 2048*sizeof(char), "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
 		//mexPrintf( szErrMsgTxt );
 		pmxStrMat = NULL;//mxCreateString("");
 	}
@@ -405,7 +405,7 @@ mxArray *MXAGetString(DcmItem * dcmItem, const DcmTagKey &theTagKey )
 		if ( dcmItem->findAndGetOFString( theTagKey, strData ).bad() )
 		{
 			/* error getting the element */
-			sprintf( szErrMsgTxt, "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
+			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
 			mexWarnMsgTxt(szErrMsgTxt);
 			//mexErrMsgTxt(szErrMsgTxt);
 			pmxStrMat = NULL;
@@ -419,7 +419,7 @@ mxArray *MXAGetString(DcmItem * dcmItem, const DcmTagKey &theTagKey )
 	else
 	{
 		/* Warning element missing */
-		//sprintf( szErrMsgTxt, "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
+		//snprintf( szErrMsgTxt, 2048*sizeof(char), "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
 		//mexPrintf( szErrMsgTxt );
 		pmxStrMat = NULL;//mxCreateString("");
 	}
@@ -456,7 +456,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	dcmStatus = DcmMyFile->loadFile( pchFileName );
     if ( dcmStatus.bad() )
     {
-        sprintf( szErrMsgTxt, "%s: cannot read DICOM file \"%s\" (%s)\n", szModule, pchFileName, dcmStatus.text() );
+        snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot read DICOM file \"%s\" (%s)\n", szModule, pchFileName, dcmStatus.text() );
         mexErrMsgTxt( szErrMsgTxt ); 
     }
 

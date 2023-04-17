@@ -253,7 +253,7 @@ end
 
 % Process all the data and automatically fill in the missing parameters
 if ~isfield(jsonOut,'MRAcquisitionType')
-	error('MRAcquisitionType has to be defined either in the data or studyPar');
+	error('MRAcquisitionType has to be defined in the studyPar.json');
 end
 
 if strcmpi(jsonOut.MRAcquisitionType,'2D')

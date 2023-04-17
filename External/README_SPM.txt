@@ -10,6 +10,13 @@ we have added new maps (//External/SPMmodified/MapsAdded/README_Maps.txt)
 as well as new code (//External/SPMmodified/xASL/README_Functions.txt)
 
 *********************************************************************************************************
+MACA64 SUPPORT (i.e., for running Matlab Apple Silicon Native, tested with Matlab 2022b beta)
+DATE+Name: 2023-02-21 HM
+DESCRIPTION (see #1324):
+Added *.mexmaca64
+Changed Makefile, Makefile.var, spm_platform
+
+*********************************************************************************************************
 MAP CHANGES
 DATE+Name: 2021-07-07 HM
 DESCRIPTION:

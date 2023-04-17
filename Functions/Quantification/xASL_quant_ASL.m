@@ -1,6 +1,6 @@
-function [ScaleImage, CBF, ATT, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
+function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
 %xASL_quant_ASL Perform a multi-step quantification of single or multi-PLD with or without BASIL
-% FORMAT: [ScaleImage[, CBF, ATT, Tex]] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
+% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex]] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
 %
 % INPUT:
 %   PWI             - 3D (single PLD) or 4D (multi PLD) image matrix of perfusion-weighted image (REQUIRED)
@@ -15,6 +15,7 @@ function [ScaleImage, CBF, ATT, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber,
 % ScaleImage        - image matrix containing net/effective quantification scale factor
 % CBF               - Quantified CBF image
 % ATT               - Estimated ATT map (if multi-PLD, otherwise empty)
+% ABV               - Estimated arterial blood volume map (if multi-PLD, otherwise empty)
 % Tex               - Estimated map of time of exchange across BBB (if multi-TE is available, otherwise empty)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script performs a multi-step quantification, by
@@ -41,7 +42,7 @@ function [ScaleImage, CBF, ATT, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber,
 %              imSliceNumber)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [ScaleImage, CBF] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x);
+% EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification);
 % __________________________________
 % Copyright (c) 2015-2023 ExploreASL
 
@@ -51,6 +52,7 @@ fprintf('%s\n', 'Performing quantification');
 
 ATT = [];
 Tex = [];
+ABV = [];
 
 if nargin<5 || isempty(bUseBasilQuantification)
 	if x.modules.asl.bMultiPLD
@@ -75,6 +77,7 @@ if x.modules.asl.bMultiPLD && ~bUseBasilQuantification
 end
 
 ScaleImage = 1; % initializing (double data format by default in Matlab)
+ScaleImageABV = 1;
 
 % Convert to double precision to increase quantification precision
 % This is especially useful with the large factors that we can multiply and
@@ -150,20 +153,20 @@ else
         error('Wrong PLD definition!');
     end
 
-
     if bUseBasilQuantification
-        % Here we perform FSL BASIL
-		[PWI, ATT, Tex] = xASL_quant_Basil(PWI, x);
+        % Here we perform FSL quantification
+		
+		[PWI, ATT, ABV, Tex] = xASL_quant_FSL(PWI, x);
 		
 		% If resultFSL is not 0, something went wrong
-        % This will issue a warning inside xASL_quant_Basil
+        % This will issue a warning inside xASL_quant_FSL
 	else
-        % This part should only run when we don't use FSL BASIL
-        % or as a fallback when FSL BASIL crashed
+        % This part should only run when we don't use FSL BASIL/FABBER
+        % or as a fallback when FSL BASIL/FABBER crashed
         
         %% 2    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'LabelingDuration')
-            ScaleImage = xASL_quant_ASL_ApplyLabelDecayScaleFactor(x, ScaleImage);
+            ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage);
         else
             warning('Please define both LabelingType and LabelingDuration of this dataset...');
         end
@@ -185,7 +188,7 @@ else
 	ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
 	% Throw warning if no Philips scans, but some of the scale slopes are not 1:
-	if isempty(regexpi(x.Q.Vendor, 'Philips'))
+	if isempty(regexpi(x.Q.Vendor, 'Philips', 'once'))
 		if isfield(ASL_parms,'RescaleSlopeOriginal') && ASL_parms.RescaleSlopeOriginal~=1
 			warning('We detected a RescaleSlopeOriginal~=1, verify that this is not a Philips scan!!!');
 		end
@@ -198,7 +201,7 @@ else
 	end
 
 	% Set GE specific scalings
-	if ~isempty(regexpi(x.Q.Vendor,'GE'))
+	if ~isempty(regexpi(x.Q.Vendor, 'GE', 'once'))
 		if ~isfield(x.Q,'NumberOfAverages')
 			% GE accumulates signal instead of averaging by NEX, therefore division by NEX is required
 			error('GE-data assumed, "NumberOfAverages" should be a BIDS field, but was not found')
@@ -208,7 +211,7 @@ else
 
 		% For some reason the older GE Alsop Work in Progress (WIP) version
 		% has a different scale factor than the current GE product sequence
-		if isfield(x.Q,'SoftwareVersions')
+		if isfield(x.Q, 'SoftwareVersions')
 			softwareVersions = xASL_str2num(x.Q.SoftwareVersions(1:2));
 		else
 			softwareVersions = 0;
@@ -225,10 +228,11 @@ else
         % division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
 
 		ScaleImage = ScaleImage./qnt_GEscaleFactor;
+		ScaleImageABV = ScaleImageABV./qnt_GEscaleFactor;
 		fprintf('%s\n',['Quantification corrected for GE scale factor ' xASL_num2str(qnt_GEscaleFactor) ' for NSA=' xASL_num2str(x.Q.NumberOfAverages)]);
 
 		% Set Philips specific scaling
-	elseif ~isempty(regexpi(x.Q.Vendor,'Philips'))
+	elseif ~isempty(regexpi(x.Q.Vendor,'Philips', 'once'))
 		% Philips has specific scale & rescale slopes
 		% If these are not corrected for, only relative CBF quantification can be performed,
 		% i.e. scaled to wholebrain, the wholebrain perfusion cannot be calculated.
@@ -237,6 +241,7 @@ else
 
 		if scaleFactor
 			ScaleImage = ScaleImage .* scaleFactor;
+			ScaleImageABV = ScaleImageABV .* scaleFactor;
 		end
 
 		% Siemens specific scalings
@@ -244,6 +249,7 @@ else
 		if ~strcmpi(x.Q.Vendor,'Siemens_JJ_Wang') && strcmpi(x.Q.M0,'separate_scan')
 			% Some Siemens readouts divide M0 by 10, others don't
 			ScaleImage = ScaleImage./10;
+			ScaleImageABV = ScaleImageABV./10;
 			fprintf('%s\n','M0 corrected for Siemens scale factor 10')
 		end
 	end
@@ -254,6 +260,7 @@ end
 % Match sizes
 MatchSizeM0 = round([size(PWI,1)./size(M0_im,1) size(PWI,2)./size(M0_im,2) size(PWI,3)./size(M0_im,3) size(PWI,4)./size(M0_im,4) size(PWI,5)./size(M0_im,5) size(PWI,6)./size(M0_im,6) size(PWI,7)./size(M0_im,7)]);
 MatchSizeSI = round([size(PWI,1)./size(ScaleImage,1) size(PWI,2)./size(ScaleImage,2) size(PWI,3)./size(ScaleImage,3) size(PWI,4)./size(ScaleImage,4) size(PWI,5)./size(ScaleImage,5) size(PWI,6)./size(ScaleImage,6) size(PWI,7)./size(ScaleImage,7)]);
+MatchSizeSIABV = round([size(PWI,1)./size(ScaleImageABV,1) size(PWI,2)./size(ScaleImageABV,2) size(PWI,3)./size(ScaleImageABV,3) size(PWI,4)./size(ScaleImageABV,4) size(PWI,5)./size(ScaleImageABV,5) size(PWI,6)./size(ScaleImageABV,6) size(PWI,7)./size(ScaleImageABV,7)]);
 
 if sum(MatchSizeM0==0) || sum(MatchSizeSI==0)
     error('PWI dimensions too small compared to M0 and/or ScaleImage dimensions');
@@ -263,21 +270,29 @@ if ~x.modules.asl.ApplyQuantification(3)
 	% Convert to double precision if not done previously
 	M0_im = double(M0_im);
 	PWI = double(PWI);
+	if numel(ABV) > 1
+		ABV = double(ABV);
+	end
 end
 
-M0_im = repmat(M0_im,MatchSizeM0);
-ScaleImage = repmat(ScaleImage,MatchSizeSI);
+M0_im = repmat(M0_im, MatchSizeM0);
+ScaleImage = repmat(ScaleImage, MatchSizeSI);
+ScaleImageABV = repmat(ScaleImageABV, MatchSizeSIABV);
 
 if ~x.modules.asl.ApplyQuantification(5)
     fprintf('%s\n','We skip the PWI/M0 division');
 else
     ScaleImage = ScaleImage./M0_im;
+	ScaleImageABV = ScaleImageABV./M0_im;
 end
 
 
 %% 6    Apply quantification
 if x.modules.asl.ApplyQuantification(6)
     CBF = PWI.*ScaleImage;
+	if numel(ABV) > 1
+		ABV = ABV.*ScaleImageABV;
+	end
 else
     CBF = PWI;
 end
@@ -358,7 +373,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Determine Label Decay Scale Factor
-function ScaleImage = xASL_quant_ASL_ApplyLabelDecayScaleFactor(x, ScaleImage)
+function ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage)
 
     switch x.Q.nCompartments
         case 1 % single-compartment model

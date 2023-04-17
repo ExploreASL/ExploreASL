@@ -23,10 +23,18 @@ function [x] = xASL_adm_DefineASLSequence(x)
 
 
 %% Check Quantification fields
-if ~isfield(x.Q, 'readoutDim')
-    warning('x.Q.readoutDim parameter missing, skipping determining ASL sequence...');
+if ~isfield(x.Q, 'readoutDim') || isempty(x.Q.readoutDim)
+    warning('x.Q.readoutDim parameter missing');
 end
-if ~isfield(x.Q, 'Vendor')
+
+if isfield(x.Q,'Sequence') && (~isfield(x.Q, 'Vendor') || isempty(x.Q.Vendor))
+    if strcmpi(x.Q.Sequence,'3d_spiral')
+        warning('x.Q.Vendor missing but 3D spiral sequence detected, assuming vendor GE');
+        x.Q.Vendor = 'GE';
+    end
+end
+
+if ~isfield(x.Q, 'Vendor') || isempty(x.Q.Vendor)
     warning('x.Q.Vendor missing, skipping determining ASL sequence');
 elseif  isempty(regexpi(x.Q.Vendor, 'Gold Standard Phantoms|GE|Philips|Siemens'))
     warning('Unknown Vendor specified in x.Q.Vendor');
@@ -54,7 +62,7 @@ if ~isfield(x.Q,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Vendor
         fprintf('%s\n', 'and heavy geometric distortion and minimal smoothness');
     end
 end
-if ~isfield(x.Q,'Sequence')
+if ~isfield(x.Q,'Sequence') || isempty(x.Q.Sequence)
     warning('No x.Q.Sequence defined');
     fprintf('If there are multiple sequence types, this needs to be implemented yet here\n');
     fprintf('Otherwise, please define x.Q.Sequence\n');
