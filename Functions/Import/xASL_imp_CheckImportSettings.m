@@ -71,11 +71,11 @@ function [x] = xASL_imp_CheckImportSettings(x)
 	fprintf('%s\n', [num2str(nTokens) ' tokens detected in tokenOrdering']);
 
 	if nLeftBrackets < nTokens
-		error('The number of tokens in folderHierarchy defined by the () symbol should be equal to or higher than the length of the tokenOrdering vector.');
+		error('The number of tokens in folderHierarchy and tokenOrdering should be equal. Note that the number of captured groups () should thus be equal to or higher than the number of tokens.');
 	elseif nLeftBrackets > nTokens
-		warning('The number of tokens in folderHierarchy defined by the () symbol is higher than the length of the tokenOrdering vector. This is allowed, but make sure that this is what you want.');
+		warning('The number of captured groups in folderHierarchy, defined by the () symbols, is higher than the number of tokens defined in tokenOrdering. Ensure that this is correct.');
 	elseif sum(x.modules.import.imPar.tokenOrdering>0) ~= nTokens
-		warning('Not all tokens from folderHierarchy appear to be used in the tokenOrdering vector. This is allowed, but make sure that this is what you want.')
+		warning('Not all captured groups in folderHierarchy are used as a token in tokenOrdering. Ensure that this is correct.')
 	end
 
 	%% Manage .nii vs .nii.gz extensions
