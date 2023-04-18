@@ -78,6 +78,7 @@ for iField = 1:length(listConvert)
 	end
 end
 
+%% Philips fields
 % Convert the RescaleSlopeOriginal - i.e. the Private_2005_140a tag
 % If the field exists and is still in a string format
 if isfield(header,'RescaleSlopeOriginal') && ~isempty(header.RescaleSlopeOriginal) && ischar(header.RescaleSlopeOriginal)
@@ -93,11 +94,6 @@ if isfield(header,'RescaleSlopeOriginal') && ~isempty(header.RescaleSlopeOrigina
 	else
 		header.RescaleSlopeOriginal = num;
 	end
-end
-
-if ~isempty(header.AssetRFactor) 
-	% Unknown format
-	header.AssetRFactor = str2double(header.AssetRFactor);
 end
 
 if ~isempty(header.EffectiveEchoSpacing) 
@@ -135,6 +131,15 @@ if ~isempty(header.MRSeriesEPIFactor)
 		header.MRSeriesEPIFactor = single(num);
 	end
 end
+
+
+%% GE fields
+if ~isempty(header.AssetRFactor) 
+	% Unknown format
+	header.AssetRFactor = str2double(header.AssetRFactor);
+end
+
+%% Siemens fields
 
 if ~isempty(header.BandwidthPerPixelPhaseEncode) 
 	% Unknown format
@@ -186,6 +191,7 @@ if isfield(header,'SharedFunctionalGroupsSequence')
 	end
 end
 
+%% Philips fields
 if isfield(header,'PerFrameFunctionalGroupsSequence')
 	echoItem = header.PerFrameFunctionalGroupsSequence.Item_1.MREchoSequence.Item_1;
 	if isfield(echoItem,'EffectiveEchoTime')
@@ -235,10 +241,6 @@ if isfield(header,'RealWorldValueMappingSequence')
 	end
 end
 
-if isfield(header, 'Private_0043_1083')
-	header.AssetRFactor = header.Private_0043_1083;
-end
-
 if isfield(header, 'Private_0043_192c')
 	header.EffectiveEchoSpacing = header.Private_0043_192c;
 end
@@ -255,6 +257,12 @@ if isfield(header, 'Private_0019_1028')
 	header.BandwidthPerPixelPhaseEncode = header.Private_0019_1028;
 end
 
+%% GE fields
+
+if isfield(header, 'Private_0043_1083')
+	header.AssetRFactor = header.Private_0043_1083;
+end
+
 if isfield(header, 'Private_0019_109c')
 	header.GELabelingType = header.Private_0019_109c;
 end
@@ -263,6 +271,7 @@ if isfield(header, 'Private_0043_10a5')
 	header.GELabelingDuration = header.Private_0043_10a5;
 end
 
+%% Siemens fields
 if isfield(header, 'Private_0029_1020')
 	header.PhoenixProtocol = header.Private_0029_1020;
 end
@@ -271,6 +280,7 @@ if isfield(header, 'Private_0019_1029')
 	header.SiemensSliceTime = header.Private_0019_1029;
 end
 
+%% General field cleanup
 % Keep only those fields below...
 listFieldsKeep = {'RepetitionTime', 'EchoTime', 'RescaleSlope', 'RescaleIntercept',...
         'NumberOfTemporalPositions', 'NumberOfAverages', 'AcquisitionTime',...
