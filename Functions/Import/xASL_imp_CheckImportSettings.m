@@ -90,7 +90,7 @@ function [x] = xASL_imp_CheckImportSettings(x)
     fprintf('%s\n', [xASL_num2str(nSessionAliases) ' sessions defined in tokenSessionAliases: ']);
     fprintf('%s\n', [xASL_num2str(nScanAliases) ' scans defined in tokenSessionAliases']);
     
-    if nGroupsFolderHierarchy < nTokensTokenOrdering
+    if nGroupsFolderHierarchy < nGroupsTokenOrdering
 		error('The number of captured groups in folderHierarchy should >= the number of tokens in tokenOrdering');
     end
 
