@@ -92,40 +92,38 @@ function [x] = xASL_imp_CheckImportSettings(x)
     
     if nGroupsFolderHierarchy < nTokensTokenOrdering
 		error('The number of captured groups in folderHierarchy should >= the number of tokens in tokenOrdering');
-    elseif nGroupsTokenOrdering < nTokensTokenOrdering
-        error('The number of captured groups in tokenOrdering should >= the number of tokens in tokenOrdering');
     end
 
     % These warnings can be additive, so we report them separately
 	if nGroupsFolderHierarchy > nTokensTokenOrdering
 		warning('The number of captured groups in folderHierarchy is higher than the number of tokens in tokenOrdering. Ensure that this is correct');
-    end
+	end
     if nGroupsTokenOrdering ~= nTokensTokenOrdering
 		warning('Not all captured groups in folderHierarchy are used as a token in tokenOrdering. Ensure that this is correct')
     end
 
     % Check visits
     if nVisitAliases > 0
-        visitsAre = unique(x.modules.import.imPar.tokenVisitAliases(:,2));
-        nUniqueVisits = numel(visitsAre);
+        listUniqueVisits = unique(x.modules.import.imPar.tokenVisitAliases(:,2));
+        nUniqueVisits = numel(listUniqueVisits);
 
         if nUniqueVisits ~= nVisitAliases
             warning('Visit definitions are used more than one time. Ensure that this is correct')
-            for iVisit=1:numel(visitsAre)
-                fprintf('%s\n', ['Visit ' num2str(iVisit) ' = ' visitsAre{iVisit}]);
+            for iVisit=1:nUniqueVisits
+                fprintf('%s\n', ['Visit ' num2str(iVisit) ' = ' listUniqueVisits{iVisit}]);
             end
         end
     end
 
     % Check sessions
     if nSessionAliases > 0
-        sessionsAre = unique(x.modules.import.imPar.tokenSessionAliases(:,2));
-        nUniqueSessions = numel(sessionsAre);
+        listUniqueSessions = unique(x.modules.import.imPar.tokenSessionAliases(:,2));
+        nUniqueSessions = numel(listUniqueSessions);
     
         if nUniqueSessions ~= nSessionAliases
             warning('Session definitions are used more than one time. Ensure that this is correct')
-            for iSession=1:numel(sessionsAre)
-                fprintf('%s\n', ['Session ' num2str(iSession) ' = ' sessionsAre{iSession}]);
+            for iSession=1:nUniqueSessions
+                fprintf('%s\n', ['Session ' num2str(iSession) ' = ' listUniqueSessions{iSession}]);
             end
         end
     end

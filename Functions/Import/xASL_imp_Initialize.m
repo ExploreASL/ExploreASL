@@ -22,7 +22,7 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     imPar = xASL_imp_Initialize(studyPath, imParPath);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
     %% 1. Read study file
 
