@@ -32,7 +32,7 @@ function x = xASL_imp_ReadSourceData(x)
     end
 
 
-    %% Check folder hierarchy
+    %% Check folderHierarchy
     xASL_imp_ReadSourceData_CheckFolderHierarchy(x);
     
     
@@ -68,9 +68,10 @@ function x = xASL_imp_ReadSourceData(x)
 end
 
 
-
-%% Check folder hierarchy
-function xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
+%% ==========================================================================================================================
+%% ==========================================================================================================================
+%% Check the last argument of folderHierarchy
+function xASL_imp_ReadSourceData_CheckFolderHierarchy(x) % PM: this should be renamed, we specifically check the last element only here!!!
 
     % Get last element
     lastElement = lower(x.modules.import.imPar.folderHierarchy{end});
@@ -83,23 +84,19 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x)
 
     % Check folderHierarchy based on bMatchDirectories
     if x.modules.import.imPar.bMatchDirectories
-        % Check that there is no extension in the last folder hierachy element
+        % Check that there is no extension in the last folderHierachy element
+        % This extension should only be there if bMatchDirectories is set to false
         if ~isempty(regexpi(lastElement,conditionFile))
-           warning('The sourceStructure folderHierarchy includes a file extension...');
+           warning('folderHierarchy includes a file extension but bMatchDirectories was set to true');
         end
-    else
+    elseif isempty(regexpi(lastElement,conditionFile))
         % Check for extension in last folder hierachy element
-        if isempty(regexpi(lastElement,conditionFile))
            if ~isempty(regexpi(lastElement,conditionExtension))
               warning('Unknown extension in the last element of the folder hierarchy (%s)...',lastElement);
            else
               warning('No extension used in the last element of the folder hierarchy (%s)...',lastElement);
            end
-        end
     end
 
 
 end
-
-
-
