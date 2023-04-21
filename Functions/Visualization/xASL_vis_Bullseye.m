@@ -21,7 +21,6 @@ if nargin<2
     savePath = 'Bullseye';
 end
 % Test Values
-
 % Define the number of segments
 segmentCount = 9;
 layerCount = 4;
@@ -35,20 +34,20 @@ labels = {'Frontal', 'Parietal', 'Temporal', 'Occipital', 'SubCortical', 'Pariet
 
 % Define the segment boundaries in degrees
 ANGLE_OFFSET = 90;
-segment_boundaries = linspace(0, 360, segmentCount+1) + ANGLE_OFFSET;
+segmentBoundaryAngles = linspace(0, 360, segmentCount+1) + ANGLE_OFFSET;
 
 % Initialize Figure
 fig = figure;
 colormap('autumn');
-title('Cardiac Bullseye Plot');
+title('Coronal Bullseye Plot');
 colorbar('Ticks', 1:length(values), 'TickLabels', labels);
 axis off;
 
 % Plot the segments with different colors
 for iLayer = 1:layerCount
     for iSegment = 1:segmentCount
-        angle1 = segment_boundaries(iSegment);
-        angle2 = segment_boundaries(iSegment+1);
+        angle1 = segmentBoundaryAngles(iSegment);
+        angle2 = segmentBoundaryAngles(iSegment+1);
         depth2 = iLayer/(layerCount+1);
         depth1 = (iLayer+1)/(layerCount+1);
         vertexX = [depth1*[cosd(angle2), cosd(angle1)], depth2*[cosd(angle1), cosd(angle2)]];  
@@ -59,7 +58,7 @@ end
 
 % Add the segment labels
 for iSegment = 1:segmentCount
-    angle = mean([segment_boundaries(iSegment), segment_boundaries(iSegment+1)]);
+    angle = mean([segmentBoundaryAngles(iSegment), segmentBoundaryAngles(iSegment+1)]);
     text(cosd(angle), sind(angle), labels{iSegment}, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
 end
 
