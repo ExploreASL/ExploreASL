@@ -11,19 +11,24 @@
     "TitlePage" : {
         "type" : "page",
         "number" : "1",
-        "ArbitratryImage": {
-            "type" : "image",
-            "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
-            "position" : "[0.70 0.05]",
-            "size"     : "[0.3 0.3]"    
-        },
-        "anotherImage": {
-            "type" : "image",
-            "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoSmall.png",
-            "position" : "[0.70 0.35]",
-            "size"     : "[0.3 0.3]"    
-        },
         "ArbitraryScan": {
+            "type" : "scan",
+            "name" : "Pop_Path_rT1",
+            "position" : "[0.70 0.35]",
+            "size"     : "[0.3 0.3]",
+            "slice"    : {
+                "TraSlice" : "[25 75]",
+                "CorSlice" : "[25 75]",
+                "SagSlice" : "[]"},
+            "overlay"  : {
+                "Pop_Path_SliceGradient" :{
+                    "contour" :"true",
+                    "opacity" : "0.3",
+                    "color"   : "r"
+                }
+            }  
+        },
+        "AnotherScan": {
             "type" : "scan",
             "name" : "Pop_Path_rT1",
             "position" : "[0.70 0.65]",
@@ -33,7 +38,25 @@
                 "CorSlice" : "[50 75]",
                 "SagSlice" : "[50 75]"},
             "overlay"  : {
+                
                 "Pop_Path_qCBF" :{
+                    "contour" :"true",
+                    "opacity" : "0.3",
+                    "color"   : "r"
+                }
+            }  
+        },
+        "SingleScan": {
+            "type" : "scan",
+            "name" : "Pop_Path_rT1",
+            "position" : "[0.70 0.05]",
+            "size"     : "[0.3 0.3]",
+            "slice"    : {
+                "TraSlice" : "[50]",
+                "CorSlice" : "[12 78]",
+                "SagSlice" : "[]"},
+            "overlay"  : {
+                "Pop_Path_MaskVascular" :{
                     "contour" :"true",
                     "opacity" : "0.3",
                     "color"   : "r"
@@ -240,7 +263,7 @@
             "text":"This is a supposed Secondary page"
         },"RandomBlock": {
             "type" : "block",
-            "position" : "[0.0 0.11]",
+            "position" : "[0.50 0.11]",
             "size"     : "[0.33 0.33]",
             "BlockImage1": {
                 "type" : "image",
@@ -255,17 +278,27 @@
                 "size"     : "[0.5 0.5]"    
             },
             "BlockText":{
+                "settings":
+                {
+                    "fontSize":"24",
+                    "fontWeight":"normal"
+                },
                 "type" : "text",
                 "text" : "This is a text test in a block"
             },
             "BlockText2":{
+                "settings":
+                {
+                    "fontSize":"24",
+                    "fontWeight":"normal"
+                },
                 "type" : "text",
                 "text" : "This is another line test in a block"
             },
             "BlockText3":{
                 "settings":
                 {
-                    "fontSize":"10",
+                    "fontSize":"24",
                     "fontWeight":"bold"
                 },
                 "type" : "text",
@@ -278,10 +311,10 @@
                 "fontSize":"10",
                 "fontWeight":"bold"
             },
-            "text":"This is text printed after the block"
+            "text":"This is text printed after the block was rendered"
         },"anotherBlock": {
             "type" : "block",
-            "position" : "[0.0 0.44]",
+            "position" : "[0.0 0.11]",
             "size"     : "[0.33 0.33]",
             "BlockImage1": {
                 "type" : "image",
@@ -296,17 +329,27 @@
                 "size"     : "[0.5 0.5]"    
             },
             "BlockText":{
+                "settings":
+                {
+                    "fontSize":"24",
+                    "fontWeight":"normal"
+                },
                 "type" : "text",
                 "text" : "This is a text test in another block"
             },
             "BlockText2":{
+                "settings":
+                {
+                    "fontSize":"24",
+                    "fontWeight":"normal"
+                },
                 "type" : "text",
-                "text" : "This is another line test in aanother block"
+                "text" : "This is another line test in another block"
             },
             "BlockText3":{
                 "settings":
                 {
-                    "fontSize":"10",
+                    "fontSize":"24",
                     "fontWeight":"bold"
                 },
                 "type" : "text",

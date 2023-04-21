@@ -260,7 +260,7 @@ function line = xASL_sub_PrintText(input, figure, line, settings)
             class(input)
             error('xASL_sub_PrintText couldnt find string of printable text')
     end
-    line = xASL_sub_NewLine(line);
+    line = xASL_sub_NewLine(line, settings);
     ax=axes('Position', line ,'Visible', settings.axesVisible, 'Parent', figure);
     text(0,0, String, 'Parent', ax, 'FontSize', settings.fontSize,'FontWeight', settings.fontWeight, 'Color', settings.color, 'FontName', settings.fontName, 'Interpreter', 'none', 'VerticalAlignment','top');
 end
@@ -314,8 +314,8 @@ function xASL_sub_PrintScan(input, x, figure)
     clear fg
 end
 
-function line = xASL_sub_NewLine(line);
-    line(2) = line(2) - 0.016;
+function line = xASL_sub_NewLine(line, settings);
+    line(2) = line(2) - (settings.fontSize*0.0022);
     if line(2) < 0 
         warning('No space left on page!');
     end
