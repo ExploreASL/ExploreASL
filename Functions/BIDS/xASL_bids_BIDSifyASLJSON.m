@@ -185,6 +185,17 @@ if isfield(jsonOut,'PostLabelDelay')
 	end
 end
 
+% For Siemens, the parameter NumRFBlocks multiplied by 18.4ms gives the labeling duration
+if strcmpi(jsonOut.Manufacturer,'Siemens')
+	if isfield(jsonIn, 'NumRFBlocks') && ~isempty(jsonIn.NumRFBlocks)
+		if isfield(jsonOut,'LabelingDuration') && ~isequal(jsonOut.LabelingDuration, jsonIn.NumRFBlocks * 18.4)
+			warning(['Labeling duration (' xASL_num2str(jsonOut.LabelingDuration) ') differs from the NumRFBlocks * 18.4ms (' xASL_num2str(jsonIn.NumRFBlocks * 0.0184) ')']);
+		else
+			jsonOut.LabelingDuration = jsonIn.NumRFBlocks * 0.0184;
+		end
+	end
+end
+
 % The Labeling defined in a private GE field has a priority
 if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 	% Verify if this doesn't differ from the predefined file, but the DICOM field has priority
