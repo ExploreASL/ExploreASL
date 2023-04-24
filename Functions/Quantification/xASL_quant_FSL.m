@@ -377,7 +377,7 @@ switch lower(x.Q.LabelingType)
 
 			% Plotting the values into the doc (PLD=ti, LD=tau)
 			for iPLD = 1:length(PLDs)
-				fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD, PLDs(iPLD));
+				fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD, PLDs(iPLD) + LabDurs(iPLD));
 				fprintf(FIDoptionFile, '--nte%d=%d\n', iPLD, nTE); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
 			end
 
