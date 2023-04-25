@@ -27,15 +27,16 @@ function jsonOut = xASL_bids_BIDSifyASLJSON(jsonIn, studyPar, headerASL)
 % 8. Merge data from the Phoenix protocol
 % 9. Background suppression check
 % 10. SliceTiming check
-% 11. Check if length of vector fields match the number of volumes
-% 12. Reformat ASLcontext field
-% 13. Verify TotalAcquiredPairs against ASLContext
-% 14. Final field check
+% 11. Check for Look-Locker TR
+% 12. Check if length of vector fields match the number of volumes
+% 13. Reformat ASLcontext field
+% 14. Verify TotalAcquiredPairs against ASLContext
+% 15. Final field check
 %
 % EXAMPLE: n/a
 %
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 %% 0. Admin
 if nargin < 1 || isempty(jsonIn)
@@ -399,7 +400,39 @@ else
 	end
 end
 
-%% 11. Check if length of vector fields match the number of volumes
+%% 11. Check for Look-Locker TR
+% Look-Locker acquisition for Philips has often TR given as the length of a single readout, not as the entire cycle
+if isfield(jsonOut, 'LookLocker') && jsonOut.LookLocker
+	if isfield(jsonOut, 'Manufacturer') && strcmpi(jsonOut.Manufacturer, 'Philips')
+		% It needs to be verified if the FlipAngle is below 90
+		if isfield(jsonOut, 'FlipAngle') && jsonOut.FlipAngle < 90
+			% And we verify that TR is suspiciously low
+			if isfield(jsonOut, 'PostLabelingDelay') && isfield(jsonOut, 'RepetitionTimePreparation') && max(jsonOut.PostLabelingDelay) > max(jsonOut.RepetitionTimePreparation)
+				% We need to extra the correct TR
+				if isfield(jsonOut, 'AcquisitionDuration')
+					if isfield(jsonOut, 'NumberOfTemporalPositions') && max(jsonOut.NumberOfTemporalPositions) > 1
+						% Either we divide the total duration by the number of repeats
+						jsonOut.RepetitionTimePreparation = jsonOut.AcquisitionDuration / max(jsonOut.NumberOfTemporalPositions) / 2;
+					elseif isfield(jsonOut, 'NumberOfDynamicScans') && max(jsonOut.NumberOfDynamicScans) > 1
+						% Or the number of repeats from a different DICOM field
+						jsonOut.RepetitionTimePreparation = jsonOut.AcquisitionDuration / max(jsonOut.NumberOfDynamicScans) / 2;
+					elseif isfield(jsonOut, 'PostLabelingDelay') && length(jsonOut.PostLabelingDelay)>1 
+						if isfield(jsonOut, 'ArterialSpinLabelingType') && strcmpi(jsonOut.ArterialSpinLabelingType, 'PCASL') 
+							% Or we add PLD difference with maximal PLD and labeling duration for PCASL
+							if isfield(jsonOut, 'LabelingDuration')
+								jsonOut.RepetitionTimePreparation = (jsonOut.PostLabelingDelay(2)-jsonOut.PostLabelingDelay(1)) + max(jsonOut.PostLabelingDelay) + jsonOut.LabelingDuration(1);
+							end
+						else
+							jsonOut.RepetitionTimePreparation = (jsonOut.PostLabelingDelay(2)-jsonOut.PostLabelingDelay(1)) + max(jsonOut.PostLabelingDelay);
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+%% 12. Check if length of vector fields match the number of volumes
 % If Post-labeling delay or labeling duration, and other fields, is longer than 1, but shorter then number of volumes then repeat it
 listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVENC','FlipAngle','RepetitionTimePreparation'};
 for iRepeat = 1:length(listFieldsRepeat)
@@ -412,7 +445,7 @@ for iRepeat = 1:length(listFieldsRepeat)
 	end
 end
 
-%% 12. Reformat ASLcontext field
+%% 13. Reformat ASLcontext field
 % Remove ',' and ';' at the end
 if ~isfield(jsonOut, 'ASLContext')
     error('Missing JSON field: ASLContext');
@@ -508,7 +541,7 @@ for iRepeat = 1:length(listFieldsZero)
 	end
 end
 	
-%% 13. Verify TotalAcquiredPairs against ASLContext
+%% 14. Verify TotalAcquiredPairs against ASLContext
 % Import the number of averages
 if isfield(jsonOut,'NumberOfAverages') && (max(jsonOut.NumberOfAverages) > 1)
 	if isfield(studyPar,'TotalAcquiredPairs')
@@ -556,7 +589,7 @@ if ~isfield(jsonOut,'TotalAcquiredPairs') || jsonOut.TotalAcquiredPairs == 1
 	end
 end
 
-%% 14. Final field check
+%% 15. Final field check
 if isfield(jsonOut,'BolusCutOffFlag') && jsonOut.BolusCutOffFlag
 	if isfield(jsonOut,'BolusCutOffTechnique') && strcmpi(jsonOut.BolusCutOffTechnique,'Q2TIPS')
 		if ~isfield(jsonOut,'BolusCutOffDelayTime') || length(jsonOut.BolusCutOffDelayTime)~=2
