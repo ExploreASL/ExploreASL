@@ -28,7 +28,7 @@ function jsonOut = xASL_bids_BIDSifyM0(jsonIn, jsonInASL, studyPar, pathM0In, pa
 % EXAMPLE: n/a
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 % Check if required fields exist in studyPar but not in jsonIn
 jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,'m0');
@@ -77,6 +77,37 @@ else
 end
 
 jsonOut.RepetitionTimePreparation = jsonOut.RepetitionTime;
+
+% Look-Locker acquisition for Philips has often TR given as the length of a single readout, not as the entire cycle
+if isfield(studyPar, 'LookLocker') && studyPar.LookLocker
+	if isfield(jsonOut, 'Manufacturer') && strcmpi(jsonOut.Manufacturer, 'Philips')
+		% It needs to be verified if the FlipAngle is below 90
+		if isfield(jsonOut, 'FlipAngle') && jsonOut.FlipAngle < 90
+			% If the flip angle is below 90 then also M0 was acquired as Look-Locker and would typically be as long as the PLD
+			if isfield(studyPar, 'PostLabelingDelay') && isfield(jsonOut, 'RepetitionTimePreparation') && max(studyPar.PostLabelingDelay) > max(jsonOut.RepetitionTimePreparation)
+				numberVolumes = size(headerM0.dat, 4);
+				if isfield(jsonOut, 'PhilipsNumberTemporalScans') && max(jsonOut.PhilipsNumberTemporalScans) > 1
+					% PhilipsNumberTemporalScans gives out the number of scans, so if it is divisible by the total number of volumes, then we can create the TR vector
+					numberPhases = max(jsonOut.PhilipsNumberTemporalScans);
+				elseif isfield(studyPar, 'ArterialSpinLabelingType') && strcmpi(studyPar.ArterialSpinLabelingType, 'PCASL') && isfield(studyPar, 'LabelingDuration')
+					numberPhases = round(numberVolumes/(length(unique(studyPar.PostLabelingDelay)) + max(studyPar.LabelingDuration)/jsonOut.RepetitionTimePreparation));
+					numberPhases = numberVolumes/numberPhases;
+				elseif isfield(studyPar, 'LabelingType') && strcmpi(studyPar.LabelingType, 'PCASL') && isfield(studyPar, 'LabelingDuration')
+					numberPhases = round(numberVolumes/(length(unique(studyPar.PostLabelingDelay)) + max(studyPar.LabelingDuration)/jsonOut.RepetitionTimePreparation));
+					numberPhases = numberVolumes/numberPhases;
+				else
+					numberPhases = round(numberVolumes/(length(unique(studyPar.PostLabelingDelay))));
+					numberPhases = numberVolumes/numberPhases;
+				end
+				% Create the TR vector
+				if numberPhases && mod(numberVolumes, numberPhases) == 0
+					jsonOut.RepetitionTimePreparation = (1:numberPhases) * jsonOut.RepetitionTimePreparation;
+					jsonOut.RepetitionTimePreparation = repmat(jsonOut.RepetitionTimePreparation, [1 numberVolumes/numberPhases]);
+				end
+			end
+		end
+	end
+end
 
 %% 3. Save or move the NII to the correct location
 xASL_adm_CreateDir(fileparts(pathM0Out));
