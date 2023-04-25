@@ -412,10 +412,10 @@ if isfield(jsonOut, 'LookLocker') && jsonOut.LookLocker
 				if isfield(jsonOut, 'AcquisitionDuration')
 					if isfield(jsonOut, 'NumberOfTemporalPositions') && max(jsonOut.NumberOfTemporalPositions) > 1
 						% Either we divide the total duration by the number of repeats
-						jsonOut.RepetitionTimePreparation = jsonOut.AcquisitionDuration / max(jsonOut.NumberOfTemporalPositions) / 2;
+						jsonOut.RepetitionTimePreparation = jsonOut.AcquisitionDuration / (max(jsonOut.NumberOfTemporalPositions)+1) / 2;
 					elseif isfield(jsonOut, 'NumberOfDynamicScans') && max(jsonOut.NumberOfDynamicScans) > 1
 						% Or the number of repeats from a different DICOM field
-						jsonOut.RepetitionTimePreparation = jsonOut.AcquisitionDuration / max(jsonOut.NumberOfDynamicScans) / 2;
+						jsonOut.RepetitionTimePreparation = jsonOut.AcquisitionDuration / (max(jsonOut.NumberOfDynamicScans)+1) / 2;
 					elseif isfield(jsonOut, 'PostLabelingDelay') && length(jsonOut.PostLabelingDelay)>1 
 						if isfield(jsonOut, 'ArterialSpinLabelingType') && strcmpi(jsonOut.ArterialSpinLabelingType, 'PCASL') 
 							% Or we add PLD difference with maximal PLD and labeling duration for PCASL
