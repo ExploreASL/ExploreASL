@@ -97,7 +97,6 @@ fi
 # Run Flavor Test Parallelize?
 if ${bFlavorTest}; then
 	cd ${FlavorDir}
-	# TODO : remove rawdata and Derivatives folders for clean rerun.
 	git pull
 	FlavorVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
