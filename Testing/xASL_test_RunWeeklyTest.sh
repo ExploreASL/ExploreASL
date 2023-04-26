@@ -7,10 +7,10 @@ Matlab=matlab-R2019b
 
 # Define folders.
 scratchDir=/scratch/radv/mshammer
-XASLDIR=${scratchDir}/ExploreASL
+XASLDIR=${scratchDir}/WeeklyTest/ExploreASL
 ReferenceTSV=${XASLDIR}/Testing/Reference/ReferenceValues.tsv
 FlavorTestConfig=${scratchDir}/WeeklyTest/FlavorConfig.json
-FlavorDir=${scratchDir}/FlavorDatabase
+FlavorDir=${scratchDir}/WeeklyTest/FlavorDatabase
 TestDataSetSourceDir=${scratchDir}/TestDataSets
 UnitTestingDir=${scratchDir}/Testing
 ResultMasterDir=${scratchDir}/WeeklyTest/Results
@@ -97,7 +97,6 @@ fi
 # Run Flavor Test Parallelize?
 if ${bFlavorTest}; then
 	cd ${FlavorDir}
-	# TODO : remove rawdata and Derivatives folders for clean rerun.
 	git pull
 	FlavorVersion=`git rev-parse --short HEAD` 
 	cd ${XASLDIR}
@@ -107,7 +106,6 @@ if ${bFlavorTest}; then
 	mv ${XASLDIR}/Testing/*results.mat ${ResultDirToday}
 	mv ${XASLDIR}/Testing/*comparison.tsv ${ResultDirToday}
 	mv ${XASLDIR}/Testing/*flavor_loggingtable.tsv ${ResultDirToday}
-	# TODO : remove rawdata and Derivatives folders for clean rerun.
 fi
 
 if ${bTestDataSet}; then
