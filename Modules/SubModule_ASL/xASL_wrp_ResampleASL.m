@@ -278,36 +278,40 @@ for iSpace=1:2
         % Paired subtraction
         [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im,x);
         ASL_im = ControlIm - LabelIm;
-
-        % Average PWI - multiPLD
-        if x.modules.asl.bMultiPLD 
-			% Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
-			% and we need the PLD vector now for the pairwise subtractions only
-			if isfield(x.Q,'LookLocker')
-				Initial_PLD_PWI = x.Q.Initial_PLD(1:end/2); % assume acquistion of pairs, so we can just divide by half !!! change !!!
-			else
-				Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
-			end
-
-			% The labeling durations also need to be taken into account and unique combinations of PLDs with LDs should be considered
-			if numel(x.Q.Initial_PLD) == numel(x.Q.LabelingDuration)
-				if isfield(x.Q,'LookLocker')
-					Initial_LabDur_PWI = x.Q.LabelingDuration(1:end/2); % assume acquistion of pairs, so we can just divide by half !!! change !!!
-				else
-					Initial_LabDur_PWI = x.Q.LabelingDuration(1:2:end);
-				end
-			else
-				Initial_LabDur_PWI = ones(size(Initial_PLD_PWI)) * x.Q.LabelingDuration;
-			end
         
-			% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
-			% indexNew lists for each original position to where it should be averaged
-			[~, ~, indexNew] = unique([Initial_PLD_PWI, Initial_LabDur_PWI], 'stable', 'rows');			
-
+        % Average PWI - multiPLD
+        if x.modules.asl.bMultiPLD
+            % Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images
+            % and we need the PLD vector now for the pairwise subtractions only
+            if isfield(x.Q,'LookLocker') % define correct PLDs & save control images for ASL_calib use
+                Initial_PLD_PWI = x.Q.Initial_PLD(1:end/2); % assume acquistion of pairs, so we can just divide by half
+                if iSpace == 1 % only for native space
+                    PathControl4D = fullfile(x.dir.SESSIONDIR ,'Control4D_FSLInput.nii');
+                    xASL_io_SaveNifti(PathASL{iSpace}, PathControl4D, ControlIm, 32, false);
+                end
+            else
+                Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
+            end
+            
+            % The labeling durations also need to be taken into account and unique combinations of PLDs with LDs should be considered
+            if numel(x.Q.Initial_PLD) == numel(x.Q.LabelingDuration)
+                if isfield(x.Q,'LookLocker')
+                    Initial_LabDur_PWI = x.Q.LabelingDuration(1:end/2); % assume acquistion of pairs, so we can just divide by half !!! change !!!
+                else
+                    Initial_LabDur_PWI = x.Q.LabelingDuration(1:2:end);
+                end
+            else
+                Initial_LabDur_PWI = ones(size(Initial_PLD_PWI)) * x.Q.LabelingDuration;
+            end
+            
+            % After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
+            % indexNew lists for each original position to where it should be averaged
+            [~, ~, indexNew] = unique([Initial_PLD_PWI, Initial_LabDur_PWI], 'stable', 'rows');
+            
             % MultiPLD PWI after averaging
-			PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), max(indexNew)); % preallocate PWI
+            PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), max(indexNew)); % preallocate PWI
             for nPLD = 1:max(indexNew)
-                PWI(:, :, :, nPLD) = xASL_stat_MeanNan(ASL_im(:, :, :, indexNew == nPLD), 4); % Averaged PWI4D 
+                PWI(:, :, :, nPLD) = xASL_stat_MeanNan(ASL_im(:, :, :, indexNew == nPLD), 4); % Averaged PWI4D
             end
             
             % Save PWI

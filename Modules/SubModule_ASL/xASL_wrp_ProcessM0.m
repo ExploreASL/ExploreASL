@@ -62,9 +62,9 @@ function xASL_wrp_ProcessM0(x)
 
 %% -----------------------------------------------------------------------------------------------
 %% 0)   Administration
-if ~xASL_exist(x.P.Path_M0,'file')
+if ~xASL_exist(x.P.Path_M0,'file') && ~isfield(x.Q,'LookLocker')
     % skip this part. This should be only the case when using a single value for M0,
-    % if the mean_control is used as M0, it should be copied to be used as M0 previously
+    % if the mean_control is usezzd as M0, it should be copied to be used as M0 previously
     return;
 end
 
@@ -81,11 +81,11 @@ if strcmpi(x.Q.M0,'no_background_suppression')
     x.Q.M0 = 'UseControlAsM0'; % backward compatibility
 end
 if ~isfield(x.modules.asl,'M0_conventionalProcessing')
-       x.modules.asl.M0_conventionalProcessing   = 0;
-       % by default, conventional processing is off, since our new method outperforms in most cases
+    x.modules.asl.M0_conventionalProcessing   = 0;
+    % by default, conventional processing is off, since our new method outperforms in most cases
 elseif x.modules.asl.M0_conventionalProcessing == 1 && strcmpi(x.Q.readoutDim,'3D')
-       x.modules.asl.M0_conventionalProcessing = 0;
-       warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
+    x.modules.asl.M0_conventionalProcessing = 0;
+    warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
 end
 
 %% 0B) Scale PD between ASL & M0 if voxel volumes differ
@@ -143,35 +143,34 @@ elseif ~strcmpi(x.Q.M0, 'UseControlAsM0') && isempty(regexpi(x.Q.Sequence, 'spir
     % Which they are when there is no separate M0, but ASL was
     % acquired without background suppression & the mean control image
     % is used as M0 image
-
+    
     % also skip registration of the M0 for 3D spiral, too poor resolution
     % and might worsen registration. PM: This part could be improved for 3D spiral
-
     if  xASL_exist(x.P.Path_mean_control, 'file')
         refPath       = x.P.Path_mean_control;
     else % register M0 to T1w
         PathMNIMask   = fullfile(x.D.MapsSPMmodifiedDir, 'brainmask.nii'); % MNI brainmask
         xASL_im_SkullStrip(x.P.Path_T1, PathMNIMask, x);
-
+        
         refPath       = x.P.Path_mask_T1;
         xASL_spm_smooth(refPath, [5 5 5],refPath);
     end
-
-
-
+    
+    
+    
     %% 1A) Clip, mask & equalize contrast & intensity range
     %     xASL_im_EqualizeContrastImages( x.P.Path_rrM0, refIM );
-
+    
     % First do the center of mass alignment
     if x.settings.bAutoACPC
         xASL_im_CenterOfMass(x.P.Path_rM0, {x.P.Path_M0} );
     end
-
+    
     %% 2B) remove biasfields
     xASL_spm_BiasfieldCorrection(x.P.Path_rM0, x.D.SPMDIR, x.settings.Quality, [], x.P.Path_rrM0);
     xASL_spm_BiasfieldCorrection(refPath, x.D.SPMDIR, x.settings.Quality, [], refPath);
-
-
+    
+    
     %% 3C) Rigid-body registration
     xASL_spm_coreg(refPath, x.P.Path_rrM0, {x.P.Path_M0;x.P.Path_rM0}, x);
     xASL_delete(x.P.Path_mask_T1);
@@ -183,8 +182,6 @@ end
 %% 2) Quantify M0 (correction scale slope & incomplete T1 recovery)
 M0_im = xASL_quant_M0(x.P.Path_rM0, x);
 
-
-
 %% -----------------------------------------------------------------------------------------------
 %% 3A) Conventional M0 masking & minor smoothing (doesnt work with smooth ASL images)
 if x.modules.asl.M0_conventionalProcessing
@@ -195,9 +192,9 @@ if x.modules.asl.M0_conventionalProcessing
     % Since this conventional method works with voxel-wise contrast differences, it needs to be
     % performed in native space. The transformation to standard space may play with the masking,
     % hence why we do the masking in both spaces
-
+    
     fprintf('%s\n','Running conventional M0 processing method');
-
+    
     xASL_spm_reslice( x.P.Path_ASL4D, x.P.Path_rM0, [], [], x.settings.Quality, x.P.Path_rM0, 1 ); % make sure M0 is in ASL space
     M0_nii          = xASL_io_ReadNifti( x.P.Path_rM0);
     x.VoxelSize     = M0_nii.hdr.pixdim(2:4);
@@ -205,7 +202,7 @@ if x.modules.asl.M0_conventionalProcessing
     % save image & mask
     xASL_io_SaveNifti(x.P.Path_rM0, x.P.Path_rM0, M0_im,[],0);
     xASL_io_SaveNifti(x.P.Path_rM0, x.P.Path_mask_M0, M0_im>0,8,0);
-
+    
     % also transform to standard space
     InList  = {x.P.Path_rM0;x.P.Path_mask_M0};
     OutList = {x.P.Pop_Path_M0;x.P.Pop_Path_mask_M0};
@@ -215,54 +212,54 @@ if x.modules.asl.M0_conventionalProcessing
     else
         AffineTransfPath = [];
     end
-
+    
     xASL_spm_deformations(x, InList, OutList, 1, [], AffineTransfPath, x.P.Path_y_ASL);
-
+    
     % mask in standard space (native space masking already done)
-	maskTmp = xASL_io_Nifti2Im(x.P.Pop_Path_M0);
+    maskTmp = xASL_io_Nifti2Im(x.P.Pop_Path_M0);
     maskIM  = maskTmp.* (xASL_io_Nifti2Im(x.P.Pop_Path_mask_M0)==1);
-	maskIM(maskTmp == 0) = NaN;
+    maskIM(maskTmp == 0) = NaN;
     xASL_io_SaveNifti(x.P.Pop_Path_M0,x.P.Pop_Path_M0,maskIM,8,0);
-
+    
     % delete temporary files
     xASL_delete(x.P.Path_mask_M0);
     xASL_delete(x.P.Pop_Path_mask_M0);
-
+    
     % Copy for visualization
     xASL_Copy(x.P.Pop_Path_M0,x.P.Pop_Path_noSmooth_M0,1);
-
-%% -----------------------------------------------------------------------------------------------
-%% 3B) New ExploreASL strategy for M0 masking & smoothing
-%   Currently, this is performed in standard space, but this can be
-%   optimized by running this in native space
+    
+    %% -----------------------------------------------------------------------------------------------
+    %% 3B) New ExploreASL strategy for M0 masking & smoothing
+    %   Currently, this is performed in standard space, but this can be
+    %   optimized by running this in native space
 else
     % Save image
     xASL_io_SaveNifti(x.P.Path_rM0,x.P.Path_rM0,M0_im,[],0);
     % Transform to standard space
-
+    
     if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else
         AffineTransfPath = [];
     end
-
+    
     xASL_spm_deformations(x, x.P.Path_rM0, x.P.Pop_Path_M0, 1, [], AffineTransfPath, x.P.Path_y_ASL);
     % Copy for visualization (before smoothing/masking)
     xASL_Copy(x.P.Pop_Path_M0,x.P.Pop_Path_noSmooth_M0,1);
-
+    
     fprintf('%s\n','Running new M0 processing method');
     % run the new M0 image processing
     path_BrainCentralityMap = fullfile(x.D.MapsSPMmodifiedDir, 'brainCentralityMap.nii');
     IM = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, path_BrainCentralityMap);
     xASL_io_SaveNifti(x.P.Pop_Path_M0, x.P.Pop_Path_M0, IM);
     % Copy M0 biasfield to native space for native space quantification
-
+    
     if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else
         AffineTransfPath = [];
     end
-
+    
     xASL_spm_deformations(x, x.P.Pop_Path_M0, x.P.Path_rM0, 1, x.P.Path_PWI, AffineTransfPath, x.P.Path_y_ASL);
     % this last step also ensures that x.P.Path_rM0 is resliced to x.P.Path_PWI
 end
