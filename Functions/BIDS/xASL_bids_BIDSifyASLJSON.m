@@ -401,20 +401,24 @@ else
 end
 
 %% 11. Check for Look-Locker TR
-% Look-Locker acquisition for Philips has often TR given as the length of a single readout, not as the entire cycle
+
+% Check for Philips Look-Locker
+% Look-Locker acquisition for Philips has often TR given as the length of a single readout of single volume, not as the entire cycle of all PLDs within a single labeling cycle
+% The correct TR thus has to be correctly recalculated 
+
+% Verify that we are dealing with Philips Look-Locker sequence with flip angle below 90
 if isfield(jsonOut, 'LookLocker') && jsonOut.LookLocker
 	if isfield(jsonOut, 'Manufacturer') && strcmpi(jsonOut.Manufacturer, 'Philips')
-		% It needs to be verified if the FlipAngle is below 90
 		if isfield(jsonOut, 'FlipAngle') && jsonOut.FlipAngle < 90
-			% And we verify that TR is suspiciously low
+			% Verify if TR is suspiciously low
 			if isfield(jsonOut, 'PostLabelingDelay') && isfield(jsonOut, 'RepetitionTimePreparation') && max(jsonOut.PostLabelingDelay) > max(jsonOut.RepetitionTimePreparation)
-				% We need to extra the correct TR
+				% In this situation, TR needs to be correctly calculated
 				if isfield(jsonOut, 'AcquisitionDuration')
 					if isfield(jsonOut, 'NumberOfTemporalPositions') && max(jsonOut.NumberOfTemporalPositions) > 1
-						% Either we divide the total duration by the number of repeats
+						% Divide the total duration by the number of repeats
 						jsonOut.RepetitionTimePreparation = jsonOut.AcquisitionDuration / (max(jsonOut.NumberOfTemporalPositions)+1) / 2;
 					elseif isfield(jsonOut, 'NumberOfDynamicScans') && max(jsonOut.NumberOfDynamicScans) > 1
-						% Or the number of repeats from a different DICOM field
+						% Use a different DICOM field to divide the total duration by the number of repeats
 						jsonOut.RepetitionTimePreparation = jsonOut.AcquisitionDuration / (max(jsonOut.NumberOfDynamicScans)+1) / 2;
 					elseif isfield(jsonOut, 'PostLabelingDelay') && length(jsonOut.PostLabelingDelay)>1 
 						if isfield(jsonOut, 'ArterialSpinLabelingType') && strcmpi(jsonOut.ArterialSpinLabelingType, 'PCASL') 
@@ -438,7 +442,7 @@ listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVEN
 for iRepeat = 1:length(listFieldsRepeat)
 	if isfield(jsonOut,(listFieldsRepeat{iRepeat})) && (length(jsonOut.(listFieldsRepeat{iRepeat})) > 1) && (dimASL(4) ~= length(jsonOut.(listFieldsRepeat{iRepeat})))
 		if mod(dimASL(4),length(jsonOut.(listFieldsRepeat{iRepeat})))
-			error('Cannot find a match between the %s and the 4th dimension of the NIFTI.\n',listFieldsRepeat{iRepeat});
+			error('The length of the vector %s nor its multiple match the number of the NIFTI volumes: %s\n', listFieldsRepeat{iRepeat}, xASL_num2str(dimASL(4)));
 		else
 			jsonOut.(listFieldsRepeat{iRepeat}) = repmat(jsonOut.(listFieldsRepeat{iRepeat})(:),[dimASL(4)/length(jsonOut.(listFieldsRepeat{iRepeat})) 1]);
 		end
@@ -542,6 +546,8 @@ for iRepeat = 1:length(listFieldsZero)
 end
 	
 %% 14. Verify TotalAcquiredPairs against ASLContext
+% The number of entries in the ASLContext and the TotalAcquiredPairs have to be consistent. This does not necessarily mean that they need to be equal as 
+% some sequences provide averaged volumes.
 % Import the number of averages
 if isfield(jsonOut,'NumberOfAverages') && (max(jsonOut.NumberOfAverages) > 1)
 	if isfield(studyPar,'TotalAcquiredPairs')
