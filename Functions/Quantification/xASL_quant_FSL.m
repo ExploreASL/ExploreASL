@@ -1,4 +1,4 @@
-function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI, x)
+% function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI, x)
 %xASL_quant_FSL Perform quantification using FSL BASIL/FABBER
 %
 % FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI, x)
@@ -75,7 +75,13 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     
     %% 3. Write the PWI as Nifti file for Basil/Fabber to read as input
     % FIXME would be good to have a brain mask at this point -> PM: if this would be a brainmask as well, we can skip creating a dummy input image here
+    
     PWI(isnan(PWI)) = 0;
+
+    BrainMask = xASL_io_Nifti2Im(x.P.Path_BrainMaskProcessing); % load the brain mask used for processing
+    PWI(BrainMask==0) = 0; % set voxels outside the mask to zero
+    % Here, we assume that BASIL or FABBER use implicit masking (== that % zeroes are skipped)
+    
     
     if ~x.modules.asl.bMultiPLD
         % SinglePLD
@@ -528,7 +534,7 @@ if ~bUseFabber
 	%
 	%   if x.Q.BASIL.SNR
 	%       fprintf('BASIL: Using SNR of %f to set noise std dev\n', x.Q.BasilSNR);
-	%       % Estimate signal magntiude FIXME brain mask assume half of voxels
+	%       % Estimate signal magnitude FIXME brain mask assume half of voxels
 	%       mag_max = max(PWI, [], 4);
 	%       brain_mag = 2*xASL_stat_MeanNan(mag_max(:));
 	%       fprintf('BASIL: Mean maximum signal across brain: %f\n', brain_mag);
