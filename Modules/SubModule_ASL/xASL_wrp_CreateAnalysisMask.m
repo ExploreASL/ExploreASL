@@ -183,7 +183,7 @@ else
     % for e.g. 3D spiral the susceptibility mask is equal to the brain mask
 end
 
-xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Path_Pop_MaskSusceptibility, MaskSusceptibility, [], false);
+xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Pop_Path_MaskSusceptibility, MaskSusceptibility, [], false);
 
 
 end

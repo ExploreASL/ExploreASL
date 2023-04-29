@@ -156,7 +156,7 @@ if isfield(x.P,'SubjectID')
     end
     x.P.Pop_Path_MaskVascular = fullfile(x.D.PopDir, ['MaskVascular_' x.P.SubjectID '_' x.P.SessionID '.nii']);
     x.P.Pop_Path_BrainMaskProcessing = fullfile(x.D.PopDir, ['BrainMaskProcessing_' x.P.SubjectID '_' x.P.SessionID '.nii']);
-    x.P.Path_Pop_MaskSusceptibility = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.P.SubjectID '_' x.P.SessionID '.nii']);    
+    x.P.Pop_Path_MaskSusceptibility = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.P.SubjectID '_' x.P.SessionID '.nii']);    
 	
 	x.P.Path_ASL4Dcontext = fullfile(Path{2},'ASL4Dcontext.tsv');
 	x.P.Path_ASL4Dcontext_Source = fullfile(Path{2},'ASL4Dcontext_Source.tsv');

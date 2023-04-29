@@ -505,8 +505,8 @@ if strcmp(pathOutputCBF, x.P.Pop_Path_qCBF)
     MaskedCBF(~MaskVascularMNI) = NaN;
     
     % Mask susceptibility voxels (i.e. set them to NaN)
-    if ~xASL_exist(x.P.Path_Pop_MaskSusceptibility,'file')
-        warning([x.P.Path_Pop_MaskSusceptibility ' missing, cannot create ' x.P.Pop_Path_qCBF_masked]);
+    if ~xASL_exist(x.P.Pop_Path_MaskSusceptibility,'file')
+        warning([x.P.Pop_Path_MaskSusceptibility ' missing, cannot create ' x.P.Pop_Path_qCBF_masked]);
         fprintf('Please rerun xASL_wrp_CreateAnalysisMask (7th step of ASL module)...\n');
         return;
     else
