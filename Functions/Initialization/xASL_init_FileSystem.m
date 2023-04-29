@@ -148,10 +148,14 @@ if isfield(x.P,'SubjectID')
     
     %% ------------------------------------------------------------------------------------------
     %% Add custom cases
+    % Here we add ASL-specific files, that we only need when processing ASL
+    % data
     if isfield(x.dir, 'SESSIONDIR')
         x.P.Path_MaskVascular = fullfile(x.dir.SESSIONDIR, 'MaskVascular.nii');
+        x.P.Path_BrainMaskProcessing = fullfile(x.dir.SESSIONDIR, 'BrainMaskProcessing.nii');
     end
     x.P.Pop_Path_MaskVascular = fullfile(x.D.PopDir, ['MaskVascular_' x.P.SubjectID '_' x.P.SessionID '.nii']);
+    x.P.Pop_Path_BrainMaskProcessing = fullfile(x.D.PopDir, ['BrainMaskProcessing_' x.P.SubjectID '_' x.P.SessionID '.nii']);
     x.P.Path_Pop_MaskSusceptibility = fullfile(x.D.PopDir, ['rMaskSusceptibility_' x.P.SubjectID '_' x.P.SessionID '.nii']);    
 	
 	x.P.Path_ASL4Dcontext = fullfile(Path{2},'ASL4Dcontext.tsv');
