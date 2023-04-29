@@ -65,12 +65,17 @@ nVisits = numel(x.modules.bids2legacy.BIDS.sessionName); % this is called sessio
 [~, studyName] = fileparts(x.dir.DatasetRoot);
 fprintf('Converting from BIDS to Legacy: %s   \n', studyName);
 
-%% 2. Define SubjectSession
-for iSubjSess=1:numel(x.modules.bids2legacy.BIDS.subjects) 
-    % Iterate over x.modules.bids2legacy.BIDS.subjects (indices that include both subjects & sessions)
-    % so  1 subject  6 session/visits, will give numel(x.modules.bids2legacy.BIDS.subjects)=6
-    % and 6 subjects 1 session/visits, will give numel(x.modules.bids2legacy.BIDS.subjects)=6
-    xASL_TrackProgress(iSubjSess, nSubjects);
+%% 2. Define Subject
+subjectBIDS = ['sub-' x.SUBJECT];
+
+
+indicesCurrentSubject = find(cellfun( @(y) strcmp(y, subjectBIDS), {x.modules.bids2legacy.BIDS.subjects.name}));
+
+
+for iSubjSess=indicesCurrentSubject
+    % Iterate over x.modules.bids2legacy.BIDS.subjects for the current subject
+    % (indices that include both subjects & sessions)
+    % so  1 subject 6 session/visits, will give numel(x.modules.bids2legacy.BIDS.subjects)=6
     
     % Subject ID
     SubjectID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).name;
@@ -120,10 +125,7 @@ for iSubjSess=1:numel(x.modules.bids2legacy.BIDS.subjects)
         xASL_bids_BIDS2Legacy_ParseModality(x.modules.bids2legacy.BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);
 
     end
-
 end
-% Print new line after track progress bar
-fprintf('   \n');
 
 
 % Get directories of current subject. The BIDS subject name can be prefixed
@@ -143,8 +145,18 @@ end
 if ~isempty(ListASL4D)
     for iList=1:numel(ListASL4D)
         xASL_bids_parseM0(ListASL4D{iList});
-        [~, currentNifti] = fileparts(ListASL4D{iList});
-        fprintf('M0 parsed for subject %s image %s ...\n', SubjectID, currentNifti);
+        [currentFolder, currentNifti] = xASL_fileparts(ListASL4D{iList});
+        [~, currentFolder] = fileparts(fileparts(currentFolder));
+
+        % Get session
+        sessionIndex = regexp(currentFolder, '_\d+');
+        if isempty(sessionIndex)
+            SessionID = '1';
+        else
+            SessionID = num2str(currentFolder(sessionIndex+1:end));
+        end
+
+        fprintf('%s\n', ['M0 parsed for subject ' SubjectID ' session ' SessionID ': image ' currentNifti]);
     end
 else
     warning(['When parsing M0: no ASL4D.nii found for ' SubjectID 'in ' x.dir.xASLDerivatives '...']);
