@@ -100,6 +100,9 @@ MaskVascularNative(~BrainMask) = 0; % Remove extracranial (same setting as in RO
 MaskVascularNative(pWM>0.8) = 1; % Remove WM vascular spots
 MaskVascularNative(pCSF>0.8) = 1; % Remove WM vascular spots
 
+% Obtain brain mask for image processing (e.g., BASIL)
+BrainMaskProcessingNativeSpace = (pGM+pWM+pCSF)>0.1;
+
 %% 3B. Brainmasking & FoV-masking standard space
 pGM = xASL_io_Nifti2Im(x.P.Pop_Path_rc1T1);
 pWM = xASL_io_Nifti2Im(x.P.Pop_Path_rc2T1);
@@ -111,6 +114,20 @@ BrainMask = (pGM+pWM)>0.5 & FoVim; % -> same setting as used in ROI analysis
 MaskVascularMNI(~BrainMask) = 0; % Remove extracranial & FoVim
 MaskVascularMNI(pWM>0.9) = 1; % Remove WM vascular spots
 MaskVascularMNI(pCSF>0.9) = 1; % Remove CSF vascular spots
+
+% Obtain brain mask for image processing (e.g., BASIL)
+BrainMaskProcessingStandardSpace = (pGM+pWM+pCSF)>0.1 & FoVim;
+
+%% 3C. Save brain mask for image processing (e.g., BASIL)
+% This mask can be used for fitting data, e.g., BASIL, fitting ATT, Tex,
+% etc. that is not useful in extracranial voxels, and beneficial to speed
+% up by only processing intracranial voxels. On the other hand, it can be
+% helpful to also process some voxels outside the brain for inspecting
+% artifacts, and registration errors shouldn't lead to accidentally
+% excluding intracranial voxels. Therefore, we use a rather inclusive mask.
+
+xASL_io_SaveNifti(x.P.Path_PWI, x.P.Path_BrainMaskProcessing, BrainMaskProcessingNativeSpace, 8, false);
+xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Pop_Path_BrainMaskProcessing, BrainMaskProcessingStandardSpace, 8, false);
 
 %% 4. Save vascular masks
 xASL_io_SaveNifti(x.P.Path_PWI, x.P.Path_MaskVascular, MaskVascularNative, 8, false);
