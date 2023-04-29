@@ -151,46 +151,5 @@ else
 end
 
 
-%% 6. Clean up
-xASL_bids_BIDS2Legacy_CleanUp(x.dir.DatasetRoot);
-
 
 end
-
-
-
-%% Clean-Up subfunction
-function xASL_bids_BIDS2Legacy_CleanUp(pathStudy)
-
-    % Start with empty file list
-    filesCleanUp = {};
-    
-    % Search for dcm2niix summary file
-    dcm2niixImportLogFile = xASL_adm_GetFileList(pathStudy,'^import_log.+$');
-    
-    % Merge log file lists
-    if ~isempty(dcm2niixImportLogFile)
-        filesCleanUp = vertcat(filesCleanUp,dcm2niixImportLogFile);
-    end
-    
-    % Move files to derivatives
-    if ~isempty(filesCleanUp)
-        for iFile = 1:size(filesCleanUp,1)
-            sourceCleanUp = filesCleanUp{iFile};
-            [~, fileCleanUp, extCleanUp] = xASL_fileparts(sourceCleanUp);
-            destCleanUp = fullfile(pathStudy, 'derivatives', 'ExploreASL', [fileCleanUp extCleanUp]);
-            if xASL_exist(sourceCleanUp,'file')
-                xASL_Move(sourceCleanUp,destCleanUp);
-            end
-        end
-    end
-    
-    % Print new line after track progress bar
-    fprintf('   \n');
-
-end
-
-
-
-
-
