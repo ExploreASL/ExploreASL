@@ -45,20 +45,9 @@ if nargin<2 || isempty(bOverwrite)
     bOverwrite = 1;
 end
 
-% Creates the derivatives directory
-if exist(x.dir.xASLDerivatives, 'dir') && bOverwrite
-    fprintf('%s\n', [x.dir.xASLDerivatives ' already exists, overwriting any pre-existing derivatives...']);
-elseif exist(x.dir.xASLDerivatives, 'dir')
-    fprintf('%s\n', [x.dir.xASLDerivatives ' exists, merging with new derivatives']);
-else
-    xASL_adm_CreateDir(x.dir.xASLDerivatives);
-end
 
-% Loads the configuration for file renaming from the BIDS configuration file
-bidsPar = xASL_bids_Config();
 
 %% 1. Parse a folder using the output of bids-matlab (was run before this point)
-
 nSubjects = numel(x.modules.bids2legacy.BIDS.subjectName);
 nVisits = numel(x.modules.bids2legacy.BIDS.sessionName); % this is called sessions in BIDS
 % we use this below to see if the legacy subjectname gets _1 as visit suffix or not
@@ -67,7 +56,6 @@ fprintf('Converting from BIDS to Legacy: %s   \n', studyName);
 
 %% 2. Define Subject
 subjectBIDS = ['sub-' x.SUBJECT];
-
 
 indicesCurrentSubject = find(cellfun( @(y) strcmp(y, subjectBIDS), {x.modules.bids2legacy.BIDS.subjects.name}));
 
@@ -120,9 +108,9 @@ for iSubjSess=indicesCurrentSubject
 
         %% 4. Parse modality
         % Modalities - the BIDS scantypes
-        ModalitiesUnique = unique(bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
+        ModalitiesUnique = unique(x.modules.bids2legacy.bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
         nModalities = length(ModalitiesUnique);
-        xASL_bids_BIDS2Legacy_ParseModality(x.modules.bids2legacy.BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);
+        xASL_bids_BIDS2Legacy_ParseModality(x.modules.bids2legacy.BIDS, x.modules.bids2legacy.bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);
 
     end
 end

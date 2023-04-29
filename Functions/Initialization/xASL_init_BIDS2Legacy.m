@@ -33,6 +33,7 @@ end
 % Update paths
 x = xASL_imp_UpdateDatasetRoot(x);
 
+
 %% 1. Check basic directories
 if ~isfield(x,'dir')
 	error('Missing directories field...');
@@ -60,6 +61,7 @@ if ~isfield(x.dir,'xASLDerivatives')
     error('Missing xASL derivatives field...');
 end
 
+
 %% 2. Start with checking dataset_description.json & rawdata
 % Either the rawdata/dataset_description.json was provided
 % Or the dataPar.json was provided and we have to search was dataset_description.json
@@ -80,6 +82,7 @@ else
 	end
 end
 
+
 %% 3.Check if a dataPar is provided, otherwise use the defaults
 
 % Get dataPar
@@ -95,7 +98,24 @@ else
 	x.dataPar = xASL_io_ReadJson(fListDataPar{1});
 end
 
+
 %% 4. Load the BIDS structure of all subjects
 x.modules.bids2legacy.BIDS = bids.layout(fullfile(x.dir.DatasetRoot,'rawdata'));
+
+
+%% 5. Create the derivatives directory
+if exist(x.dir.xASLDerivatives, 'dir')
+    fprintf('%s\n', [x.dir.xASLDerivatives ' already exists']);
+    fprintf('%s\n', 'Note that all pre-existing derivative subject folders will be overwritten,');
+    fprintf('%s\n', 'unless BIDS2Legacy lock files already exist for a subject');
+else
+    xASL_adm_CreateDir(x.dir.xASLDerivatives);
+end
+
+
+%% 6. Load BIDS configuration for file renaming
+x.modules.bids2legacy.bidsPar = xASL_bids_Config;
+
+
 
 end
