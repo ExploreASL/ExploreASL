@@ -1,4 +1,4 @@
-function  xASL_vis_Bullseye(savePath, dataMatrix, dataLabels)
+function  xASL_vis_Bullseye(savePath, dataMatrix, dataLabels, dataTitle, dataColorMap)
     %xASL_vis_Bullseye uses plotting to make a bullseye plot.
     %
     % FORMAT:       xASL_vis_Bullseye(x,);
@@ -22,13 +22,20 @@ if nargin<1 || isempty(savePath)
 end
 
 if nargin<2 || isempty(dataMatrix)
-    segmentCount = 9;
-    layerCount = 4;
-    dataMatrix = rand(segmentCount, layerCount);
+    warning('No Values provided, Bullseye plot not performed.')
+    return
 end
 
 if nargin<3 || isempty(dataLabels)
-    dataLabels = {'Frontal', 'Parietal', 'Temporal', 'Occipital', 'SubCortical', 'Parietal', 'Temporal', 'Occipital', 'Frontal'};
+    dataLabels = {'Frontal', 'Parietal', 'Temporal', 'Occipital', 'SubCortical', 'Occipital', 'Temporal', 'Parietal', 'Frontal'};
+end
+
+if nargin<4 || isempty(dataTitle)
+    dataTitle = 'Coronal Bullseye Plot';
+end
+
+if nargin<4 || isempty(dataColorMap)
+    dataColorMap= flipud(autumn);
 end
 
 [segmentCount, layerCount, ~ ] = size(dataMatrix);
@@ -39,9 +46,9 @@ segmentBoundaryAngles = linspace(0, 360, segmentCount+1) + ANGLE_OFFSET;
 
 % Initialize Figure
 fig = figure;
-colormap('autumn');
+colormap(dataColorMap);
 title('Coronal Bullseye Plot');
-colorbar('Ticks', 1:length(dataMatrix), 'TickLabels', dataLabels);
+colorbar();
 axis off;
 
 % Plot the segments with different colors
@@ -67,9 +74,7 @@ end
 text(0, 0, 'VALUES ARE GENERATED RANDOMLY, NOT ACTUAL VALUES', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
 print(fig, savePath, '-dpng');
 close all
-clear
-    
-    
+clear    
 end
 
 function output = xASL_sub_textAngle(inputAngle)
