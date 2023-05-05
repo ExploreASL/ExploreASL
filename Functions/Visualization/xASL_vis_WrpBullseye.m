@@ -19,12 +19,14 @@ function  x = xASL_vis_WrpBullseye(x)
         warning('x Struct not provided in Bullseye wrapper')
     end
 
-    segmentCount = 9;
-    layerCount = 4;
-    data = rand(segmentCount, layerCount);
+    %Some values to show difference
+    segmentCount = 0.1:0.1:0.9;
+    layerCount = 0.1:0.1:0.4;
+    [X,Y] = meshgrid(layerCount, segmentCount);
+    data = X+Y;
 
     if ~isfield(x.P, 'Path_Bullseye_CBF')
-        x.P.Path_Bullseye_CBF = fullfile(x.D.ROOT, x.SUBJECT, 'Bullseye.png')
+        x.P.Path_Bullseye_CBF = fullfile(x.D.ROOT, x.SUBJECT, 'Bullseye.png');
     else
         warning('Bullseye plot already exists, overwriting')
     end
