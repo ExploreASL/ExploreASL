@@ -4,7 +4,7 @@ function  x = xASL_vis_WrpBullseye(x)
     % FORMAT:       xASL_vis_Bullseye(x);
     % 
     % INPUT:        x - x struct (REQUIRED)
-    %
+    %               x.S.Atlasses - The atlasses to print in Bullseye (Optional, Default MNI_structural)
     % OUTPUT:       x - x struct with the path of x.P.Path_Bullseye_CBF added.
     % 
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -17,6 +17,12 @@ function  x = xASL_vis_WrpBullseye(x)
     
     if nargin <1 || isempty(x)
         warning('x Struct not provided in Bullseye wrapper')
+    end
+
+    if ~isfield(x.S, 'Atlasses')
+        atlasPrint = {'MNI_structural'};
+    else 
+        atlasPrint = x.S.Atlasses;
     end
 
     %Some values to show difference
