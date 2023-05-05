@@ -26,8 +26,14 @@ if nargin<2 || isempty(dataMatrix)
     return
 end
 
+[segmentCount, layerCount, ~ ] = size(dataMatrix);
+
 if nargin<3 || isempty(dataLabels)
-    dataLabels = {'Frontal', 'Parietal', 'Temporal', 'Occipital', 'SubCortical', 'Occipital', 'Temporal', 'Parietal', 'Frontal'};
+    if segmentCount == 9
+        dataLabels = {'Frontal', 'Parietal', 'Temporal', 'Occipital', 'SubCortical', 'Occipital', 'Temporal', 'Parietal', 'Frontal'};
+    else
+        dataLabels = {};
+    end
 end
 
 if nargin<4 || isempty(dataTitle)
@@ -38,7 +44,7 @@ if nargin<4 || isempty(dataColorMap)
     dataColorMap= flipud(autumn);
 end
 
-[segmentCount, layerCount, ~ ] = size(dataMatrix);
+
 
 % Define the segment boundaries in degrees
 ANGLE_OFFSET = 90;
@@ -67,11 +73,11 @@ end
 % Add the segment labels
 for iSegment = 1:segmentCount
     angle = mean([segmentBoundaryAngles(iSegment), segmentBoundaryAngles(iSegment+1)]);
-    
-    text(cosd(angle), sind(angle), dataLabels{iSegment}, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'rotation', xASL_sub_textAngle(angle));
+    if ~isempty(dataLabels)
+        text(cosd(angle), sind(angle), dataLabels{iSegment}, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle', 'rotation', xASL_sub_textAngle(angle));
+    end
 end
 
-text(0, 0, 'VALUES ARE GENERATED RANDOMLY, NOT ACTUAL VALUES', 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
 print(fig, savePath, '-dpng');
 close all
 clear    
