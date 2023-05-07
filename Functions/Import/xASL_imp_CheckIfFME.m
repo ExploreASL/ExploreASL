@@ -18,7 +18,7 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded)
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
     if nargin < 1 || isempty(jsonIn)
 		error('Require JSON structure on the input');
@@ -37,8 +37,8 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded)
 	% This can be recognized either by the specific Series description
 	bTimeEncodedFME = false;
 	if isfield(jsonIn, 'SeriesDescription')
-		if (~isempty(regexp(char(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once')) || ... % ASL format
-				~isempty(regexp(char(jsonIn.SeriesDescription),'(ss_TE)\d\d(_TI)\d\d\d\d', 'once')))                            % M0 format
+		if (~isempty(regexp(char(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once')))% || ... % ASL format
+				%~isempty(regexp(char(jsonIn.SeriesDescription),'(ss_TE)\d\d(_TI)\d\d\d\d', 'once')))                            % M0 format
 			bTimeEncodedFME = true;
 			return;
 		end

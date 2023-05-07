@@ -273,7 +273,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			else
 				currentSeriesNumber = 0;
 			end
-			if isfield(temp,'ImageType')
+			if isfield(temp,'ImageType') && ~isempty(temp.ImageType)
 				currentImageType = regexprep(temp.ImageType,'[^a-zA-Z]','');
 			else
 				currentImageType = '';
