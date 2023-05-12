@@ -42,6 +42,25 @@ function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
 	end
 	fprintf(fid_summary,'\n');
     
+    % Check if the converted_scans, skipped_scans, and missing_scans tables
+    % have equal sizes, otherwise try to fix it
+    sizeConvertedScans = size(thisSubject.globalCounts.converted_scans);
+    sizeSkippedScans = size(thisSubject.globalCounts.skipped_scans);
+    sizeMissingScans = size(thisSubject.globalCounts.missing_scans);
+
+    if ~isequal(sizeConvertedScans, sizeSkippedScans)
+        warning('Skipped scans had a different size than converted scans, fixing this but summary file could be incorrect');
+        skippedScans = uint8(zeros(size(thisSubject.globalCounts.converted_scans))); % by default assume that scans are not skipped (zeros), unless this was set
+        skippedScans(logical(thisSubject.globalCounts.skipped_scans)) = 1;
+        thisSubject.globalCounts.skipped_scans = skippedScans;
+    end
+    if ~isequal(sizeConvertedScans, sizeMissingScans)
+        warning('Missing scans had a different size than converted scans, fixing this but summary file could be incorrect');
+        missingScans = uint8(ones(size(thisSubject.globalCounts.converted_scans))); % by default we assume that scans are missing (ones), unless we confirmed their presence
+        missingScans(~logical(thisSubject.globalCounts.missing_scans)) = 0;
+        thisSubject.globalCounts.missing_scans = missingScans;
+    end
+
     for iSubject=1:x.modules.import.nSubjects
         for iVisit=1:thisSubject.nVisits
             % Get fieldname
