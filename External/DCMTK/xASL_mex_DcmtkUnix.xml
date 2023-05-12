@@ -31,20 +31,21 @@
         DEFINES="-D_GNU_SOURCE $MATLABMEX -DHAVE_CONFIG_H -D__CORRECT_ISO_CPP++_MATH_H_PROTO"
         DCMTK_HZDR="/usr/local/petlib/include"
         DCMTK_LUNA="/home/radv/mshammer/my-scratch/DCMTK/dcmtk-install/usr/local/include"
-        DCMTK_PATH="$DCMTK_LUNA"
+        DCMTK_FLUX="/opt/aumc-apps/dcmtk/3.6.7-shared/include"
+        DCMTK_PATH="$DCMTK_FLUX"
         MATLABMEX="-DMATLAB_MEX_FILE "
         CFLAGS="-fexceptions -fPIC -fno-omit-frame-pointer -pthread"
         CXXFLAGS="$CFLAGS -std=c++11"
         INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot; -I&quot;$DCMTK_PATH&quot;"
         CXXOPTIMFLAGS="-O -DNDEBUG"
         CXXDEBUGFLAGS="-g"
-
         LDXX="$CXX"
         LDFLAGS="-pthread -static-libstdc++ -static-libgcc -Wl,--no-undefined"
         LDTYPE="-shared"
         DCMTK_LIB_HZDR="/usr/local/petlib/lib"
         DCMTK_LIB_LUNA="/home/radv/mshammer/my-scratch/DCMTK/dcmtk-install/usr/local/lib64"
-        DCMTK_LIB_PATH="$DCMTK_LIB_LUNA"
+        DCMTK_LIB_FLUX="/opt/aumc-apps/dcmtk/3.6.7-shared/lib64"
+        DCMTK_LIB_PATH="$DCMTK_LIB_FLUX"
         LINKEXPORT="-Wl,--version-script,&quot;$MATLABROOT/extern/lib/$ARCH/mexFunction.map&quot;"
         LINKEXPORTVER="-Wl,--version-script,&quot;$MATLABROOT/extern/lib/$ARCH/c_exportsmexfileversion.map&quot;"
         LINKLIBS="-L&quot;$MATLABROOT/bin/$ARCH&quot; -L&quot;$DCMTK_LIB_PATH&quot; -ldcmdata -lm -loflog -lofstd -lmx -lz -lrt -lssl -lcrypto -lmex -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic"
@@ -63,7 +64,9 @@
                 CDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
                 CXXDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
                 LD=&quot;gcc&quot;
-                LD_PRELOAD=&quot;/usr/lib/x86_64-linux-gnu/libstdc++.so.6&quot;
+                LD_PRELOAD_HZDR=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
+                LD_PRELOAD_FLUX=/usr/lib/gcc/x86_64-redhat-linux/4.8.5/libstdc++.so
+                LD_PRELOAD=&quot;$LD_PRELOAD_FLUX&quot;
                 LDXX=&quot;$LDXX&quot;
                 LDFLAGS=&quot;$LDFLAGS $LDTYPE $LINKLIBS $LINKEXPORT&quot;
                 LDDEBUGFLAGS=&quot;$LDDEBUGFLAGS&quot;">
