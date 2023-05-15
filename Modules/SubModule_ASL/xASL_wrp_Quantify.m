@@ -137,6 +137,12 @@ fprintf('%s\n','Loading PWI & M0 images');
 PWI = xASL_io_Nifti2Im(PWI_Path); % Load CBF nifti
 ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
+% Assigns the shortest minimal positive TE for ASL
+ASLshortestTE = [];
+if isfield(ASL_parms, 'EchoTime')
+	ASLshortestTE = min(ASL_parms.EchoTime(ASL_parms.EchoTime > 0));
+end
+
 if xASL_stat_SumNan(PWI(:))==0
     warning(['Empty PWI image:' PWI_Path]);
 end
@@ -172,10 +178,12 @@ elseif isnumeric(x.Q.M0)
         if x.modules.asl.ApplyQuantification(4)
             % in case of separate M0, or M0 because of no background suppression,
             % T2* effect is similar in both images and hence removed by division
-            T2_star_factor = exp(min(ASL_parms.EchoTime)/x.Q.T2star);
-            M0_im = M0_im./T2_star_factor;
-            fprintf('%s\n',['M0 image corrected for T2* decay during TE in PWI, TE was ' xASL_num2str(ASL_parms.EchoTime) ' ms, using T2* ' xASL_num2str(x.Q.T2star) ' ms, this resulting in factor ' xASL_num2str(T2_star_factor)]);
-            % If obtained by e.g. CSF inversion recovery, make sure that this is corrected for blood-water partition coefficient (0.76) and density of brain tissue (1.05 g/mL)
+			if ~isempty(ASLshortestTE)
+				T2_star_factor = exp(ASLshortestTE/x.Q.T2star);
+				M0_im = M0_im./T2_star_factor;
+				fprintf('%s\n',['M0 image corrected for T2* decay during TE in PWI, TE was ' xASL_num2str(ASLshortestTE) ' ms, using T2* ' xASL_num2str(x.Q.T2star) ' ms, this resulting in factor ' xASL_num2str(T2_star_factor)]);
+				% If obtained by e.g. CSF inversion recovery, make sure that this is corrected for blood-water partition coefficient (0.76) and density of brain tissue (1.05 g/mL)
+			end
         end
 
 else
@@ -228,22 +236,21 @@ end
 if strcmpi(x.Q.M0,'separate_scan')
     M0_parms = xASL_adm_LoadParms(x.P.Path_M0_parms_mat, x);
 	
-    % Check echo times
-    if  isfield(ASL_parms,'EchoTime') && isfield(M0_parms,'EchoTime')
-        
-		ASLTE = unique(ASL_parms.EchoTime);
-		M0TE = unique(M0_parms.EchoTime);
-		% Print warning if TE vector lengths do not match
-		if numel(ASLTE) ~= numel(M0TE)
-			warning('Number of TEs of ASL and M0 are unequal...');
-		else
-			% Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
-			if max(~isnear(ASLTE,M0TE,0.05*abs(ASLTE)))
-				% Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
-				warning('TE of ASL and M0 are unequal. Check geometric distortion...');
-			end
-		end
+	% Assigns the shortest minimal positive TE for M0
+	M0shortestTE = [];
+	if isfield(M0_parms, 'EchoTime')
+		M0shortestTE = min(M0_parms.EchoTime(M0_parms.EchoTime > 0));
+	end
 
+    % Check echo times
+    if  ~isempty(ASLshortestTE) && ~isempty(M0shortestTE)
+        
+		% Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
+		if max(~isnear(ASLshortestTE, M0shortestTE, 0.05*abs(ASLshortestTE)))
+			% Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
+			warning('TE of ASL and M0 are unequal. Check geometric distortion...');
+		end
+		
         % Correction factor and name for 3D spiral sequences
         if strcmpi(x.Q.Sequence,'3D_spiral')
 			CorrFactor = x.Q.T2;
@@ -255,17 +262,16 @@ if strcmpi(x.Q.M0,'separate_scan')
 
         % Correct M0 for any EchoTime differences between ASL & M0
         if x.modules.asl.ApplyQuantification(4)
-            ScalingASL = exp(min(ASL_parms.EchoTime)/CorrFactor);
-            ScalingM0 = exp(min(M0_parms.EchoTime)/CorrFactor);
-            % Check if TE numbers match
-            if (numel(ASL_parms.EchoTime)==1) && (numel(M0_parms.EchoTime)==1)
-                M0_im = M0_im.*ScalingM0./ScalingASL;
-                fprintf('Delta TE between ASL %s ms & M0 %s ms, for %s, assuming %s decay of arterial blood, factor applied to M0: %s\n', ...
-                    num2str(ASL_parms.EchoTime),num2str(M0_parms.EchoTime),...
-                    x.Q.Sequence, CorrName, num2str(ScalingM0/ScalingASL));
-            else
-                fprintf('Warning: multi-TE processing still work in progress...\n');
-            end
+			% If the shortest TEs are unequal, then we have to compensate for this
+			if ASLshortestTE ~= M0shortestTE
+				ScalingASL = exp(ASLshortestTE/CorrFactor);
+				ScalingM0 = exp(M0shortestTE/CorrFactor);
+
+				M0_im = M0_im.*ScalingM0./ScalingASL;
+				fprintf('Delta TE between ASL %s ms & M0 %s ms, for %s, assuming %s decay of arterial blood, factor applied to M0: %s\n', ...
+					num2str(ASLshortestTE),num2str(M0shortestTE),...
+					x.Q.Sequence, CorrName, num2str(ScalingM0/ScalingASL));
+			end
         end
         
     else
