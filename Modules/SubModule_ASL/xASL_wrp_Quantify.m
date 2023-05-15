@@ -113,9 +113,9 @@ if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
 end
 if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
 	if x.MagneticFieldStrength == 3
-		x.Q.T2 = 180; % default for 3T (ref Jean Chen, MRM 2009)
+		x.Q.T2 = 85; % in ms - default for 3T (ref Johannes Gregori, JMRI 2013)
 	else
-		x.Q.T2 = 180;
+		x.Q.T2 = 85;
 		fprintf('%s\n',['Warning: Unknown T2 for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 	end
 end
@@ -358,9 +358,9 @@ else
 	end
     if ~isfield(x.Q, 'T2art')
 		if x.MagneticFieldStrength == 3
-			x.Q.T2art = 50; % T2* of arterial blood, only used when no M0 image
+			x.Q.T2art = 165; % ms
 		else
-			x.Q.T2art = 50;
+			x.Q.T2art = 165;
 			fprintf('%s\n','Warning: Unknown T2-art for non-3T scanners'); 
 		end
     end
