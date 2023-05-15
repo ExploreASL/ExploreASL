@@ -56,7 +56,7 @@ function xASL_wrp_ProcessM0(x)
 %
 % EXAMPLE: xASL_wrp_ProcessM0(x);
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
+% Copyright (C) 2015-2023 ExploreASL
 
 
 
@@ -88,19 +88,40 @@ elseif x.modules.asl.M0_conventionalProcessing == 1 && strcmpi(x.Q.readoutDim,'3
        warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
 end
 
-%% 0B) Scale PD between ASL & M0 if voxel sizes differ
-M0nii       = xASL_io_ReadNifti(x.P.Path_M0);
-M0size      = prod(M0nii.hdr.pixdim(2:4));
-ASLnii      = xASL_io_ReadNifti(x.P.Path_ASL4D);
-ASLsize     = prod(ASLnii.hdr.pixdim(2:4));
-M0ScaleF    = ASLsize/M0size;
+%% 0B) Scale PD between ASL & M0 if voxel volumes differ
+M0nii          = xASL_io_ReadNifti(x.P.Path_M0);
+M0voxelVolume  = prod(M0nii.hdr.pixdim(2:4));
+ASLnii         = xASL_io_ReadNifti(x.P.Path_ASL4D);
+ASLvoxelVolume = prod(ASLnii.hdr.pixdim(2:4));
+M0ScaleVolume  = ASLvoxelVolume/M0voxelVolume;
 
-% copy existing M0 for processing, in single precision
-% averaging if multiple frames, as we will blur later anyway,
-% we can skip the motion correction here
-xASL_io_SaveNifti(x.P.Path_M0, x.P.Path_rM0, mean(xASL_io_Nifti2Im(x.P.Path_M0).*M0ScaleF,4), 32, 0);
+% Copy existing M0 for processing, in single precision, we can skip the motion correction here
+% Load and scale the M0 for the ASL-M0 volume changes
+imM0 = xASL_io_Nifti2Im(x.P.Path_M0).*M0ScaleVolume;
 
-% Note that here we created rM0, which is averaged across 4th dimension, and adapted along this function
+% Try to load M0.json
+[pathM0json, filenameM0json,~] = xASL_fileparts(x.P.Path_M0);
+pathM0json = fullfile(pathM0json, [filenameM0json, '.json']);
+% Load JSON and locate TE part
+if xASL_exist(pathM0json, 'file')
+	jsonM0 = xASL_io_ReadJson(pathM0json);
+	if isfield(jsonM0, 'EchoTime')
+		% If there is more than 1 different nonzero TE, then we have to select the shortest ones
+		uniqueNonzeroTE = unique(jsonM0.EchoTime(jsonM0.EchoTime > 0));
+		if length(uniqueNonzeroTE) > 1
+			% Find the smallest positive nonzero TE
+			minTE = min(uniqueNonzeroTE);
+			% Average M0 image across all these minimal TEs
+			imM0 = mean(imM0(:,:,:,jsonM0.EchoTime == minTE), 4);
+		end
+	end
+end
+
+% Averaging if multiple frames, as we will blur later anyway. Unless this has been averaged across minimal TEs already
+imM0 = mean(imM0,4);
+
+% Save the resampled mean M0
+xASL_io_SaveNifti(x.P.Path_M0, x.P.Path_rM0, imM0, 32, 0);
 
 xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field in ASL resolution
 
