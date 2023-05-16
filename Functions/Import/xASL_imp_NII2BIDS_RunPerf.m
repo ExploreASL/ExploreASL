@@ -127,10 +127,34 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		
 		if iReversedPE == 1
 			if xASL_exist(fullfile(inSessionPath,'M0PERev.nii'))
-				strPEDirection = '_dir-ap';
+				if ~isfield(jsonM0, 'PhaseEncodingDirection') && ~isfield(jsonLocal, 'PhaseEncodingDirection')
+					% If none of the fields exist, then assign the default
+					jsonM0.PhaseEncodingDirection = 'j-';
+					jsonLocal.PhaseEncodingDirection = 'j-';
+				elseif isfield(jsonM0, 'PhaseEncodingDirection') && isfield(jsonLocal, 'PhaseEncodingDirection')
+					% Both ASL and M0 have the phaseencodingdirection field
+					if ~strcmp(jsonM0.PhaseEncodingDirection, jsonLocal.PhaseEncodingDirection)
+						warning('ASL and M0 differ in phase-encoding directions');
+					end
+				elseif isfield(jsonM0, 'PhaseEncodingDirection')
+					% Only M0 has the field
+					jsonLocal.PhaseEncodingDirection = jsonM0.PhaseEncodingDirection;
+				else
+					% Only ASL has the field
+					jsonM0.PhaseEncodingDirection = jsonLocal.PhaseEncodingDirection;
+				end
 				
-				jsonM0.PhaseEncodingDirection = 'j-';
-				jsonLocal.PhaseEncodingDirection = 'j-';
+				switch (jsonM0.PhaseEncodingDirection)
+					case 'i'
+						strPEDirection = '_dir-rl';
+					case 'i-'
+						strPEDirection = '_dir-lr';
+					case 'j'
+						strPEDirection = '_dir-pa';
+					case 'j-'
+						strPEDirection = '_dir-ap';
+				end
+
 			else
 				strPEDirection = '';
 			end
@@ -146,15 +170,31 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
             bidsm0scanLabel = [subjectSessionLabel strPEDirection runLabel '_' bidsPar.stringM0scan];
 			pathM0Out = fullfile(outSessionPath,bidsPar.stringPerfusion,bidsm0scanLabel);
 		else
-			jsonM0.PhaseEncodingDirection = 'j';
-            strPEDirectionPA = '_dir-pa';
-            strPEDirectionAP = '_dir-ap';
+			if ~isfield(jsonM0, 'PhaseEncodingDirection')
+				jsonM0.PhaseEncodingDirection = 'j';
+			end
+
+			switch(jsonM0.PhaseEncodingDirection)
+				case 'j'
+					strPEDirectionNrm = '_dir-pa';
+					strPEDirectionRev = '_dir-ap';
+				case 'j-'
+					strPEDirectionNrm = '_dir-ap';
+					strPEDirectionRev = '_dir-pa';
+				case 'i'
+					strPEDirectionNrm = '_dir-rl';
+					strPEDirectionRev = '_dir-lr';
+				case 'i-'
+					strPEDirectionNrm = '_dir-lr';
+					strPEDirectionRev = '_dir-rl';
+			end
+
             % Determine output name
             aslLegacyLabel = 'ASL4D';
-            bidsm0scanLabelPA = [subjectSessionLabel strPEDirectionPA runLabel '_' bidsPar.stringM0scan];
-            bidsm0scanLabelAP = [subjectSessionLabel strPEDirectionAP runLabel '_' bidsPar.stringM0scan];
-            jsonM0.IntendedFor = fullfile(bidsPar.stringPerfusion,[bidsm0scanLabelAP '.nii.gz']);
-            pathM0Out = fullfile(outSessionPath,bidsPar.stringFmap,bidsm0scanLabelPA);
+            bidsm0scanLabelNrm = [subjectSessionLabel strPEDirectionNrm runLabel '_' bidsPar.stringM0scan];
+            bidsm0scanLabelRev = [subjectSessionLabel strPEDirectionRev runLabel '_' bidsPar.stringM0scan];
+            jsonM0.IntendedFor = fullfile(bidsPar.stringPerfusion, [bidsm0scanLabelRev '.nii.gz']);
+            pathM0Out = fullfile(outSessionPath, bidsPar.stringFmap, bidsm0scanLabelNrm);
 		end
 		
 		% Create the directory for the reversed PE if needed
