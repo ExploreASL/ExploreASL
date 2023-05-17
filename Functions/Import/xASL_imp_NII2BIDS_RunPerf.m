@@ -188,18 +188,18 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 
 			% Define the direction tag and inversed-direction tag for the BIDS field name based on the DICOM value
 			switch(jsonM0.PhaseEncodingDirection)
-				case 'j'
-					strPEDirectionNorm    = '_dir-pa';
-					strPEDirectionReverse = '_dir-ap';
-				case 'j-'
-					strPEDirectionNorm    = '_dir-ap';
-					strPEDirectionReverse = '_dir-pa';
 				case 'i'
 					strPEDirectionNorm    = '_dir-rl';
 					strPEDirectionReverse = '_dir-lr';
 				case 'i-'
 					strPEDirectionNorm    = '_dir-lr';
 					strPEDirectionReverse = '_dir-rl';
+				case 'j'
+					strPEDirectionNorm    = '_dir-pa';
+					strPEDirectionReverse = '_dir-ap';
+				case 'j-'
+					strPEDirectionNorm    = '_dir-ap';
+					strPEDirectionReverse = '_dir-pa';
 				case 'k'
 					strPEDirectionNorm    = '_dir-si';
 					strPEDirectionReverse = '_dir-is';
