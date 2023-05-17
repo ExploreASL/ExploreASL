@@ -409,7 +409,7 @@ end
 % Verify that we are dealing with Philips Look-Locker sequence with flip angle below 90
 if isfield(jsonOut, 'LookLocker') && jsonOut.LookLocker
 	if isfield(jsonOut, 'Manufacturer') && strcmpi(jsonOut.Manufacturer, 'Philips')
-		if isfield(jsonOut, 'FlipAngle') && jsonOut.FlipAngle < 90
+		if isfield(jsonOut, 'FlipAngle') && max(jsonOut.FlipAngle) < 90
 			% Verify if TR is suspiciously low
 			if isfield(jsonOut, 'PostLabelingDelay') && isfield(jsonOut, 'RepetitionTimePreparation') && max(jsonOut.PostLabelingDelay) > max(jsonOut.RepetitionTimePreparation)
 				% In this situation, TR needs to be correctly calculated
