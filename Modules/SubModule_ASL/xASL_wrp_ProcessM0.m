@@ -111,6 +111,8 @@ if xASL_exist(pathM0json, 'file')
 		if length(uniqueNonzeroTE) > 1
 			% Find the smallest positive nonzero TE
 			minTE = min(uniqueNonzeroTE);
+			fprintf('Multi-TE M0 present. Using the shortest TE=%.1f ms for M0 calibration.\n', minTE*1000);
+
 			% Average M0 image across all these minimal TEs
 			imM0 = mean(imM0(:,:,:,jsonM0.EchoTime == minTE), 4);
 		end
