@@ -1,4 +1,4 @@
-% function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI, x)
+function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI, x)
 %xASL_quant_FSL Perform quantification using FSL BASIL/FABBER
 %
 % FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI, x)
