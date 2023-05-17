@@ -111,7 +111,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
     % Check the M0 files 
     
 	for iReversedPE = 1:2 % Check if AP/PA coding is given for M0
-		% Load the M0 JSON if existing
+		% Obtain a path to M0
 		if iReversedPE == 1
 			pathM0In = fullfile(inSessionPath,'M0');
 		else
@@ -126,24 +126,30 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		end
 		
 		if iReversedPE == 1
-			if xASL_exist(fullfile(inSessionPath,'M0PERev.nii'))
+			% Check first the normal M0 without reversed PE direction
+			if xASL_exist(fullfile(inSessionPath, 'M0PERev.nii'))
+				% Check if the encoding direction was specified in DICOM
 				if ~isfield(jsonM0, 'PhaseEncodingDirection') && ~isfield(jsonLocal, 'PhaseEncodingDirection')
-					% If none of the fields exist, then assign the default
+					% If none of the fields exist in DICOM, then assign the default
 					jsonM0.PhaseEncodingDirection = 'j-';
 					jsonLocal.PhaseEncodingDirection = 'j-';
+					fprintf('Phase-encoding direction for ASL and M0 is not specified, using the default AP direction.\n');
 				elseif isfield(jsonM0, 'PhaseEncodingDirection') && isfield(jsonLocal, 'PhaseEncodingDirection')
-					% Both ASL and M0 have the phaseencodingdirection field
+					% Both ASL and M0 have the phase-encoding direction field in DICOM, check if this is consistent
 					if ~strcmp(jsonM0.PhaseEncodingDirection, jsonLocal.PhaseEncodingDirection)
-						warning('ASL and M0 differ in phase-encoding directions');
+						warning('Phase-encoding direction differs between ASL and M0');
 					end
 				elseif isfield(jsonM0, 'PhaseEncodingDirection')
 					% Only M0 has the field
 					jsonLocal.PhaseEncodingDirection = jsonM0.PhaseEncodingDirection;
+					fprintf('Phase-encoding direction was not specified for ASL, using the same value as for M0.\n');
 				else
 					% Only ASL has the field
 					jsonM0.PhaseEncodingDirection = jsonLocal.PhaseEncodingDirection;
+					fprintf('Phase-encoding direction was not specified for M0, using the same value as for ASL.\n');
 				end
 				
+				% Define the direction tag for the BIDS field name based on the DICOM value
 				switch (jsonM0.PhaseEncodingDirection)
 					case 'i'
 						strPEDirection = '_dir-rl';
@@ -170,10 +176,13 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
             bidsm0scanLabel = [subjectSessionLabel strPEDirection runLabel '_' bidsPar.stringM0scan];
 			pathM0Out = fullfile(outSessionPath,bidsPar.stringPerfusion,bidsm0scanLabel);
 		else
+			% The value is missing for the M0 with reversed PE, we assign the same default as for the ASL and M0 scans
 			if ~isfield(jsonM0, 'PhaseEncodingDirection')
 				jsonM0.PhaseEncodingDirection = 'j';
+				fprintf('Phase-encoding direction for reversed-PE M0 is not specified, using the default PA direction.\n');
 			end
 
+			% Define the direction tag and inversed-direction tag for the BIDS field name based on the DICOM value
 			switch(jsonM0.PhaseEncodingDirection)
 				case 'j'
 					strPEDirectionNrm = '_dir-pa';
