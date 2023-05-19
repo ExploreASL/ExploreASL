@@ -183,6 +183,8 @@ elseif isnumeric(x.Q.M0)
 				M0_im = M0_im./T2_star_factor;
 				fprintf('%s\n',['M0 image corrected for T2* decay during TE in PWI, TE was ' xASL_num2str(ASLshortestTE) ' ms, using T2* ' xASL_num2str(x.Q.T2star) ' ms, this resulting in factor ' xASL_num2str(T2_star_factor)]);
 				% If obtained by e.g. CSF inversion recovery, make sure that this is corrected for blood-water partition coefficient (0.76) and density of brain tissue (1.05 g/mL)
+			else
+				error('EchoTime unknown for ASL, but it is needed for the quantification to correct for ASL vs M0 signal differences.');
 			end
         end
 
@@ -263,6 +265,12 @@ if strcmpi(x.Q.M0,'separate_scan')
         % Correct M0 for any EchoTime differences between ASL & M0
         if x.modules.asl.ApplyQuantification(4)
 			% If the shortest TEs are unequal, then we have to compensate for this
+			if isempty(ASLshortestTE)
+				error('EchoTime unknown for ASL, but it is needed for the quantification to correct for ASL vs M0 signal differences.');
+			end
+			if isempty(M0shortestTE)
+				error('EchoTime unknown for M0, but it is needed for the quantification to correct for ASL vs M0 signal differences.');
+			end
 			if ASLshortestTE ~= M0shortestTE
 				ScalingASL = exp(ASLshortestTE/CorrFactor);
 				ScalingM0 = exp(M0shortestTE/CorrFactor);
