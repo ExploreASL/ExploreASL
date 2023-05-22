@@ -50,8 +50,8 @@ try
 	json = jsondecode(txt); % Decode the JSON content
 catch ME
 	% In case an error appears during reading or decoding, we exit
-	warning('Something went wrong during the decoding of the JSON file: %s', pathJSON');
-	fprintf('HINT: The JSON file might be corrupted, you can check the JSON file content at https://jsonlint.com \n');
+	fprintf('Something went wrong during the decoding of the JSON file: %s\n', pathJSON');
+	fprintf('The JSON file might be corrupted. See the error message below or check the JSON file content at https://jsonlint.com \n');
 	error('%s',ME.getReport()); % Display the error message
 end
 
