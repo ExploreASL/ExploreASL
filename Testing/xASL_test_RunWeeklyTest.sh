@@ -11,8 +11,8 @@ XASLDIR=${scratchDir}/WeeklyTest/ExploreASL
 ReferenceTSV=${XASLDIR}/Testing/Reference/ReferenceValues.tsv
 FlavorTestConfig=${scratchDir}/WeeklyTest/FlavorConfig.json
 FlavorDir=${scratchDir}/WeeklyTest/FlavorDatabase
-TestDataSetSourceDir=${scratchDir}/TestDataSets
-UnitTestingDir=${scratchDir}/Testing
+TestDataSetSourceDir=${scratchDir}/WeeklyTest/TestDataSets
+UnitTestingDir=${scratchDir}/WeeklyTest/Testing
 ResultMasterDir=${scratchDir}/WeeklyTest/Results
 
 # Temporary Folders, ALL CONTENT WILL BE REMOVED FROM THIS FOLDER.
