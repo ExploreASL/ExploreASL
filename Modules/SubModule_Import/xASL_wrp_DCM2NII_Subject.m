@@ -123,7 +123,7 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
                 scanFields.name = thisRun.name;
 
 				% Create the session number based on the session name in format ASL_X
-				if isempty(thisRun.name) || isempty(regexpi(thisRun.name, '.*\d*$', 'once'))
+				if isempty(thisRun.name) || isempty(regexpi(thisRun.name, '^ASL_\d+$', 'once'))
 					% Set to 1 if session name cannot be identified
  					scanFields.numberSession = 1;
 				else
