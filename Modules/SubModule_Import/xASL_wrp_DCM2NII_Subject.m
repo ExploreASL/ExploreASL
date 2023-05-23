@@ -25,7 +25,7 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, matches, dcm2niiCatchedErrors);
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
     %% 1. Run DCM2NII for one individual subject
@@ -121,6 +121,14 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
                 scanFields.iSession = iSession;
                 scanFields.iScan = iScan;
                 scanFields.name = thisRun.name;
+
+				% Create the session number based on the session name in format ASL_X
+				if isempty(thisRun.name) || isempty(regexpi(thisRun.name, '.*\d*$', 'once'))
+					% Set to 1 if session name cannot be identified
+ 					scanFields.numberSession = 1;
+				else
+					scanFields.numberSession = xASL_str2num(thisRun.name(5:end));
+				end
                 % Convert scan
                 [x, thisSubject,dcm2niiCatchedErrors, PrintDICOMFields] = ...
                     xASL_imp_DCM2NII_ConvertScan(x, matches, thisSubject, dcm2niiCatchedErrors, thisVisit, thisRun, scanFields);
