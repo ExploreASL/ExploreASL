@@ -128,10 +128,10 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
                 warning(WarningMessage);
             end
             % Add missing scans to global counts struct
-            thisSubject.globalCounts.missing_scans(scanFields.iSubject, scanFields.iVisit, scanFields.numberSession, scanFields.iScan) = 1;
+            thisSubject.globalCounts.missing_scans(scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan) = 1;
         end
         % Add information to summary lines and stop import of this scan here
-        thisSubject.summary_lines{scanFields.iSubject, scanFields.iVisit, scanFields.numberSession, scanFields.iScan} = summary_line;
+        thisSubject.summary_lines{scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan} = summary_line;
         return
     end
 
@@ -207,7 +207,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         % In case of GE or PARREC/a single NII ASL file loaded from PAR/REC, we need to 
         % shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order.
         [x,nii_files, summary_line, thisSubject.globalCounts] = ...
-            xASL_imp_DCM2NII_Subject_SortASLVolumes(x, thisSubject.globalCounts, scanpath, scan_name, nii_files, scanFields.iSubject, scanFields.iVisit, scanFields.numberSession, scanFields.iScan);
+            xASL_imp_DCM2NII_Subject_SortASLVolumes(x, thisSubject.globalCounts, scanpath, scan_name, nii_files, scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan);
 
         % Correct nifti rescale slope if parms.RescaleSlopeOriginal =~1 but nii.dat.scl_slope==1 (this can happen in case
         % of hidden scale slopes in private Philips header, that is dealt with by xASL_bids_Dicom2JSON but not by dcm2niiX.
@@ -223,7 +223,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
     end
 
     %% 4.10 Store the summary info so it can be sorted and printed below
-    thisSubject.summary_lines{scanFields.iSubject, scanFields.iVisit, scanFields.numberSession, scanFields.iScan} = summary_line;
+    thisSubject.summary_lines{scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan} = summary_line;
 
     %% 4.11 Check DCM2NIIX output
     xASL_imp_Check_DCM2NII_Output(nii_files,scanID);
