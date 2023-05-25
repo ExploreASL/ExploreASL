@@ -41,6 +41,7 @@ if isempty(SessionList) % If no files found, search for subject files instead of
 
     nSessions = 1;
     bSessionsMissing = 1;
+	SESSIONS = '';
     fprintf('%s\n','No session or subject files found');
     return;    
 else % If files found, continue with defining sessions from SessionList

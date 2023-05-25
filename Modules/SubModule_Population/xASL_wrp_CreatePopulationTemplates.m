@@ -295,8 +295,8 @@ for iScanType=1:length(PreFixList)
     UnAvailable = 0;
 
 	% Define sessions if relevant for the datatype
-	x.S.InputDataStr = PreFixList{iScanType};
 	if SessionsExist(iScanType)
+		x.S.InputDataStr = PreFixList{iScanType};
 		[~, ~, listSessions] = xASL_adm_GetPopulationSessions(x);
 	else
 		listSessions = {'ASL_1'};
