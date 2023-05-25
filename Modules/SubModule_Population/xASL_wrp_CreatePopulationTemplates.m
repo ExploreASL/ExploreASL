@@ -294,9 +294,13 @@ end
 for iScanType=1:length(PreFixList)
     UnAvailable = 0;
 
-	% Define sessions
+	% Define sessions if relevant for the datatype
 	x.S.InputDataStr = PreFixList{iScanType};
-	[~, ~, listSessions] = xASL_adm_GetPopulationSessions(x);
+	if SessionsExist(iScanType)
+		[~, ~, listSessions] = xASL_adm_GetPopulationSessions(x);
+	else
+		listSessions = {'ASL_1'};
+	end
     
     fprintf('%s\n', ['Searching ' TemplateNameList{iScanType} ' images:']);
     for iSession=1:length(listSessions) % iterate over sessions
