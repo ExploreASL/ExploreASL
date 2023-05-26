@@ -215,39 +215,37 @@ function line = xASL_sub_PrintQC(json, name, x, figure, line, settings)
         settings = xASL_sub_loadSettings(json.settings, settings);
     end
 
-    % Print only if visibility exists and is true. 
-    if isfield(json, "visible")  && json.visible 
-        
-        TempValue = x.Output.(json.module).(json.name);
-        
-        if ~isfield(json, 'alias') 
-            json.alias = name;
-        end
 
-        if ~isfield(json, 'unit') 
-            json.unit = '';
-        end
-
-        if isfield(json, 'range') 
-            [range] = strsplit(json.range, '-');
-            if (TempValue < str2double(range{1})) || (TempValue > str2double(range{2}))
-                settings.color = 'r';
-            end
-            json.range = ['(' json.range ')'];
-        else
-            json.range = '';
-        end
-
-        if isnumeric(TempValue)
-            TempValue = num2str(TempValue);
-        end
-
-        if size(TempValue, 1) == 1
-            TextString = sprintf([sprintf('%-20s',[json.alias,':']), sprintf('%8s',TempValue),sprintf('%-12s', [json.unit, ' ' , json.range]), ' \n']);
-        end
-
-        line = xASL_sub_PrintText(TextString, figure, line, settings);
+    TempValue = x.Output.(json.module).(json.name);
+    
+    if ~isfield(json, 'alias') 
+        json.alias = name;
     end
+
+    if ~isfield(json, 'unit') 
+        json.unit = '';
+    end
+
+    if isfield(json, 'range') 
+        [range] = strsplit(json.range, '-');
+        if (TempValue < str2double(range{1})) || (TempValue > str2double(range{2}))
+            settings.color = 'r';
+        end
+        json.range = ['(' json.range ')'];
+    else
+        json.range = '';
+    end
+
+    if isnumeric(TempValue)
+        TempValue = num2str(TempValue);
+    end
+
+    if size(TempValue, 1) == 1
+        TextString = sprintf([sprintf('%-20s',[json.alias,':']), sprintf('%8s',TempValue),sprintf('%-12s', [json.unit, ' ' , json.range]), ' \n']);
+    end
+
+    line = xASL_sub_PrintText(TextString, figure, line, settings);
+
 end
 
 function line = xASL_sub_PrintText(input, figure, line, settings)

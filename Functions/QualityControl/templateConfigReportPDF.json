@@ -121,21 +121,18 @@
             "type" : "qc",
             "module" : "Structural",
             "range": "1000-1200",
-            "visible": true,
             "Unit": "mL"
         },
         "T1w_WM_vol_mL": {
             "type" : "qc",
             "module" : "Structural",
             "range": "300-600",
-            "visible": true,
             "Unit": "mL"
         },
         "T1w_CSF_vol_mL": {
             "type" : "qc",
             "module" : "Structural",
             "range": "150-300",
-            "visible": true,
             "Unit": "mL"
         },
         "Version Title": {
@@ -148,28 +145,23 @@
         },
         "Version_CAT12": {
             "type" : "qc",
-            "module" : "Structural",
-            "visible": true
+            "module" : "Structural"
         },
         "Version_ExploreASL": {
             "type" : "qc",
-            "module" : "Structural",
-            "visible": true
+            "module" : "Structural"
         },
         "Version_LST": {
             "type" : "qc",
-            "module" : "Structural",
-            "visible": true
+            "module" : "Structural"
         },
         "Version_Matlab": {
             "type" : "qc",
-            "module" : "Structural",
-            "visible": true
+            "module" : "Structural"
         },
         "Version_SPM12": {
             "type" : "qc",
-            "module" : "Structural",
-            "visible": true
+            "module" : "Structural"
         },
         "ASLTitle": {
             "type" : "text",
@@ -183,72 +175,60 @@
             "type" : "qc",
             "module" : "ASL",
             "range": "50-120",
-            "visible": true,
             "alias": "Median CBF",
             "Unit": "mL/100g/min"
         },
         "LabelingType": {
             "type" : "qc",
-            "module" : "ASL",
-            "visible": true
+            "module" : "ASL"
         },
         "MotionMean_mm": {
             "type" : "qc",
             "module" : "ASL",
-            "visible": true,
             "alias": "Mean Motion",
             "Unit": "mm"
         },
         "MotionSD_mm": {
             "type" : "qc",
             "module" : "ASL",
-            "visible": true,
             "alias": "SD Motion",
             "Unit": "mm"
         },
         "MotionMax_mm": {
             "type" : "qc",
             "module" : "ASL",
-            "visible": true,
             "alias": "Max Motion",
             "Unit": "mm"
         },
         "M0": {
             "type" : "qc",
-            "module" : "ASL",
-            "visible": true
+            "module" : "ASL"
         },
         "VoxelSize_mm": {
             "type" : "qc",
             "module" : "ASL",
-            "visible": true,
             "Unit": "mm"
         },
         "LabelingDuration_ms": {
             "type" : "qc",
             "module" : "ASL",
-            "visible": true,
             "Unit": "ms"
         },
         "SpatialCoV_GM_Perc": {
             "type" : "qc",
-            "module" : "ASL",
-            "visible": true
+            "module" : "ASL"
         },
         "Sequence": {
             "type" : "qc",
-            "module" : "ASL",
-            "visible": true
+            "module" : "ASL"
         },
         "Vendor": {
             "type" : "qc",
-            "module" : "ASL",
-            "visible": true
+            "module" : "ASL"
         },
         "PeakSNR_Ratio": {
             "type" : "qc",
-            "module" : "ASL",
-            "visible": true
+            "module" : "ASL"
         }
     },
     "Page_two" : {
