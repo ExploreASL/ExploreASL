@@ -1,5 +1,5 @@
 {   
-    "GlobalSettings": {
+    "Global_Settings": {
         "type": "settings",
 		"fontSize": "8",
         "fontName": "default",
@@ -8,10 +8,10 @@
         "axesVisible": "off",
         "HorizontalAlignment": "left"
 	},
-    "TitlePage" : {
+    "Page_one" : {
         "type" : "page",
         "number" : "1",
-        "ArbitraryScan": {
+        "Four_Slice_Scan": {
             "type" : "scan",
             "name" : "Pop_Path_rT1",
             "position" : "[0.70 0.35]",
@@ -28,10 +28,7 @@
                 }
             }  
         },
-        "PatientInfo": {
-            "type" : "patients"
-        },
-        "AnotherScan": {
+        "Six_slices": {
             "type" : "scan",
             "name" : "Pop_Path_rT1",
             "position" : "[0.70 0.65]",
@@ -41,7 +38,6 @@
                 "CorSlice" : "[50 75]",
                 "SagSlice" : "[50 75]"},
             "overlay"  : {
-                
                 "Pop_Path_qCBF" :{
                     "contour" :"true",
                     "opacity" : "0.3",
@@ -49,7 +45,7 @@
                 }
             }  
         },
-        "SingleScan": {
+        "Single_slice": {
             "type" : "scan",
             "name" : "Pop_Path_rT1",
             "position" : "[0.70 0.05]",
@@ -66,24 +62,60 @@
                 }
             }  
         },
-        "Structural Title": {
+        "Patient_Info": {
+            "type" : "patients"
+        },
+        "Introduction": {
+            "type" : "text",
+            "text":"This is an sample for the Explore ASL report Generator, See ExploreASL/Function/templateConfigReportPDF.json for the script generating this PDF."
+        },
+        "PDFconfig": {
+            "type" : "text",
+            "text":"You can make your own config file and place it as ConfigReportPDF.json in the ExploreASL derivatives folder."
+        },
+        "ConfigPreference": {
+            "type" : "text",
+            "text":"Any config file in the derivatives folder will always take precedence over this one."
+        },
+        "Config Options": {
+            "type" : "text",
+            "text":"In your config you can define your own text, images and scans to be printed in this report."
+        },
+        "Json Options": {
+            "type" : "text",
+            "text":"In your config you can name your JSON blocks however you like, as long as the content is complete."
+        },
+        "Scan_Sclices": {
+            "type" : "text",
+            "text":"For scans you can define which specific slice you want in the config file."
+        },
+        "Scan_Locations": {
+            "type" : "text",
+            "text":"The scans on the right can be found in the NIfTI files derivatives/ExploreASL/Population."
+        },
+        "Scan_Paths_Locations": {
+            "type" : "text",
+            "text":"These scans are referred to by their x.P.<name> in the ConfigReportPDF.json."
+        },
+        "Scan_Paths_Locations2": {
+            "type" : "text",
+            "text":"This is usually simply Path_Pop_<name>."
+        },
+        "Structural_Title": {
             "type" : "text",
             "settings":{
                 "fontSize":"10",
                 "fontWeight":"bold"
             },
-            "text":"Structural Module"
+            "text":"Below the Quality parameters of the Structural module will be printed."
         },
-        "T1w_SNR_GM_Ratio": {
-            "type" : "qc",
-            "module" : "Structural",
-            "visible": true,
-            "alias": "GM SNR"
+        "QC_Location_texts": {
+            "type" : "text",
+            "text":"These values can be found in derivatives/ExploreASL/<subject>/QC_collection_<subject>.json"
         },
-        "T1w_CNR_GM_WM_Ratio": {
-            "type" : "qc",
-            "module" : "Structural",
-            "visible": true
+        "QC_Range_texts": {
+            "type" : "text",
+            "text":"If the QC value is outside your specified range, it will display in red."
         },
         "T1w_GM_vol_mL": {
             "type" : "qc",
@@ -106,23 +138,13 @@
             "visible": true,
             "Unit": "mL"
         },
-        "T1w_GM_ICV_Ratio": {
-            "type" : "qc",
-            "module" : "Structural",
-            "visible": true,
-            "range": "0-1"
-        },
-        "T1w_WM_ICV_Ratio": {
-            "type" : "qc",
-            "module" : "Structural",
-            "visible": true,
-            "range": "0-1"
-        },
-        "T1w_CSF_ICV_Ratio": {
-            "type" : "qc",
-            "module" : "Structural",
-            "visible": true,
-            "range": "0-1"
+        "Version Title": {
+            "type" : "text",
+            "settings":{
+                "fontSize":"10",
+                "fontWeight":"bold"
+            },
+            "text":"Below the some version numbers are printed."
         },
         "Version_CAT12": {
             "type" : "qc",
@@ -155,7 +177,7 @@
                 "fontSize":"10",
                 "fontWeight":"Bold"
             },
-            "text":"ASL Module"
+            "text":"And below this, some quality parametenrs of the ASL Module are printed"
         },
         "CBF_GM_Median_mL100gmin": {
             "type" : "qc",
@@ -168,18 +190,6 @@
         "LabelingType": {
             "type" : "qc",
             "module" : "ASL",
-            "visible": true
-        },
-        "NumberOfAverages": {
-            "type" : "qc",
-            "module" : "ASL",
-            "visible": true,
-            "range": ""
-        },
-        "Initial_PLD_ms": {
-            "type" : "qc",
-            "module" : "ASL",
-            "Unit": "mS",
             "visible": true
         },
         "MotionMean_mm": {
@@ -239,36 +249,107 @@
             "type" : "qc",
             "module" : "ASL",
             "visible": true
+        }
+    },
+    "Page_two" : {
+        "type" : "page",
+        "number" :"2",
+        "Pages_Introduction": {
+            "type" : "text",
+            "settings":{
+                "fontSize":"8"
+            },
+            "text":"You can define any amount of pages in your config file, this is a second page."
         },
-        "ArbitraryName": {
+        "Block_introduction": {
+            "type" : "text",
+            "text":"You can also define premade 'blocks' of content, but automated text scaling does not work properly yet."
+        },
+        "font10": {
+            "type" : "text",
+            "settings":{
+                "fontSize":"10"
+            },
+            "text":"This is a line in font size 10"
+        },
+        "font12": {
             "type" : "text",
             "settings":{
                 "fontSize":"12"
             },
-            "text":"This is a standard text."
-        }
-    },
-    "SecondaryPage" : {
-        "type" : "page",
-        "number" :"2",
-        "ArbitratryImage": {
-            "type" : "image",
-            "pathDir" : "absolute",
-            "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
-            "position" : "[0.70 0.65]",
-            "size"     : "[0.3 0.3]"    
+            "text":"This is a line in font size 12"
         },
-        "StructuralTitle": {
+        "font14": {
             "type" : "text",
             "settings":{
-                "fontSize":"10",
-                "fontWeight":"bold"
+                "fontSize":"14"
             },
-            "text":"This is a supposed Secondary page"
-        },"RandomBlock": {
+            "text":"This is a line in font size 14"
+        },
+        "font16": {
+            "type" : "text",
+            "settings":{
+                "fontSize":"16"
+            },
+            "text":"This is a line in font size 16"
+        }
+        ,"font18": {
+            "type" : "text",
+            "settings":{
+                "fontSize":"18"
+            },
+            "text":"This is a line in font size 18"
+        },
+        "font20": {
+            "type" : "text",
+            "settings":{
+                "fontSize":"20"
+            },
+            "text":"This is a line in font size 20"
+        },
+        "font22": {
+            "type" : "text",
+            "settings":{
+                "fontSize":"22"
+            },
+            "text":"This is a line in font size 22"
+        },
+        
+        "font24": {
+            "type" : "text",
+            "settings":{
+                "fontSize":"24"
+            },
+            "text":"This is a line in font size 24"
+        },
+        "Example_Block": {
             "type" : "block",
-            "position" : "[0.50 0.11]",
-            "size"     : "[0.33 0.33]",
+            "position" : "[0.2 0.11]",
+            "size"     : "[0.8 0.33]",
+            "BlockSettings": {
+                "type": "settings",
+                "fontSize": "36",
+                "fontName": "default",
+                "fontWeight": "normal",
+                "lineSpacing": "0.075",
+                "color": "k",
+                "axesVisible": "off",
+                "HorizontalAlignment": "left"
+            },
+            "Block_introduction":{
+                "type" : "text",
+                "settings" : {
+                    "fontSize" : "36"
+                },
+                "text" : "This is an example of such a content block."
+            },
+            "Block_introduction2":{
+                "type" : "text",
+                "settings" : {
+                    "fontSize" : "36"
+                },
+                "text" : "This block has text on the left and scans on the right."
+            },
             "BlockImage1": {
                 "type" : "image",
                 "pathDir" : "population",
@@ -283,41 +364,20 @@
                 "position" : "[0.5 0.5]",
                 "size"     : "[0.5 0.5]"    
             },
-            "BlockText":{
-                "settings":
-                {
-                    "fontSize":"24",
-                    "fontWeight":"normal"
-                },
-                "type" : "text",
-                "text" : "This is a text test in a block"
-            },
-            "BlockText2":{
-                "settings":
-                {
-                    "fontSize":"24",
-                    "fontWeight":"normal"
-                },
-                "type" : "text",
-                "text" : "This is another line test in a block"
-            },
             "BlockText3":{
-                "settings":
-                {
-                    "fontSize":"24",
-                    "fontWeight":"bold"
-                },
                 "type" : "text",
-                "text" : "This is a bold line test in a block"
-            }
-        },
-        "Afterblock": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"10",
-                "fontWeight":"bold"
+                "settings" : {
+                    "fontSize" : "24"
+                },
+                "text" : "This is a font 24 line test in a block"
             },
-            "text":"This is text printed after the block was rendered"
+            "BlockText4":{
+                "type" : "text",
+                "settings" : {
+                    "fontSize" : "36"
+                },
+                "text" : "This is a font 36 line test in a block"
+            }
         }
 
     }
