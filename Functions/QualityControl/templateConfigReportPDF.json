@@ -28,6 +28,9 @@
                 }
             }  
         },
+        "PatientInfo": {
+            "type" : "patients"
+        },
         "AnotherScan": {
             "type" : "scan",
             "name" : "Pop_Path_rT1",
