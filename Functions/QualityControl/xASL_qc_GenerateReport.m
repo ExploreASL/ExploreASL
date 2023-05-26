@@ -268,7 +268,14 @@ function xASL_sub_PrintImage(input, x, figure, position)
     switch nargin
     case 3
         position = [str2num(input.position) str2num(input.size)];
-        ImagePath = input.filePath;
+        switch(input.pathDir)
+        case 'population'
+            ImagePath = fullfile(x.dir.xASLDerivatives, 'Population', input.filePath);
+        case 'subject'
+            ImagePath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, input.filePath);
+        case 'absolute'
+            ImagePath = input.filePath;
+        end
     case 4
         ImagePath = input;
     end

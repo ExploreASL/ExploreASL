@@ -253,6 +253,7 @@
         "number" :"2",
         "ArbitratryImage": {
             "type" : "image",
+            "pathDir" : "absolute",
             "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
             "position" : "[0.70 0.65]",
             "size"     : "[0.3 0.3]"    
@@ -270,13 +271,15 @@
             "size"     : "[0.33 0.33]",
             "BlockImage1": {
                 "type" : "image",
-                "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoSmall.png",
+                "pathDir" : "population",
+                "filePath" : "M0Check/Cor_M0_1_ASL_1.jpg",
                 "position" : "[0.5 0.0]",
                 "size"     : "[0.5 0.5]"    
             },
             "BlockImage2": {
                 "type" : "image",
-                "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoSmall.png",
+                "pathDir" : "population",
+                "filePath" : "M0Check/Cor_M0_1_ASL_1.jpg",
                 "position" : "[0.5 0.5]",
                 "size"     : "[0.5 0.5]"    
             },
@@ -315,49 +318,6 @@
                 "fontWeight":"bold"
             },
             "text":"This is text printed after the block was rendered"
-        },"anotherBlock": {
-            "type" : "block",
-            "position" : "[0.0 0.11]",
-            "size"     : "[0.33 0.33]",
-            "BlockImage1": {
-                "type" : "image",
-                "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
-                "position" : "[0.5 0.0]",
-                "size"     : "[0.5 0.5]"    
-            },
-            "BlockImage2": {
-                "type" : "image",
-                "filePath" : "/home/radv/mshammer/my-scratch/ExploreASL/Design/ExploreASL_logoBig.png",
-                "position" : "[0.5 0.5]",
-                "size"     : "[0.5 0.5]"    
-            },
-            "BlockText":{
-                "settings":
-                {
-                    "fontSize":"24",
-                    "fontWeight":"normal"
-                },
-                "type" : "text",
-                "text" : "This is a text test in another block"
-            },
-            "BlockText2":{
-                "settings":
-                {
-                    "fontSize":"24",
-                    "fontWeight":"normal"
-                },
-                "type" : "text",
-                "text" : "This is another line test in another block"
-            },
-            "BlockText3":{
-                "settings":
-                {
-                    "fontSize":"24",
-                    "fontWeight":"bold"
-                },
-                "type" : "text",
-                "text" : "This is a bold line test in a block"
-            }
         }
 
     }
