@@ -78,7 +78,7 @@ function  xASL_sub_printPage(json, x, settings)
 
     %% Print the Title
     logoPath = fullfile(x.opts.MyPath, 'Design/ExploreASL_logoHeader.png');
-    xASL_sub_PrintImage(logoPath, primaryFig, [0 0.96 1 0.04]);
+    xASL_sub_PrintImage(logoPath, [], primaryFig, [0 0.96 1 0.04]);
     line = xASL_sub_PrintText('ExploreASL QC summary report ', primaryFig, [0 0.96 1 0], settings);
 
     %% Print the Footer
@@ -114,7 +114,7 @@ function xASL_sub_parseBlock(input, x, pageFig, settings)
     
     figure(pageFig);
     set(pageFig, 'visible', 'off');
-    xASL_sub_PrintImage([PrintPath '.jpg'], pageFig, position);    
+    xASL_sub_PrintImage([PrintPath '.jpg'], [], pageFig, position);    
 end
 
 
@@ -137,7 +137,7 @@ function [settings] = xASL_sub_parseJson(json, x, figure, line, settings)
             case 'qc'
                 line = xASL_sub_PrintQC(currentField, fields{iField}, x, figure, line, settings);
             case 'image'
-                xASL_sub_PrintImage(currentField, figure);  
+                xASL_sub_PrintImage(currentField, x, figure);  
             case 'scan'
                 xASL_sub_PrintScan(currentField, x, figure);
             case 'page'
@@ -264,12 +264,12 @@ function line = xASL_sub_PrintText(input, figure, line, settings)
     text(0,0, String, 'Parent', ax, 'FontSize', settings.fontSize,'FontWeight', settings.fontWeight, 'Color', settings.color, 'FontName', settings.fontName, 'Interpreter', 'none', 'VerticalAlignment','top');
 end
 
-function xASL_sub_PrintImage(input, figure, position)
+function xASL_sub_PrintImage(input, x, figure, position)
     switch nargin
-    case 2
+    case 3
         position = [str2num(input.position) str2num(input.size)];
         ImagePath = input.filePath;
-    case 3
+    case 4
         ImagePath = input;
     end
     ax=axes('Position', position, 'Visible', 'off', 'Parent', figure);
