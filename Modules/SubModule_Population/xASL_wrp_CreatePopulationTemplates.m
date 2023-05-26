@@ -296,14 +296,17 @@ for iScanType=1:length(PreFixList)
 
 	% Define sessions if relevant for the datatype
 	if SessionsExist(iScanType)
+		% We are looking for all ASL_X sessions
 		x.S.InputDataStr = PreFixList{iScanType};
-		[~, ~, listSessions] = xASL_adm_GetPopulationSessions(x);
+		[nSessions, ~, listSessions] = xASL_adm_GetPopulationSessions(x);
 	else
+		% For this variable, there are not ASL_X sessions, so we set a dummy single session
 		listSessions = {'ASL_1'};
+		nSessions = 1;
 	end
     
     fprintf('%s\n', ['Searching ' TemplateNameList{iScanType} ' images:']);
-    for iSession=1:length(listSessions) % iterate over sessions
+    for iSession=1:nSessions % iterate over sessions
 
         if iSession==1 && ~SessionsExist(iScanType)
                 % For structural scans, there is no session appendix
@@ -342,8 +345,8 @@ for iScanType=1:length(PreFixList)
             % ----------------------------------------------------------------------------------------------------
             %% 3. Check availability images          
             for iSubject = 1:x.dataset.nSubjects
-                SubjSess = (iSubject-1)*length(listSessions) + iSession;
-                xASL_TrackProgress(SubjSess, x.dataset.nSubjects*length(listSessions));
+                SubjSess = (iSubject-1)*nSessions + iSession;
+                xASL_TrackProgress(SubjSess, x.dataset.nSubjects* nSessions);
                 PathNII = fullfile(x.D.PopDir,[PreFixList{iScanType} '_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
                 PathNII_Left = fullfile(x.D.PopDir,[PreFixList{iScanType} '-L_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
                 PathNII_Right = fullfile(x.D.PopDir,[PreFixList{iScanType} '-R_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
@@ -491,7 +494,7 @@ for iScanType=1:length(PreFixList)
                 end % bSkipWhenMissingScans && UnAvailable>0.10*nSize
             end % bSkipWhenMissingScans && isempty(LoadFiles)
         end % if bProceedThisSession
-    end % for iSession=1:length(listSessions)
+    end % for iSession=1:nSessions
     fprintf('\n');
     if UnAvailable>0
         fprintf('%s\n',[num2str(UnAvailable) ' ' PreFixList{iScanType} ' files missing']);
@@ -574,7 +577,7 @@ function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutlie
 % 3. Reset SetOptions to inclusion/NaN instead of left/right/NaN
 % 4. iterate over the options/categories of this set, to create parametric maps
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
 % Get CurrentSet
