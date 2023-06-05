@@ -51,8 +51,9 @@ if isempty(SessionList) % If no files found, search for subject files instead of
 else % If files found, continue with defining sessions from SessionList
     
     for iSession = 1:numel(SessionList)
+        [~, folderName] = fileparts(SessionList{iSession});
         [IndexStart, IndexEnd] = regexpi(SessionList{iSession}, 'ASL_\d+');
-        NewList{iSession,1} = SessionList{iSession}(1,IndexStart:IndexEnd); % create a cell array containings characters of all session numbers present
+        NewList{iSession,1} = SessionList{iSession}(1,IndexStart(end):IndexEnd(end)); % create a cell array containings characters of all session numbers present
     end
     
     SESSIONS = xASL_adm_SortStringNumbers(unique(NewList)); % determine unique session numbers
