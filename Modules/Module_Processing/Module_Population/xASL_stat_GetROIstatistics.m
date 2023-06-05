@@ -488,8 +488,8 @@ for iSubject=1:x.dataset.nSubjects
 			FilePath = fullfile(x.dir.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
 			if xASL_exist(FilePath, 'file')
 				Data3D = xASL_io_Nifti2Im(FilePath);
-				DataIm = xASL_im_IM2Column(Data3D,x.S.masks.WBmask);
-			end
+				DataIm = xASL_im_IM2Column(Data3D, x.S.masks.WBmask, 0);
+            end
 
             if x.S.bMasking(2)==1
                 % Load vascular mask (this is done subject-wise)
@@ -502,10 +502,12 @@ for iSubject=1:x.dataset.nSubjects
             end
 		else
 			FilePath = fullfile(x.D.PopDir, [x.S.InputDataStr '_' x.S.SubjectSessionID{SubjSess,1} '.nii']);
-			if xASL_exist(FilePath, 'file')
-				Data3D = xASL_io_Nifti2Im(FilePath,[121 145 121]);
-				DataIm = xASL_im_IM2Column(Data3D,x.S.masks.WBmask);
-			end
+			if xASL_exist(FilePath,'file')
+				Data3D = xASL_io_Nifti2Im(FilePath, [121 145 121]);
+                % Here, if the loaded image was empty, we should check if
+                % the DataIm is not 4D
+				DataIm = xASL_im_IM2Column(Data3D, x.S.masks.WBmask, 0);
+            end
 
             if x.S.bMasking(2)==1
                 % Load vascular mask (this is done subject-wise)
