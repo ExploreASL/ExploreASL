@@ -23,6 +23,17 @@ function [ColumnOut] = xASL_im_IM2Column(ImageIn, BrainMask, ApplyShiftDim)
 %              The mask mostly used for xASL_im_IM2Column is `x.S.masks.WBmask`, which completely
 %              engulfes pGM, pWM & pCSF
 %
+%              3D example: an [121 145 121] image becomes [2122945 1] (a
+%              single column with 121x145x121 values), but then compressed
+%              by the 3D mask.
+%
+%              4D example: ten images [121 145 121 10] become [2122945 10],
+%              but then compressed by the 3D mask.
+%
+%              So e.g., if the BrainMask has 500000 voxels to include, the
+%              above examples would become [500000 1] for the 3D example
+%              and [500000 10] for the 4D example
+%
 % EXAMPLE: ColumnOut = xASL_im_IM2Column(ImageIn, BrainMask);
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
