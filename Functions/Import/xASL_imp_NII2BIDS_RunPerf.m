@@ -100,18 +100,18 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 	
     %% 3. BIDSify ASL
     % Merge the information from DICOM, manually entered parameters and BIDSify
-    jsonLocal = xASL_bids_BIDSifyASLJSON(jsonDicom, studyPar, headerASL);
+    jsonASL = xASL_bids_BIDSifyASLJSON(jsonDicom, studyPar, headerASL);
 
     %% 4. Prepare the link to M0 in ASL.json	
     % Define the M0 type	
-    [jsonLocal, bJsonLocalM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(...
-        studyPar, bidsPar, jsonLocal, fullfile(inSessionPath,'M0.nii'), fullfile(bidsPar.stringPerfusion,[subjectSessionLabel runLabel]));	
+    [jsonASL, bjsonASLM0isFile] = xASL_imp_NII2BIDS_Subject_DefineM0Type(...
+        studyPar, bidsPar, jsonASL, fullfile(inSessionPath,'M0.nii'), fullfile(bidsPar.stringPerfusion,[subjectSessionLabel runLabel]));	
 
     %% 5. BIDSify M0	
     % Check the M0 files 
     
 	for iReversedPE = 1:2 % Check if AP/PA coding is given for M0
-		% Load the M0 JSON if existing
+		% Obtain the path to M0
 		if iReversedPE == 1
 			pathM0In = fullfile(inSessionPath,'M0');
 		else
@@ -126,16 +126,50 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		end
 		
 		if iReversedPE == 1
-			if xASL_exist(fullfile(inSessionPath,'M0PERev.nii'))
-				strPEDirection = '_dir-ap';
+			% Check first the normal M0 without reversed PE direction
+			if xASL_exist(fullfile(inSessionPath, 'M0PERev.nii'))
+				% Check if the encoding direction was specified in DICOM
+				if ~isfield(jsonM0, 'PhaseEncodingDirection') && ~isfield(jsonASL, 'PhaseEncodingDirection')
+					% If none of the fields exist in DICOM, then assign the default
+					jsonM0.PhaseEncodingDirection = 'j-';
+					jsonASL.PhaseEncodingDirection = 'j-';
+					fprintf('Phase-encoding direction for ASL and M0 is not specified, using the default AP direction.\n');
+				elseif isfield(jsonM0, 'PhaseEncodingDirection') && isfield(jsonASL, 'PhaseEncodingDirection')
+					% Both ASL and M0 have the phase-encoding direction field in DICOM, check if this is consistent
+					if ~strcmp(jsonM0.PhaseEncodingDirection, jsonASL.PhaseEncodingDirection)
+						warning('Phase-encoding direction differs between ASL and M0');
+					end
+				elseif isfield(jsonM0, 'PhaseEncodingDirection')
+					% Only M0 has the field
+					jsonASL.PhaseEncodingDirection = jsonM0.PhaseEncodingDirection;
+					fprintf('Phase-encoding direction was not specified for ASL, using the same value as for M0.\n');
+				else
+					% Only ASL has the field
+					jsonM0.PhaseEncodingDirection = jsonASL.PhaseEncodingDirection;
+					fprintf('Phase-encoding direction was not specified for M0, using the same value as for ASL.\n');
+				end
 				
-				jsonM0.PhaseEncodingDirection = 'j-';
-				jsonLocal.PhaseEncodingDirection = 'j-';
+				% Define the direction tag for the BIDS field name based on the DICOM value
+				switch (jsonM0.PhaseEncodingDirection)
+					case 'i'
+						strPEDirection = '_dir-rl';
+					case 'i-'
+						strPEDirection = '_dir-lr';
+					case 'j'
+						strPEDirection = '_dir-pa';
+					case 'j-'
+						strPEDirection = '_dir-ap';
+					case 'k'
+						strPEDirection = '_dir-si';
+					case 'k-'
+						strPEDirection = '_dir-is';
+				end
+
 			else
 				strPEDirection = '';
 			end
-			if bJsonLocalM0isFile
-				jsonLocal.M0 = [jsonLocal.M0 strPEDirection '_' bidsPar.stringM0scan '.nii.gz'];
+			if bjsonASLM0isFile
+				jsonASL.M0 = [jsonASL.M0 strPEDirection '_' bidsPar.stringM0scan '.nii.gz'];
             end
             
 			% Define the path to the respective ASL
@@ -146,15 +180,40 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
             bidsm0scanLabel = [subjectSessionLabel strPEDirection runLabel '_' bidsPar.stringM0scan];
 			pathM0Out = fullfile(outSessionPath,bidsPar.stringPerfusion,bidsm0scanLabel);
 		else
-			jsonM0.PhaseEncodingDirection = 'j';
-            strPEDirectionPA = '_dir-pa';
-            strPEDirectionAP = '_dir-ap';
+			% The value is missing for the M0 with reversed PE, we assign the same default as for the ASL and M0 scans
+			if ~isfield(jsonM0, 'PhaseEncodingDirection')
+				jsonM0.PhaseEncodingDirection = 'j';
+				fprintf('Phase-encoding direction for reversed-PE M0 is not specified, using the default PA direction.\n');
+			end
+
+			% Define the direction tag and inversed-direction tag for the BIDS field name based on the DICOM value
+			switch(jsonM0.PhaseEncodingDirection)
+				case 'i'
+					strPEDirectionNorm    = '_dir-rl';
+					strPEDirectionReverse = '_dir-lr';
+				case 'i-'
+					strPEDirectionNorm    = '_dir-lr';
+					strPEDirectionReverse = '_dir-rl';
+				case 'j'
+					strPEDirectionNorm    = '_dir-pa';
+					strPEDirectionReverse = '_dir-ap';
+				case 'j-'
+					strPEDirectionNorm    = '_dir-ap';
+					strPEDirectionReverse = '_dir-pa';
+				case 'k'
+					strPEDirectionNorm    = '_dir-si';
+					strPEDirectionReverse = '_dir-is';
+				case 'k-'
+					strPEDirectionNorm    = '_dir-is';
+					strPEDirectionReverse = '_dir-si';
+			end
+
             % Determine output name
             aslLegacyLabel = 'ASL4D';
-            bidsm0scanLabelPA = [subjectSessionLabel strPEDirectionPA runLabel '_' bidsPar.stringM0scan];
-            bidsm0scanLabelAP = [subjectSessionLabel strPEDirectionAP runLabel '_' bidsPar.stringM0scan];
-            jsonM0.IntendedFor = fullfile(bidsPar.stringPerfusion,[bidsm0scanLabelAP '.nii.gz']);
-            pathM0Out = fullfile(outSessionPath,bidsPar.stringFmap,bidsm0scanLabelPA);
+            bidsm0scanLabelNorm    = [subjectSessionLabel strPEDirectionNorm    runLabel '_' bidsPar.stringM0scan];
+            bidsm0scanLabelReverse = [subjectSessionLabel strPEDirectionReverse runLabel '_' bidsPar.stringM0scan];
+            jsonM0.IntendedFor = fullfile(bidsPar.stringPerfusion, [bidsm0scanLabelReverse '.nii.gz']);
+            pathM0Out = fullfile(outSessionPath, bidsPar.stringFmap, bidsm0scanLabelNorm);
 		end
 		
 		% Create the directory for the reversed PE if needed
@@ -164,7 +223,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		
 		% If M0, then copy M0 and add ASL path to the IntendedFor
 		if xASL_exist([pathM0In '.nii'])
-			jsonM0 = xASL_bids_BIDSifyM0(jsonM0, jsonLocal, studyPar, pathM0In, pathM0Out, headerASL);
+			jsonM0 = xASL_bids_BIDSifyM0(jsonM0, jsonASL, studyPar, pathM0In, pathM0Out, headerASL);
 			
 			% Save JSON to new dir
 			jsonM0 = xASL_bids_VendorFieldCheck(jsonM0);
@@ -176,10 +235,10 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 
 
     %% 6. Save all ASL files (JSON, NIFTI, CONTEXT) to the BIDS directory
-    jsonLocal = xASL_bids_BIDSifyASLNII(jsonLocal, bidsPar, fullfile(inSessionPath,[aslLegacyLabel '.nii']), aslOutLabel);
-    jsonLocal = xASL_bids_VendorFieldCheck(jsonLocal);
-    [jsonLocal,bidsReport] = xASL_bids_JsonCheck(jsonLocal,'ASL');
-    xASL_io_WriteJson([aslOutLabel '_' bidsPar.stringASL '.json'],jsonLocal);
+    jsonASL = xASL_bids_BIDSifyASLNII(jsonASL, bidsPar, fullfile(inSessionPath,[aslLegacyLabel '.nii']), aslOutLabel);
+    jsonASL = xASL_bids_VendorFieldCheck(jsonASL);
+    [jsonASL,bidsReport] = xASL_bids_JsonCheck(jsonASL,'ASL');
+    xASL_io_WriteJson([aslOutLabel '_' bidsPar.stringASL '.json'],jsonASL);
 
     % Export report file for ASL dependencies
     if exist('bidsReport','var')
