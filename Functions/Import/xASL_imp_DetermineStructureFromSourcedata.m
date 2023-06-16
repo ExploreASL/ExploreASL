@@ -16,14 +16,14 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
     %% Read sourcedata
     x = xASL_imp_ReadSourceData(x);
 
 	% Report missing tokenOrdering field
-	if ~isfield(x.modules.import.imPar,'tokenOrdering') || isempty(x.modules.import.imPar.tokenOrdering)
+	if ~isfield(x.modules.import.imPar, 'tokenOrdering') || isempty(x.modules.import.imPar.tokenOrdering)
 		error('tokenOrdering parameter not specified or empty');
 	end
 	
@@ -37,7 +37,7 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
     else
         x.modules.import.settings.bUseVisits = true;
         % vVisitIDs: cell vector with extracted session IDs (for all subjects, sessions and scans)
-        x.modules.import.listsIDs.vVisitIDs = x.modules.import.tokens(:,x.modules.import.imPar.tokenOrdering(2));
+        x.modules.import.listsIDs.vVisitIDs = x.modules.import.tokens(:, x.modules.import.imPar.tokenOrdering(2));
     end
     
     %% SESSIONS
@@ -50,13 +50,13 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
     else
         x.modules.import.settings.bUseSessions = true;
         % vSessionIDs: Cell vector with extracted session IDs (for all subjects and scans)
-        x.modules.import.listsIDs.vSessionIDs = x.modules.import.tokens(:,x.modules.import.imPar.tokenOrdering(3));
+        x.modules.import.listsIDs.vSessionIDs = x.modules.import.tokens(:, x.modules.import.imPar.tokenOrdering(3));
     end
     
     %% SCANTYPES
     
     % vScanIDs: cell vector with extracted scan IDs (for all subjects, visits and sessions)
-    x.modules.import.listsIDs.vScanIDs = x.modules.import.tokens(:,x.modules.import.imPar.tokenOrdering(4)); 
+    x.modules.import.listsIDs.vScanIDs = x.modules.import.tokens(:, x.modules.import.imPar.tokenOrdering(4)); 
     
     % Convert the vectors to unique & sort sets by the output aliases
     x.modules.import.listsIDs.subjectIDs  = sort(unique(x.modules.import.listsIDs.vSubjectIDs));
@@ -95,8 +95,8 @@ function xASL_imp_PrintOverview(x)
         overviewFields = fieldnames(x.importOverview);
         for iField=1:numel(overviewFields)
             thisSubject = overviewFields{iField};
-            if ~isempty(regexpi(thisSubject,'subject_'))
-                xASL_imp_PrintSubject(x,thisSubject);
+            if ~isempty(regexpi(thisSubject, 'subject_'))
+                xASL_imp_PrintSubject(x, thisSubject);
             end
         end
     end
@@ -117,13 +117,13 @@ function xASL_imp_PrintSubject(x,thisSubject)
     subjectLevelFields = fieldnames(x.importOverview.(thisSubject));
     for iSubjectField=1:numel(subjectLevelFields)
         thisSession = subjectLevelFields{iSubjectField};
-        if ~isempty(regexpi(thisSession,'visit_'))
-            xASL_imp_PrintSession(x,thisSubject,thisSession);
+        if ~isempty(regexpi(thisSession, 'visit_'))
+            xASL_imp_PrintSession(x, thisSubject, thisSession);
         end
     end
 
 end
-function xASL_imp_PrintSession(x,thisSubject,thisSession)
+function xASL_imp_PrintSession(x, thisSubject, thisSession)
 
     % Print each individual session (=visits in legacy terminology)
     if isfield(x.importOverview.(thisSubject).(thisSession),'name')
@@ -138,7 +138,7 @@ function xASL_imp_PrintSession(x,thisSubject,thisSession)
     for iSessionField=1:numel(sessionLevelFields)
         thisRun = sessionLevelFields{iSessionField};
         if ~isempty(regexpi(thisRun,'run_'))
-            xASL_imp_PrintRun(x,thisSubject,thisSession,thisRun);
+            xASL_imp_PrintRun(x,thisSubject, thisSession, thisRun);
         end
     end
 
@@ -162,7 +162,7 @@ function x = xASL_imp_AddSubjectOverview(x)
     
     for iSubject=1:numel(x.modules.import.listsIDs.subjectIDs)
         thisSubject = x.modules.import.listsIDs.subjectIDs{iSubject};
-        x = xASL_imp_AddSubject(x,thisSubject,iSubject);
+        x = xASL_imp_AddSubject(x, thisSubject, iSubject);
     end
 
 end
@@ -195,16 +195,16 @@ end
 
 
 %% Add single visit to overview
-function x = xASL_imp_AddVisit(x,sFieldName,vSubjectIDs,thisVisit,iVisit)
+function x = xASL_imp_AddVisit(x, sFieldName, vSubjectIDs, thisVisit, iVisit)
 
 
     %% Add basic visit fields
 
     % Determine visit field name
-    vFieldName = ['visit_' num2str(iVisit,'%03.f')];
+    vFieldName = ['visit_' num2str(iVisit, '%03.f')];
     
     % Get vVisitIDs
-    vVisitIDs = strcmp(x.modules.import.listsIDs.vVisitIDs,thisVisit);
+    vVisitIDs = strcmp(x.modules.import.listsIDs.vVisitIDs, thisVisit);
     vVisitIDs = vSubjectIDs & vVisitIDs;
     
     % Assign visit name and sessions
@@ -219,7 +219,8 @@ function x = xASL_imp_AddVisit(x,sFieldName,vSubjectIDs,thisVisit,iVisit)
         for iV=1:numel(x.importOverview.(sFieldName).visitIDs)
             IDrow(iV) = find(cellfun(@(y) strcmp(y,x.importOverview.(sFieldName).visitIDs{iV}), x.modules.import.imPar.tokenVisitAliases(:,1)));
         end
-        x.importOverview.(sFieldName).listsIDs.visitIDs = x.importOverview.(sFieldName).visitIDs(IDrow);
+        %x.importOverview.(sFieldName).listsIDs.visitIDs = x.importOverview.(sFieldName).visitIDs(IDrow);
+		x.importOverview.(sFieldName).listsIDs.visitIDs = x.modules.import.imPar.tokenVisitAliases(IDrow,1);
     end
     
     % Add additional fields
