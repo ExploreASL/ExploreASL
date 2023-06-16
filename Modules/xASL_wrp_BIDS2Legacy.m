@@ -96,7 +96,7 @@ for iSubjSess=1:numel(x.modules.bids2legacy.BIDS.subjects)
         else
 			if isempty(iVisit)
                 fprintf('\nEmpty session number, setting session number to 1...\n');
-                pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_' xASL_num2str(iVisit)]);
+                pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_1']);
 			else
 				% If Visit name is of a form ses-number then use this number otherwise the ID
 				if regexpi(SessionID, 'ses-\d+')
