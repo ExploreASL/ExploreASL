@@ -217,7 +217,13 @@ function x = xASL_imp_AddVisit(x, sFieldName, vSubjectIDs, thisVisit, iVisit)
     % Sort by output
     if length(x.importOverview.(sFieldName).visitIDs)>1
         for iV=1:numel(x.importOverview.(sFieldName).visitIDs)
-            IDrow(iV) = find(cellfun(@(y) strcmp(y,x.importOverview.(sFieldName).visitIDs{iV}), x.modules.import.imPar.tokenVisitAliases(:,1)));
+          	idVisit = cellfun(@(y) regexp(y, x.importOverview.(sFieldName).visitIDs{iV}), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
+			idVisit = find(cellfun(@(y) ~isempty(y), idVisit));
+			if isempty(idVisit)
+				error('Visit not identified');
+			else
+				IDrow(iV) = idVisit(1);
+			end
         end
         %x.importOverview.(sFieldName).listsIDs.visitIDs = x.importOverview.(sFieldName).visitIDs(IDrow);
 		x.importOverview.(sFieldName).listsIDs.visitIDs = x.modules.import.imPar.tokenVisitAliases(IDrow,1);
