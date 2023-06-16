@@ -263,7 +263,7 @@ end
 
 
 %% Add visit names
-function x = xASL_imp_AddVisitNames(x,sFieldName)
+function x = xASL_imp_AddVisitNames(x, sFieldName)
 
     if isempty(x.modules.import.imPar.visitNames)
         if isempty(x.importOverview.(sFieldName).visitIDs)
@@ -273,7 +273,19 @@ function x = xASL_imp_AddVisitNames(x,sFieldName)
             end
         else
             for iVisit=1:numel(x.importOverview.(sFieldName).visitIDs)
-                x.modules.import.imPar.visitNames{iVisit} = sprintf('ASL_%g', iVisit);
+				% Find the name id of the visit according to its number
+				idVisit = find(cellfun(@(y) strcmp(y, x.importOverview.(sFieldName).visitIDs{iVisit}), x.modules.import.imPar.tokenVisitAliases(:,1)));
+				% Resolve the new name of the visit
+				nameVisit = x.modules.import.imPar.tokenVisitAliases{idVisit, 2};
+				
+				% Extract the number of the visit
+				numberVisit = regexp(nameVisit, '\d+');
+				if ~isempty(numberVisit)
+					numberVisit = nameVisit(numberVisit:end);
+				else
+					numberVisit = sprintf('%g', idVisit);
+				end
+				x.modules.import.imPar.visitNames{iVisit} = sprintf('ASL_%s', numberVisit);
             end
         end
     end
