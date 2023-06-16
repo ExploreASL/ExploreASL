@@ -94,12 +94,17 @@ for iSubjSess=1:numel(x.modules.bids2legacy.BIDS.subjects)
             pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, SubjectID);
             VisitString = '';
         else
-            if isempty(iVisit)
+			if isempty(iVisit)
                 fprintf('\nEmpty session number, setting session number to 1...\n');
-                iVisit = 1;
-            end
-
-            pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_' xASL_num2str(iVisit)]);
+                pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_' xASL_num2str(iVisit)]);
+			else
+				% If Visit name is of a form ses-number then use this number otherwise the ID
+				if regexpi(SessionID, 'ses-\d+')
+					pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_' SessionID(5:end)]);
+				else
+					error(['Not yet supporting session names as strings, but only as numbers for session ', SessionID]);
+				end
+			end
             VisitString = [' visit ' SessionID];
         end
         
