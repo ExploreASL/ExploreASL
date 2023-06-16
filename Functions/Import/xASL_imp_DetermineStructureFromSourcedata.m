@@ -274,7 +274,7 @@ function x = xASL_imp_AddVisitNames(x, sFieldName)
         else
             for iVisit=1:numel(x.importOverview.(sFieldName).visitIDs)
 				% Find the name id of the visit according to its number
-				idVisit = find(cellfun(@(y) strcmp(y, x.importOverview.(sFieldName).visitIDs{iVisit}), x.modules.import.imPar.tokenVisitAliases(:,1)));
+				idVisit = find(cellfun(@(y) regexp(y, x.importOverview.(sFieldName).visitIDs{iVisit}), x.modules.import.imPar.tokenVisitAliases(:,1)));
 				% Resolve the new name of the visit
 				nameVisit = x.modules.import.imPar.tokenVisitAliases{idVisit, 2};
 				
