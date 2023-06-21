@@ -121,6 +121,5 @@ function xASL_test_SPM(TestDirDest, bTestDataUsed)
         DirIs = fullfile(TestDirDest,DirsAre{iDir});
         xASL_adm_DeleteFileList(DirIs, '.*', true, [0 Inf]);
         xASL_delete(DirIs);
-    end
-    
-    end
+    end    
+end
