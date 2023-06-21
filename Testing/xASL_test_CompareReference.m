@@ -29,8 +29,8 @@ function [ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(pathRefTable)
         end
         iRow=iRow+1;
     end
-
 end
+
 
 %% Compare Results and Reference Tables
 function [ResultsComparison, ResultsDifference] = xASL_qc_CompareTables(TestDir, ReferenceTable, ResultsTable)
@@ -51,8 +51,6 @@ function [ResultsComparison, ResultsDifference] = xASL_qc_CompareTables(TestDir,
         currentReferenceTable = ReferenceTable.(versionsXASL{iVersion});
         for iRow = 2:size(currentReferenceTable,1)
             ResultsComparison.(versionsXASL{iVersion})(iRow,2:end) = {NaN};
-            ResultsComparison.(versionsXASL{iVersion})(iRow,2:end) = {NaN};
-            ResultsDifference.(versionsXASL{iVersion})(iRow,2:end) = {NaN};
             ResultsDifference.(versionsXASL{iVersion})(iRow,2:end) = {NaN};
             if strcmp(currentReferenceTable{iRow,1},ResultsTable{iRow,1})
                 % Iterate over results
@@ -112,12 +110,7 @@ function [ResultsComparison, ResultsDifference] = xASL_qc_CompareTables(TestDir,
         xASL_tsvWrite(ResultsComparison.(versionsXASL{iVersion}), fullfile(TestDir, ComparisonTableTsv));
         xASL_tsvWrite(ResultsDifference.(versionsXASL{iVersion}), fullfile(TestDir, DifferencesTableTsv));
     end
-
- 
-
-
 end
-
 
 %% Determine the results table
 function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTable(TestDir, Dlist)
