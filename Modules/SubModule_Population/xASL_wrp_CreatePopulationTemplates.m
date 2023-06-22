@@ -293,9 +293,20 @@ end
 %% 2. Iterate over scan types & sessions
 for iScanType=1:length(PreFixList)
     UnAvailable = 0;
+
+	% Define sessions if relevant for the datatype
+	if SessionsExist(iScanType)
+		% We are looking for all ASL_X sessions
+		x.S.InputDataStr = PreFixList{iScanType};
+		[nSessions, ~, listSessions] = xASL_adm_GetPopulationSessions(x);
+	else
+		% For this scantype, there are not ASL_X sessions, so we set a dummy single session
+		listSessions = {'ASL_1'};
+		nSessions = 1;
+	end
     
     fprintf('%s\n', ['Searching ' TemplateNameList{iScanType} ' images:']);
-    for iSession=1:x.dataset.nSessions % iterate over sessions
+    for iSession=1:nSessions % iterate over sessions
 
         if iSession==1 && ~SessionsExist(iScanType)
                 % For structural scans, there is no session appendix
@@ -306,7 +317,7 @@ for iScanType=1:length(PreFixList)
                 % skip this
                 bProceedThisSession = 0;
         elseif SessionsExist(iScanType)
-                SessionAppendix = ['_' x.SESSIONS{iSession}];
+                SessionAppendix = ['_' listSessions{iSession}];
                 bProceedThisSession = 1;
         end
 
@@ -326,7 +337,7 @@ for iScanType=1:length(PreFixList)
                 error('Mismatch between x.S.SetsID & x.dataset.nSubjectsSessions');
             end
             
-            LoadSetsID = logical(zeros(size(x.S.SetsID, 1), 1));
+            LoadSetsID = false(size(x.S.SetsID, 1), 1);
             
             AnyBilateralFound = false;
             AnyUnilateralFound = false;
@@ -334,8 +345,8 @@ for iScanType=1:length(PreFixList)
             % ----------------------------------------------------------------------------------------------------
             %% 3. Check availability images          
             for iSubject = 1:x.dataset.nSubjects
-                SubjSess = (iSubject-1)*x.dataset.nSessions + iSession;
-                xASL_TrackProgress(SubjSess,x.dataset.nSubjects*x.dataset.nSessions);
+                SubjSess = (iSubject-1)*nSessions + iSession;
+                xASL_TrackProgress(SubjSess, x.dataset.nSubjects* nSessions);
                 PathNII = fullfile(x.D.PopDir,[PreFixList{iScanType} '_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
                 PathNII_Left = fullfile(x.D.PopDir,[PreFixList{iScanType} '-L_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
                 PathNII_Right = fullfile(x.D.PopDir,[PreFixList{iScanType} '-R_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
@@ -435,7 +446,7 @@ for iScanType=1:length(PreFixList)
                     
                     if bProceedComputationMaps
                         % initialize image indices that will be included
-                        NotOutliers = logical(ones(1, size(IM{1}, 2)));
+                        NotOutliers = true(1, size(IM{1}, 2));
                         
                         % ----------------------------------------------------------------------------------------------------
                         %% 5. Remove outliers
@@ -475,7 +486,7 @@ for iScanType=1:length(PreFixList)
                                     warning(['Cannot create maps for non-ordinal set ' x.S.SetsName{Sets2Check(iSet)} ', skipping'])
                                 else
                                     % run an iteration for a subset
-                                    xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check(iSet), IM, IM2noMask, iScanType, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM);
+                                    xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check(iSet), IM, IM2noMask, iScanType, listSessions, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM);
                                 end
                             end % iSet=1:length(Sets2Check)
                         end % if bComputeSets
@@ -483,7 +494,7 @@ for iScanType=1:length(PreFixList)
                 end % bSkipWhenMissingScans && UnAvailable>0.10*nSize
             end % bSkipWhenMissingScans && isempty(LoadFiles)
         end % if bProceedThisSession
-    end % for iSession=1:x.dataset.nSessions
+    end % for iSession=1:nSessions
     fprintf('\n');
     if UnAvailable>0
         fprintf('%s\n',[num2str(UnAvailable) ' ' PreFixList{iScanType} ' files missing']);
@@ -500,7 +511,7 @@ end
 
 %% ===================================================================================
 %% ===================================================================================
-function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Set2Check, IM, IM2noMask, iScanType, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM)
+function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Set2Check, IM, IM2noMask, iScanType, listSessions, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM)
 %xASL_wrp_CreatePopulationTemplates4Sets Subfunction that creates the parametric images for subsets
 %
 % INPUT:
@@ -523,6 +534,7 @@ function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutlie
 %   iSet              - index of current set
 %   iScanType         - index of the scan types for which parametric maps are
 %                       computed
+%   listSessions      - List of the sessions to use
 %   SessionsExist     - boolean indicating if sessions exist for this
 %                       ScanType
 %   iSession          - index of session for which parametric maps are computed
@@ -565,7 +577,7 @@ function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutlie
 % 3. Reset SetOptions to inclusion/NaN instead of left/right/NaN
 % 4. iterate over the options/categories of this set, to create parametric maps
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
 % Get CurrentSet
@@ -708,7 +720,7 @@ for iU=1:length(UniqueSet)
             if ~SessionsExist(iScanType) && length(WithinGroup)==x.dataset.nSubjectsSessions
                 % if no sessions exist, but "WithinGroup" definition was
                 % based on all subject/sessions, then correct this
-                CurrSess = [1:x.dataset.nSessions:x.dataset.nSubjectsSessions]' + (iSession-1);
+                CurrSess = [1:length(listSessions):x.dataset.nSubjectsSessions]' + (iSession-1);
                 WithinGroup = WithinGroup(CurrSess);
             end
 

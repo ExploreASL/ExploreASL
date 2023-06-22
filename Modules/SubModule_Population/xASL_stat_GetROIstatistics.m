@@ -42,8 +42,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %              0. Administration
 %              0.a Manage masking
 %              0.b Obtain ASL sequence
-%              0.c Define number of sessions to use
-%              0.d Determine whether group mask exists
+%              0.c Determine whether group mask exists
 %              1. Skip ROI masks that are smaller than 1 mL
 %                 as this would be too noisy for ASL (ignored when x.S.IsASL==false)
 %              2. Expand each ROI mask such that it has sufficient WM
@@ -86,16 +85,14 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %% ------------------------------------------------------------------------------------------------------------
 %% 0 Administration
 
-% Below, at 0.c xASL_adm_GetPopulationSessions redefines x.SESSIONS based
-% on the specific x.S.InputDataStr datatype, whereas in the Population
-% module this should stay the same as it was
-SESSIONSoriginal = x.SESSIONS;
+[nSessions, bSessionsMissing, listSessions] = xASL_adm_GetPopulationSessions(x); % obtain sessions & number of sessions
+
 
 if x.S.InputNativeSpace
 	% Native space
-	x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},x.SESSIONS{1},[x.S.InputAtlasNativeName '.nii']));
+	x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
 	x.S.masks.WBmask = sum(x.S.masks.WBmask,4) > 0;
-	x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},x.SESSIONS{1},'LeftRight_Atlas.nii'));
+	x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},listSessions{1},'LeftRight_Atlas.nii'));
 	x.LeftMask = (x.S.masks.WBmask .* (x.LeftMask == 1)) > 0;
 else
 	% Standard space
@@ -160,7 +157,7 @@ bWarnedPVWMH = false;
 namesROIlocal = x.S.NamesROI;
 
 if x.S.InputNativeSpace
-	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},x.SESSIONS{1},[x.S.InputAtlasNativeName '.nii']));
+	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
 	atlasN = max(inputAtlasTmp(:));
 	x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
 	for kk = 1:atlasN
@@ -187,11 +184,7 @@ else
 end
 
 
-%% 0.c Define number of sessions to use
-[nSessions, bSessionsMissing, x.SESSIONS] = xASL_adm_GetPopulationSessions(x); % obtain number of Sessions by determining amount of input files present in the Population folder
-
-
-%% 0.d Determine whether group mask exists
+%% 0.c Determine whether group mask exists
 if x.S.InputNativeSpace
 	x.S.bMasking(1) = 0; % disable susceptibility masking
 else
@@ -215,9 +208,9 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
 
 %if x.S.IsASL
     %% ------------------------------------------------------------------------------------------------------------
-    %% 1) For all ROIs, skip ROIs smaller than 1 mL (296 voxels @ 1.5x1.5x1.5 mm)
+    %% 1. For all ROIs, skip ROIs smaller than 1 mL (296 voxels @ 1.5x1.5x1.5 mm)
 	if x.S.InputNativeSpace
-		VoxelSize = xASL_io_ReadNifti(fullfile(x.D.ROOT,x.SUBJECTS{1},x.SESSIONS{1},[x.S.InputAtlasNativeName '.nii']));
+		VoxelSize = xASL_io_ReadNifti(fullfile(x.D.ROOT,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
 		VoxelSize = [norm(VoxelSize.mat(1:3,1)), norm(VoxelSize.mat(1:3,2)), norm(VoxelSize.mat(1:3,3))];
 	else
 		VoxelSize = [1.5 1.5 1.5];
@@ -248,13 +241,13 @@ for iSubject=1:x.dataset.nSubjects
 			x.S.SubjectSessionID{SubjSess,1} = x.SUBJECTS{iSubject};
             TotalRows = x.dataset.nSubjects;
 		else
-			x.S.SubjectSessionID{SubjSess,1} = [x.SUBJECTS{iSubject} '_' x.SESSIONS{iSess}];
+			x.S.SubjectSessionID{SubjSess,1} = [x.SUBJECTS{iSubject} '_' listSessions{iSess}];
             TotalRows = x.dataset.nSubjectsSessions;
         end
         
 		if x.S.IsASL
 			%% ------------------------------------------------------------------------------------------------------------
-			%% 2) For all ROIs, expand ROIs to contain sufficient pWM for PVEc
+			%% 2. For all ROIs, expand ROIs to contain sufficient pWM for PVEc
 			%  And this can also be used for the PVC==0 results, which are masked
 			%  by individual pGM anyway. This actually could improve individual accuracy/precision,
 			%  since it weighs more to the individual masking, compared to the
@@ -263,19 +256,19 @@ for iSubject=1:x.dataset.nSubjects
 			%  to change much
 			if x.S.InputNativeSpace
 				% Reload the previous masks for this subject/session
-				if ~xASL_exist(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[x.S.InputAtlasNativeName '.nii']),'file')
-					fprintf('%s\n',[fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[x.S.InputAtlasNativeName '.nii']) ' missing...']);
+				if ~xASL_exist(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']),'file')
+					fprintf('%s\n',[fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']) ' missing...']);
 					continue;
 				end
 
-				x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[x.S.InputAtlasNativeName '.nii']));
+				x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']));
 				x.S.masks.WBmask = sum(x.S.masks.WBmask,4) > 0;
-				x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},'LeftRight_Atlas.nii'));
+				x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},'LeftRight_Atlas.nii'));
 				x.LeftMask = (x.S.masks.WBmask .* (x.LeftMask == 1)) > 0;
 
 				x.LeftMask = xASL_im_IM2Column(x.LeftMask, x.S.masks.WBmask);
 
-				inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},[x.S.InputAtlasNativeName '.nii']));
+				inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']));
 				atlasN = max(inputAtlasTmp(:));
 				x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
 				for kk = 1:atlasN
@@ -295,7 +288,7 @@ for iSubject=1:x.dataset.nSubjects
 				end
 
 				x.dir.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
-				x.dir.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess});
+				x.dir.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess});
 				x = xASL_init_FileSystem(x);
 				pGM_MNI = xASL_io_Nifti2Im(x.P.Path_PVgm);
 				pWM_MNI = xASL_io_Nifti2Im(x.P.Path_PVwm);
@@ -333,7 +326,7 @@ for iSubject=1:x.dataset.nSubjects
 			end
 		end
 
-		%% 3) Create for each ROI mask a left, right and bilateral copy
+		%% 3. Create for each ROI mask a left, right and bilateral copy
 		%  Time is in file loading, not the computation;
 		% It assumes atlas symmetry though, which is true for most atlases
 		% For individual atlases (e.g. Lesion/ROI) this part may be skipped
@@ -355,7 +348,7 @@ for iSubject=1:x.dataset.nSubjects
 			bDoOnceROILR = 0;
 		end
 
-		%% 4) Iterate over all subjects
+		%% 4. Iterate over all subjects
 		if bDoOnceROIStart
 			fprintf('\n%s\n','Computing ROI data:   ');
 			bDoOnceROIStart = 0;
@@ -370,7 +363,7 @@ for iSubject=1:x.dataset.nSubjects
 		% Run this only once for the first session for the standard space mode, because all share the same maps
 		if x.S.InputNativeSpace
 			if x.S.IsASL
-				%% a) Load partial volume maps
+				%% 4.a Load partial volume maps
 				if xASL_exist(x.P.Path_PVgm,'file')
 					pGM = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVgm),x.S.masks.WBmask);
 				else
@@ -385,7 +378,7 @@ for iSubject=1:x.dataset.nSubjects
 					continue;
 				end
 
-				%% b) Correct for WMH SEGM -> IS THIS STILL REQUIRED???
+				%% 4.b Correct for WMH SEGM -> IS THIS STILL REQUIRED???
 				if xASL_exist(x.P.Path_PVwmh, 'file')
 					pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVwmh), x.S.masks.WBmask);
 					% we take sqrt(pWMH) to mimic the effective resolution of ASL (instead of smoothing)
@@ -402,7 +395,7 @@ for iSubject=1:x.dataset.nSubjects
 		else
 			if iSess == 1
 				if x.S.IsASL
-					%% a) Load partial volume maps
+					%% 4.b.a Load partial volume maps
 					PathGM = fullfile(x.D.PopDir, ['PV_pGM_' x.SUBJECTS{iSubject} '.nii']);
 					if xASL_exist(PathGM,'file')
 						pGM = xASL_im_IM2Column(xASL_io_Nifti2Im(PathGM),x.S.masks.WBmask);
@@ -419,7 +412,7 @@ for iSubject=1:x.dataset.nSubjects
 						continue;
 					end
 
-					%% b) Correct for WMH SEGM -> IS THIS STILL REQUIRED???
+					%% 4.b.b Correct for WMH SEGM -> IS THIS STILL REQUIRED???
 					WMHfile = fullfile(x.D.PopDir, ['PV_WMH_SEGM_' x.SUBJECTS{iSubject} '.nii']);
 					if xASL_exist(WMHfile,'file')
 						% The newer version with PV_WMH already pre-calculated
@@ -455,7 +448,7 @@ for iSubject=1:x.dataset.nSubjects
 		% but the one above that can be forced to a single nSessions
 		% in case of volume or TT or ATT
 
-		%% c) Load data
+		%% 4.c Load data
 		if x.S.InputNativeSpace %% PM: we repeat same code here twice
 			FilePath = fullfile(x.dir.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
 			if xASL_exist(FilePath,'file')
@@ -495,7 +488,7 @@ for iSubject=1:x.dataset.nSubjects
 			VascularMask = logical(DataIm);
 			DataIm(:) = NaN;
 		end
-		%% d) Show ROIs projected on ASL image
+		%% 4.d Show ROIs projected on ASL image
 		if x.S.SubjectWiseVisualization && ~x.S.InputNativeSpace
 			% this takes extra computation time, hence best switched off
 			% Prepare visualization settings
@@ -515,14 +508,14 @@ for iSubject=1:x.dataset.nSubjects
 		%         % Labeling efficiency normalization
 		%         if  x.LabEffNorm; temp = xASL_im_NormalizeLabelingTerritories( temp, logical(x.masks.Data.data(:,iSub,1)), x); end
 
-		%% e) Actual data computations
+		%% 4.e Actual data computations
 
 		SusceptibilityMask = xASL_im_IM2Column(x.S.masks.WBmask, x.S.masks.WBmask); % default = no susceptibility mask
         if x.S.bMasking(1)==1
             if x.S.InputNativeSpace
-				fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},'MaskSusceptibility_Atlas.nii');
-                if xASL_exist(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},'MaskSusceptibility_Atlas.nii'))
-                    SusceptibilityMask = xASL_im_IM2Column(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSess},'MaskSusceptibility_Atlas.nii'),x.S.masks.WBmask);
+				fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},'MaskSusceptibility_Atlas.nii');
+                if xASL_exist(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},'MaskSusceptibility_Atlas.nii'))
+                    SusceptibilityMask = xASL_im_IM2Column(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},'MaskSusceptibility_Atlas.nii'),x.S.masks.WBmask);
                 end
             else
                 if HasGroupSusceptMask % use population-based susceptibility mask
@@ -677,18 +670,7 @@ end % for iSub=1:x.dataset.nSubjects
 x.S.NamesROI = namesROIuse;
 fprintf('\n');
 
-% Resetting x.SESSIONS, see above at 0 and 0.c:
-% At 0.c xASL_adm_GetPopulationSessions redefines x.SESSIONS based
-% on the specific x.S.InputDataStr datatype, whereas in the Population
-% module this should stay the same as it was
-
-x.SESSIONS = SESSIONSoriginal;
-
 end
-
-
-
-
 
 
 

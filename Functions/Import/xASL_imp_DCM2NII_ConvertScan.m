@@ -48,7 +48,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
     % Get other basic fields
     scanID = thisRun.scanIDs{scanFields.iScan};
     summary_line = [];
-    thisSubject.summary_lines{scanFields.iSubject,scanFields.iVisit,scanFields.iSession,scanFields.iScan} = 'n/a';
+    thisSubject.summary_lines{scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan} = 'n/a';
     
     % If not verbose, track percentage progress
     if ~x.modules.import.imPar.bVerbose
@@ -71,7 +71,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
             branch = matches{1};
             scanpath = fullfile(x.modules.import.imPar.RawRoot,branch);
             % Determine destination directory
-            destdir = fullfile(x.modules.import.SubjDir, [thisVisit.scanNames{scanFields.iScan} '_' num2str(scanFields.iSession)]);
+            destdir = fullfile(x.modules.import.SubjDir, [thisVisit.scanNames{scanFields.iScan} '_' scanFields.numberSession]);
             % Add fields to catched errors
             dcm2niiCatchedErrors = xASL_imp_CatchErrors('isempty(iAlias)', WarningMessage, dbstack, ...
                 mfilename, pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, x.modules.import.imPar);
@@ -122,7 +122,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         if sum(thisSubject.globalCounts.converted_scans(scanFields.iSubject,scanFields.iVisit,:,scanFields.iScan))==0
             % Define warning message
             WarningMessage = ['Missing scan: ' [scanFields.subjectID x.modules.import.imPar.visitNames{scanFields.iVisit}] ', ' ...
-                num2str(scanFields.iSession) ', ' scan_name];
+               scanFields.numberSession ', ' scan_name];
             % Print warning
             if x.modules.import.imPar.bVerbose
                 warning(WarningMessage);
@@ -143,10 +143,10 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
     if ~isempty(strfind(thisVisit.scanNames{scanFields.iScan}, 'ASL4D')) || ~isempty(strfind(thisVisit.scanNames{scanFields.iScan}, 'M0'))
         session_name = scanFields.name;
     elseif ~isempty(strfind(thisVisit.scanNames{scanFields.iScan}, 'DSC4D'))
-        session_name = ['DSC_' num2str(scanFields.iSession)];
+        session_name = ['DSC_' num2str(scanFields.numberSession)];
     else
         % Allow multiple ScanTypes for sessions
-        session_name = [thisVisit.scanNames{scanFields.iScan} '_' num2str(scanFields.iSession)]; 
+        session_name = [thisVisit.scanNames{scanFields.iScan} '_' num2str(scanFields.numberSession)]; 
     end
 
     % Determine the subject directory name in the temp folder
@@ -195,7 +195,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
                 warning(['JSON sidecar missing for ' nii_files{iFile}]);
             end
         end
-        if ~isempty(jsonFiles) && isempty(regexp(first_match,'[nii|nii\.gz]$'))
+        if ~isempty(jsonFiles) && isempty(regexp(first_match, '[nii|nii\.gz]$', 'once'))
             [parms, x.modules.import.pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(...
                 x.modules.import.imPar, jsonFiles, first_match, x.modules.import.settings.bUseDCMTK, x.modules.import.pathDcmDict);
         end
@@ -239,7 +239,7 @@ function xASL_imp_Check_DCM2NII_Output(nii_files,scanID)
 
     % For some ADNI cases there are multiple anatomical scans in a single session (case 006_S_4485 e.g.).
     % This can be troublesome for NII2BIDS and BIDS2LEGACY.
-    if (~isempty(regexpi(scanID,'t1w')) ||  ~isempty(regexpi(scanID,'flair'))) && numel(nii_files)>1
+    if (~isempty(regexpi(scanID, 't1w', 'once')) ||  ~isempty(regexpi(scanID, 'flair', 'once'))) && numel(nii_files)>1
         fprintf('Multiple anatomical NIfTIs for a single session...\n');
     end
 

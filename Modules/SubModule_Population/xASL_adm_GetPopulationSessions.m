@@ -21,7 +21,7 @@ function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSession
 %
 % EXAMPLE: n/a
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2023 ExploreASL
 
 %% 1. Administration
 currentSubjectRegExp = x.dataset.subjectRegexp;
@@ -32,16 +32,21 @@ if strcmp(currentSubjectRegExp(end), '$')
     currentSubjectRegExp = currentSubjectRegExp(1:end-1);
 end
 
+if ~isfield(x.S, 'InputDataStr')
+    warning('x.S.InputDataStr missing, defaulting to qCBF');
+    x.S.InputDataStr = 'qCBF';
+end
+
 %% 2. Look for processed files from which to determine the amount of sessions present
 SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '_' currentSubjectRegExp '_ASL_\d+\.nii$'], 'FPList', [0 Inf]);
-
 
 %% 3. Obtain nSessions
 if isempty(SessionList) % If no files found, search for subject files instead of session files
 
-    nSessions = 1;
-    bSessionsMissing = 1;
-    fprintf('%s\n','No session or subject files found');
+	nSessions = 1;
+	bSessionsMissing = 1;
+	SESSIONS = {'ASL_1'};
+	warning('%s\n','No session or subject files found, defaulting to ASL_1 as single session');
     return;    
 else % If files found, continue with defining sessions from SessionList
     
@@ -67,7 +72,5 @@ else % If files found, continue with defining sessions from SessionList
         warning('Amount of Sessions differs between Subjects');
     end
 end
-
-
 
 end
