@@ -1,14 +1,43 @@
-function [result] = xASL_test_CompareReference(pathReference, pathResults)
+function [result] = xASL_test_CompareReference(pathReference, pathResults, pathDestination)
+   %xASL_test_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
+%
+% FORMAT: [result] = xASL_test_CompareReference(pathReference, pathResults [, pathDestination])
+% 
+% INPUT:
+%   pathReference - path to file containing all reference values to compare to (REQUIRED)
+%   pathResults   - path to folder where the test results are stored (REQUIRED)
+%   pathDestination  - path to folder where the test results moved to (OPTIONAL)
+%                      Defaults to saving in pathResults. 
+%                 
+% OUTPUT:
+%   result - Table containing all results from the test runs
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This function will run ExploreASL on several different
+%              datasets, do perform a full and thorough test of ExploreASL.
+%              Different environment variables include:
+%              x.settings.Quality 0 and 1
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:
+%
+%      [result] = xASL_test_CompareReference('<dir>/ExploreASL/Testing/Reference.mat', '<dir>/TestDataSetsTemp', '<dir>/TestResults');
+% __________________________________
+% Copyright (c) 2015-2023 ExploreASL 
 
-    result = struct;
-    Dlist = xASL_adm_GetFileList(pathResults,'^.*$','List',[0 Inf], true);
-    [result.ResultsTable, result.ResultTableFile,  result.SaveFile] = xASL_test_DetermineResultsTable(pathResults, Dlist);
-    [result.ReferenceTables , result.ReferenceTable] = xASL_qc_LoadRefTable(pathReference);
-    [result.ResultsComparison, result.ResultsDifference] = xASL_qc_CompareTables(pathResults, result.ReferenceTable, result.ResultsTable);  
+% Validate the input options
+if nargin < 2 || isempty(pathReference) || isempty(pathResults)
+    error('Require three input parameters pathReference, pathResults');
+end
+if nargin < 3 || isempty(pathDestination)
+    pathDestination = pathResults;
+end
+
+result = struct;
+Dlist = xASL_adm_GetFileList(pathResults,'^.*$','List',[0 Inf], true);
+[result.ResultsTable, result.ResultTableFile,  result.SaveFile] = xASL_test_DetermineResultsTable(pathResults, Dlist, pathDestination);
+[result.ReferenceTables , result.ReferenceTable] = xASL_qc_LoadRefTable(pathReference);
+[result.ResultsComparison, result.ResultsDifference] = xASL_qc_CompareTables(pathResults, result.ReferenceTable, result.ResultsTable, pathDestination);  
+
 end    
-    
-    
-    
     
 % Load Reference Table
 function [ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(pathRefTable)
@@ -33,7 +62,7 @@ end
 
 
 %% Compare Results and Reference Tables
-function [ResultsComparison, ResultsDifference] = xASL_qc_CompareTables(TestDir, ReferenceTable, ResultsTable)
+function [ResultsComparison, ResultsDifference] = xASL_qc_CompareTables(TestDir, ReferenceTable, ResultsTable, SaveDir)
 
     % Compare tables (skip first row)
     ResultsComparison = ReferenceTable;
@@ -107,13 +136,13 @@ function [ResultsComparison, ResultsDifference] = xASL_qc_CompareTables(TestDir,
         end
         
         DifferencesTableTsv = [TimeString, versionsXASL{iVersion}, '_DifferenceTable.tsv'];
-        xASL_tsvWrite(ResultsComparison.(versionsXASL{iVersion}), fullfile(TestDir, ComparisonTableTsv));
-        xASL_tsvWrite(ResultsDifference.(versionsXASL{iVersion}), fullfile(TestDir, DifferencesTableTsv));
+        xASL_tsvWrite(ResultsComparison.(versionsXASL{iVersion}), fullfile(SaveDir, ComparisonTableTsv));
+        xASL_tsvWrite(ResultsDifference.(versionsXASL{iVersion}), fullfile(SaveDir, DifferencesTableTsv));
     end
 end
 
 %% Determine the results table
-function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTable(TestDir, Dlist)
+function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTable(TestDir, Dlist, SaveDir)
 
     % Define results table name & fields
     ResultTableName = datestr(now,'yyyy-mm-dd_HH_MM');
@@ -209,8 +238,8 @@ function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTab
     % Save results
     ResultTableFile = [ResultTableName,'_ResultsTable.mat'];
     ResultTableTsv = [ResultTableName,'_ResultsTable.tsv'];
-    SaveFile = fullfile(TestDir, ResultTableFile);
-    SaveTsv = fullfile(TestDir, ResultTableTsv);
+    SaveFile = fullfile(SaveDir, ResultTableFile);
+    SaveTsv = fullfile(SaveDir, ResultTableTsv);
     save(SaveFile, 'ResultsTable');
     xASL_tsvWrite(ResultsTable, SaveTsv); 
 end
