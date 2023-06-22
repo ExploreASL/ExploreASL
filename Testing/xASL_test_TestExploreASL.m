@@ -1,4 +1,4 @@
-function [ResultsTable] = xASL_test_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed, RunTimePath, bPull)
+function [comparison] = xASL_test_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, MatlabPath, EmailAddress, Password, bOverwrite, testDataUsed, RunTimePath, bPull)
 %xASL_test_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
 %
 % FORMAT: [ResultsTable] = xASL_test_TestExploreASL(TestDirOrig, TestDirDest, RunMethod, bTestSPM, 
@@ -178,7 +178,7 @@ end
 % ============================================================
 %% 6) Compile results table
 xASL_adm_BreakString('6. Compile results table and compare with references','=');
-comparison = xASL_test_CompareReference(fullfile(x.opts.MyPath,'Testing','Reference','ReferenceValues.tsv'), TestDirDest);
+comparison = xASL_test_CompareReference(fullfile(x.opts.MyPath,'Testing','Reference','ReferenceValues.tsv'), TestDirDest, TestDirOrig);
 
 % Comparison with mat file
 try
