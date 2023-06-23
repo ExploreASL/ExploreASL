@@ -1,4 +1,27 @@
 function xASL_test_SPM(TestDirDest, bTestDataUsed)
+%xASL_test_SPM Initialize & test standalone SPM on low quality
+%
+% FORMAT: [ResultsTable] = xASL_test_SPM(TestDirDest[, bTestDataUsed])
+% 
+% INPUT:
+%   TestDirDest   - path to root folder containing all datasets to test processing on (REQUIRED)
+%   bTestDataUsed - Option 1: ExploreASL/External/TestDataSet as an input
+%                   Option 0: Another scan directory is used as TestDirOrig (DEFAULT, OPTIONAL)
+%                 
+% OUTPUT:
+%   ResultsTable - Table containing all results from the test runs
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION:  This script initializes and runs standalone SPM functions. 
+%               This is to to test wether SPM is running correctly within ExploreASL.
+%                   
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE:
+%
+%           xASL_test_SPM('<dir>/TestDataSets/');
+%           xASL_test_SPM('<dir>/ExploreASL/External', 1);
+% Copyright (c) 2015-2023 ExploreASL
+
     % Reset path
     path(pathdef);
     x = ExploreASL();

@@ -1,5 +1,5 @@
 function [result] = xASL_test_CompareReference(pathReference, pathResults, pathDestination)
-   %xASL_test_TestExploreASL Do a thorough test of the validity and reproducibility of ExploreASL
+%xASL_test_CompareReference compare the output of ExploreASL TestDataSets to reference values
 %
 % FORMAT: [result] = xASL_test_CompareReference(pathReference, pathResults [, pathDestination])
 % 
@@ -12,14 +12,12 @@ function [result] = xASL_test_CompareReference(pathReference, pathResults, pathD
 % OUTPUT:
 %   result - Table containing all results from the test runs
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function will run ExploreASL on several different
-%              datasets, do perform a full and thorough test of ExploreASL.
-%              Different environment variables include:
-%              x.settings.Quality 0 and 1
+% DESCRIPTION: This function will take the output from a processed version of TestDataSets and make a set of tables comparing it to reference values.
+%              The reference values are strored in ExploreASL/Testing/ReferenceValues.tsv
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:
 %
-%      [result] = xASL_test_CompareReference('<dir>/ExploreASL/Testing/Reference.mat', '<dir>/TestDataSetsTemp', '<dir>/TestResults');
+%      [result] = xASL_test_CompareReference('<dir>/ExploreASL/Testing//ReferenceValues.tsv', '<dir>/TestDataSetsTemp', '<dir>/TestResults');
 % __________________________________
 % Copyright (c) 2015-2023 ExploreASL 
 

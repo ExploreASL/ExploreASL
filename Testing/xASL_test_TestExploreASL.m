@@ -17,8 +17,8 @@ function [comparison] = xASL_test_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 %   EmailAddress- string with e-mail address for gmail account to use (OPTIONAL, DEFAULT = skip e-mailing results)
 %   Password    - string with password for this gmail account (REQUIRED when EmailAddress provided)
 %   bOverwrite  - Overwrite existing test results (OPTIONAL, DEFAULT=true);
-%   testDataUsed- Option 1: TestDataSet as an input
-%                 Option 0: Other (DEFAULT)
+%   testDataUsed- Option 1: ExploreASL/External/TestDataSet as an input
+%                 Option 0: Other directory used as TestDirOrig (DEFAULT)
 %   RunTimePath - When using a compiled version, the location of the
 %                 Matlab RunTime libraries (e.g. '/usr/local/MATLAB/MATLAB_Runtime/v96')
 %   bPull       - pull new version of the software (OPTIONAL, DEFAULT=true)
