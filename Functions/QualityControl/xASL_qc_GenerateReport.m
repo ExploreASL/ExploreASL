@@ -140,7 +140,6 @@ function [settings] = xASL_sub_parseJson(json, x, figure, line, settings)
                 if iscell(currentField(iPages))
                     [settings, line] = xASL_sub_parseContent(currentField{iPages}, x, figure, line, settings);
                 else
-                    currentField(iPages)
                     [settings, line] = xASL_sub_parseContent(currentField(iPages), x, figure, line, settings);
                 end
             end
