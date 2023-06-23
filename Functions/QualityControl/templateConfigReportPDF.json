@@ -11,7 +11,7 @@
     "pages": [
         {
             "type": "page",
-            "number": 1,
+            "pageIdentifier": "Example_1",
             "content": [
                 {
                     "type": "text",
@@ -219,7 +219,7 @@
         },
         {
             "type": "page",
-            "number": 2,
+            "pageIdentifier": "Example_2",
             "content": [
                 {
                     "type": "text",
@@ -331,37 +331,6 @@
                             "text": "This is a font 36 line test in a block"
                         }
                     ]
-                }
-            ]
-        },
-        {
-            "type":"page",
-            "number": 3,
-            "content":[
-                {
-                    "type": "text",
-                    "text": "This is an sample for the Explore ASL report Generator, See ExploreASL/Function/templateConfigReportPDF.json for the script generating this PDF."
-                },{
-                    "type": "text",
-                    "text": "You can make your own config file and place it as ConfigReportPDF.json in the ExploreASL derivatives folder."
-                },{
-                    "type": "text",
-                    "text": "Any config file in the derivatives folder will always take precedence over this one."
-                },{
-                    "type": "text",
-                    "text": "In your config you can define your own text, images and scans to be printed in this report."
-                },{
-                    "type": "text",
-                    "text": "In your config you can name your JSON blocks however you like, as long as the content is complete."
-                },{
-                    "type": "text",
-                    "text": "For scans you can define which specific slice you want in the config file."
-                },{
-                    "type": "text",
-                    "text": "The scans on the right can be found in the NIfTI files derivatives/ExploreASL/Population."
-                },{
-                    "type": "text",
-                    "text": "These scans are referred to by their x.P.<name> in the ConfigReportPDF.json."
                 }
             ]
         }

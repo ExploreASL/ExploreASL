@@ -87,7 +87,7 @@ function  xASL_sub_printPage(json, x, settings)
     %% Parse JSON and create the file
     [~] = xASL_sub_parseJson(json, x, primaryFig, line, settings);
 
-    PrintFile = ['xASL_Report', json.number];
+    PrintFile = ['xASL_Report_', json.pageIdentifier];
     PrintPath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, PrintFile); 
 
     print(primaryFig, PrintPath, '-dpdf', '-bestfit');
