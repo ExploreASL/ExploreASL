@@ -112,7 +112,7 @@ function xASL_sub_parseBlock(input, x, pageFig, settings)
     PrintFile = 'xASL_subImage';
     PrintPath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, PrintFile); 
     
-    print(local_image, PrintPath, '-djpeg')
+    print(local_image, PrintPath, '-djpeg');
     clear local_image
     
     figure(pageFig);
@@ -123,38 +123,63 @@ end
 
 function [settings] = xASL_sub_parseJson(json, x, figure, line, settings)
     fields = fieldnames(json);
+    
     for iField=1:length(fields)
         currentField=json.(fields{iField});
 
-        if ~isstruct(currentField)
-            continue;
-        end
-
-        if ~isfield(currentField, 'type')
-            error([currentField, 'containts no field type']);
-        end
-
-        switch currentField.type
-            case 'text' 
-                line = xASL_sub_PrintText(currentField, figure, line, settings);
-            case 'qc'
-                line = xASL_sub_PrintQC(currentField, fields{iField}, x, figure, line, settings);
-            case 'image'
-                xASL_sub_PrintImage(currentField, x, figure);  
-            case 'scan'
-                xASL_sub_PrintScan(currentField, x, figure);
-            case 'page'
-                xASL_sub_printPage(currentField, x, settings);  
-            case 'block'
-                xASL_sub_parseBlock(currentField, x, figure, settings);
-            case 'settings'
-                settings = xASL_sub_loadSettings(currentField, settings);  
-            case 'patients' 
-                PatientInfo = xASL_sub_readParticipantsTSV(x);
-                line = xASL_sub_PrintPatient(PatientInfo, figure, line, settings);
-        end  
-
+        if strcmp(fields{iField}, 'content')
+            for iContent=1:length(currentField)
+                if iscell(currentField(iContent))
+                    [settings, line] = xASL_sub_parseContent(currentField{iContent}, x, figure, line, settings);
+                else
+                    [settings, line] = xASL_sub_parseContent(currentField(iContent), x, figure, line, settings);
+                end
+            end
+        elseif strcmp(fields{iField}, 'pages')
+            for iPages=1:length(currentField)
+                if iscell(currentField(iPages))
+                    [settings, line] = xASL_sub_parseContent(currentField{iPages}, x, figure, line, settings);
+                else
+                    currentField(iPages)
+                    [settings, line] = xASL_sub_parseContent(currentField(iPages), x, figure, line, settings);
+                end
+            end
+        else
+            [settings, line] = xASL_sub_parseContent(currentField, x, figure, line, settings);
+        end 
     end
+end
+
+
+function [settings, line] = xASL_sub_parseContent(currentField, x, figure, line, settings)
+
+    if ~isstruct(currentField)
+        return;
+    end
+
+    if ~isfield(currentField, 'type')
+        error([currentField, 'containts no field specifying the type of content']);
+    end
+
+    switch currentField.type
+        case 'text' 
+            line = xASL_sub_PrintText(currentField, figure, line, settings);
+        case 'qc'
+            line = xASL_sub_PrintQC(currentField, x, figure, line, settings);
+        case 'image'
+            xASL_sub_PrintImage(currentField, x, figure);  
+        case 'scan'
+            xASL_sub_PrintScan(currentField, x, figure);
+        case 'page'
+            xASL_sub_printPage(currentField, x, settings);  
+        case 'block'
+            xASL_sub_parseBlock(currentField, x, figure, settings);
+        case 'settings'
+            settings = xASL_sub_loadSettings(currentField, settings);  
+        case 'patients' 
+            PatientInfo = xASL_sub_readParticipantsTSV(x);
+            line = xASL_sub_PrintPatient(PatientInfo, figure, line, settings);
+    end  
 end
 
 function PatientInfo = xASL_sub_readParticipantsTSV(x)
@@ -195,17 +220,14 @@ function line = xASL_sub_PrintPatient(PatientInfo, figure, line, settings)
 
 end
 
-function line = xASL_sub_PrintQC(json, name, x, figure, line, settings)
-    % Printing header/title
-    json.name = name;
-
+function line = xASL_sub_PrintQC(json, x, figure, line, settings)
     % Stop if module does not exists in output
     if ~isfield(x.Output, (json.module))
         return     
     end
 
     % Stop if field does not exists in output
-    if ~isfield(x.Output.(json.module), json.name)
+    if ~isfield(x.Output.(json.module), json.parameter)
         return     
     end
 
@@ -216,10 +238,10 @@ function line = xASL_sub_PrintQC(json, name, x, figure, line, settings)
     end
 
 
-    TempValue = x.Output.(json.module).(json.name);
+    TempValue = x.Output.(json.module).(json.parameter);
     
     if ~isfield(json, 'alias') 
-        json.alias = name;
+        json.alias = json.parameter;
     end
 
     if ~isfield(json, 'unit') 

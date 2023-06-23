@@ -1,364 +1,369 @@
-{   
-    "Global_Settings": {
+{
+    "globalSettings": {
         "type": "settings",
-		"fontSize": "8",
+        "fontSize": "8",
         "fontName": "default",
         "fontWeight": "normal",
         "color": "k",
         "axesVisible": "off",
         "HorizontalAlignment": "left"
-	},
-    "Page_one" : {
-        "type" : "page",
-        "number" : "1",
-        "Four_Slice_Scan": {
-            "type" : "scan",
-            "name" : "Pop_Path_rT1",
-            "position" : "[0.70 0.35]",
-            "size"     : "[0.3 0.3]",
-            "slice"    : {
-                "TraSlice" : "[25 75]",
-                "CorSlice" : "[25 75]",
-                "SagSlice" : "[]"},
-            "overlay"  : {
-                "Pop_Path_SliceGradient" :{
-                    "contour" :"true",
-                    "opacity" : "0.3",
-                    "color"   : "r"
-                }
-            }  
-        },
-        "Six_slices": {
-            "type" : "scan",
-            "name" : "Pop_Path_rT1",
-            "position" : "[0.70 0.65]",
-            "size"     : "[0.3 0.3]",
-            "slice"    : {
-                "TraSlice" : "[50 75]",
-                "CorSlice" : "[50 75]",
-                "SagSlice" : "[50 75]"},
-            "overlay"  : {
-                "Pop_Path_qCBF" :{
-                    "contour" :"true",
-                    "opacity" : "0.3",
-                    "color"   : "r"
-                }
-            }  
-        },
-        "Single_slice": {
-            "type" : "scan",
-            "name" : "Pop_Path_rT1",
-            "position" : "[0.70 0.05]",
-            "size"     : "[0.3 0.3]",
-            "slice"    : {
-                "TraSlice" : "[50]",
-                "CorSlice" : "[12 78]",
-                "SagSlice" : "[]"},
-            "overlay"  : {
-                "Pop_Path_MaskVascular" :{
-                    "contour" :"true",
-                    "opacity" : "0.3",
-                    "color"   : "r"
-                }
-            }  
-        },
-        "Patient_Info": {
-            "type" : "patients"
-        },
-        "Introduction": {
-            "type" : "text",
-            "text":"This is an sample for the Explore ASL report Generator, See ExploreASL/Function/templateConfigReportPDF.json for the script generating this PDF."
-        },
-        "PDFconfig": {
-            "type" : "text",
-            "text":"You can make your own config file and place it as ConfigReportPDF.json in the ExploreASL derivatives folder."
-        },
-        "ConfigPreference": {
-            "type" : "text",
-            "text":"Any config file in the derivatives folder will always take precedence over this one."
-        },
-        "Config Options": {
-            "type" : "text",
-            "text":"In your config you can define your own text, images and scans to be printed in this report."
-        },
-        "Json Options": {
-            "type" : "text",
-            "text":"In your config you can name your JSON blocks however you like, as long as the content is complete."
-        },
-        "Scan_Sclices": {
-            "type" : "text",
-            "text":"For scans you can define which specific slice you want in the config file."
-        },
-        "Scan_Locations": {
-            "type" : "text",
-            "text":"The scans on the right can be found in the NIfTI files derivatives/ExploreASL/Population."
-        },
-        "Scan_Paths_Locations": {
-            "type" : "text",
-            "text":"These scans are referred to by their x.P.<name> in the ConfigReportPDF.json."
-        },
-        "Scan_Paths_Locations2": {
-            "type" : "text",
-            "text":"This is usually simply Path_Pop_<name>."
-        },
-        "Structural_Title": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"10",
-                "fontWeight":"bold"
-            },
-            "text":"Below the Quality parameters of the Structural module will be printed."
-        },
-        "QC_Location_texts": {
-            "type" : "text",
-            "text":"These values can be found in derivatives/ExploreASL/<subject>/QC_collection_<subject>.json"
-        },
-        "QC_Range_texts": {
-            "type" : "text",
-            "text":"If the QC value is outside your specified range, it will display in red."
-        },
-        "T1w_GM_vol_mL": {
-            "type" : "qc",
-            "module" : "Structural",
-            "range": "1000-1200",
-            "Unit": "mL"
-        },
-        "T1w_WM_vol_mL": {
-            "type" : "qc",
-            "module" : "Structural",
-            "range": "300-600",
-            "Unit": "mL"
-        },
-        "T1w_CSF_vol_mL": {
-            "type" : "qc",
-            "module" : "Structural",
-            "range": "150-300",
-            "Unit": "mL"
-        },
-        "Version Title": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"10",
-                "fontWeight":"bold"
-            },
-            "text":"Below the some version numbers are printed."
-        },
-        "Version_CAT12": {
-            "type" : "qc",
-            "module" : "Structural"
-        },
-        "Version_ExploreASL": {
-            "type" : "qc",
-            "module" : "Structural"
-        },
-        "Version_LST": {
-            "type" : "qc",
-            "module" : "Structural"
-        },
-        "Version_Matlab": {
-            "type" : "qc",
-            "module" : "Structural"
-        },
-        "Version_SPM12": {
-            "type" : "qc",
-            "module" : "Structural"
-        },
-        "ASLTitle": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"10",
-                "fontWeight":"Bold"
-            },
-            "text":"And below this, some quality parametenrs of the ASL Module are printed"
-        },
-        "CBF_GM_Median_mL100gmin": {
-            "type" : "qc",
-            "module" : "ASL",
-            "range": "50-120",
-            "alias": "Median CBF",
-            "Unit": "mL/100g/min"
-        },
-        "LabelingType": {
-            "type" : "qc",
-            "module" : "ASL"
-        },
-        "MotionMean_mm": {
-            "type" : "qc",
-            "module" : "ASL",
-            "alias": "Mean Motion",
-            "Unit": "mm"
-        },
-        "MotionSD_mm": {
-            "type" : "qc",
-            "module" : "ASL",
-            "alias": "SD Motion",
-            "Unit": "mm"
-        },
-        "MotionMax_mm": {
-            "type" : "qc",
-            "module" : "ASL",
-            "alias": "Max Motion",
-            "Unit": "mm"
-        },
-        "M0": {
-            "type" : "qc",
-            "module" : "ASL"
-        },
-        "VoxelSize_mm": {
-            "type" : "qc",
-            "module" : "ASL",
-            "Unit": "mm"
-        },
-        "LabelingDuration_ms": {
-            "type" : "qc",
-            "module" : "ASL",
-            "Unit": "ms"
-        },
-        "SpatialCoV_GM_Perc": {
-            "type" : "qc",
-            "module" : "ASL"
-        },
-        "Sequence": {
-            "type" : "qc",
-            "module" : "ASL"
-        },
-        "Vendor": {
-            "type" : "qc",
-            "module" : "ASL"
-        },
-        "PeakSNR_Ratio": {
-            "type" : "qc",
-            "module" : "ASL"
-        }
     },
-    "Page_two" : {
-        "type" : "page",
-        "number" :"2",
-        "Pages_Introduction": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"8"
-            },
-            "text":"You can define any amount of pages in your config file, this is a second page."
+    "pages": [
+        {
+            "type": "page",
+            "number": 1,
+            "content": [
+                {
+                    "type": "text",
+                    "text": "This is an sample for the Explore ASL report Generator, See ExploreASL/Function/templateConfigReportPDF.json for the script generating this PDF."
+                },
+                {
+                    "type": "scan",
+                    "name": "Pop_Path_rT1",
+                    "position": "[0.70 0.35]",
+                    "size": "[0.3 0.3]",
+                    "slice": {
+                        "TraSlice": "[25 75]",
+                        "CorSlice": "[25 75]",
+                        "SagSlice": "[]"
+                    },
+                    "overlay": {
+                        "Pop_Path_SliceGradient": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                },{
+                    "type": "scan",
+                    "name": "Pop_Path_rT1",
+                    "position": "[0.70 0.65]",
+                    "size": "[0.3 0.3]",
+                    "slice": {
+                        "TraSlice": "[50 75]",
+                        "CorSlice": "[50 75]",
+                        "SagSlice": "[50 75]"
+                    },
+                    "overlay": {
+                        "Pop_Path_qCBF": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                },{
+                    "type": "scan",
+                    "name": "Pop_Path_rT1",
+                    "position": "[0.70 0.05]",
+                    "size": "[0.3 0.3]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[12 78]",
+                        "SagSlice": "[]"
+                    },
+                    "overlay": {
+                        "Pop_Path_MaskVascular": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                },{
+                    "type": "patients"
+                },{
+                    "type": "text",
+                    "text": "You can make your own config file and place it as ConfigReportPDF.json in the ExploreASL derivatives folder."
+                },{
+                    "type": "text",
+                    "text": "Any config file in the derivatives folder will always take precedence over this one."
+                },{
+                    "type": "text",
+                    "text": "In your config you can define your own text, images and scans to be printed in this report."
+                },{
+                    "type": "text",
+                    "text": "In your config you can name your JSON blocks however you like, as long as the content is complete."
+                },{
+                    "type": "text",
+                    "text": "For scans you can define which specific slice you want in the config file."
+                },{
+                    "type": "text",
+                    "text": "The scans on the right can be found in the NIfTI files derivatives/ExploreASL/Population."
+                },{
+                    "type": "text",
+                    "text": "These scans are referred to by their x.P.<name> in the ConfigReportPDF.json."
+                },{
+                    "type": "text",
+                    "text": "This is usually simply Path_Pop_<name>."
+                },{
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "10",
+                        "fontWeight": "bold"
+                    },
+                    "text": "Below the Quality parameters of the Structural module will be printed."
+                },{
+                    "type": "text",
+                    "text": "These values can be found in derivatives/ExploreASL/<subject>/QC_collection_<subject>.json"
+                },{
+                    "type": "text",
+                    "text": "If the QC value is outside your specified range, it will display in red."
+                },{
+                    "type": "qc",
+                    "parameter": "T1w_GM_vol_mL",
+                    "module": "Structural",
+                    "range": "1000-1200",
+                    "Unit": "mL"
+                },{
+                    "type": "qc",
+                    "parameter": "T1w_WM_vol_mL",
+                    "module": "Structural",
+                    "range": "300-600",
+                    "Unit": "mL"
+                },{
+                    "type": "qc",
+                    "parameter": "T1w_CSF_vol_mL",
+                    "module": "Structural",
+                    "range": "150-300",
+                    "Unit": "mL"
+                },{
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "10",
+                        "fontWeight": "bold"
+                    },
+                    "text": "Below the some version numbers are printed."
+                },{
+                    "type": "qc",
+                    "parameter":"Version_CAT12",
+                    "module": "Structural"
+                },{
+                    "type": "qc",
+                    "parameter":"Version_ExploreASL",
+                    "module": "Structural"
+                },{
+                    "type": "qc",
+                    "parameter":"Version_LST",
+                    "module": "Structural"
+                },{
+                    "type": "qc",
+                    "parameter":"Version_Matlab",
+                    "module": "Structural"
+                },{
+                    "type": "qc",
+                    "parameter": "Version_SPM12",
+                    "module": "Structural"
+                },{
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "10",
+                        "fontWeight": "Bold"
+                    },
+                    "text": "And below this, some quality parametenrs of the ASL Module are printed"
+                },{
+                    "type": "qc",
+                    "parameter":"CBF_GM_Median_mL100gmin",
+                    "module": "ASL",
+                    "range": "50-120",
+                    "alias": "Median CBF",
+                    "Unit": "mL/100g/min"
+                },{
+                    "type": "qc",
+                    "parameter":"LabelingType",
+                    "module": "ASL"
+                },{
+                    "type": "qc",
+                    "parameter": "MotionMean_mm",
+                    "module": "ASL",
+                    "alias": "Mean Motion",
+                    "Unit": "mm"
+                },{
+                    "type": "qc",
+                    "parameter":"MotionSD_mm",
+                    "module": "ASL",
+                    "alias": "SD Motion",
+                    "Unit": "mm"
+                },{
+                    "type": "qc",
+                    "parameter":"MotionSD_mm",
+                    "module": "ASL",
+                    "alias": "Max Motion",
+                    "Unit": "mm"
+                },{
+                    "type": "qc",
+                    "parameter":"VoxelSize_mm",
+                    "module": "ASL",
+                    "Unit": "mm"
+                },{
+                    "type": "qc",
+                    "parameter":"LabelingDuration_ms",
+                    "module": "ASL",
+                    "Unit": "ms"
+                },{
+                    "type": "qc",
+                    "parameter":"SpatialCoV_GM_Perc",
+                    "module": "ASL"
+                },{
+                    "type": "qc",
+                    "parameter":"Sequence",
+                    "module": "ASL"
+                },{
+                    "type": "qc",
+                    "parameter":"Vendor",
+                    "module": "ASL"
+                },{
+                    "type": "qc",
+                    "parameter":"PeakSNR_Ratio",
+                    "module": "ASL"
+                }
+            ]
         },
-        "Block_introduction": {
-            "type" : "text",
-            "text":"You can also define premade 'blocks' of content, but automated text scaling does not work properly yet."
+        {
+            "type": "page",
+            "number": 2,
+            "content": [
+                {
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "8"
+                    },
+                    "text": "You can define any amount of pages in your config file, this is a second page."
+                },{
+                    "type": "text",
+                    "text": "You can also define premade 'blocks' of content, but automated text scaling does not work properly yet."
+                },{
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "10"
+                    },
+                    "text": "This is a line in font size 10"
+                },{
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "12"
+                    },
+                    "text": "This is a line in font size 12"
+                },{
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "14"
+                    },
+                    "text": "This is a line in font size 14"
+                },{
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "16"
+                    },
+                    "text": "This is a line in font size 16"
+                },{
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "18"
+                    },
+                    "text": "This is a line in font size 18"
+                },{
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "20"
+                    },
+                    "text": "This is a line in font size 20"
+                },{
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "22"
+                    },
+                    "text": "This is a line in font size 22"
+                },{
+                    "type": "text",
+                    "settings": {
+                        "fontSize": "24"
+                    },
+                    "text": "This is a line in font size 24"
+                },{
+                    "type": "block",
+                    "position": "[0.2 0.11]",
+                    "size": "[0.8 0.33]",
+                    "settings": {
+                        "type": "settings",
+                        "fontSize": "36",
+                        "fontName": "default",
+                        "fontWeight": "normal",
+                        "lineSpacing": "0.075",
+                        "color": "k",
+                        "axesVisible": "off",
+                        "HorizontalAlignment": "left"
+                    },
+                    "content": [
+                        {
+                            "type": "text",
+                            "settings": {
+                                "fontSize": "36"
+                            },
+                            "text": "This is an example of such a content block."
+                        },{
+                            "type": "text",
+                            "settings": {
+                                "fontSize": "36"
+                            },
+                            "text": "This block has text on the left and scans on the right."
+                        },{
+                            "type": "image",
+                            "pathDir": "population",
+                            "filePath": "M0Check/Cor_M0_1_ASL_1.jpg",
+                            "position": "[0.5 0.0]",
+                            "size": "[0.5 0.5]"
+                        },{
+                            "type": "image",
+                            "pathDir": "population",
+                            "filePath": "M0Check/Cor_M0_1_ASL_1.jpg",
+                            "position": "[0.5 0.5]",
+                            "size": "[0.5 0.5]"
+                        },{
+                            "type": "text",
+                            "settings": {
+                                "fontSize": "24"
+                            },
+                            "text": "This is a font 24 line test in a block"
+                        },{
+                            "type": "text",
+                            "settings": {
+                                "fontSize": "36"
+                            },
+                            "text": "This is a font 36 line test in a block"
+                        }
+                    ]
+                }
+            ]
         },
-        "font10": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"10"
-            },
-            "text":"This is a line in font size 10"
-        },
-        "font12": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"12"
-            },
-            "text":"This is a line in font size 12"
-        },
-        "font14": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"14"
-            },
-            "text":"This is a line in font size 14"
-        },
-        "font16": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"16"
-            },
-            "text":"This is a line in font size 16"
+        {
+            "type":"page",
+            "number": 3,
+            "content":[
+                {
+                    "type": "text",
+                    "text": "This is an sample for the Explore ASL report Generator, See ExploreASL/Function/templateConfigReportPDF.json for the script generating this PDF."
+                },{
+                    "type": "text",
+                    "text": "You can make your own config file and place it as ConfigReportPDF.json in the ExploreASL derivatives folder."
+                },{
+                    "type": "text",
+                    "text": "Any config file in the derivatives folder will always take precedence over this one."
+                },{
+                    "type": "text",
+                    "text": "In your config you can define your own text, images and scans to be printed in this report."
+                },{
+                    "type": "text",
+                    "text": "In your config you can name your JSON blocks however you like, as long as the content is complete."
+                },{
+                    "type": "text",
+                    "text": "For scans you can define which specific slice you want in the config file."
+                },{
+                    "type": "text",
+                    "text": "The scans on the right can be found in the NIfTI files derivatives/ExploreASL/Population."
+                },{
+                    "type": "text",
+                    "text": "These scans are referred to by their x.P.<name> in the ConfigReportPDF.json."
+                }
+            ]
         }
-        ,"font18": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"18"
-            },
-            "text":"This is a line in font size 18"
-        },
-        "font20": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"20"
-            },
-            "text":"This is a line in font size 20"
-        },
-        "font22": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"22"
-            },
-            "text":"This is a line in font size 22"
-        },
-        
-        "font24": {
-            "type" : "text",
-            "settings":{
-                "fontSize":"24"
-            },
-            "text":"This is a line in font size 24"
-        },
-        "Example_Block": {
-            "type" : "block",
-            "position" : "[0.2 0.11]",
-            "size"     : "[0.8 0.33]",
-            "BlockSettings": {
-                "type": "settings",
-                "fontSize": "36",
-                "fontName": "default",
-                "fontWeight": "normal",
-                "lineSpacing": "0.075",
-                "color": "k",
-                "axesVisible": "off",
-                "HorizontalAlignment": "left"
-            },
-            "Block_introduction":{
-                "type" : "text",
-                "settings" : {
-                    "fontSize" : "36"
-                },
-                "text" : "This is an example of such a content block."
-            },
-            "Block_introduction2":{
-                "type" : "text",
-                "settings" : {
-                    "fontSize" : "36"
-                },
-                "text" : "This block has text on the left and scans on the right."
-            },
-            "BlockImage1": {
-                "type" : "image",
-                "pathDir" : "population",
-                "filePath" : "M0Check/Cor_M0_1_ASL_1.jpg",
-                "position" : "[0.5 0.0]",
-                "size"     : "[0.5 0.5]"    
-            },
-            "BlockImage2": {
-                "type" : "image",
-                "pathDir" : "population",
-                "filePath" : "M0Check/Cor_M0_1_ASL_1.jpg",
-                "position" : "[0.5 0.5]",
-                "size"     : "[0.5 0.5]"    
-            },
-            "BlockText3":{
-                "type" : "text",
-                "settings" : {
-                    "fontSize" : "24"
-                },
-                "text" : "This is a font 24 line test in a block"
-            },
-            "BlockText4":{
-                "type" : "text",
-                "settings" : {
-                    "fontSize" : "36"
-                },
-                "text" : "This is a font 36 line test in a block"
-            }
-        }
-
-    }
+    ]
 }
