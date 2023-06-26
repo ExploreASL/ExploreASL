@@ -34,6 +34,12 @@ function xASL_wrp_Quantify(x, PWI_Path, pathOutputCBF, M0Path, SliceGradientPath
 % EXAMPLE: xASL_wrp_Quantify(x);
 %
 % REFERENCES: 
+%     Gregori, Johannes et al. “T2-based arterial spin labeling measurements of blood to tissue water transfer 
+%     in human brain." Journal of magnetic resonance imaging : JMRI vol. 37,2 (2013): 332-42. doi:10.1002/jmri.23822
+%  
+%     Lee T, Stainsby JA, Hong J, Han E, Brittain J, Wright GA. Blood Relaxation Properties at 3T --Effects 
+%     of Blood Oxygen Saturation. Proc Intl Soc Mag Reson Med. 11:131.
+%
 %     Rooney WD, Johnson G, Li X, Cohen ER, Kim SG, Ugurbil K, Springer Jr CS. 
 %     Magnetic field and tissue dependencies of human brain longitudinal 1H2O relaxation in vivo. 
 %     Magnetic Resonance in Medicine. 2007 Feb;57(2):308-18.
@@ -358,10 +364,12 @@ else
 	end
     if ~isfield(x.Q, 'T2art')
 		if x.MagneticFieldStrength == 3
-			x.Q.T2art = 165; % ms
+			x.Q.T2art = 165; % ms Gregori JMRI 2013; Lee ISMRM 2003
+			% Jean Chen 2009 MRM, DOI: 10.1002/mrm.21858 175 ms
+			% 175 ms for Hct 0.21; 122 ms for Hct 0.44
 		else
-			x.Q.T2art = 165;
-			fprintf('%s\n','Warning: Unknown T2-art for non-3T scanners'); 
+			x.Q.T2art = 239; % ms Lee ISMRM 2003
+			% Jean Chen 2009 MRM, DOI: 10.1002/mrm.21858 157 ms
 		end
     end
     if ~isfield(x.Q,'Lambda')
