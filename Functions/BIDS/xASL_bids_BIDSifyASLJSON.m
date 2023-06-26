@@ -108,7 +108,7 @@ for fn = fieldnames(jsonInMerged)'
                 contentJSON{nextN} = jsonOut.(fn{1});
 			end
             nextN = nextN+1;
-			if strcmp(fn{1},'TotalAcquiredPairs')
+			if strcmp(fn{1},'TotalAcquiredPairs') || strcmp(fn{1},'ArterialSpinLabelingType')
 				jsonInMerged.(fn{1}) = jsonOut.(fn{1});
 			end
 		end
@@ -122,7 +122,7 @@ if ~isempty(strDifferentFields)
 		warningMessage = [strDifferentFields{iField} ' differed between DICOM (' xASL_num2str(contentDICOM{iField})...
             ') & studyPar (' xASL_num2str(contentJSON{iField}) '). '];
         
-		if strcmp(strDifferentFields{iField}, 'TotalAcquiredPairs')
+		if strcmp(strDifferentFields{iField}, 'TotalAcquiredPairs') || strcmp(strDifferentFields{iField}, 'ArterialSpinLabelingType')
 			warningMessage = [warningMessage 'Using the studyPar value.'];
 		else
 			warningMessage = [warningMessage 'Using the DICOM value.'];
