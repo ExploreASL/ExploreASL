@@ -109,11 +109,13 @@ end
 	
 if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
 	if x.MagneticFieldStrength == 3
-		x.Q.T2star = 48; % default for 3T
+		x.Q.T2star = 46.5; % default for 3T; Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
 	elseif x.MagneticFieldStrength == 7
 		x.Q.T2star = 35.6; % Voelker 2021
+	elseif x.MagneticFieldStrength == 1.5
+		x.Q.T2star = 62.0; % Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
 	else
-		x.Q.T2star = 48;
+		x.Q.T2star = 46.5;
 		fprintf('%s\n',['Warning: Unknown T2star for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 	end
 end
