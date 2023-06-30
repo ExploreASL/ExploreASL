@@ -102,20 +102,42 @@ end
 
 if bPVC == 2
 	% If running PVC, then need imGM and imWM of the same size as imCBF
-	if ~isequal(size(imCBF),size(imGM)) || ~isequal(size(imCBF),size(imWM))
-		warning('When running PVC, need imGM and imWM of the same size as imCBF');
+	if ~isequal(size(imCBF), size(imGM)) || ~isequal(size(imCBF), size(imWM))
+		warning('When running PVC, the GM and WM maps should have the same size as the CBF image');
+    elseif size(imGM, 2)>2
+        warning('Invalid GM map size');
+    elseif size(imWM, 2)>2
+        warning('Invalid WM map size');
 	end
 end
 
+
 %% 2. Mask calculations
 
-% Only compute in real data
-imMask = imMask>0 & isfinite(imCBF);
+% 2.a Only compute in real data
+realDataMask = min(isfinite(imCBF), [], 2); % "min" here ensures that we get a single column
+nonZeroMask = min(imCBF~=0, [], 2); % "min" here ensures that we get a single column
+imMask = min(imMask, [], 2); % "min" here ensures that we get a single column
 
-imMask = imMask & (imCBF~=0); % Exclude zero values as well
+imMask = logical(imMask) && logical(realDataMask) && logical(nonZeroMask); % combine masks
+
+% 2.b Equalize sizes of image matrices
+% Here, we ensure that the image matrix sizes are valid
+% This concerns the second dim, which represents the 4D dim (temporal
+% dimension)
+sizeCBF = size(imCBF, 2);
+sizeMask = size(imMask, 2);
+sizeMaskFactor = sizeCBF/sizeMask;
+imMask = repmat(imMask, sizeMaskFactor);
+
 
 % Constrain calculation to the mask and to finite values
-imCBF = imCBF(imMask);
+tempImCBF = imCBF;
+imCBF = [];
+for iVolume=1:sizeCBF
+    thisImCBF = tempImCBF(:,iVolume);
+    imCBF(:,iVolume) = thisImCBF(imMask(:,iVolume));
+end
 
 % Limit imGM and imWM to imMask, if provided
 if ~isempty(imGM)
@@ -137,11 +159,11 @@ switch (bPVC)
 	case 0
 		if bParametric
 			%% 3a. No PVC and simple mean
-			CBF_GM = xASL_stat_MeanNan(imCBF);
+			CBF_GM = xASL_stat_MeanNan(imCBF, 1);
 		
 		else
 			%% 3b. No PVC and median
-			CBF_GM = xASL_stat_MedianNan(imCBF); % this is non-parametric
+			CBF_GM = xASL_stat_MedianNan(imCBF, 1); % this is non-parametric
 		end
 
 	case 1
@@ -149,7 +171,7 @@ switch (bPVC)
 		if isempty(imGM)
 			error('imGM needs to be provided for bPVC == 1');
 		end
-		CBF_GM = xASL_stat_SumNan(imCBF)/xASL_stat_SumNan(imGM);
+		CBF_GM = xASL_stat_SumNan(imCBF, 1)/xASL_stat_SumNan(imGM, 1);
 	
 	case 2
 		%% 3d. Full PVC on a region
