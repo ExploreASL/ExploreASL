@@ -7,18 +7,31 @@ function xASL_wrp_CreateAnalysisMask(x)
 % INPUT:
 %   x - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %
-% OUTPUT: n/a
+% OUTPUT: masks in native & standard space:
+% native space:
+%   - x.P.Path_FoV = mask of the original ASL field-of-view (FoV)
+%   - x.P.Path_MaskVascular = brainmask (pGM+pWM) with vascular voxels excluded
+%   - x.P.Path_MaskSusceptibility =  brainmask (pGM+pWM) with susceptibility artifact voxels excluded
+%   - x.P.Path_BrainMaskProcessing = brainmask for image processing — e.g., BASIL = (pGM+pWM+pCSF).*FoV mask
+%
+% standard space:
+%   - x.P.Pop_Path_FoV = mask of the original ASL field-of-view (FoV) transformed to standard space
+%   - x.P.Pop_Path_MaskVascular = brainmask (pGM+pWM) with vascular voxels excluded
+%   - x.P.Pop_Path_MaskSusceptibility = brainmask (pGM+pWM) with susceptibility artifact voxels excluded
+%   - x.P.Pop_Path_BrainMaskProcessing = brainmask for image processing — e.g., BASIL = (pGM+pWM+pCSF).*FoV mask
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function creates an analysis mask with the following steps:
 %              0. Create FoV mask (native & MNI spaces)
 %              1. Detect negative vascular signal (native & MNI spaces, within pGM>0.5)
 %              2. Detect peak vascular signal (native & MNI spaces, within pGM==80% percentile on ASL image)
-%              3. Brainmasking & FoV-masking (A) native & B) MNI spaces)
+%              3A. Brainmasking & FoV-masking native space
+%              3B. Brainmasking & FoV-masking standard space
+%              3C. Save brain mask for image processing (e.g., BASIL)
+%              4. Save vascular masks
 %                 - Add WM vascular parts back to the mask (defined as pWM>0.8) & remove extracranial signal
 %                   In the WM, negative or peak signal is more expected from
 %                   noise rather than from intra-vascular signal, not many
 %                   big vessels exist in the WM
-%              4. Save vascular masks
 %              5. Create susceptibility mask (standard space only)
 %                 Here, we combine manually segmented susceptibility artifact regions in which
 %                 a population-based susceptibility probability map is created
