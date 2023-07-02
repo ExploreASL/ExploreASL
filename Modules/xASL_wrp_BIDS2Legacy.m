@@ -1,12 +1,13 @@
-function [x] = xASL_wrp_BIDS2Legacy(x, bOverwrite)
+function [x] = xASL_wrp_BIDS2Legacy(x, bOverwrite, bVerbose)
 %xASL_wrp_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
 %
-% FORMAT: [x] = xASL_wrp_BIDS2Legacy(x[, bOverwrite])
+% FORMAT: [x] = xASL_wrp_BIDS2Legacy(x[, bOverwrite, bVerbose])
 % 
 % INPUT:
 %   x          - ExploreASL x structure (REQUIRED, STRUCT)
 %   bOverwrite - boolean, true for overwriting files (OPTIONAL, DEFAULT = true)
-%   
+%   bVerbose   - boolean, true for verbose output (OPTIONAL, DEFAULT = true)
+%    
 % OUTPUT: 
 %   x          - ExploreASL x structure (STRUCT)
 %                         
@@ -20,19 +21,18 @@ function [x] = xASL_wrp_BIDS2Legacy(x, bOverwrite)
 %
 % This function performs the following steps:
 %
-% 1. Parse a folder using bids-matlab
+% 1. Parse a folder using bids-matlab output
 % 2. Define SubjectSession
 % 3. Define Session
 % 4. Parse modality
-% - Parse scantype
-% - Compile paths for copying
-% - Manage sidecars to copy
-% - Copy files
+%    - Parse scantype
+%    - Compile paths for copying
+%    - Manage sidecars to copy
+%    - Copy files
 % 5. Parse M0
-% 6. Clean up
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [x] = xASL_wrp_BIDS2Legacy(x, bOverwrite);
+% EXAMPLE: [x] = xASL_wrp_BIDS2Legacy(x);
 % __________________________________
 % Copyright (c) 2015-2023 ExploreASL
 
@@ -41,10 +41,12 @@ function [x] = xASL_wrp_BIDS2Legacy(x, bOverwrite)
 
 % Verify the input parameters
 
-if nargin<2 || isempty(bOverwrite)
-    bOverwrite = 1;
+if nargin<3 || isempty(bVerbose)
+    bVerbose = 1; % default to verbosity
 end
-
+if nargin<2 || isempty(bOverwrite)
+    bOverwrite = 1; % default to overwrite
+end
 
 
 %% 1. Parse a folder using the output of bids-matlab (was run before this point)
@@ -52,7 +54,10 @@ nSubjects = numel(x.modules.bids2legacy.BIDS.subjectName);
 nVisits = numel(x.modules.bids2legacy.BIDS.sessionName); % this is called sessions in BIDS
 % we use this below to see if the legacy subjectname gets _1 as visit suffix or not
 [~, studyName] = fileparts(x.dir.DatasetRoot);
-fprintf('Converting from BIDS to Legacy: %s   \n', studyName);
+
+if bVerbose
+    fprintf('Converting from BIDS to Legacy: %s   \n', studyName);
+end
 
 %% 2. Define Subject
 subjectBIDS = ['sub-' x.SUBJECT];
@@ -88,8 +93,10 @@ for iSubjSess=indicesCurrentSubject
             VisitString = '';
         else
 			if isempty(iVisit)
-                fprintf('\nEmpty session number, setting session number to 1...\n');
-                pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_1']);
+                if bVerbose
+                    fprintf('\nEmpty session number, setting session number to 1...\n');
+                    pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_1']);
+                end
 			else
 				% If Visit name is of a form ses-number then use this number otherwise the ID
 				if regexpi(SessionID, 'ses-\d+')
@@ -144,10 +151,14 @@ if ~isempty(ListASL4D)
             SessionID = num2str(currentFolder(sessionIndex+1:end));
         end
 
-        fprintf('%s\n', ['M0 parsed for subject ' SubjectID ' session ' SessionID ': image ' currentNifti]);
+        if bVerbose
+            fprintf('%s\n', ['M0 parsed for subject ' SubjectID ' session ' SessionID ': image ' currentNifti]);
+        end
     end
 else
-    warning(['When parsing M0: no ASL4D.nii found for ' SubjectID 'in ' x.dir.xASLDerivatives '...']);
+    if bVerbose
+        warning(['When parsing M0: no ASL4D.nii found for ' SubjectID 'in ' x.dir.xASLDerivatives '...']);
+    end
 end
 
 
