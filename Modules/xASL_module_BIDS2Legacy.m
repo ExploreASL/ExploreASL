@@ -12,8 +12,9 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    BIDS to Legacy conversion script which calls xASL_module_BIDS2Legacy.
 %
-% 1. Input check
-% 2. Run legacy conversion
+% 0. Input check
+% 1. Run legacy conversion
+% 2. Finalize and unlock mutex for this module
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
@@ -22,35 +23,28 @@ function [result, x] = xASL_module_BIDS2Legacy(x)
 % Copyright (c) 2015-2023 ExploreASL
 
 
-    %% 1. Input check
+    %% 0. Initialization
     
     % Make sure that logging is still active
     if isfield(x.dir,'diaryFile')
         diary(x.dir.diaryFile);
     end
     
-    % Start Mutex
-    x = xASL_init_InitializeMutex(x, 'BIDS2Legacy');
-    
-    % Define lock states
-    StateName{1} = '010_BIDS2LEGACY';
-    
-    % Default for result
-    result = true;
-    
-    % Print feedback
-    xASL_adm_BreakString('BIDS to ExploreASL LEGACY CONVERSION');
+    x = xASL_init_InitializeMutex(x, 'BIDS2Legacy'); % Start Mutex
+    result = true; % Default for result
+    xASL_adm_BreakString('BIDS to ExploreASL LEGACY CONVERSION'); % Print feedback
 	
-    %% 2. Run legacy conversion
-    iState = 1;
-    if ~x.mutex.HasState(StateName{1})
+
+    %% 1. Run legacy conversion
+    if ~x.mutex.HasState('010_BIDS2LEGACY')
         x = xASL_wrp_BIDS2Legacy(x, 1);
-        x.mutex.AddState(StateName{iState});
-    elseif x.mutex.HasState(StateName{1})
+        x.mutex.AddState('010_BIDS2LEGACY');
+    elseif x.mutex.HasState('010_BIDS2LEGACY')
         fprintf('%s\n', ['BIDS2Legacy already done, skipping ' x.SUBJECT '.    ']);
     end
+
     
-    %% 3. Clean-Up
+    %% 2. Finalize and unlock mutex for this module
     x.mutex.AddState('999_ready');
     x.mutex.Unlock();
         
