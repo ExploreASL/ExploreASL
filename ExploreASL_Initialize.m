@@ -13,31 +13,15 @@ function [x] = ExploreASL_Initialize(varargin)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: 
 %
-% This initialization workflow initializes ExploreASL. The overall workflow is shown below:
+% This  workflow initializes ExploreASL:
 % 
-% 1. Admin
-% - Input parsing (xASL_init_InputParsing, xASL_init_convertParsedInput, xASL_init_storeParsedInput)
-% - Initialize substructs of the ExploreASL x structure (xASL_init_SubStructures)
-% - Check input parameters and determine pipeline related booleans (xASL_init_GetBooleansImportProcess)
+% 1. Admin (Validate Matlab version, parse input parameters, check which modules should be run)
+% 2. Get main ExploreASL path
+% 3. Add ExploreASL paths to Matlab and prepare x (sub)structs
+% 4. Check DatasetRoot provided by user & provide feedback on which ExploreASL module is run
+% 5. Define several general settings (mostly used for processing, PM: move these to processing initialization)
+% 6. Print logo, settings, ExploreASL version etc
 %
-% 2. Get ExploreASL path
-% - Check if the current directory is the ExploreASL directory
-% - Check whether MyPath is correct, otherwise obtain correct folder
-% - If something went wrong, select the ExploreASL folder manually
-%
-% 3. Add ExploreASL paths
-%
-% 4. Check DatasetRoot
-% - Check the provided DatasetRoot parameter (is it a path? does it exist? is it a directory?)
-% - Print some basic feedback regarding the chosen ExploreASL settings
-%
-% 5. General settings
-% - Check if the dataPar.json exists and if it can be loaded or not
-% - Initialize the data independent & dependent settings
-%
-% 6. Print logo & settings, check permissions
-%
-% 7. Data-specific initialization
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:
@@ -46,10 +30,11 @@ function [x] = ExploreASL_Initialize(varargin)
 % Debugging/initialization only:  x = ExploreASL_Initialize;
 %
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
     %% 1. Admin
+    % Validate Matlab version, parse input parameters, check which modules should be run.
 
 	if ~exist('x','var') || isempty(x)
 		x = struct;
@@ -65,56 +50,108 @@ function [x] = ExploreASL_Initialize(varargin)
 		error('Too old Matlab version for ExploreASL');
 	end
 
-    % Parse input parameters
+    %% xASL_init_InputParsing Parse the input parameters of ExploreASL, 
+    % meaning to divide and identify the input parameters, if they are provided in the correct format, 
+    % define their defaults, and their meaning for ExploreASL.
     x = xASL_init_InputParsing(x,varargin{:});
-	    
-    % Check if the ExploreASL pipeline should be run or not
+	
+    
+    %% xASL_init_GetBooleansImportProcess Check which ExploreASL modules should be run, 
+    % as per the user-provided booleans (e.g., bImport, bProcess)
     x = xASL_init_GetBooleansImportProcess(x);
     
     
-    %% 2. Get ExploreASL path
 
-    % Determine the MyPath of ExploreASL
+
+    %% 2. Get main ExploreASL path
+
+    % % xASL_init_GetMyPath Check if the current directory is the ExploreASL directory
     x = xASL_init_GetMyPath(x);
 
-    % Get the master script path
+    % xASL_init_GetMasterScript Allow the user to input the ExploreASL root path manually, 
+    % or try to find this automatically if ExploreASL is run deployed (i.e., in compiled mode, e.g. in a Docker)
     x = xASL_init_GetMasterScript(x);
 
+    
     % Go to ExploreASL directory
     cd(x.opts.MyPath);
 
-    %% 3. Add ExploreASL paths
+
+
+
+
+    %% 3. Add ExploreASL paths to Matlab and prepare x (sub)structs
+
+
+    %% xASL_init_AddDirsOfxASL  Add specific ExploreASL directories as Matlab paths, avoiding adding folders that are unused or that may even cause conflict.
+    % If toolboxes that ExploreASL uses were already added to the paths, they are removed from the Matlab paths (such as spm, bids) to avoid conflicts.
     xASL_init_AddDirsOfxASL(x.opts.MyPath);
+
+
+
     
 	% Initialize substructs
-	x = xASL_init_SubStructs(x);
+    % xASL_init_SubStructs Initialize the ExploreASL x structure substructs/fields.
+    % Only fields which do not exist so far are added.
+    x = xASL_init_SubStructs(x);
     
-    %% 4. Check DatasetRoot
+
+
+
+    %% 4. Check DatasetRoot provided by user & provide feedback on which ExploreASL module is run
+
     if x.opts.bImportData || x.opts.bLoadData || x.opts.bProcessData
+        % xASL_init_checkDatasetRoot Check the provided ExploreASL input parameter "DatasetRoot".
+        %  Is it a path? Does it exist? is it a directory? It should be the dataset root folder, 
+        % but in previous versions of ExploreASL this used to be the path to the dataPar.json file.
+        % This is managed here as well for backward compatibility (PM: backward compatibility can be removed)
         x = xASL_init_checkDatasetRoot(x);
     end
     
-    % Give some feedback
+
+
+    % Provide feedback on which ExploreASL module is run
+    % (PM: merge with xASL_init_printSettings below)
     xASL_init_BasicFeedback(x);
     
-    %% 5. General settings
+
+
+
+    %% 5. Define several general settings (mostly used for processing, PM: move these to processing initialization)
 
     % Go to ExploreASL folder
     cd(x.opts.MyPath);
 
+
     % These settings are data-independent
+    % Define several data independent settings for processing 
+    % (PM: move these to the processing initialization)
     x = xASL_init_DefineIndependentSettings(x);
 
-    %% 6. Print logo & settings, check permissions
+
+
+
+
+    %% 6. Print logo, settings, ExploreASL version etc
+    % xASL_init_PrintLogo Print the ExploreASL logo before running ExploreASL
     xASL_init_PrintLogo();
 
+
     % Print chosen settings
+    % xASL_init_printSettings Print chosen settings, for:
+    %  - Dataset root (which dataset root folder is selected)
+    % - Import modules (which modules are run)
+    % - Process modules (which modules are run)
+    % - Pause before processing (yes/no)
+    % - iWorker and nWorkers (for parallelization)
     xASL_init_printSettings(x);
 
-    % Check permissions
+    % Check permissions 
+    % This part is skipped for now, this checked if the data and ExploreASL paths had sufficient permissions)
     % xASL_adm_CheckPermissions(x.opts.MyPath, false);
 
-    %% 7. Data-specific initialization
+
+    % xASL_init_PrintVersion Print ExploreASL version to the screen, beta as well
     xASL_init_PrintVersion(x.Version);
 
 	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
@@ -128,6 +165,7 @@ end
 %% =======================================================================================================================
 %% =======================================================================================================================
 function xASL_init_PrintVersion(vExploreASL)
+% Print ExploreASL version to the screen, beta as well
 
     % For beta versions we print the text in red with an additional comment, to make sure users are aware of it
     if isempty(regexpi(vExploreASL,'BETA'))
@@ -143,6 +181,7 @@ end
 %% =======================================================================================================================
 %% =======================================================================================================================
 function xASL_init_PrintLogo()
+% xASL_init_PrintLogo Print the ExploreASL logo before running ExploreASL
 
     % Add design fields
     logoString = [...
@@ -165,10 +204,14 @@ function xASL_init_PrintLogo()
 end
 
 
+
+
+
 %% =======================================================================================================================
 %% =======================================================================================================================
-%% Add ExploreASL Directory
 function xASL_init_AddDirsOfxASL(MyPath)
+%% Add specific ExploreASL directories as Matlab paths, avoiding adding folders that are unused or that may even cause conflict.
+% If toolboxes that ExploreASL uses were already added to the paths, they are removed from the Matlab paths (such as spm, bids) to avoid conflicts.
 
     if ~isdeployed
         
@@ -249,8 +292,10 @@ end
 
 %% =======================================================================================================================
 %% =======================================================================================================================
-%% Define input parser
 function x = xASL_init_InputParsing(x, varargin)
+%% xASL_init_InputParsing Parse the input parameters of ExploreASL, 
+% meaning to divide and identify the input parameters, if they are provided in the correct format, 
+% define their defaults, and their meaning for ExploreASL.
 
     % This subfunction receives the input arguments and parses them.
     % The allowed input arguments are: 
@@ -385,8 +430,10 @@ end
 
 %% =======================================================================================================================
 %% =======================================================================================================================
-% Check if the ExploreASL pipeline should be run or not
 function x = xASL_init_GetBooleansImportProcess(x)
+% xASL_init_GetBooleansImportProcess Check which ExploreASL modules should be run, 
+% as per the user-provided booleans (e.g., bImport, bProcess)
+
 
     % On default we assume that we cannot load the data
     x.opts.bLoadableData = false;
@@ -438,8 +485,9 @@ end
 
 %% =======================================================================================================================
 %% =======================================================================================================================
-% Give some feedback
 function xASL_init_BasicFeedback(x)
+% xASL_init_BasicFeedback Provide feedback on which ExploreASL module is run
+% (PM: merge with the other feedback subfunction(s)?)
 
     % Report string
     reportProcess = '';
@@ -488,8 +536,8 @@ end
 %% =======================================================================================================================
 %% =======================================================================================================================
 function x = xASL_init_GetMyPath(x)
+% xASL_init_GetMyPath Check if the current directory is the ExploreASL directory
 
-    % Check if the current directory is the ExploreASL directory
     CurrCD = pwd;
     if exist(fullfile(CurrCD, 'ExploreASL.m'), 'file')
         x.opts.MyPath = CurrCD;
@@ -512,6 +560,8 @@ end
 %% =======================================================================================================================
 %% =======================================================================================================================
 function x = xASL_init_GetMasterScript(x)
+% xASL_init_GetMasterScript Allow the user to input the ExploreASL root path manually, 
+% or try to find this automatically if ExploreASL is run deployed (i.e., in compiled mode, e.g. in a Docker)
 
     MasterScriptPath = fullfile(x.opts.MyPath, 'ExploreASL.m');
 
@@ -546,7 +596,12 @@ function xASL_init_printSettings(x)
     %   n/a
     %
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % DESCRIPTION: Print chosen settings.
+    % DESCRIPTION: Print chosen settings, for:
+    %  - Dataset root (which dataset root folder is selected)
+    % - Import modules (which modules are run)
+    % - Process modules (which modules are run)
+    % - Pause before processing (yes/no)
+    % - iWorker and nWorkers (for parallelization)
     %
     % EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
     %
@@ -625,7 +680,10 @@ function xASL_init_printSettings(x)
         %   x             - ExploreASL x structure
         %
         % -----------------------------------------------------------------------------------------------------------------------------------------------------
-        % DESCRIPTION: Check the ExploreASL parameter "DatasetRoot".
+        % DESCRIPTION: Check the provided ExploreASL input parameter "DatasetRoot".
+        %  Is it a path? Does it exist? is it a directory? It should be the dataset root folder, 
+        % but in previous versions of ExploreASL this used to be the path to the dataPar.json file.
+        % This is managed here as well for backward compatibility (PM: backward compatibility can be removed)
         %
         % -----------------------------------------------------------------------------------------------------------------------------------------------------
         % EXAMPLE:     n/a

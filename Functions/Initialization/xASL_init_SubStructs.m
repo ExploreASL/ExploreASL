@@ -12,10 +12,7 @@ function [x] = xASL_init_SubStructs(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Initialize the ExploreASL x structure substructs/fields.
 %               Only fields which do not exist so far are added.
-%               This script is supposed to help with the overall modularity of ExploreASL.
-%               This script is identical to the function ExploreASL_Initialize_SubStructs within
-%               ExploreASL_Initialize. We can not call this script from ExploreASL_Initialize,
-%               since the paths are not initialized at that part of the script yet.
+%
 %
 % EXAMPLE:      [x] = xASL_init_SubStructs(x);
 %
