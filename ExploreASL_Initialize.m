@@ -125,7 +125,8 @@ function [x] = ExploreASL_Initialize(varargin)
 end
 
 
-%% ==================================================================================
+%% =======================================================================================================================
+%% =======================================================================================================================
 function xASL_init_PrintVersion(vExploreASL)
 
     % For beta versions we print the text in red with an additional comment, to make sure users are aware of it
@@ -139,7 +140,8 @@ function xASL_init_PrintVersion(vExploreASL)
 end
 
 
-%% ==================================================================================
+%% =======================================================================================================================
+%% =======================================================================================================================
 function xASL_init_PrintLogo()
 
     % Add design fields
@@ -163,7 +165,8 @@ function xASL_init_PrintLogo()
 end
 
 
-%% -----------------------------------------------------------------------
+%% =======================================================================================================================
+%% =======================================================================================================================
 %% Add ExploreASL Directory
 function xASL_init_AddDirsOfxASL(MyPath)
 
@@ -244,7 +247,8 @@ function xASL_init_AddDirsOfxASL(MyPath)
     
 end
 
-%% -----------------------------------------------------------------------
+%% =======================================================================================================================
+%% =======================================================================================================================
 %% Define input parser
 function x = xASL_init_InputParsing(x, varargin)
 
@@ -379,7 +383,8 @@ function x = xASL_init_InputParsing(x, varargin)
 end
 
 
-%% -----------------------------------------------------------------------
+%% =======================================================================================================================
+%% =======================================================================================================================
 % Check if the ExploreASL pipeline should be run or not
 function x = xASL_init_GetBooleansImportProcess(x)
 
@@ -431,7 +436,8 @@ function x = xASL_init_GetBooleansImportProcess(x)
 end
 
 
-%% -----------------------------------------------------------------------
+%% =======================================================================================================================
+%% =======================================================================================================================
 % Give some feedback
 function xASL_init_BasicFeedback(x)
 
@@ -456,7 +462,8 @@ function xASL_init_BasicFeedback(x)
 end
 
 
-%% -----------------------------------------------------------------------
+%% =======================================================================================================================
+%% =======================================================================================================================
 function x = xASL_init_DeployedModeHandling(x)
 
     % Find the path of the master files within the ctf archive
@@ -478,7 +485,8 @@ function x = xASL_init_DeployedModeHandling(x)
 end
 
 
-%% -----------------------------------------------------------------------
+%% =======================================================================================================================
+%% =======================================================================================================================
 function x = xASL_init_GetMyPath(x)
 
     % Check if the current directory is the ExploreASL directory
@@ -501,7 +509,8 @@ function x = xASL_init_GetMyPath(x)
 end
 
 
-%% -----------------------------------------------------------------------
+%% =======================================================================================================================
+%% =======================================================================================================================
 function x = xASL_init_GetMasterScript(x)
 
     MasterScriptPath = fullfile(x.opts.MyPath, 'ExploreASL.m');
@@ -519,3 +528,264 @@ function x = xASL_init_GetMasterScript(x)
     end
 
 end
+
+
+
+%% =======================================================================================================================
+%% =======================================================================================================================
+
+function xASL_init_printSettings(x)
+    %xASL_init_printSettings Print chosen settings
+    %
+    % FORMAT: xASL_init_printSettings(x)
+    %
+    % INPUT:
+    %   x       - ExploreASL x structure (STRUCT, REQUIRED)
+    %
+    % OUTPUT:
+    %   n/a
+    %
+    % -----------------------------------------------------------------------------------------------------------------------------------------------------
+    % DESCRIPTION: Print chosen settings.
+    %
+    % EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
+    %
+    % -----------------------------------------------------------------------------------------------------------------------------------------------------
+    % REFERENCES:  n/a
+    %
+    % Copyright 2015-2022 ExploreASL
+    
+        %% Printing
+        xASL_adm_BreakString('ExploreASL Settings');
+        % Dataset root
+        if length(x.opts.DatasetRoot)>70
+            fprintf('Dataset Root        ...%s\n', x.opts.DatasetRoot(end-70:end));
+        else
+            fprintf('Dataset Root        %s\n', x.opts.DatasetRoot);
+        end
+    
+        % Import modules
+        textPrint = 'Import & Defacing   ';
+        if x.opts.bImport(1)==1
+            textPrint = [textPrint 'DCM2NII '];
+        end
+        if x.opts.bImport(2)==1
+            textPrint = [textPrint 'NII2BIDS '];
+        end
+        if x.opts.bImport(3)==1
+            textPrint = [textPrint 'DEFACE '];
+        end
+        fprintf([textPrint '\n']);
+    
+        % Process modules
+        textPrint = 'Processing          ';
+        if x.opts.bProcess(1)==1
+            textPrint = [textPrint 'STRUCTURAL '];
+        end
+        if x.opts.bProcess(2)==1
+            textPrint = [textPrint 'ASL '];
+        end
+        if x.opts.bProcess(3)==1
+            textPrint = [textPrint 'POPULATION '];
+        end
+        fprintf([textPrint '\n']);
+    
+        % Pause before processing
+        if x.opts.bPause==1
+            fprintf('bPause              %s\n', 'True');
+        else
+            fprintf('bPause              %s\n', 'False');
+        end
+    
+        % Worker numbers
+        fprintf('iWorker             %d\n', x.opts.iWorker);
+        fprintf('nWorkers            %d\n', x.opts.nWorkers);
+        xASL_adm_BreakString('',[],[],1);
+    
+    end
+    
+    
+
+
+%% =======================================================================================================================
+%% =======================================================================================================================
+
+
+    
+    function [x] = xASL_init_checkDatasetRoot(x)
+        %xASL_init_checkDatasetRoot Check the ExploreASL parameter DatasetRoot
+        %
+        % FORMAT: 
+        %   [x] = xASL_init_checkDatasetRoot(x)
+        %
+        % INPUT:
+        %   x             - ExploreASL x structure (REQUIRED, STRUCT)
+        %
+        % OUTPUT:
+        %   x             - ExploreASL x structure
+        %
+        % -----------------------------------------------------------------------------------------------------------------------------------------------------
+        % DESCRIPTION: Check the ExploreASL parameter "DatasetRoot".
+        %
+        % -----------------------------------------------------------------------------------------------------------------------------------------------------
+        % EXAMPLE:     n/a
+        %
+        % __________________________________
+        % Copyright (c) 2015-2022 ExploreASL
+        
+            %% Check the ExploreASL parameter "DatasetRoot"
+            
+            % Default
+            x.opts.dataParType = 'unknown';
+            
+            % Create directory field if it doesn't exist already
+            if ~isfield(x, 'dir')
+                x.dir = struct;
+            end
+        
+            % Track if a valid path was provided
+            bValidPath = true;
+        
+            % Check if user correctly inserted a dataset root directory
+            % Trying to fix incorrectly specified files
+            [fPath, fFile, fExt] = fileparts(x.opts.DatasetRoot);
+            if strcmp(fExt, '.json')
+                warning([fFile fExt ' incorrectly provided as the dataset-root input. ExploreASL requires the path of the dataset root directory... Using ' fPath ' instead.']);
+                x.opts.DatasetRoot = fPath;
+            elseif ~isempty(fExt) && ~exist(x.opts.DatasetRoot, 'dir')
+                % Files are not supported as dataset root directory. If the provided path does not exist as a directory (so it's potentially a file) and it has an extension, then we report that a file is incorrectly provided.
+                % Note that a directory with '.' in the name can be incorrectly identified as having an 'extension' and confused with a file - therefore an extra check is presented here.
+                warning([fFile fExt ' incorrectly provided as the dataset-root input. ExploreASL requires the path of the dataset root directory...']);
+                bValidPath = false;
+            end
+        
+            % Trying to fix incorrectly specified subdirectories
+            % (note that this can depend on the above file check, e.g., in the case of /derivatives/ExploreASL/dataPar.json
+            % so this should not be an elseif statement)
+            if bValidPath
+                [fPath, fSubFolder, fExt] = fileparts(x.opts.DatasetRoot);
+                switch [fSubFolder fExt]
+                    case 'sourcedata'
+                        warning(['sourcedata directory provided as the dataset-root input. Using ' fPath ' instead.']);
+                        x.opts.DatasetRoot = fPath;
+                    case 'rawdata'
+                        warning(['rawdata directory provided as the dataset-root input. Using ' fPath ' instead.']);
+                        x.opts.DatasetRoot = fPath;
+                    case 'derivatives'
+                        warning(['derivatives directory provided as the dataset-root input. Using ' fPath ' instead.']);
+                        x.opts.DatasetRoot = fPath;
+                    case 'ExploreASL'
+                        [fPath, fFolder] = fileparts(fPath);
+                        if strcmp(fFolder, 'derivatives')
+                            warning(['derivatives/ExploreASL directory provided as the dataset-root input. Using ' fPath ' instead.']);
+                            x.opts.DatasetRoot = fileparts(fPath);
+                        end
+                end
+            end
+        
+            % Check if the user provided any path, and if this path exists
+            if isempty(x.opts.DatasetRoot)
+                warning('Dataset root directory is not specified...');
+                bValidPath = false;
+            elseif ~exist(x.opts.DatasetRoot, 'dir')
+                warning('Dataset root directory does not exist...');
+                bValidPath = false;
+            else
+                % Define the other paths
+                x = xASL_init_DetermineRequiredPaths(x);
+            end    
+        
+            if ~bValidPath && (x.opts.bProcessData || x.opts.bImportData)
+                % Give back a warning that the user tried to import or process but neither a correct dataset root nor a dataPar.json that exists was used
+                warning('You are trying to import or process a dataset, but the input parameters are not correct. ExploreASL will only be initialized...');
+                x.opts.bProcessData = 0;
+                x.opts.bImportData = 0;
+                x.opts.bLoadData = false;
+                x.opts.bProcess = [0 0 0];
+                x.opts.bImport = [0 0 0];
+            end
+            
+            % Set defaults for "dir" fields
+            if ~isfield(x.dir,'sourceStructure')
+                x.dir.sourceStructure = '';
+            end
+            if ~isfield(x.dir,'studyPar')
+                x.dir.studyPar = '';
+            end
+            if ~isfield(x.dir,'dataset_description')
+                x.dir.dataset_description = '';
+            end
+            if ~isfield(x.dir,'dataPar')
+                x.dir.dataPar = '';
+            end
+        
+            % Recheck the JSON files (do they exist and which ones do)
+            
+            % Fallbacks
+            bSourceStructure = false;
+            bDatasetDescription = false;
+            bDataPar = false;
+            
+            % Check if files exist
+            if isfield(x,'dir')
+                if isfield(x.dir,'sourceStructure')
+                    bSourceStructure = exist(x.dir.sourceStructure,'file');
+                end
+                if isfield(x.dir,'dataset_description')
+                    bDatasetDescription = exist(x.dir.dataset_description,'file');
+                end
+                if isfield(x.dir,'dataPar')
+                    bDataPar = exist(x.dir.dataPar,'file');
+                end
+            end
+            
+            if ~bSourceStructure && ~bDatasetDescription && ~bDataPar
+                if x.opts.bImportData || x.opts.bProcessData
+                    fprintf('Neither the sourceStructure.json, dataset_description.json nor dataPar.json exist, ExploreASL will only be initialized...\n');
+                    % Check for wrong input
+                    [~, DatasetDir] = fileparts(x.opts.DatasetRoot);
+                    if strcmp(DatasetDir, 'derivatives') || strcmp(DatasetDir, 'ExploreASL')
+                        warning('Please do not provide the derivatives or ExploreASL folder. Use the dataset root directory instead...');
+                    end
+                end
+                x.opts.bProcessData = 0;
+                x.opts.bProcess = [0 0 0];
+            else
+                % At least one of the JSON files exists
+                
+                % dataPar.json
+                if strcmp(x.opts.dataParType,'dataParFile')
+                    % It is a dataPar.json, so do not run the BIDS import workflow
+                    if x.opts.bProcessData==0
+                        x.opts.bProcessData = 0; % Initialize & load but do not process
+                        x.opts.bLoadData = true;
+                    end
+                end
+                
+                % sourceStructure.json
+                if strcmp(x.opts.dataParType,'sourceStructure') || strcmp(x.opts.dataParType,'dataset_description')
+                    % It is a sourceStructure.json or dataset_description.json, so we run the import workflow
+                    if x.opts.bProcessData==0
+                        x.opts.bProcessData = 0; % Initialize & load but do not process
+                        x.opts.bLoadData = true;
+                    end
+                end
+                
+            end
+        
+            % Check output
+            if x.opts.bProcessData>0 && nargout==0
+                warning('Data loading requested but no output structure defined');
+                fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
+            end
+            
+            % Try to catch unexpected inputs
+            if strcmp(x.opts.dataParType,'unknown') && x.opts.bProcessData>0 && x.opts.bImportData==0
+                fprintf('You are trying to process a dataset, without providing a dataPar.json file or running the import workflow...\n');
+                x.opts.bProcessData = 0;
+            end
+        
+        end
+        
+        
+        
