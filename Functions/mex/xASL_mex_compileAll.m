@@ -51,6 +51,12 @@ elseif ismac
 elseif isunix
     fprintf('%s\n', 'Linux detected, trying recompiling...');
     environmentIs = 'a64';
+	[~, result] = system('hostname');
+	if ~isempty(regexpi(result, 'saturn'))
+		serverName = 'saturn';
+	elseif ~isempty(regexpi(result, '(flux|luna)'))
+		serverName = 'flux';
+	end
 else
     error('Unknown or not supported environment, stopping compiling');
 end
@@ -85,7 +91,11 @@ switch environmentIs
     case 'maci64'
         mex -v -f xASL_mex_DcmtkMacINTEL64.xml xASL_mex_DcmtkRead.cpp
     case 'a64'
-        mex -v -f xASL_mex_DcmtkUnix.xml xASL_mex_DcmtkRead.cpp
+		if strcmp(serverName, 'flux')
+			mex -v -f xASL_mex_DcmtkUnixFLUX.xml xASL_mex_DcmtkRead.cpp
+		else
+			mex -v -f xASL_mex_DcmtkUnixHZDR.xml xASL_mex_DcmtkRead.cpp
+		end
     case 'w64'
 	    mex -v -f xASL_mex_DcmtkWin.xml xASL_mex_DcmtkRead.cpp
 end

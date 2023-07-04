@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config
+    Name="g++"
+    ShortName="g++"
+    Manufacturer="GNU"
+    Version=""
+    Language="C++"
+    Priority="A"
+    Location="$GCC" >
+    <Details
+        CompilerExecutable="$CXX"
+        CompilerDefines="$DEFINES"
+        CompilerFlags="$CXXFLAGS"
+        OptimizationFlags="$CXXOPTIMFLAGS"
+        DebugFlags="$CXXDEBUGFLAGS"
+        IncludeFlags="$INCLUDE"
+        LinkerExecutable="$LDXX"
+        LinkerFlags="$LDFLAGS $LDTYPE"
+        LinkerLibraries="$LINKLIBS"
+        LinkerOptimizationFlags="$LDOPTIMFLAGS"
+        LinkerDebugFlags="$LDDEBUGFLAGS"
+
+        CompilerDefineFormatter="-D%s"
+        LinkerLibrarySwitchFormatter="-l%s"
+        LinkerPathFormatter="-L%s"
+    />
+    <vars
+        CMDLINE1="$CXX -c $DEFINES $INCLUDE $CXXFLAGS $OPTIM $SRC -o $OBJ"
+        CMDLINE2="$LDXX $LDFLAGS $LDTYPE $LINKOPTIM $LINKEXPORTVER $OBJS $CXXLIBS $LINKLIBS -o $EXE"
+        CXX="$GCC"
+        DEFINES="-D_GNU_SOURCE $MATLABMEX -DHAVE_CONFIG_H -D__CORRECT_ISO_CPP++_MATH_H_PROTO"
+        MATLABMEX="-DMATLAB_MEX_FILE "
+        CFLAGS="-fexceptions -fPIC -fno-omit-frame-pointer -pthread"
+        CXXFLAGS="$CFLAGS -std=c++11"
+        INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot; -I&quot;/usr/local/petlib/include&quot;"
+        CXXOPTIMFLAGS="-O -DNDEBUG"
+        CXXDEBUGFLAGS="-g"
+
+        LDXX="$CXX"
+        LDFLAGS="-pthread -static-libstdc++ -static-libgcc -Wl,--no-undefined "
+        LDTYPE="-shared"
+        LINKEXPORT="-Wl,--version-script,&quot;$MATLABROOT/extern/lib/$ARCH/mexFunction.map&quot;"
+        LINKEXPORTVER="-Wl,--version-script,&quot;$MATLABROOT/extern/lib/$ARCH/c_exportsmexfileversion.map&quot;"
+        LINKLIBS="-L&quot;$MATLABROOT/bin/$ARCH&quot; -L/usr/local/petlib/lib -ldcmdata -lm -loflog -lofstd -lmx -lz -lwrap -lrt -lnsl -lssl -lcrypto -lmex -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic"
+        LDOPTIMFLAGS="-O"
+        LDDEBUGFLAGS="-g"
+        MWCPPLIB=""
+        OBJEXT=".o"
+        LDEXT=".mexa64"
+
+        SETENV="CC=&quot;gcc&quot;
+                CXX=&quot;$CXX&quot;
+                CFLAGS=&quot;$CFLAGS $DEFINES&quot;
+                CXXFLAGS=&quot;$CXXFLAGS $DEFINES&quot;
+                COPTIMFLAGS=&quot;$CXXOPTIMFLAGS&quot;
+                CXXOPTIMFLAGS=&quot;$CXXOPTIMFLAGS&quot;
+                CDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
+                CXXDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
+                LD=&quot;gcc&quot;
+                LD_PRELOAD=&quot;/usr/lib/x86_64-linux-gnu/libstdc++.so.6&quot;
+                LDXX=&quot;$LDXX&quot;
+                LDFLAGS=&quot;$LDFLAGS $LDTYPE $LINKLIBS $LINKEXPORT&quot;
+                LDDEBUGFLAGS=&quot;$LDDEBUGFLAGS&quot;">
+
+
+    </vars>
+    <client>
+        <engine
+            LINKLIBS="$MWCPPLIB -L&quot;$MATLABROOT/extern/bin/$ARCH&quot; -leng -lMatlabEngine -lMatlabDataArray $LINKLIBS"
+			LINKLIBSOLD="$MWCPPLIB -Wl,--as-needed -Wl,-rpath-link,$MATLABROOT/extern/bin/$ARCH -L&quot;$MATLABROOT/extern/bin/$ARCH&quot; -leng -lMatlabEngine -lMatlabDataArray $LINKLIBS"
+            LINKEXPORT=""
+            LINKEXPORTVER=""
+            LDEXT=""
+            LDTYPE=""
+        />
+
+        <mbuild
+            DEFINES="-D_GNU_SOURCE $MATLABMEX -DUNIX -DX11 -DGLNXA64 -DGCC -UMX_COMPAT_SC"
+            CXXFLAGS="-ansi -pthread -std=c++11"
+            INCLUDE="$INCLUDE -I&quot;$MATLABROOT/extern/include/cpp&quot;"
+            LDFLAGS="-pthread -Wl,$MATLABROOT/bin/$ARCH"
+            LINKEXPORT=""
+            LINKEXPORTVER=""
+            LINKLIBS="$MWCPPLIB -L&quot;$MATLABROOT/runtime/$ARCH&quot; -lm -lmwmclmcrrt -lstdc++"
+            LDEXT=""
+            MATLABMEX=""
+            LDTYPE=""
+        />
+
+    </client>
+    <locationFinder>
+        <GCC>
+            <cmdReturns name="which g++" />
+        </GCC>
+
+        <CPPLIB_DIR>
+            <cmdReturns name="g++ -print-file-name=/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
+                        diagnostic="GCC appears to be installed, but supporting C++ libraries were not found.  You must first install the gcc-c++ packge, or similiar, to complete this action."/>
+        </CPPLIB_DIR>
+    </locationFinder>
+</config>
+
+<!-- find /usr/lib/ -name 'libstd*.*' -->
+<!-- CXXFLAGS="$CFLAGS -fno-sized-deallocation -std=c++11" -->
+<!-- LDFLAGS="-pthread -static-libstdc++ -static-libgcc -Wl,--no-undefined " -->
+<!-- <cmdReturns name="which g++" /> -->
+<!-- <cmdReturns name="g++ -print-file-name=/usr/lib/x86_64-linux-gnu/libstdc++.so.6" -->
