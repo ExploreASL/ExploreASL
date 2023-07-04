@@ -510,27 +510,7 @@ function xASL_init_BasicFeedback(x)
 end
 
 
-%% =======================================================================================================================
-%% =======================================================================================================================
-function x = xASL_init_DeployedModeHandling(x)
 
-    % Find the path of the master files within the ctf archive
-    [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL*');
-    
-    % Get the path
-    curPathCTF = fileparts(files(1,:));
-    
-    % curPathCTF = ExploreASL path
-    x.opts.MyPath = fullfile(curPathCTF);
-
-    % User feedback
-    BreakString = '==============================================================================================\n';
-    fprintf(BreakString);
-    fprintf('ctfroot:       %s\n', ctfroot);
-    fprintf('x.opts.MyPath: %s\n', x.opts.MyPath);
-    fprintf(BreakString);
-    
-end
 
 
 %% =======================================================================================================================
@@ -573,8 +553,25 @@ function x = xASL_init_GetMasterScript(x)
             x.opts.MyPath = pathstr;
         end
     else
-        % In deployed mode set the ExploreASL directory in the ctf archive
-        x = xASL_init_DeployedModeHandling(x);
+        % In deployed mode set the ExploreASL directory in the ctf archive:
+        
+        % Find the path of the master files within the ctf archive
+        [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL*');
+        
+        % Get the path
+        curPathCTF = fileparts(files(1,:));
+        
+        % curPathCTF = ExploreASL path
+        x.opts.MyPath = fullfile(curPathCTF);
+
+        % User feedback
+        BreakString = '==============================================================================================\n';
+        fprintf(BreakString);
+        fprintf('ctfroot:       %s\n', ctfroot);
+        fprintf('x.opts.MyPath: %s\n', x.opts.MyPath);
+        fprintf(BreakString);
+
+
     end
 
 end
@@ -844,6 +841,3 @@ function xASL_init_printSettings(x)
             end
         
         end
-        
-        
-        
