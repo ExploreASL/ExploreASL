@@ -65,16 +65,10 @@ function [x] = ExploreASL_Initialize(varargin)
 
     %% 2. Get main ExploreASL path
 
-    % % xASL_init_GetMyPath Check if the current directory is the ExploreASL directory
-    x = xASL_init_GetMyPath(x);
-
-    % xASL_init_GetMasterScript Allow the user to input the ExploreASL root path manually, 
-    % or try to find this automatically if ExploreASL is run deployed (i.e., in compiled mode, e.g. in a Docker)
-    x = xASL_init_GetMasterScript(x);
+    x = xASL_init_GetMainExploreASLfolder(x);
 
     
-    % Go to ExploreASL directory
-    cd(x.opts.MyPath);
+
 
 
 
@@ -513,11 +507,18 @@ end
 
 
 
-%% =======================================================================================================================
-%% =======================================================================================================================
-function x = xASL_init_GetMyPath(x)
-% xASL_init_GetMyPath Check if the current directory is the ExploreASL directory
 
+
+%% =======================================================================================================================
+%% =======================================================================================================================
+function x = xASL_init_GetMainExploreASLfolder(x)
+% xASL_init_GetMainExploreASLfolder by
+% 1. Check if the current directory is the ExploreASL main directory
+% 2. Allow the user to input the ExploreASL root path manually
+% 3. In deployed mode set the ExploreASL directory in the ctf archive
+% 4. Go to ExploreASL directory
+
+    %% 1. Check if the current directory is the ExploreASL main directory
     CurrCD = pwd;
     if exist(fullfile(CurrCD, 'ExploreASL.m'), 'file')
         x.opts.MyPath = CurrCD;
@@ -534,15 +535,7 @@ function x = xASL_init_GetMyPath(x)
         end
     end
 
-end
-
-
-%% =======================================================================================================================
-%% =======================================================================================================================
-function x = xASL_init_GetMasterScript(x)
-% xASL_init_GetMasterScript Allow the user to input the ExploreASL root path manually, 
-% or try to find this automatically if ExploreASL is run deployed (i.e., in compiled mode, e.g. in a Docker)
-
+    %% 2. Allow the user to input the ExploreASL root path manually
     MasterScriptPath = fullfile(x.opts.MyPath, 'ExploreASL.m');
 
     % Select the ExploreASL folder manually, if the script is not run in deployed mode
@@ -553,7 +546,7 @@ function x = xASL_init_GetMasterScript(x)
             x.opts.MyPath = pathstr;
         end
     else
-        % In deployed mode set the ExploreASL directory in the ctf archive:
+        %% 3. In deployed mode set the ExploreASL directory in the ctf archive
         
         % Find the path of the master files within the ctf archive
         [files,~] = spm_select('FPListRec',ctfroot,'ExploreASL*');
@@ -570,9 +563,10 @@ function x = xASL_init_GetMasterScript(x)
         fprintf('ctfroot:       %s\n', ctfroot);
         fprintf('x.opts.MyPath: %s\n', x.opts.MyPath);
         fprintf(BreakString);
-
-
     end
+
+    %% 4. Go to ExploreASL directory
+    cd(x.opts.MyPath);
 
 end
 
