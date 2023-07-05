@@ -10,22 +10,29 @@ function [x] = xASL_init_DataLoading(x)
 %   x          - ExploreASL x structure
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:    Load dataset by adding relevant fields to xASL x struct.
-% Subfunctions used are:
-% xASL_init_DefineDataDependentSettings
-%   xASL_init_DefinePaths
-%   xASL_init_Toolboxes
-% xASL_init_LoadDataParameterFile
-% xASL_init_DefineStudyData
-% xASL_init_RemoveLockDirs
-% xASL_init_PrintCheckSettings
+% DESCRIPTION: Here, we load all the ExploreASL derivatives data into the Matlab x structure, 
+% such that we can use it for processing.
+% i.e., datasetRoot/derivatives/ExploreASL/*
+% This could contain data that was just copied from rawdata (converted to ExploreASL legacy format)
+% or (partly) already processed data.
+%
+% This function is divided into the following (sub)functions:
+% 1. xASL_adm_CleanUpX (Clean up the x struct before we load any data)
+% 2. xASL_init_DefineDataDependentSettings (if we only want to load the data)
+% 3. xASL_init_LoadDataParameterFile (settings for running ExploreASL)
+% 4. xASL_init_DefineDataDependentSettings (if we also want to process the data)
+% 5. xASL_init_DefineStudyData (Subjects, sessions, visits, timepoints, which to include/exclude etc)
+%    (this is the only function here that is not a local subfunction, because it is rather large)
+% 6. xASL_init_RemoveLockDirs (Remove lock dirs from previous runs)
+% 7. xASL_init_PrintCheckSettings (e.g., path, iWorker, nWorkers, Quality, DELETETEMP)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        [x] = xASL_init_DataLoading(x);
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
 
-    %% Clean up the x struct before we load the data
+    %% 1. xASL_adm_CleanUpX
+    % Clean up the x struct before we load any data
     x = xASL_adm_CleanUpX(x);
 
     %% Print the hyperlink
@@ -42,7 +49,9 @@ function [x] = xASL_init_DataLoading(x)
         x.dataset = struct;
 	end
     
-    % Make sure that the dataPar.json definitely exists if we load the dataset
+    %% 2. xASL_init_DefineDataDependentSettings (if we only want to load the data)
+    % Define several ExploreASL environment parameters that are dependent on the loaded data,
+    % such as the subfolders of the population folder, which maps and templates to use, which visualization settings, and which fields are deprecated.
 	if x.opts.bLoadableData
 		if ~isfield(x,'dir') || ~isfield(x.dir,'dataPar') || isempty(x.dir.dataPar)
 			warning('You are trying to load a dataset but no dataPar.json file was specified.');
@@ -55,9 +64,13 @@ function [x] = xASL_init_DataLoading(x)
 	% Go to ExploreASL folder
     cd(x.opts.MyPath);
 	
+    %% 3. xASL_init_LoadDataParameterFile (settings for running ExploreASL)
 	x = xASL_init_LoadDataParameterFile(x);
 	
-    % These settings depend on the data (e.g. which template to use)
+
+    %% 4. xASL_init_DefineDataDependentSettings (if we also want to process the data)
+    % Define several ExploreASL environment parameters that are dependent on the loaded data,
+    % such as the subfolders of the population folder, which maps and templates to use, which visualization settings, and which fields are deprecated.
     x = xASL_init_DefineDataDependentSettings(x);
     
     % Check if data loading should be executed first
@@ -73,15 +86,22 @@ function [x] = xASL_init_DataLoading(x)
             x.D.ROOT = pwd;
         end
 
+        %% 5. xASL_init_DefineStudyData
         % Define study subjects/parameters for this pipeline run
+        % Subjects, sessions, visits, timepoints, which to include/exclude etc)
+        % Also defines parallelization settings (iWorker, nWorkers)
         x = xASL_init_DefineStudyData(x);
 
-        % Remove lock dirs from previous runs, if ExploreASL is not running in parallel
+        %% 6. xASL_init_RemoveLockDirs
+        % Remove lock dirs from previous runs that might still exist if the pipeline crashed.
+        % This is only performed if ExploreASL is not running in parallel
+        % Note that any lock dirs for individual modules/su
         if x.opts.nWorkers==1
             x = xASL_init_RemoveLockDirs(x);
         end
 
-        % Define & print settings
+        %% 7. xASL_init_PrintCheckSettings
+        % Define & print settings (path, iWorker, nWorkers, Quality, DELETETEMP)
         x = xASL_init_PrintCheckSettings(x);
 	else
         % This warning is also printed if a user tries to "only load" a dataset with a descriptive JSON file. 
@@ -122,7 +142,8 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
     %   x       - ExploreASL x structure (STRUCT)
     %
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % DESCRIPTION: Define ExploreASL environment parameters, dependent of loaded data.
+    % DESCRIPTION: Define several ExploreASL environment parameters that are dependent on the loaded data,
+    % such as the subfolders of the population folder, which maps and templates to use, which visualization settings, and which fields are deprecated.
     %
     % EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
     %
@@ -132,8 +153,8 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
     % Copyright 2015-2021 ExploreASL
     
     
-    x = xASL_init_DefinePaths(x);
-    x = xASL_init_Toolboxes(x);
+    x = xASL_init_DefinePaths(x); % here we define the subfolders of the dataset (mostly of the Population folder)
+    x = xASL_init_Toolboxes(x); % here we load SPM (PM: should this part go elsewhere? it is not data-dependent)
     
     
     %% --------------------------------------------------------------------------
@@ -319,7 +340,7 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
         %% =======================================================================================================================
         %% =======================================================================================================================
         function x  = xASL_init_Toolboxes(x)
-        %xASL_init_Toolboxes Check & load ancillary toolboxes, versions and paths
+        %xASL_init_Toolboxes Here we load SPM
         %
         % FORMAT: x  = xASL_init_Toolboxes(x)
         %
@@ -330,7 +351,7 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
         %   x       - ExploreASL x structure (STRUCT)
         %
         % -----------------------------------------------------------------------------------------------------------------------------------------------------
-        % DESCRIPTION: Check & load ancillary toolboxes, versions and paths.
+        % DESCRIPTION: Here we load SPM
         %
         % EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
         %
@@ -374,7 +395,7 @@ function [x] = xASL_init_LoadDataParameterFile(x)
     %   x       - ExploreASL x structure (STRUCT)
     %
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % DESCRIPTION: Load data parameter file.
+    % DESCRIPTION: Load data parameter file (which contains settings for running the pipeline)
     %
     % EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
     %
