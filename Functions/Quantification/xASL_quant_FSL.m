@@ -216,17 +216,18 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, 
 % Copyright 2015-2023 ExploreASL 
 
 %% 0. Admin
-if ~bUseFabber
-	% Set BASIL dataPar options and their defaults
-	if ~isfield(x.Q,'BASIL')
-		x.Q.BASIL = [];
-	end
+% Set BASIL dataPar options and their defaults
+if ~isfield(x.Q,'BASIL')
+	x.Q.BASIL = [];
+end
 
-	if ~isfield(x.Q.BASIL,'bMasking') || isempty(x.Q.BASIL.bMasking)
+if ~isfield(x.Q.BASIL,'bMasking') || isempty(x.Q.BASIL.bMasking)
 		fprintf('BASIL: Setting default option bMasking = true\n');
 		x.Q.BASIL.bMasking = true;
 	end
 
+if ~bUseFabber
+	% BASIL specific options
 	if ~isfield(x.Q.BASIL,'bSpatial') || isempty(x.Q.BASIL.bSpatial)
 		fprintf('BASIL: Setting default option bSpatial = false\n');
 		x.Q.BASIL.bSpatial = false;
