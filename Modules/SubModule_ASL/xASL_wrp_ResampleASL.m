@@ -157,7 +157,7 @@ end
 
 % If x.Q.M0 is set as UseControlAsM0, this mean control NIfTI will be
 % cloned to an M0 NIfTI (and processed in the M0 submodule)
-if strcmpi(x.Q.M0, 'UseControlAsM0')
+if strcmpi(x.Q.M0, 'UseControlAsM0') && ~isfield(x.Q,'LookLocker')
     if nVolumes==1
         warning('Cant clone mean control NIfTI as M0.nii, timeseries missing');
         % we assume that a single ASL image is already subtracted, so does not
@@ -199,6 +199,8 @@ if strcmpi(x.Q.M0, 'UseControlAsM0')
             xASL_Copy(x.P.Path_ASL4D_parms_mat, x.P.Path_M0_parms_mat, true);
         end
     end
+elseif strcmpi(x.Q.M0, 'UseControlAsM0') && isfield(x.Q,'LookLocker')
+    fprintf('%s\n','Skipping cloning mean control image for use as M0, as Look-Locker M0 creation will be performed later');
 end
 
 
@@ -310,8 +312,8 @@ for iSpace=1:2
             
             % MultiPLD PWI after averaging
             PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), max(indexNew)); % preallocate PWI
-            for nPLD = 1:max(indexNew)
-                PWI(:, :, :, nPLD) = xASL_stat_MeanNan(ASL_im(:, :, :, indexNew == nPLD), 4); % Averaged PWI4D
+            for iPLD = 1:max(indexNew)
+                PWI(:, :, :, iPLD) = xASL_stat_MeanNan(ASL_im(:, :, :, indexNew == iPLD), 4); % Averaged PWI4D
             end
             
             % Save PWI

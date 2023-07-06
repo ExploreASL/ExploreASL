@@ -89,9 +89,15 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     if ~x.modules.asl.bMultiPLD
         % SinglePLD
         xASL_io_SaveNifti(x.P.Path_PWI, pathFSLInput, PWI, [], 0); % use PWI path
-    else
+    elseif ~x.Q.LookLocker
         % MultiPLD
         xASL_io_SaveNifti(x.P.Path_PWI4D, pathFSLInput, PWI, [], 0); % use PWI4D path
+    else
+        % MultiPLD Look-Locker
+        for iPLD = 1 : size(unique(x.Q.Initial_PLD),1) % number of PLDs
+        PWIcorrected(:,:,:,iPLD) = PWI(:,:,:,iPLD)/((cos(2*pi/360*x.Q.FlipAngle))^(iPLD-1)); % correct PWI for Look-Locker readout per PLD number, see Günther, M., Bock, M. and Schad, L.R. (2001), Arterial spin labeling in combination with a look-locker sampling strategy: Inflow turbo-sampling EPI-FAIR (ITS-FAIR). Magn. Reson. Med., 46: 974-984. https://doi.org/10.1002/mrm.1284
+        end        
+        xASL_io_SaveNifti(x.P.Path_PWI4D, pathFSLInput, PWIcorrected, [], 0); % use PWI4D path
     end
 
     %% 4. Create FIDoptionFile that contains options which are passed to the FSL command

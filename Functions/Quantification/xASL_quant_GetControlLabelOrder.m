@@ -30,15 +30,13 @@ if exist('x','var') &&  isfield(x.Q,'LookLocker') % determine Look-Locker order 
 
     NPLD = size(unique(x.Q.Initial_PLD),1); % change this, just to test
     NAverages = size(ASLTimeSeries,4)/NPLD/2;
-    for iPLD = 1 : NPLD
-        ControlIm(:,:,:,(1+NAverages*(iPLD-1)):NAverages*iPLD) = ASLTimeSeries(:,:,:,iPLD:2*NPLD:end-NPLD); % usual order
-        LabelIm(:,:,:,(1+NAverages*(iPLD-1)):NAverages*iPLD)  = ASLTimeSeries(:,:,:,iPLD+NPLD:2*NPLD:end);
-        
+    for iPLD = 1 : NPLD % we assume order is PLD, control-label, averages  
+        ControlIm(:,:,:,(iPLD:NPLD:NPLD*NAverages)) = ASLTimeSeries(:,:,:,iPLD:2*NPLD:end-NPLD); % rearranged order is PLD, then averages
+        LabelIm(:,:,:,(iPLD:NPLD:NPLD*NAverages))  = ASLTimeSeries(:,:,:,iPLD+NPLD:2*NPLD:end); % rearranged order is PLD, then averages
     end
 else
     ControlIm = ASLTimeSeries(:,:,:,1:2:end-1); % usual order
-    LabelIm = ASLTimeSeries(:,:,:,2:2:end-0);
-    
+    LabelIm = ASLTimeSeries(:,:,:,2:2:end-0); 
 end
 % Check equality of n frames control & label
 if size(ControlIm,4)~=size(LabelIm,4)

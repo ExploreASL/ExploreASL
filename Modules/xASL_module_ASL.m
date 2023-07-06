@@ -481,7 +481,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
         x.mutex.DelState(StateName{iState+2});
     elseif ~xASL_exist(x.P.Path_M0,'file') && isfield(x.Q,'LookLocker') % if Look-Locker without M0, we use the control images to create an M0 using ASL_calib
         
-        x = xASL_im_CreateLookLockerM0(x); % create new M0 from Look-Locker control iamges
+        x = xASL_im_CreateLookLockerM0(x); % create new M0 from Look-Locker control images
         
         xASL_wrp_ProcessM0(x);
         
