@@ -74,7 +74,7 @@ function  xASL_sub_printPage(json, x, settings)
 
     %% Print the Title
     logoPath = fullfile(x.opts.MyPath, 'Design/ExploreASL_logoHeader.png');
-    xASL_sub_PrintImage(logoPath, [], primaryFig, [0 0.96 1 0.04]);
+    [~] = xASL_sub_PrintImage(logoPath, [], primaryFig, settings, [0 0.96 1 0.04]);
     line = xASL_sub_PrintText('ExploreASL QC summary report ', primaryFig, [0 0.93 1 0], settings);
 
     %% Print the Footer
@@ -109,7 +109,7 @@ function xASL_sub_parseBlock(input, x, pageFig, settings)
     clear local_image
 
     set(0, 'CurrentFigure', pageFig);
-    xASL_sub_PrintImage([PrintPath '.jpg'], [], pageFig, position); 
+    settings.figurecount = xASL_sub_PrintImage([PrintPath '.jpg'], [], pageFig, settings, position); 
     xASL_delete([PrintPath , '.jpg']);
 end
 
@@ -159,9 +159,9 @@ function [settings, line] = xASL_sub_parseContent(currentField, x, figure, line,
         case 'qc'
             line = xASL_sub_PrintQC(currentField, x, figure, line, settings);
         case 'image'
-            xASL_sub_PrintImage(currentField, x, figure);  
+            settings = xASL_sub_PrintImage(currentField, x, figure, settings);  
         case 'scan'
-            xASL_sub_PrintScan(currentField, x, figure);
+            settings = xASL_sub_PrintScan(currentField, x, figure, settings);
         case 'page'
             xASL_sub_printPage(currentField, x, settings);  
         case 'block'
@@ -280,20 +280,30 @@ function line = xASL_sub_PrintText(input, figure, line, settings)
     line = xASL_sub_NewLine(line, settings);
 end
 
-function xASL_sub_PrintImage(input, x, figure, position)
+function [settings] = xASL_sub_PrintImage(input, x, figure, settings, position)
     switch nargin
-    case 3
-        position = [str2num(input.position) str2num(input.size)];
-        switch(input.pathDir)
-        case 'population'
-            ImagePath = fullfile(x.dir.xASLDerivatives, 'Population', input.filePath);
-        case 'subject'
-            ImagePath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, input.filePath);
-        case 'absolute'
-            ImagePath = input.filePath;
-        end
     case 4
+        position = [str2num(input.position) str2num(input.size)];
+        if isfield(input, 'xPath') && isfield(x.P, input.name)
+            ImagePath = x.P.(input.name);
+        elseif isfield(input, 'absolutePath')
+            ImagePath = input.absolutePath;
+        elseif isfield(input, 'popPath')
+            ImagePath = fullfile(x.dir.xASLDerivatives, 'Population', input.popPath);
+        elseif isfield(input, 'subjPath')
+            ImagePath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, input.subjPath);
+        else
+            warning('xASL_sub_PrintImage didnt have a defined path') ;
+            return
+        end
+        if isfield(input, 'header')
+            header = input.header;
+        else
+            header = '';
+        end
+    case 5
         ImagePath = input;
+        header = '';
     end
     ax=axes('Position', position, 'Visible', 'off', 'Parent', figure);
     [img, ~, alphachannel] = imread(ImagePath);
@@ -302,22 +312,24 @@ function xASL_sub_PrintImage(input, x, figure, position)
         fg.AlphaData=alphachannel;
     end
     clear fg
+    settings.figurecount = xASL_sub_PrintHeader(header, figure, settings, position);
 end
 
-function xASL_sub_PrintScan(input, x, figure)
+function [settings] = xASL_sub_PrintScan(input, x, figure, settings)
     position = [str2num(input.position) str2num(input.size)];
     if ~isfield(x.P, input.name)
         warning (['could not print', input.name, 'check if nifti exists in ExploreASL/Derivatives/Population']);
         return
     end
     ImIn = {x.P.(input.name)};
-
+    header = input.name;
     ax=axes('Position', position, 'Visible', 'off', 'Parent', figure);
     if isfield(input, 'overlay')
         fields = fieldnames(input.overlay);
         for iField=1:length(fields)
             if isfield(x.P, fields(iField))
                 ImIn(end+1) = {x.P.(fields{iField})};
+                header = [header ' + ' fields{iField}];
             end
         end
     end
@@ -332,8 +344,9 @@ function xASL_sub_PrintScan(input, x, figure)
     end
 
     img = xASL_vis_CreateVisualFig(x, ImIn, [], [], [], [], [], [], [], [], [], [], []);
-    fg= imshow(img);
+    fg = imshow(img);
     clear fg
+    settings.figurecount = xASL_sub_PrintHeader(header, figure, settings, position);
 end
 
 function line = xASL_sub_NewLine(line, settings)
@@ -341,6 +354,17 @@ function line = xASL_sub_NewLine(line, settings)
     if line(2) < 0 
         warning('No space left on page!');
     end
+end
+
+function [figurecount] = xASL_sub_PrintHeader(header, figure, settings, position)
+    if isempty(header)
+        figurecount = settings.figurecount;
+        return
+    end
+    settings.HorizontalAlignment = 'center';
+    figurecount = settings.figurecount + 1;
+    text = ['Fig ' num2str(figurecount) ': ' header];
+    [~] = xASL_sub_PrintText(text, figure, position, settings);
 end
 
 function [settings] = xASL_sub_loadSettings(json, settings)
@@ -372,6 +396,7 @@ function [settings] = xASL_sub_defaultSettings()
     settings.axesVisible = 'off';
     settings.fontName = 'default';
     settings.lineSpacing = 0.005;
+    settings.figurecount = 0;
     if ispc
         settings.fontSize = 10;
     elseif isunix || ismac

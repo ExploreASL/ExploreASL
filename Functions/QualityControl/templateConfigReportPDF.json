@@ -16,6 +16,23 @@
                 {
                     "type": "text",
                     "text": "This is an sample for the Explore ASL report Generator, See ExploreASL/Function/templateConfigReportPDF.json for the script generating this PDF."
+                },{
+                    "type": "scan",
+                    "name": "Pop_Path_rT1",
+                    "position": "[0.70 0.65]",
+                    "size": "[0.3 0.3]",
+                    "slice": {
+                        "TraSlice": "[50 75]",
+                        "CorSlice": "[50 75]",
+                        "SagSlice": "[50 75]"
+                    },
+                    "overlay": {
+                        "Pop_Path_qCBF": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
                 },
                 {
                     "type": "scan",
@@ -29,23 +46,6 @@
                     },
                     "overlay": {
                         "Pop_Path_SliceGradient": {
-                            "contour": "true",
-                            "opacity": "0.3",
-                            "color": "r"
-                        }
-                    }
-                },{
-                    "type": "scan",
-                    "name": "Pop_Path_rT1",
-                    "position": "[0.70 0.65]",
-                    "size": "[0.3 0.3]",
-                    "slice": {
-                        "TraSlice": "[50 75]",
-                        "CorSlice": "[50 75]",
-                        "SagSlice": "[50 75]"
-                    },
-                    "overlay": {
-                        "Pop_Path_qCBF": {
                             "contour": "true",
                             "opacity": "0.3",
                             "color": "r"
@@ -307,16 +307,15 @@
                             "text": "This block has text on the left and scans on the right."
                         },{
                             "type": "image",
-                            "pathDir": "population",
-                            "filePath": "M0Check/Cor_M0_1_ASL_1.jpg",
-                            "position": "[0.5 0.0]",
-                            "size": "[0.5 0.5]"
+                            "popPath": "M0Check/Cor_M0_1_ASL_1.jpg",
+                            "position": "[0.5 0.66]",
+                            "size": "[0.33 0.33]",
+                            "header" : "M0 Image"
                         },{
                             "type": "image",
-                            "pathDir": "population",
-                            "filePath": "M0Check/Cor_M0_1_ASL_1.jpg",
-                            "position": "[0.5 0.5]",
-                            "size": "[0.5 0.5]"
+                            "popPath": "M0Check/Cor_M0_1_ASL_1.jpg",
+                            "position": "[0.5 0.16]",
+                            "size": "[0.33 0.33]"
                         },{
                             "type": "text",
                             "settings": {
