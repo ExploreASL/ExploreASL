@@ -286,10 +286,19 @@ for iSpace=1:2
             % Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images
             % and we need the PLD vector now for the pairwise subtractions only
             if isfield(x.Q,'LookLocker') % define correct PLDs & save control images for ASL_calib use
-                Initial_PLD_PWI = x.Q.Initial_PLD(1:end/2); % assume acquistion of pairs, so we can just divide by half
+                x.Q.Unique_PLD = unique(x.Q.Initial_PLD);
+                NAverages = numel(x.Q.Initial_PLD)/numel(x.Q.Unique_PLD)/2; % !!! change once import is correct !!!
+                for IAverages = 1 : NAverages % calculate position factor of control for PWI PLD calculation
+                    for iPLD = 1 : numel(x.Q.Unique_PLD)
+                        ControlPositionVector(iPLD+(numel(x.Q.Unique_PLD)* 2 * (IAverages-1)),1) = 1;
+                    end
+                    ControlPositionVector(end+1:end+numel(x.Q.Unique_PLD),1) = 0;
+                end
+                Initial_PLD_PWI = x.Q.Initial_PLD([logical(ControlPositionVector)]); % assume acquistion of pairs, so we can just divide by half
+                
                 if iSpace == 1 % only for native space
                     PathControl4D = fullfile(x.dir.SESSIONDIR ,'Control4D_FSLInput.nii');
-                    xASL_io_SaveNifti(PathASL{iSpace}, PathControl4D, ControlIm, 32, false);
+                    xASL_im_LookLockerIntensityCorrection(PathASL{iSpace}, PathControl4D, ControlIm, x); % correct Look-Locker PWI for steady state magnetisation effects and save                end
                 end
             else
                 Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
