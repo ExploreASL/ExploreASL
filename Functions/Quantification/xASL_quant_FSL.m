@@ -222,6 +222,11 @@ if ~bUseFabber
 		x.Q.BASIL = [];
 	end
 
+	if ~isfield(x.Q.BASIL,'bMasking') || isempty(x.Q.BASIL.bMasking)
+		fprintf('BASIL: Setting default option bMasking = true\n');
+		x.Q.BASIL.bMasking = true;
+	end
+
 	if ~isfield(x.Q.BASIL,'bSpatial') || isempty(x.Q.BASIL.bSpatial)
 		fprintf('BASIL: Setting default option bSpatial = false\n');
 		x.Q.BASIL.bSpatial = false;
@@ -278,6 +283,23 @@ else
 	% Path to input and output
 	FSLOptions = [FSLOptions ' -o ' xASL_adm_UnixPath(pathFSLOutput, ispc)];
 	FSLOptions = [FSLOptions ' -i ' xASL_adm_UnixPath(pathFSLInput, ispc)];
+end
+
+% Define masking
+if x.Q.BASIL.bMasking
+	% Check for uninitialized Mask variable or file
+	if ~isfield(x.P, 'Path_BrainMaskProcessing')
+		warning('BASIL masking set to TRUE, but the mask variable x.P.Path_BrainMaskProcessing is not initialized.');
+	elseif ~xASL_exist(x.P.Path_BrainMaskProcessing, 'file')
+		warning('BASIL masking set to TRUE, but the mask is missing: %s\n', x.P.Path_BrainMaskProcessing);
+	else
+		% Add the mask to the options file
+		if bUseFabber
+			fprintf(FIDoptionFile, '--mask=%s\n', xASL_adm_UnixPath(x.P.Path_BrainMaskProcessing, ispc));
+		else
+			FSLOptions = [FSLOptions ' -m ' xASL_adm_UnixPath(x.P.Path_BrainMaskProcessing, ispc)];
+		end
+	end
 end
 
 %% 2. Basic model and tissue parameters
@@ -529,23 +551,6 @@ if ~bUseFabber
 	% 	fprintf(option_file, '--t1im=%s\n', t1im)
 	%   fprintf('BASIL: Using supplied T1 (tissue) image in BASIL: %s\n', $t1im)
 	%
-	%   % For small numbers of time points we need an informative noise prior.
-	%   % The user can specify an assumed SNR for this, or give prior estimated noise standard deviation below.
-	%   if ~isfield(x.Q.BASIL,'SNR') || isempty(x.Q.BASIL.SNR)
-	%       x.Q.BASIL.SNR = 0; %Otherwise, a reasonable default is 10
-	%   end
-	%
-	%   if x.Q.BASIL.SNR
-	%       fprintf('BASIL: Using SNR of %f to set noise std dev\n', x.Q.BasilSNR);
-	%       % Estimate signal magnitude FIXME brain mask assume half of voxels
-	%       mag_max = max(PWI, [], 4);
-	%       brain_mag = 2*xASL_stat_MeanNan(mag_max(:));
-	%       fprintf('BASIL: Mean maximum signal across brain: %f\n', brain_mag);
-	%       % This will correspond to whole brain CBF (roughly) - about 0.5 of GM
-	%       imNoiseSD = sqrt(brain_mag * 2 / x.Q.BasilSNR);
-	%       fprintf('BASIL: Using a prior noise std.dev. of: %f\n', imNoiseSD);
-	%       fprintf(FIDoptionFile, '--prior-noise-stddev=%f\n', imNoiseSD);
-	%     end
 end
 
 %% 6. Close options file
