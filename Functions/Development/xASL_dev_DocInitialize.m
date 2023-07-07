@@ -117,10 +117,10 @@ function xASL_dev_DocInitialize(baseOutputFolder)
                         fullfile(outputFolder,'Modules.md'),'Modules');
     
     % Use documentation crawler for submodules
-    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_Import'), fullfile(outputFolder,'Import_Module.md'),'ImportModule');
-    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_Structural'), fullfile(outputFolder,'Structural_Module.md'),'StructuralModule');
-    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_ASL'), fullfile(outputFolder,'ASL_Module.md'),'ASLModule');
-    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','SubModule_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
+    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','Module_Import'), fullfile(outputFolder,'Import_Module.md'),'ImportModule');
+    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','Module_Processing','Module_Structural'), fullfile(outputFolder,'Structural_Module.md'),'StructuralModule');
+    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','Module_Processing','Module_ASL'), fullfile(outputFolder,'ASL_Module.md'),'ASLModule');
+    xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','Module_Processing','Module_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
     
 
 end
