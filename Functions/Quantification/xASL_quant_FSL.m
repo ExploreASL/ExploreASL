@@ -391,8 +391,8 @@ switch lower(x.Q.LabelingType)
 
 			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
 			index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
-			PLDs = PLDs(index(:)');
-			LabDurs = LabDurs(index(:)');
+			PLDs = PLDs(index(:));
+			LabDurs = LabDurs(index(:));
 		else
 			% For normal multi-timepoint, we look for unique PLD+LabDur combinations
 			[~, indexNew, ~] = unique([PLDs(:), LabDurs(:)], 'stable', 'rows');
