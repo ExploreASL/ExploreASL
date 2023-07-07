@@ -113,8 +113,8 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
                     if isempty(iVisit)
                         if bVerbose
                             fprintf('\nEmpty session number, setting session number to 1...\n');
-                            pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_1']);
                         end
+                        pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_1']);
                     else
                         % If Visit name is of a form ses-number then use this number otherwise the ID
                         if regexpi(SessionID, 'ses-\d+')
