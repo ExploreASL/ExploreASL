@@ -38,11 +38,6 @@ function x = xASL_imp_DetermineSubjectStructure(x)
     elseif x.opts.bImport(2) && x.opts.bImportData && imParCondition
         % Determine structure from temp data
         x = xASL_imp_DetermineStructureFromTempdata(x);
-        
-    elseif (x.opts.bImport(3) || x.opts.bLoadData)
-        % Determine structure from rawdata
-        x = xASL_imp_DetermineStructureFromRawdata(x);
-
     end
     
     % SESSIONS DUMMY
@@ -51,63 +46,7 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 
 end
 
-function [x] = xASL_imp_DetermineStructureFromRawdata(x)
-%xASL_imp_DetermineStructureFromRawdata Determine structure from rawdata
-%
-% FORMAT: [x] = xASL_imp_DetermineStructureFromRawdata(x)
-%
-% INPUT:
-%   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
-%
-% OUTPUT:
-%   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:    Determine structure from rawdata.
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:        n/a
-% __________________________________
-% Copyright 2015-2022 ExploreASL
 
-
-    %% Check if rawdata exists
-    if xASL_exist(x.dir.RawData,'dir')
-        
-        % SUBJECTS
-        x.SUBJECTS = xASL_adm_GetFileList(x.dir.RawData,[],false,[],true);
-
-        % Remove 'sub-' from subject name if it exists
-        for iSubject=1:numel(x.SUBJECTS)
-            if regexpi(x.SUBJECTS{iSubject},'sub-')==1
-                x.SUBJECTS{iSubject} = x.SUBJECTS{iSubject}(length('sub-')+1:end);
-            end 
-        end
-
-        % Check if data can be loaded
-        if isempty(x.SUBJECTS)
-            warning('Unable to find subjects in BIDS rawdata directory...');
-            x.opts.bLoadData = false;
-            x.opts.bLoadableData = false;
-        else
-            % We can probably load the data
-            x.opts.bLoadableData = true;
-        end
-        
-    else
-        % Maybe a user does not have a BIDS sourcedata or rawdata directory
-        % and only runs the ExploreASL workflow on derivatives data.
-        % Maybe BIDS2Legacy is turned on, but it actually shouldn't be.
-        fprintf(2,'There is no rawdata directory...\n');
-        x.opts.bSkipBIDS2Legacy = true;
-        % We need to try to load the data anyway right now, otherwise the
-        % workflow will skip the processing for datasets without rawdata
-        % completely.
-        x.opts.bLoadableData = true;
-    end
-
-
-end
 
 function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 %xASL_imp_DetermineStructureFromTempdata Determine structure from temp data
