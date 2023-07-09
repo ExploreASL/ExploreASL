@@ -5,7 +5,16 @@ function [x] = xASL_init_DefineStudyData(x)
 % FORMAT: [x] = xASL_init_DefineStudyData(x)
 %
 % INPUT:
-%   x   - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%   x             - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%   x.opts.subjectFolder - folder containing the subjects that need to be defined
+%                   for loading/processing (OPTIONAL, DEFAULT = x.dir.xASLDerivatives)
+%                   !!! This default will create a list of subjects inside the
+%                   derivatives folder, using the old ExploreASL legacy
+%                   processing folder. With the newer BIDS workflow, this
+%                   parameter should be set to x.dir.RawData, especially
+%                   for parallel processing!!!
+%                   
+%                   
 %
 % OUTPUT:
 %   x   - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -64,6 +73,15 @@ if ~isfield(x.dataset,'name')
     x.dataset.name = ''; 
 end
 
+if ~isfield(x.opts, 'subjectFolder')
+    fprintf('\nDefaulting to the ExploreASL derivatives folder to define subjects\n\n');
+    x.opts.subjectFolder = x.dir.xASLDerivatives;
+elseif ~exist(x.opts.subjectFolder, 'dir')
+    warning(['subjectFolder' x.opts.subjectFolder ' is no valid directory']);
+    fprintf('\nDefaulting to the ExploreASL derivatives folder to define subjects\n\n');
+    x.opts.subjectFolder = x.dir.xASLDerivatives;
+end
+
 
 % ------------------------------------------------------------------------------------------------
 %% 1) Manage included & excluded subjects
@@ -88,7 +106,7 @@ else
     x.dataset.subjectRegexp = strrep(x.dataset.subjectRegexp,'$','');
     x.dataset.subjectRegexp = [x.dataset.subjectRegexp '(|_\d+)$'];
     % Then load subjects
-    x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(x.D.ROOT, x.dataset.subjectRegexp, 'List', [0 Inf], true)); % find dirs
+    x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(x.opts.subjectFolder, x.dataset.subjectRegexp, 'List', [0 Inf], true)); % find dirs
 end
 
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
@@ -111,7 +129,7 @@ end
 
 if ~isfield(x,'SESSIONS')
     x.SESSIONS = '';
-    SessionPathList = xASL_adm_GetFileList(x.D.ROOT, '^(ASL|func)_\d+$', 'FPListRec', [0 Inf],1);
+    SessionPathList = xASL_adm_GetFileList(x.opts.subjectFolder, '^(ASL|func)_\d+$', 'FPListRec', [0 Inf],1);
     for iSess=1:length(SessionPathList)
         [~, x.SESSIONS{end+1}]  = fileparts(SessionPathList{iSess});
     end
@@ -139,8 +157,8 @@ x.dataset.nSubjects = length(x.SUBJECTS);
 if isempty(x.SUBJECTS)
     fprintf(2,'No subjects found...\n');
     fprintf(2,'Please check the sub_regexp in your Data Parameter File.\n');
-    fprintf(2,'This should match with the subject folders inside the ROOT folder.\n');
-    fprintf(2,'This was %s ...\n\n',x.D.ROOT);
+    fprintf(2,'This should match with the subject folders inside the provided subjectFolder\n');
+    fprintf(2,'This was %s ...\n\n', x.opts.subjectFolder);
     error('No subjects defined, x.SUBJECTS was empty...');
 end
 
