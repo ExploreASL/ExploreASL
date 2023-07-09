@@ -97,5 +97,8 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
             x.opts.bLoadableData = true;
         end
     
-    
+        % SESSIONS DUMMY
+        x.SESSIONS = {''};
+
+
     end
