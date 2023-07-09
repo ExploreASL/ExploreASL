@@ -22,15 +22,7 @@ function x = xASL_init_Process(x)
 
     % Initialize x struct
     x = xASL_init_SubStructs(x);
-    
-    % We expect x.opts.DatasetRoot to be the study root directory, but if it is not defined,
-    % then the user probably used a path to a descriptive JSON file instead
-    if isfield(x, 'dir') && isfield(x.dir, 'DatasetRoot') && isempty(x.dir.DatasetRoot)
-        x.dir.DatasetRoot = xASL_fileparts(x.opts.DatasetRoot);
-    end
-    
-    % For the xASL_Iterate support we need x.D.ROOT as well
-    x.D.ROOT = x.dir.DatasetRoot;
+
     
     %% Determine subject/session/run structure from rawdata
     x = xASL_imp_DetermineStructureFromRawdata(x);
@@ -62,7 +54,7 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
     % Copyright 2015-2022 ExploreASL
     
     
-        %% Check if rawdata exists
+        %% Load rawdata subjects -> X.SUBJECTS
         if xASL_exist(x.dir.RawData,'dir')
             
             % SUBJECTS
@@ -75,9 +67,11 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
                 end 
             end
     
-            % Check if data can be loaded
+
+        %% Check if data can be loaded
+        %  This is non-specific for BIDS2Legacy
             if isempty(x.SUBJECTS)
-                warning('Unable to find subjects in BIDS rawdata directory...');
+                warning('Unable to find subjects...');
                 x.opts.bLoadData = false;
                 x.opts.bLoadableData = false;
             else
@@ -97,8 +91,7 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
             x.opts.bLoadableData = true;
         end
     
-        % SESSIONS DUMMY
-        x.SESSIONS = {''};
+
 
 
     end
