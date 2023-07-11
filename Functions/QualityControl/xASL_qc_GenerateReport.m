@@ -20,6 +20,11 @@ function [x,config] = xASL_qc_GenerateReport(x, subject)
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
 
+if ~usejava('jvm') % only if JVM loaded
+    fprintf('Warning: skipping PDF report, JVM missing\n');
+    return;
+end
+
 % Determine x.mat file
 PathX = fullfile(x.dir.xASLDerivatives, subject, 'x.mat');
 
