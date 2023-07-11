@@ -74,7 +74,7 @@ function  xASL_sub_printPage(json, x, settings)
 
     %% Print the Title
     logoPath = fullfile(x.opts.MyPath, 'Design/ExploreASL_logoHeader.png');
-    [~] = xASL_sub_PrintImage(logoPath, [], primaryFig, settings, [0 0.96 1 0.04]);
+    [~] = xASL_sub_PrintImage(logoPath, [], primaryFig, settings, [0 0.96 1 0]);
     line = xASL_sub_PrintText('ExploreASL QC summary report ', primaryFig, [0 0.93 1 0], settings);
 
     %% Print the Footer
@@ -91,26 +91,11 @@ function  xASL_sub_printPage(json, x, settings)
     clear primaryFig ax
 end
 
-
 function xASL_sub_parseBlock(input, x, pageFig, settings)
-    clear local_image
-    position = [str2num(input.position) str2num(input.size)];
-    local_image = figure('visible', 'off','Units', 'normalized','Position', position);
-
-    %% Rescale fontsize to match Block size
-    settings.fontSize = settings.fontSize / position(4);
-    settings.lineSpacing = settings.lineSpacing / position(4);
-    xASL_sub_parseJson(input, x, local_image, [0 0.96 1 0.04], settings);
-
-    PrintFile = 'xASL_subImage';
-    PrintPath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, PrintFile); 
-    
-    print(local_image, PrintPath, '-djpeg');
-    clear local_image
-
-    set(0, 'CurrentFigure', pageFig);
-    settings.figurecount = xASL_sub_PrintImage([PrintPath '.jpg'], [], pageFig, settings, position); 
-    xASL_delete([PrintPath , '.jpg']);
+    position = xASL_str2num(input.position);
+    size = xASL_str2num(input.size);
+    [settings.canvas, line] = xASL_sub_createNewCanvas(position, size, settings.canvas);
+    xASL_sub_parseJson(input, x, pageFig, line, settings);
 end
 
 
@@ -242,7 +227,7 @@ function line = xASL_sub_PrintQC(json, x, figure, line, settings)
 
     if isfield(json, 'range') 
         [range] = strsplit(json.range, '-');
-        if (TempValue < str2double(range{1})) || (TempValue > str2double(range{2}))
+        if (TempValue < xASL_str2num(range{1})) || (TempValue > xASL_str2num(range{2}))
             settings.color = 'r';
         end
         json.range = ['(' json.range ')'];
@@ -283,7 +268,7 @@ end
 function [settings] = xASL_sub_PrintImage(input, x, figure, settings, position)
     switch nargin
     case 4
-        position = [str2num(input.position) str2num(input.size)];
+        position = [xASL_str2num(input.position) xASL_str2num(input.size)];
         if isfield(input, 'xPath') && isfield(x.P, input.name)
             ImagePath = x.P.(input.name);
         elseif isfield(input, 'absolutePath')
@@ -305,25 +290,30 @@ function [settings] = xASL_sub_PrintImage(input, x, figure, settings, position)
         ImagePath = input;
         header = '';
     end
-    ax=axes('Position', position, 'Visible', 'off', 'Parent', figure);
+
+    [canvas, ~] = xASL_sub_createNewCanvas(position(1:2), position(3:4), settings.canvas);
+    ax=axes('Position', canvas, 'Visible', settings.axesVisible, 'Parent', figure);
     [img, ~, alphachannel] = imread(ImagePath);
     fg= imshow(img);
     if strcmp('png', ImagePath(end-2:end))
         fg.AlphaData=alphachannel;
     end
     clear fg
-    settings.figurecount = xASL_sub_PrintHeader(header, figure, settings, position);
+    settings.figurecount = xASL_sub_PrintHeader(header, figure, settings, canvas);
 end
 
 function [settings] = xASL_sub_PrintScan(input, x, figure, settings)
-    position = [str2num(input.position) str2num(input.size)];
+    position = [xASL_str2num(input.position) xASL_str2num(input.size)];
+    [canvas, ~] = xASL_sub_createNewCanvas(position(1:2), position(3:4), settings.canvas);
+
     if ~isfield(x.P, input.name)
         warning (['could not print', input.name, 'check if nifti exists in ExploreASL/Derivatives/Population']);
         return
     end
     ImIn = {x.P.(input.name)};
     header = input.name;
-    ax=axes('Position', position, 'Visible', 'off', 'Parent', figure);
+    ax=axes('Position', canvas, 'Visible', settings.axesVisible, 'Parent', figure);
+    
     if isfield(input, 'overlay')
         fields = fieldnames(input.overlay);
         for iField=1:length(fields)
@@ -333,10 +323,12 @@ function [settings] = xASL_sub_PrintScan(input, x, figure, settings)
             end
         end
     end
+
     if isfield(input, 'slice')
         x.S.TraSlices = [str2num(input.slice.TraSlice)];
         x.S.CorSlices = [str2num(input.slice.CorSlice)];
         x.S.SagSlices = [str2num(input.slice.SagSlice)];
+        
     else
         x.S.TraSlices = [25, 50, 90];
         x.S.SagSlices = [25, 50, 90];
@@ -346,13 +338,15 @@ function [settings] = xASL_sub_PrintScan(input, x, figure, settings)
     img = xASL_vis_CreateVisualFig(x, ImIn, [], [], [], [], [], [], [], [], [], [], []);
     fg = imshow(img);
     clear fg
-    settings.figurecount = xASL_sub_PrintHeader(header, figure, settings, position);
+    settings.figurecount = xASL_sub_PrintHeader(header, figure, settings, canvas);
 end
 
 function line = xASL_sub_NewLine(line, settings)
     line(2) = line(2) - (settings.lineSpacing) - (settings.fontSize * 0.001);
     if line(2) < 0 
         warning('No space left on page!');
+    elseif line(2) < settings.canvas(2) 
+        warning('Printing outside canvas, check block settings.');
     end
 end
 
@@ -361,6 +355,7 @@ function [figurecount] = xASL_sub_PrintHeader(header, figure, settings, position
         figurecount = settings.figurecount;
         return
     end
+    position(4) = 0;
     settings.HorizontalAlignment = 'center';
     figurecount = settings.figurecount + 1;
     text = ['Fig ' num2str(figurecount) ': ' header];
@@ -389,6 +384,13 @@ function [settings] = xASL_sub_loadSettings(json, settings)
 
 end
 
+function [newCanvas, line] = xASL_sub_createNewCanvas(position, size, oldCanvas)
+    newPosition = [oldCanvas(1) + position(1) * oldCanvas(3) oldCanvas(2) + position(2) * oldCanvas(4)];
+    newSize = [oldCanvas(3:4) .* size];
+    newCanvas = [newPosition, newSize];
+    line = [newPosition(1)  newPosition(2) + newSize(2) newSize(1) 0];
+end
+
 function [settings] = xASL_sub_defaultSettings()
     settings.color = 'k';
     settings.HorizontalAlignment = 'left';
@@ -397,6 +399,7 @@ function [settings] = xASL_sub_defaultSettings()
     settings.fontName = 'default';
     settings.lineSpacing = 0.005;
     settings.figurecount = 0;
+    settings.canvas = [0 0 1 1];
     if ispc
         settings.fontSize = 10;
     elseif isunix || ismac

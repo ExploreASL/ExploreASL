@@ -33,8 +33,7 @@
                             "color": "r"
                         }
                     }
-                },
-                {
+                },{
                     "type": "scan",
                     "name": "Pop_Path_rT1",
                     "position": "[0.70 0.35]",
@@ -59,7 +58,7 @@
                     "slice": {
                         "TraSlice": "[50]",
                         "CorSlice": "[12 78]",
-                        "SagSlice": "[]"
+                        "SagSlice": "[25]"
                     },
                     "overlay": {
                         "Pop_Path_MaskVascular": {
@@ -284,38 +283,30 @@
                     "size": "[0.8 0.33]",
                     "settings": {
                         "type": "settings",
-                        "fontSize": "36",
                         "fontName": "default",
                         "fontWeight": "normal",
-                        "lineSpacing": "0.075",
                         "color": "k",
-                        "axesVisible": "off",
                         "HorizontalAlignment": "left"
                     },
                     "content": [
                         {
                             "type": "text",
-                            "settings": {
-                                "fontSize": "36"
-                            },
                             "text": "This is an example of such a content block."
                         },{
                             "type": "text",
-                            "settings": {
-                                "fontSize": "36"
-                            },
                             "text": "This block has text on the left and scans on the right."
                         },{
                             "type": "image",
                             "popPath": "M0Check/Cor_M0_1_ASL_1.jpg",
-                            "position": "[0.5 0.66]",
+                            "position": "[0.66 0.66]",
                             "size": "[0.33 0.33]",
                             "header" : "M0 Image"
                         },{
                             "type": "image",
-                            "popPath": "M0Check/Cor_M0_1_ASL_1.jpg",
-                            "position": "[0.5 0.16]",
-                            "size": "[0.33 0.33]"
+                            "popPath": "M0Reg_ASL/M0_im_proc_1.jpg",
+                            "position": "[0.66 0.16]",
+                            "size": "[0.33 0.33]",
+                            "header" : "M0 Image Longer text just to see"
                         },{
                             "type": "text",
                             "settings": {
@@ -328,6 +319,23 @@
                                 "fontSize": "36"
                             },
                             "text": "This is a font 36 line test in a block"
+                        },{
+                            "type": "block",
+                            "position": "[0.0 0.0]",
+                            "size": "[0.5 0.5]",
+                            "settings": {
+                                "type": "settings",
+                                "fontName": "default",
+                                "fontWeight": "normal",
+                                "color": "k",
+                                "HorizontalAlignment": "left"
+                            },
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": "This is an example of a block in a block."
+                                }
+                            ]
                         }
                     ]
                 }
