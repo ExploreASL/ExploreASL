@@ -22,6 +22,7 @@ function [x,config] = xASL_qc_GenerateReport(x, subject)
 
 if ~usejava('jvm') % only if JVM loaded
     fprintf('Warning: skipping PDF report, JVM missing\n');
+    config = NaN;
     return;
 end
 
@@ -330,10 +331,9 @@ function [settings] = xASL_sub_PrintScan(input, x, figure, settings)
     end
 
     if isfield(input, 'slice')
-        x.S.TraSlices = [str2num(input.slice.TraSlice)];
-        x.S.CorSlices = [str2num(input.slice.CorSlice)];
-        x.S.SagSlices = [str2num(input.slice.SagSlice)];
-        
+        [x.S.TraSlices] = xASL_sub_getSliceFromStruct(input.slice, 'TraSlice');
+        [x.S.CorSlices] = xASL_sub_getSliceFromStruct(input.slice, 'CorSlice');
+        [x.S.SagSlices] = xASL_sub_getSliceFromStruct(input.slice, 'SagSlice');       
     else
         x.S.TraSlices = [25, 50, 90];
         x.S.SagSlices = [25, 50, 90];
@@ -410,4 +410,12 @@ function [settings] = xASL_sub_defaultSettings()
     elseif isunix || ismac
         settings.fontSize = 8;
     end 
+end
+
+function [slice] = xASL_sub_getSliceFromStruct(struct, name)
+    if isfield(struct, name) && ~isempty(struct.(name))
+        slice = str2num(struct.(name));
+    else 
+        slice = [];
+    end
 end

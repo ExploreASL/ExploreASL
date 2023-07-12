@@ -23,8 +23,7 @@
                     "size": "[0.3 0.3]",
                     "slice": {
                         "TraSlice": "[50 75]",
-                        "CorSlice": "[50 75]",
-                        "SagSlice": "[50 75]"
+                        "CorSlice": "[50 75]"
                     },
                     "overlay": {
                         "Pop_Path_qCBF": {
