@@ -37,7 +37,8 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded)
 	% This can be recognized either by the specific Series description
 	bTimeEncodedFME = false;
 	if isfield(jsonIn, 'SeriesDescription')
-		if (~isempty(regexp(char(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once')))% || ... % ASL format
+		if (~isempty(regexp(char(jsonIn.SeriesDescription),'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once')) || ...% || ... % ASL format
+			~isempty(regexp(char(jsonIn.SeriesDescription),'EncodedImages_Had\d\d_\d\dTIs_\d\dTEs', 'once')))
 				%~isempty(regexp(char(jsonIn.SeriesDescription),'(ss_TE)\d\d(_TI)\d\d\d\d', 'once')))                            % M0 format
 			bTimeEncodedFME = true;
 			return;
@@ -45,7 +46,9 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded)
 	end
 		
 	% Or by the sequence name
-	if isfield(jsonIn, 'SequenceName') && ~isempty(regexp(char(jsonIn.SequenceName), 'fme_asl', 'once'))
+	if isfield(jsonIn, 'SequenceName') &&...
+	   (~isempty(regexp(char(jsonIn.SequenceName), 'fme_asl', 'once')) ||...
+	    ~isempty(regexp(char(jsonIn.SequenceName), 'gammastar_pCASL', 'once')))
 		if (isfield(jsonOut, 'PostLabelingDelay') && length(unique(jsonOut.PostLabelingDelay))>1)
 			bTimeEncodedFME = true;
 			return
@@ -74,7 +77,9 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded)
 	end
 
 	% Or protocol name
-	if isfield(jsonIn,'ProtocolName') && ~isempty(regexpi(char(jsonIn.ProtocolName), 'fme_gammastar_Had(4|8)', 'once'))
+	if isfield(jsonIn,'ProtocolName') &&...
+	   (~isempty(regexpi(char(jsonIn.ProtocolName), 'fme_gammastar_Had(4|8)', 'once')) ||...
+	    ~isempty(regexpi(char(jsonIn.ProtocolName), 'EncodedImages_Had(04|08)', 'once')))
 		bTimeEncodedFME = true;
 	end
 end
