@@ -121,7 +121,10 @@ if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
 end
 if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
 	if x.MagneticFieldStrength == 3
-		x.Q.T2 = 85; % in ms - default for 3T (ref Johannes Gregori, JMRI 2013)
+		x.Q.T2 = 85; % in ms - default for 3T (ref Johannes Gregori, JMRI 2013) 88 for frontal GM, 79 for occipital GM (Lu et al, 2005 JMRI)
+		% Hct specific values are in 10.1002/mrm.21342
+	elseif x.MagneticFieldStrength == 1.5
+		x.Q.T2 = 95; % in ms - 99 for frontal GM, 90 for occipital GM (Lu et al, 2005 JMRI).
 	else
 		x.Q.T2 = 85;
 		fprintf('%s\n',['Warning: Unknown T2 for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
