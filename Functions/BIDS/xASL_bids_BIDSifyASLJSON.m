@@ -542,12 +542,23 @@ if isfield(jsonOut,'NumberOfAverages') && (max(jsonOut.NumberOfAverages) > 1)
 end
 
 % First count the number of controls, labels, and deltaMs
+% Check and exclude dummy scans first from ASLContext
+if isfield(studyPar, 'DummyScanPositionInASL4D') && ~isempty(studyPar.DummyScanPositionInASL4D)
+	for iDummy = 1:length(studyPar.DummyScanPositionInASL4D)
+		if length(ASLContextCell) >= studyPar.DummyScanPositionInASL4D(iDummy)
+			ASLContextCell{studyPar.DummyScanPositionInASL4D(iDummy)} = 'dummy';
+		end
+	end
+end
+
 ASLContextControlIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^control')); % Create a vector out of it
 ASLContextControlIndex = ASLContextControlIndex(1:dimASL(4)); % Remove the last empty field
 ASLContextLabelIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^label')); % Create a vector out of it
 ASLContextLabelIndex = ASLContextLabelIndex(1:dimASL(4)); % Remove the last empty field
 ASLContextDeltaMIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^deltam')); % Create a vector out of it
 ASLContextDeltaMIndex = ASLContextDeltaMIndex(1:dimASL(4)); % Remove the last empty field
+
+
 
 % If TotalAcquiredPairs is 1, but more control/label pairs od deltaMs are present, then set this to the correct
 % number

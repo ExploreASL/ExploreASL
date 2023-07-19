@@ -95,6 +95,9 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 	% Check if both cbf and deltam/control/label volumes exist
 	if sum(~cellfun(@isempty,regexpi(aslContext,'deltam|control|label'))) && ...
 	   sum(~cellfun(@isempty,regexpi(aslContext,'cbf')))
+		% In this case, ignore CBF
+		warning('ASLContext has both a CBF image and delteM/control/label scans. CBF is thus ignored and discarded.')
+		
 		% Get the index of the CBF volume
 		indexCBF = find(~cellfun(@isempty,regexpi(aslContext,'cbf')))-1;
 
@@ -369,6 +372,9 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_sub_SplitJSON(BackupJSONPath, indi
             end
         end
         
+		% Run a standard check on M0 files to remove extra fields
+		jsonM0 = xASL_bids_JsonCheck(jsonM0, 'M0');
+
     else
         % Fallback
         jsonM0 = struct;
