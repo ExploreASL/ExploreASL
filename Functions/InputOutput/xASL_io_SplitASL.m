@@ -96,7 +96,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 	if sum(~cellfun(@isempty,regexpi(aslContext,'deltam|control|label'))) && ...
 	   sum(~cellfun(@isempty,regexpi(aslContext,'cbf')))
 		% In this case, ignore CBF
-		warning('ASLContext has both a CBF image and delteM/control/label scans. CBF is thus ignored and discarded.')
+		warning('ASLContext has both a CBF image and the raw non-quantified data (e.g., deltaM, control, label scans). CBF is thus discarded.')
 		
 		% Get the index of the CBF volume
 		indexCBF = find(~cellfun(@isempty,regexpi(aslContext,'cbf')))-1;
