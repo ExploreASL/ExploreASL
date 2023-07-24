@@ -38,6 +38,7 @@ function [x, Result1] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, NicenessVa
 
 %% Admin
 if nargin<2 || isempty(x)
+    warning('x input missing');
     x = struct;
 end
 if nargin<3 || isempty(OutputZipping)
@@ -109,7 +110,7 @@ pathVersion = fullfile(RootFSLdir, 'etc', 'fslversion');
 if ~exist(pathVersion, 'file')
     warning('Couldnt detect FSL version');
 else
-    FSLversion = xASL_str2num(load(pathVersion));
+    FSLversion = xASL_str2num(load(pathVersion, '-ascii'));
     if FSLversion<6
         warning('FSL version lower than 6 detected, this has not been tested yet');
         fprintf('Consider updating your FSL version\n');
