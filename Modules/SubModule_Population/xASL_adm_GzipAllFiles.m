@@ -12,7 +12,7 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
 %                  gzip is installed on Linux/MacOS (which is a fair
 %                  assumption). (OPTIONAL, DEFAULT = true for Unix (Linux/Mac) and false
 %                  otherwise (e.g. pc/Windows)
-%   pathExternal - Path to external Gzip tools like SuperGzip, used for Windows (.../ExploreASL/External) 
+%   pathExternal - Path to external Gzip tools like SuperGzip, this should be fullfile(x.opts.MyPath,'External')
 %                  (OPTIONAL, DEFAULT = [])
 % OUTPUT: n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -38,7 +38,12 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
         bUseLinux = false;
     end
     if nargin<4 || isempty(pathExternal)
-        pathExternal = [];
+%         pathExternal = fullfile(x.opts.MyPath,'External');
+%         if ~exist(pathExternal, 'dir')
+            warning('No pathExternal provided, skipping superGzip');
+            % This should be: pathExternal = fullfile(x.opts.MyPath,'External')
+            pathExternal = [];
+        end
     end
 
     exit_code = NaN;
@@ -56,16 +61,25 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
         if ~isempty(pathExternal)
             PathList = xASL_adm_GetFileList(ROOT, '^.*\.(nii)$', 'FPListRec', [0 Inf], false);
             if ~isempty(PathList)
-                fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
+                tic
+                fprintf('\n%s\n',['G-zZzZipping']);
                 numCores = feature('numcores');
+                glob_pat = join(['"' ROOT '/**/*.nii"']);
                 % Get SuperGzip path
-                PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'SuperGZip_Windows.exe');
-                % Define SuperGzip command
-                command = [PathToSuperGzip ' -p 0 -n ' num2str(numCores) ' -v 1 ' ROOT ' *.nii'];
-                % Run script
-                [exit_code, system_result] = system(command);
-                % Check if SuperGzip was successful
+                if ispc
+                    PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'super-gzip.exe');
+                elseif ismac
+                    PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'super-gzip_macOS');
+                elseif isunix
+                    PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'super-gzip_linux');
+                end
 
+                % Define SuperGzip command
+                command = [PathToSuperGzip ' gzip ' glob_pat ' -n ' num2str(numCores) ' --verbose' ];
+                % Run script
+                [exit_code, system_result] = system(command, '-echo');
+                % Check if SuperGzip was successful
+                toc
             end
         end
     end
