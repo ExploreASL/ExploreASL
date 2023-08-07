@@ -5,6 +5,7 @@ function [x,config] = xASL_qc_GenerateReport(x, subject)
 %
 % INPUT:
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
+%   subject     - subject name (OPTIONAL, default = x.SUBJECT)
 %
 % OUTPUT: n/a
 % OUTPUTFILE:
@@ -24,6 +25,11 @@ if ~usejava('jvm') % only if JVM loaded
     fprintf('Warning: skipping PDF report, JVM missing\n');
     config = NaN;
     return;
+end
+
+% check input
+if nargin < 2 || isempty(subject)
+    subject = x.SUBJECT;
 end
 
 % Determine x.mat file
