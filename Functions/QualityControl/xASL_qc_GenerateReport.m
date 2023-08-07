@@ -238,6 +238,7 @@ function [settings] = xASL_sub_PrintImage(input, x, figure, settings, position)
             ImagePath = input.absolutePath;
         elseif isfield(input, 'popPath')
             ImagePath = fullfile(x.dir.xASLDerivatives, 'Population', input.popPath);
+            ImagePath = xASL_sub_replace(ImagePath, x);
         elseif isfield(input, 'subjPath')
             ImagePath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, input.subjPath);
         else
@@ -266,6 +267,18 @@ function [settings] = xASL_sub_PrintImage(input, x, figure, settings, position)
 
     clear fg
     settings.figurecount = xASL_sub_PrintHeader(header, figure, settings, canvas);
+end
+
+function [strout] = xASL_sub_replace(strin, x)
+    strout = strin;
+    substring = regexp(strin, '<\w*>', 'match');
+    for substringIndex=1:length(substring)
+        if ~isfield(x, substring{substringIndex}(2:end-1))
+            warning(['Could not replace ', substring{substringIndex}, ' check if file exists in ExploreASL/Derivatives/Population']);
+        else
+            strout = strrep(strout, substring{substringIndex}, x.(substring{substringIndex}(2:end-1)));
+        end
+    end
 end
 
 function [settings] = xASL_sub_PrintScan(input, x, figure, settings)

@@ -296,13 +296,13 @@
                             "text": "This block has text on the left and scans on the right."
                         },{
                             "type": "image",
-                            "popPath": "M0Check/Cor_M0_1_ASL_1.jpg",
+                            "popPath": "M0Check/Cor_M0_<SUBJECT>_<SESSION>.jpg",
                             "position": "[0.66 0.66]",
                             "size": "[0.33 0.33]",
                             "header" : "M0 Image"
                         },{
                             "type": "image",
-                            "popPath": "M0Reg_ASL/M0_im_proc_1.jpg",
+                            "popPath": "M0Reg_ASL/M0_im_proc_<SUBJECT>.jpg",
                             "position": "[0.66 0.16]",
                             "size": "[0.33 0.33]",
                             "header" : "M0 Image Longer text just to see"
