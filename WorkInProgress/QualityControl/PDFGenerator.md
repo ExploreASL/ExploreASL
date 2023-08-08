@@ -3,6 +3,7 @@
 ## Introduction
 
 This is an example of how to use the function `[x, config] =  xASL_qc_GenerateReport(x[, subject])` to generate a completely custom PDF within ExploreASL. If `subject` isn't given, it will assume `subject = x.SUBJECT`.
+This function will use the JSON template in `ConfigReportPDF.json` in the `<root>/Derivatives/ExploreASL` folder. If this doesn't exist, it defaults to the example located at `<ExploreASL>/Functions/QualityControl/templateConfigReportPDF.json`.
 
 ### Standard Layout.
 
