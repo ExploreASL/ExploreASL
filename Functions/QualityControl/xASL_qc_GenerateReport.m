@@ -242,13 +242,15 @@ function [settings] = xASL_sub_PrintImage(input, x, figure, settings, position)
             ImagePath = x.P.(input.name);
         elseif isfield(input, 'absolutePath')
             ImagePath = input.absolutePath;
+            ImagePath = xASL_sub_WildcardReplace(ImagePath, x);
         elseif isfield(input, 'popPath')
             ImagePath = fullfile(x.dir.xASLDerivatives, 'Population', input.popPath);
-            ImagePath = xASL_sub_replace(ImagePath, x);
+            ImagePath = xASL_sub_WildcardReplace(ImagePath, x);
         elseif isfield(input, 'subjPath')
             ImagePath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, input.subjPath);
         else
             warning('xASL_sub_PrintImage didnt have a defined path') ;
+            ImagePath = xASL_sub_WildcardReplace(ImagePath, x);
             return
         end
 
@@ -275,7 +277,7 @@ function [settings] = xASL_sub_PrintImage(input, x, figure, settings, position)
     settings.figurecount = xASL_sub_PrintHeader(header, figure, settings, canvas);
 end
 
-function [strout] = xASL_sub_replace(strin, x)
+function [strout] = xASL_sub_WildcardReplace(strin, x)
     strout = strin;
     substring = regexp(strin, '<\w*>', 'match');
     for substringIndex=1:length(substring)
