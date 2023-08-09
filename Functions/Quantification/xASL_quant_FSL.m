@@ -58,7 +58,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 	else
 		bUseFabber = 0;
 	end
-        
+    bUseFabber = 1;
     %% 2. Delete previous output
     xASL_adm_DeleteFileList(x.dir.SESSIONDIR, ['(?i)^' dirFSLOutput '.*$'], 1, [0 Inf]);
     FolderList = xASL_adm_GetFileList(x.dir.SESSIONDIR, ['(?i)^' dirFSLOutput '.*$'], 'FPList', [0 Inf], 1);
@@ -403,9 +403,8 @@ switch lower(x.Q.LabelingType)
 
 		if bUseFabber
 			%Echo Times
-			nTE = length(unique(x.EchoTime));
-			NVolumes = size(PWI,4);
-			TEs = round(x.EchoTime(1:NVolumes)'/1000,4); % To keep 4 decimal digits
+			nTE = length(unique(x.EchoTime)); % Calculate the number of Echo Times
+			TEs = round(x.EchoTime'/1000,4); % Convert Echo Times to seconds and keep 4 decimal digits
 
 			% Plotting the values into the doc (PLD=ti, LD=tau)
 			for iPLD = 1:length(PLDs)
@@ -414,7 +413,7 @@ switch lower(x.Q.LabelingType)
 			end
 
 			for iTE = 1:length(TEs) %We need a TE for each volume
-				fprintf(FIDoptionFile, '--te%d=%.2f\n', iTE, TEs(iTE));
+				fprintf(FIDoptionFile, '--te%d=%.4f\n', iTE, TEs(iTE));
 			end
 
 			% Right now, we assume that we have averaged over PLDs
