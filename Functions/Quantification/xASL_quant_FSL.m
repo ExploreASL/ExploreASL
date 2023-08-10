@@ -403,8 +403,15 @@ switch lower(x.Q.LabelingType)
 
 		if bUseFabber
 			%Echo Times
+			nPLD = length(PLDs); % Number of PLDs in the PLD vector
+			nVolume = size(PWI,4); % Number of volumes in PWI
+
 			nTE = length(unique(x.EchoTime)); % Calculate the number of Echo Times
-			TEs = round(x.EchoTime'/1000,4); % Convert Echo Times to seconds and keep 4 decimal digits
+			TEs = round(x.EchoTime'/1000,3); % Convert Echo Times to seconds and keep 4 decimal digits
+			
+			if (nPLD*nTE) ~= nVolume
+				error('The number of volumes %d does not match number of PLDs %d * number of TEs %d', nVolume, nPLD, nTE);
+			end
 
 			% Plotting the values into the doc (PLD=ti, LD=tau)
 			for iPLD = 1:length(PLDs)
@@ -412,8 +419,16 @@ switch lower(x.Q.LabelingType)
 				fprintf(FIDoptionFile, '--nte%d=%d\n', iPLD, nTE); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
 			end
 
-			for iTE = 1:length(TEs) %We need a TE for each volume
-				fprintf(FIDoptionFile, '--te%d=%.4f\n', iTE, TEs(iTE));
+			if nTE == 1
+				% For a single-TE, we have to repeat it for each volume
+				for iTE = 1:nVolume %We need a TE for each volume
+					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE, TEs(1));
+				end
+			else
+				% For multi-TE, we print all of them
+				for iTE = 1:nVolume %We need a TE for each volume
+					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE, TEs(iTE));
+				end
 			end
 
 			% Right now, we assume that we have averaged over PLDs
