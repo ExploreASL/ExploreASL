@@ -55,7 +55,7 @@ catch ME
     testCondition = false;
     diary off;
 end
-fileList = xASL_adm_GetFileList(testDirsAndFiles.testDestination);
+fileList = xASL_adm_GetFileList(testDirsAndFiles.testDestination, 'test.*');
 
 % Define one or multiple test conditions here
 if isempty(imTest)
