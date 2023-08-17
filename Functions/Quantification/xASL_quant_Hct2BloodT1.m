@@ -31,6 +31,10 @@ function BloodT1 = xASL_quant_Hct2BloodT1(Hematocrit, Y, B0, bVerbose)
 
 %% ---------------------------------------------------------
 %% Admin
+
+% Default output
+BloodT1 = [];
+
 if nargin<4 || isempty(bVerbose)
     bVerbose = true;
 end
@@ -47,7 +51,10 @@ elseif length(Y)~=1
     return;
 end
 if nargin<1 || isempty(Hematocrit) || length(Hematocrit)~=1
-    warning('Incorrect Hematocrit specified, skipping');
+    warning('Incorrect Hematocrit specified, so not using this');
+    return;
+elseif isnan(Hematocrit)
+    warning('Hematocrit value was missing (set to NaN), so not using this');
     return;
 end
 
