@@ -235,10 +235,18 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 3.   Hematocrit & blood T1 correction
+% Here, we check if the user has provided a hematocrit value for this
+% subject_session_run. Only then, we create a x.Q.BloodT1.
+% Below, at the quantification section, this is only taken into account
+% when x.Q.BloodT1 exists, otherwise default Blood T1 values are used based
+% on MagneticFieldStrength.
+if isfield(x, 'hematocrit') && isfield(x, 'Hematocrit') % eventually this should be x.Q.Hematocrit, or x.S.SetsID from participants.tsv
+    warning('Two hematocrit fields, not sure which one to use, please provide one only!');
+elseif isfield(x, 'hematocrit')
+    x.Hematocrit = x.hematocrit;
+end
 if isfield(x,'Hematocrit')
-        x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Hematocrit, [], x.MagneticFieldStrength);
-elseif isfield(x,'hematocrit')
-        x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.hematocrit, [], x.MagneticFieldStrength);
+    x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Hematocrit, [], x.MagneticFieldStrength);
 end
 
 
@@ -348,6 +356,10 @@ else
 	end
 	if ~isfield(x.Q,'BloodT1')
 		% T1 relaxation time of arterial blood
+        % There are 3 options for x.Q.BloodT1:
+        % A) users have provided x.Q.BloodT1
+        % B) users have provided x.Hematocrit which is converted to x.Q.BloodT1 above
+        % C) it doesn't exist and is defaulted here based on MagneticFieldStrength
 		switch(x.MagneticFieldStrength)
 			case 0.2 
 				x.Q.BloodT1 = 776; % Rooney 2007
@@ -365,6 +377,9 @@ else
 			otherwise
 				x.Q.BloodT1 = 1650; % Alsop 2015 MRM - assuming default 3 T
 				fprintf('%s\n',['Warning: Unknown T1-blood for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+                % PM: NOTE that this situation is unlikely, given that we
+                % default to x.MagneticFieldStrength = 3 at section 0
+                % Administration above
 		end
 	end
     if ~isfield(x.Q, 'T2art')
