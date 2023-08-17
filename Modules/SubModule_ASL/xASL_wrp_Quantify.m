@@ -244,6 +244,7 @@ if isfield(x, 'hematocrit') && isfield(x, 'Hematocrit') % eventually this should
     warning('Two hematocrit fields, not sure which one to use, please provide one only!');
 elseif isfield(x, 'hematocrit')
     x.Hematocrit = x.hematocrit;
+	x = rmfield(x, 'hematocrit');
 end
 if isfield(x,'Hematocrit')
     x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Hematocrit, [], x.MagneticFieldStrength);
