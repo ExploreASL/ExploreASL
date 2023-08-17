@@ -224,7 +224,7 @@ if ~x.mutex.HasState(StateName{iState}) % tracks progress through lock/*.status 
 		
 		xASL_wrp_LinearReg_FLAIR2T1w(x, x.settings.bAutoACPC);
 
-		xASL_wrp_LinearReg_Others2T1w(x, x.settings.bAutoACPC);
+		xASL_wrp_LinearReg_Others2T1w(x, x.settings.bAutoACPC); % T1c & T2
 			
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing
