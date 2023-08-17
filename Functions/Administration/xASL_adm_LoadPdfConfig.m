@@ -1,10 +1,10 @@
-function [config] = xASL_adm_LoadPDFConfig(x, configPath)
-% xASL_adm_LoadPDFConfig loads parameters from a .json config file to be used in xASL_qc_GenerateReport.
+function [config] = xASL_adm_LoadPdfConfig(x, configPath)
+% xASL_adm_LoadPdfConfig loads parameters from a .json config file to be used in xASL_qc_GenerateReport.
 % Using the config file, the user can define the parameters of the report.
 % If no config file is given, it will first look in the derivatives folder if configReportPDF.json exists.
 % If nothing exists there a default config file is loaded and used. (source at in the ExploreASL/Functions/QualityControl folder)
 %
-% FORMAT: [config] = xASL_adm_LoadPDFConfig(x[, configPath])
+% FORMAT: [config] = xASL_adm_LoadPdfConfig(x[, configPath])
 %
 % INPUT:
 %   x           - Struct containing all ExploreAsl Parameters (REQUIRED)
@@ -21,7 +21,7 @@ function [config] = xASL_adm_LoadPDFConfig(x, configPath)
 % 3. Deal with warnings and return output
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [config] = xASL_adm_LoadPDFConfig(x);
+% EXAMPLE: [config] = xASL_adm_LoadPdfConfig(x);
 % __________________________________
 % Copyright 2015-2023 ExploreASL
 

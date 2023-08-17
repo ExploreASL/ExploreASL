@@ -190,7 +190,10 @@
                     "type": "qc",
                     "parameter":"VoxelSize_mm",
                     "module": "ASL",
-                    "Unit": "mm"
+                    "Unit": "mm",
+                    "settings": {
+                        "fontSize": "14"
+                    }
                 },{
                     "type": "qc",
                     "parameter":"LabelingDuration_ms",
