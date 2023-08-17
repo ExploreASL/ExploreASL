@@ -249,7 +249,7 @@ if isfield(x,'Hematocrit')
     x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Hematocrit, [], x.MagneticFieldStrength);
 end
 
-if ~isfield(x.Q,'BloodT1')
+if ~isfield(x.Q,'BloodT1') || isempty(x.Q.BloodT1)
 	% T1 relaxation time of arterial blood
     % There are 3 options for x.Q.BloodT1:
     % A) users have provided x.Q.BloodT1
@@ -257,21 +257,27 @@ if ~isfield(x.Q,'BloodT1')
     % C) it doesn't exist and is defaulted here based on MagneticFieldStrength
 	switch(x.MagneticFieldStrength)
 		case 0.2 
-			x.Q.BloodT1 = 776; % Rooney 2007
+			x.Q.BloodT1 = 776; % Rooney 2007 MRM
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 776 ms for 0.2 T (per Rooney 2007 MRM)');
 		case 1
-			x.Q.BloodT1 = 1350; % Rooney 2007
+			x.Q.BloodT1 = 1350; % Rooney 2007 MRM
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1350 for 1 T (per Rooney 2007 MRM)');
 		case 1.5
-			x.Q.BloodT1 = 1540; % Rooney 2007 
+			x.Q.BloodT1 = 1540; % Rooney 2007 MRM
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1540 for 1.5 T (per Rooney 2007 MRM)');
 		case 3
 			x.Q.BloodT1 = 1650; % Alsop 2015 MRM
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1650 for 3 T (per Alsop 2015 MRM)');
 		case 4
 			x.Q.BloodT1 = 1914; % Rooney 2007
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1914 for 4 T (per Rooney 2007 MRM)');
 		case 7
-			%x.Q.BloodT1 = 2578; % Rooney 2007
-			x.Q.BloodT1 = 2100; % Ivanov 2017
+			%x.Q.BloodT1 = 2578; % Rooney 2007 MRM
+			x.Q.BloodT1 = 2100; % Ivanov 2017 NeuroImage
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 2100 for 7 T (per Ivanov 2007 NeuroImage)');
 		otherwise
 			x.Q.BloodT1 = 1650; % Alsop 2015 MRM - assuming default 3 T
-			fprintf('%s\n',['Warning: Unknown T1-blood for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+			fprintf('%s\n',['Warning: Unknown T1-blood for ' xASL_num2str(x.MagneticFieldStrength) 'T scanner, using 3T value per Alsop 2015 MRM']);
             % PM: NOTE that this situation is unlikely, given that we
             % default to x.MagneticFieldStrength = 3 at section 0
             % Administration above
