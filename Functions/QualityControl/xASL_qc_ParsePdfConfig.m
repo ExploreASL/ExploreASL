@@ -1,19 +1,19 @@
-function [pdfSettings] = xASL_qc_ParsePdfConfig(layoutStructure, x, currentFigure, line, pdfSettings)
+function [settingsPDF] = xASL_qc_ParsePdfConfig(layoutStructure, x, currentFigure, line, settingsPDF)
 % xASL_qc_ParsePdfConfig function used by xASL_qc_CreatePDF to parse the configuration file loaded by xASL_adm_LoadPdfConfig.
 %   This function will run recursively, and will print all text, images, scans and other content specified in the json file.
 %   The json file should contain a structure with fields specified in the manual.
 %   
-% FORMAT: xASL_qc_ParsePdfConfig(json, x, currentFigure, line, pdfSettings)
+% FORMAT: xASL_qc_ParsePdfConfig(json, x, currentFigure, line, settingsPDF)
 %
 % INPUT:
 %   layoutStructure - json structure containing all information to be printed (REQUIRED)
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
 %   currentFigure      - currentFigure handle to print to (OPTIONAL, defaults to matlab main figure)
 %   line        - line to print to (OPTIONAL, defaults to [0 0.93 1 0] when it generates a new page)
-%   pdfSettings    - settings used to print (OPTIONAL, will set default settings if not specified)
+%   settingsPDF    - settings used to print (OPTIONAL, will set default settings if not specified)
 %
 % OUTPUT: 
-%   pdfSettings    - settings to print with
+%   settingsPDF    - settings to print with
 %
 % OUTPUTFILE:
 %   xASL_Report_SubjectName.pdf - printed PDF rapport containing QC images & values
@@ -40,8 +40,8 @@ if nargin < 4 || isempty(line)
     line = [0 0.93 1 1];
 end
 
-if nargin < 5 || isempty(pdfSettings)
-    pdfSettings = xASL_qc_ParsePdfConfig_sub_defaultSettings();
+if nargin < 5 || isempty(settingsPDF)
+    settingsPDF = xASL_qc_ParsePdfConfig_sub_defaultSettings();
 end
 
 fields = fieldnames(layoutStructure);
@@ -52,13 +52,13 @@ for iField = 1:length(fields)
     if strcmp(fields{iField}, 'content') || strcmp(fields{iField}, 'pages')
         for iContent = 1:length(currentField)
             if iscell(currentField(iContent))
-                [pdfSettings, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentField{iContent}, x, currentFigure, line, pdfSettings);
+                [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentField{iContent}, x, currentFigure, line, settingsPDF);
             else
-                [pdfSettings, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentField(iContent), x, currentFigure, line, pdfSettings);
+                [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentField(iContent), x, currentFigure, line, settingsPDF);
             end
         end
     else
-        [pdfSettings, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentField, x, currentFigure, line, pdfSettings);
+        [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentField, x, currentFigure, line, settingsPDF);
     end 
 end
 
@@ -67,7 +67,7 @@ end
 % ====================================================================================================================================================
 %% Subfunctions
 
-function [pdfSettings, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentField, x, currentFigure, line, pdfSettings)
+function [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentField, x, currentFigure, line, settingsPDF)
 
     if ~isstruct(currentField)
 %        fprintf('xASL_qc_ParsePdfConfig_sub_parseContent couldnt find struct of printable content \n');
@@ -80,56 +80,56 @@ function [pdfSettings, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentFi
 
     switch currentField.type
         case 'text' 
-            line = xASL_qc_ParsePdfConfig_sub_PrintText(currentField, currentFigure, line, pdfSettings);
+            line = xASL_qc_ParsePdfConfig_sub_PrintText(currentField, currentFigure, line, settingsPDF);
         case 'qc'
-            line = xASL_qc_ParsePdfConfig_sub_PrintQC(currentField, x, currentFigure, line, pdfSettings);
+            line = xASL_qc_ParsePdfConfig_sub_PrintQC(currentField, x, currentFigure, line, settingsPDF);
         case 'image'
-            pdfSettings = xASL_qc_ParsePdfConfig_sub_PrintImage(currentField, x, currentFigure, pdfSettings);  
+            settingsPDF = xASL_qc_ParsePdfConfig_sub_PrintImage(currentField, x, currentFigure, settingsPDF);  
         case 'scan'
-            pdfSettings = xASL_qc_ParsePdfConfig_sub_PrintScan(currentField, x, currentFigure, pdfSettings);
+            settingsPDF = xASL_qc_ParsePdfConfig_sub_PrintScan(currentField, x, currentFigure, settingsPDF);
         case 'page'
-            xASL_qc_ParsePdfConfig_sub_printPage(currentField, x, pdfSettings);  
+            xASL_qc_ParsePdfConfig_sub_printPage(currentField, x, settingsPDF);  
         case 'block'
-            xASL_qc_ParsePdfConfig_sub_printBlock(currentField, x, currentFigure, pdfSettings);
+            xASL_qc_ParsePdfConfig_sub_printBlock(currentField, x, currentFigure, settingsPDF);
         case 'settings'
-            pdfSettings = xASL_qc_ParsePdfConfig_sub_loadSettings(currentField, pdfSettings);  
+            settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(currentField, settingsPDF);  
         case 'patients' 
-            line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, pdfSettings);
+            line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, settingsPDF);
     end  
 end
 
-function  xASL_qc_ParsePdfConfig_sub_printPage(json, x, pdfSettings)
+function  xASL_qc_ParsePdfConfig_sub_printPage(pageStruct, x, settingsPDF)
 
     %% Create the figure defaults
-    primaryFig = figure('visible', 'off', 'Units', 'centimeters', 'Position', [0 0 21 29.7]);
-    ax = axes('Position', [0 0 1 1], 'Visible', 'off', 'Parent', primaryFig);
+    figPrimary = figure('visible', 'off', 'Units', 'centimeters', 'Position', [0 0 21 29.7]);
+    ax = axes('Position', [0 0 1 1], 'Visible', 'off', 'Parent', figPrimary);
 
     %% Print the Title
-    logoPath = fullfile(x.opts.MyPath, 'Design', 'ExploreASL_logoHeader.png');
-    xASL_qc_ParsePdfConfig_sub_PrintImage(logoPath, [], primaryFig, pdfSettings, [0 0.96 1 0.04]);
+    pathLogo = fullfile(x.opts.MyPath, 'Design', 'ExploreASL_logoHeader.png');
+    xASL_qc_ParsePdfConfig_sub_PrintImage(pathLogo, [], figPrimary, settingsPDF, [0 0.96 1 0.04]);
 
     %% Print the Footer
-    xASL_qc_ParsePdfConfig_sub_PrintText('This report was automatically generated by ExploreASL', primaryFig, [0 0.02 1 0], pdfSettings);
+    xASL_qc_ParsePdfConfig_sub_PrintText('This report was automatically generated by ExploreASL', figPrimary, [0 0.02 1 0], settingsPDF);
 
-    %% Parse JSON and create the file
-    xASL_qc_ParsePdfConfig(json, x, primaryFig, [0 0.93 1 0], pdfSettings);
+    %% Parse pageStruct and create the page as defined in the json file
+    xASL_qc_ParsePdfConfig(pageStruct, x, figPrimary, [0 0.93 1 0], settingsPDF);
 
-    PrintFile = ['xASL_Report_', json.pageIdentifier];
-    PrintPath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, PrintFile); 
+    fileName = ['xASL_Report_', pageStruct.pageIdentifier];
+    printPathFile = fullfile(x.dir.xASLDerivatives, x.SUBJECT, fileName); 
 
-    print(primaryFig, PrintPath, '-dpdf', '-bestfit');
+    print(figPrimary, printPathFile, '-dpdf', '-bestfit');
 
 end
 
-function xASL_qc_ParsePdfConfig_sub_printBlock(input, x, pageFig, pdfSettings)
-    position = xASL_str2num(input.position);
-    size = xASL_str2num(input.size);
-    [pdfSettings.canvas, line] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position, size, pdfSettings.canvas);
-    xASL_qc_ParsePdfConfig(input, x, pageFig, line, pdfSettings);
+function xASL_qc_ParsePdfConfig_sub_printBlock(blockStruct, x, pageFig, settingsPDF)
+    position = xASL_str2num(blockStruct.position);
+    size = xASL_str2num(blockStruct.size);
+    [settingsPDF.canvas, line] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position, size, settingsPDF.canvas);
+    xASL_qc_ParsePdfConfig(blockStruct, x, pageFig, line, settingsPDF);
 end
 
-function line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, pdfSettings)
-    %Check if participant data exists.
+function line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, settingsPDF)
+    % Check if participant data exists.
     ParticipantsTSV = xASL_adm_GetFileList(x.D.ROOT, 'participants.tsv');
     PatientInfo = {};
 
@@ -151,49 +151,49 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, 
         return
     end
     
-    line = xASL_qc_ParsePdfConfig_sub_PrintText('Participant Information', currentFigure, line, pdfSettings );
+    line = xASL_qc_ParsePdfConfig_sub_PrintText('Participant Information', currentFigure, line, settingsPDF );
     for iEntry = 1:size(PatientInfo, 2)
         if strcmp(PatientInfo{1, iEntry}, 'participant_id')
-            line = xASL_qc_ParsePdfConfig_sub_PrintText(['Participant: ', PatientInfo{2, iEntry}], currentFigure, line, pdfSettings );
+            line = xASL_qc_ParsePdfConfig_sub_PrintText(['Participant: ', PatientInfo{2, iEntry}], currentFigure, line, settingsPDF );
         elseif strcmp(PatientInfo{1, iEntry}, 'age')
-            line = xASL_qc_ParsePdfConfig_sub_PrintText(['Participant age: ', num2str(PatientInfo{2, iEntry})], currentFigure, line, pdfSettings );
+            line = xASL_qc_ParsePdfConfig_sub_PrintText(['Participant age: ', num2str(PatientInfo{2, iEntry})], currentFigure, line, settingsPDF );
         elseif strcmp(PatientInfo{1, iEntry}, 'sex')
-            line = xASL_qc_ParsePdfConfig_sub_PrintText(['Participant sex: ', PatientInfo{2, iEntry}], currentFigure, line, pdfSettings );
+            line = xASL_qc_ParsePdfConfig_sub_PrintText(['Participant sex: ', PatientInfo{2, iEntry}], currentFigure, line, settingsPDF );
         end
     end
 
 end
 
-function line = xASL_qc_ParsePdfConfig_sub_PrintQC(json, x, currentFigure, line, pdfSettings)
+function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, line, settingsPDF)
     % Stop if module and field don't exists in output
-    if ~isfield(x.Output, (json.module)) && ~isfield(x.Output.(json.module), json.parameter)
+    if ~isfield(x.Output, (qcStruct.module)) && ~isfield(x.Output.(qcStruct.module), qcStruct.parameter)
         return     
     end
 
     % Use field specific settings if they exists, otherwise default to monospace for QC values. 
-    pdfSettings.fontName = 'monospace';
-    if isfield(json, 'settings')
-        pdfSettings = xASL_qc_ParsePdfConfig_sub_loadSettings(json.settings, pdfSettings);
+    settingsPDF.fontName = 'monospace';
+    if isfield(qcStruct, 'settings')
+        settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(qcStruct.settings, settingsPDF);
     end
 
-    TempValue = x.Output.(json.module).(json.parameter);
+    TempValue = x.Output.(qcStruct.module).(qcStruct.parameter);
     
-    if ~isfield(json, 'alias') 
-        json.alias = json.parameter;
+    if ~isfield(qcStruct, 'alias') 
+        qcStruct.alias = qcStruct.parameter;
     end
 
-    if ~isfield(json, 'unit') 
-        json.unit = '';
+    if ~isfield(qcStruct, 'unit') 
+        qcStruct.unit = '';
     end
 
-    if isfield(json, 'range') 
-        [range] = strsplit(json.range, '-');
+    if isfield(qcStruct, 'range') 
+        [range] = strsplit(qcStruct.range, '-');
         if (TempValue < xASL_str2num(range{1})) || (TempValue > xASL_str2num(range{2}))
-            pdfSettings.color = 'r';
+            settingsPDF.color = 'r';
         end
-        json.range = ['(' json.range ')'];
+        qcStruct.range = ['(' qcStruct.range ')'];
     else
-        json.range = '';
+        qcStruct.range = '';
     end
 
     if isnumeric(TempValue)
@@ -201,36 +201,37 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(json, x, currentFigure, line,
     end
 
     if size(TempValue, 1) == 1
-        TextString = sprintf([sprintf('%-20s', [json.alias, ':']), sprintf('%8s', TempValue), sprintf('%-12s', [json.unit, ' ' , json.range]), ' \n']);
+        TextString = sprintf([sprintf('%-20s', [qcStruct.alias, ':']), sprintf('%8s', TempValue), sprintf('%-12s', [qcStruct.unit, ' ' , qcStruct.range]), ' \n']);
     end
 
-    line = xASL_qc_ParsePdfConfig_sub_PrintText(TextString, currentFigure, line, pdfSettings);
+    line = xASL_qc_ParsePdfConfig_sub_PrintText(TextString, currentFigure, line, settingsPDF);
 
 end
 
-function [pdfSettings] = xASL_qc_ParsePdfConfig_sub_PrintImage(input, x, currentFigure, pdfSettings, position)
+function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintImage(input, x, currentFigure, settingsPDF, position)
     switch nargin
     case 4
-        position = [xASL_str2num(input.position) xASL_str2num(input.size)];
+        imageStruct = input;
+        position = [xASL_str2num(imageStruct.position) xASL_str2num(imageStruct.size)];
 
-        if isfield(input, 'xPath') && isfield(x.P, input.name)
-            ImagePath = x.P.(input.name);
-        elseif isfield(input, 'absolutePath')
-            ImagePath = input.absolutePath;
+        if isfield(imageStruct, 'xPath') && isfield(x.P, imageStruct.name)
+            ImagePath = x.P.(imageStruct.name);
+        elseif isfield(imageStruct, 'absolutePath')
+            ImagePath = imageStruct.absolutePath;
             ImagePath = xASL_qc_ParsePdfConfig_sub_WildcardReplace(ImagePath, x);
-        elseif isfield(input, 'popPath')
-            ImagePath = fullfile(x.dir.xASLDerivatives, 'Population', input.popPath);
+        elseif isfield(imageStruct, 'popPath')
+            ImagePath = fullfile(x.dir.xASLDerivatives, 'Population', imageStruct.popPath);
             ImagePath = xASL_qc_ParsePdfConfig_sub_WildcardReplace(ImagePath, x);
-        elseif isfield(input, 'subjPath')
-            ImagePath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, input.subjPath);
+        elseif isfield(imageStruct, 'subjPath')
+            ImagePath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, imageStruct.subjPath);
         else
             warning('xASL_qc_ParsePdfConfig_sub_PrintImage didnt have a defined path') ;
             ImagePath = xASL_qc_ParsePdfConfig_sub_WildcardReplace(ImagePath, x);
             return
         end
 
-        if isfield(input, 'header')
-            header = input.header;
+        if isfield(imageStruct, 'header')
+            header = imageStruct.header;
         else
             header = '';
         end
@@ -239,10 +240,10 @@ function [pdfSettings] = xASL_qc_ParsePdfConfig_sub_PrintImage(input, x, current
         header = '';
     end
 
-    [canvas] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), pdfSettings.canvas);
+    [canvas] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), settingsPDF.canvas);
 
     cla;
-    ax = axes('Position', canvas, 'Visible', pdfSettings.axesVisible, 'Parent', currentFigure);
+    ax = axes('Position', canvas, 'Visible', settingsPDF.axesVisible, 'Parent', currentFigure);
     [img, ~, alphachannel] = imread(ImagePath);
     fg = imshow(img);
 
@@ -250,7 +251,7 @@ function [pdfSettings] = xASL_qc_ParsePdfConfig_sub_PrintImage(input, x, current
         fg.AlphaData = alphachannel;
     end
 
-    pdfSettings.figureCount = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, pdfSettings, canvas);
+    settingsPDF.figureCount = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, settingsPDF, canvas);
 end
 
 function [strout] = xASL_qc_ParsePdfConfig_sub_WildcardReplace(strin, x)
@@ -265,20 +266,20 @@ function [strout] = xASL_qc_ParsePdfConfig_sub_WildcardReplace(strin, x)
     end
 end
 
-function [pdfSettings] = xASL_qc_ParsePdfConfig_sub_PrintScan(input, x, currentFigure, pdfSettings)
-    position = [xASL_str2num(input.position) xASL_str2num(input.size)];
-    [canvas] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), pdfSettings.canvas);
+function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintScan(scanStruct, x, currentFigure, settingsPDF)
+    position = [xASL_str2num(scanStruct.position) xASL_str2num(scanStruct.size)];
+    [canvas] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), settingsPDF.canvas);
 
-    if ~isfield(x.P, input.name)
-        warning (['could not print', input.name, 'check if nifti exists in ExploreASL/Derivatives/Population']);
+    if ~isfield(x.P, scanStruct.name)
+        warning (['could not print', scanStruct.name, 'check if nifti exists in ExploreASL/Derivatives/Population']);
         return
     end
 
-    ImIn = {x.P.(input.name)};
-    header = input.name;
+    ImIn = {x.P.(scanStruct.name)};
+    header = scanStruct.name;
     
-    if isfield(input, 'overlay')
-        fields = fieldnames(input.overlay);
+    if isfield(scanStruct, 'overlay')
+        fields = fieldnames(scanStruct.overlay);
         for iField = 1:length(fields)
             if isfield(x.P, fields(iField))
                 ImIn(end+1) = {x.P.(fields{iField})};
@@ -287,10 +288,10 @@ function [pdfSettings] = xASL_qc_ParsePdfConfig_sub_PrintScan(input, x, currentF
         end
     end
 
-    if isfield(input, 'slice')
-        [x.S.TraSlices] = xASL_qc_ParsePdfConfig_sub_getSliceFromStruct(input.slice, 'TraSlice');
-        [x.S.CorSlices] = xASL_qc_ParsePdfConfig_sub_getSliceFromStruct(input.slice, 'CorSlice');
-        [x.S.SagSlices] = xASL_qc_ParsePdfConfig_sub_getSliceFromStruct(input.slice, 'SagSlice');       
+    if isfield(scanStruct, 'slice')
+        [x.S.TraSlices] = xASL_qc_ParsePdfConfig_sub_getSliceFromStruct(scanStruct.slice, 'TraSlice');
+        [x.S.CorSlices] = xASL_qc_ParsePdfConfig_sub_getSliceFromStruct(scanStruct.slice, 'CorSlice');
+        [x.S.SagSlices] = xASL_qc_ParsePdfConfig_sub_getSliceFromStruct(scanStruct.slice, 'SagSlice');       
     else
         x.S.TraSlices = [25, 50, 90];
         x.S.SagSlices = [25, 50, 90];
@@ -302,11 +303,11 @@ function [pdfSettings] = xASL_qc_ParsePdfConfig_sub_PrintScan(input, x, currentF
 
     % Delete all previously defined graphics objects, and create new axes and image
     cla;
-    ax = axes('Position', canvas, 'Visible', pdfSettings.axesVisible, 'Parent', currentFigure);
+    ax = axes('Position', canvas, 'Visible', settingsPDF.axesVisible, 'Parent', currentFigure);
     fg = imshow(img);
 
     % Print the image header and update the figure count
-    pdfSettings.figureCount = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, pdfSettings, canvas);
+    settingsPDF.figureCount = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, settingsPDF, canvas);
 end
 
 function [slice] = xASL_qc_ParsePdfConfig_sub_getSliceFromStruct(struct, name)
@@ -325,80 +326,81 @@ function [newCanvas, line] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position
     line = [newPosition(1)  newPosition(2) + newSize(2) newSize(1) 0];
 end
 
-function line = xASL_qc_ParsePdfConfig_sub_PrintText(input, currentFigure, line, pdfSettings)
+function line = xASL_qc_ParsePdfConfig_sub_PrintText(input, currentFigure, line, settingsPDF)
 
     switch class(input)
         case {'string', 'char'} 
             String = input;
         case 'struct'
-            String = input.text;
-            if isfield(input, 'settings')
-                pdfSettings = xASL_qc_ParsePdfConfig_sub_loadSettings(input.settings, pdfSettings);
+            textStruct = input;
+            String = textStruct.text;
+            if isfield(textStruct, 'settings')
+                settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(textStruct.settings, settingsPDF);
             end
         otherwise
             class(input)
             error('xASL_qc_ParsePdfConfig_sub_PrintText couldnt find string of printable text')
     end
 
-    ax = axes('Position', line , 'Visible', pdfSettings.axesVisible, 'Parent', currentFigure);
-    text(0, 0, String, 'Parent', ax, 'FontSize', pdfSettings.fontSize, 'FontWeight', pdfSettings.fontWeight, 'Color', pdfSettings.color, 'FontName', pdfSettings.fontName, 'Interpreter', 'none', 'VerticalAlignment', 'top');
-    line = xASL_qc_ParsePdfConfig_sub_NewLine(line, pdfSettings);
+    ax = axes('Position', line , 'Visible', settingsPDF.axesVisible, 'Parent', currentFigure);
+    text(0, 0, String, 'Parent', ax, 'FontSize', settingsPDF.fontSize, 'FontWeight', settingsPDF.fontWeight, 'Color', settingsPDF.color, 'FontName', settingsPDF.fontName, 'Interpreter', 'none', 'VerticalAlignment', 'top');
+    line = xASL_qc_ParsePdfConfig_sub_NewLine(line, settingsPDF);
 end
 
-function line = xASL_qc_ParsePdfConfig_sub_NewLine(line, pdfSettings)
-    line(2) = line(2) - (pdfSettings.lineSpacing) - (pdfSettings.fontSize * 0.001);
+function line = xASL_qc_ParsePdfConfig_sub_NewLine(line, settingsPDF)
+    line(2) = line(2) - (settingsPDF.lineSpacing) - (settingsPDF.fontSize * 0.001);
 
     if line(2) < 0 
         warning('No space left on page!');
-    elseif line(2) < pdfSettings.canvas(2) 
+    elseif line(2) < settingsPDF.canvas(2) 
         warning('Printing outside canvas, check block settings.');
     end
 end
 
-function [figureCount] = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, pdfSettings, position)
+function [figureCount] = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, settingsPDF, position)
 
     if isempty(header)
-        figureCount = pdfSettings.figureCount;
+        figureCount = settingsPDF.figureCount;
         return
     else
-        figureCount = pdfSettings.figureCount + 1;
+        figureCount = settingsPDF.figureCount + 1;
     end
 
     position(4) = 0;
-    pdfSettings.HorizontalAlignment = 'center';
+    settingsPDF.HorizontalAlignment = 'center';
     text = ['Fig ' num2str(figureCount) ': ' header];
-    xASL_qc_ParsePdfConfig_sub_PrintText(text, currentFigure, position, pdfSettings);
+    xASL_qc_ParsePdfConfig_sub_PrintText(text, currentFigure, position, settingsPDF);
 end
 
-function [pdfSettings] = xASL_qc_ParsePdfConfig_sub_loadSettings(json, pdfSettings)
+function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_loadSettings(json, settingsPDF)
 
     fields = fieldnames(json);
     
     for iField = 1:length(fields)
         if strcmp(fields{iField}, 'fontSize') || strcmp(fields{iField}, 'lineSpacing')
-            pdfSettings.(fields{iField}) = xASL_str2num(json.(fields{iField}));
+            settingsPDF.(fields{iField}) = xASL_str2num(json.(fields{iField}));
         else
-            pdfSettings.(fields{iField}) = json.(fields{iField});
+            settingsPDF.(fields{iField}) = json.(fields{iField});
         end 
     end
 end
 
 
-function [pdfSettings] = xASL_qc_ParsePdfConfig_sub_defaultSettings()
+function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings()
     % This function sets the default settings for the PDF report.
-    pdfSettings.color = 'k';
-    pdfSettings.HorizontalAlignment = 'left';
-    pdfSettings.fontWeight = 'normal';
-    pdfSettings.axesVisible = 'off';
-    pdfSettings.fontName = 'default';
-    pdfSettings.lineSpacing = 0.005;
-    pdfSettings.figureCount = 0;
-    pdfSettings.canvas = [0 0 1 1];
+    settingsPDF.color = 'k';
+    settingsPDF.HorizontalAlignment = 'left';
+    settingsPDF.fontWeight = 'normal';
+    settingsPDF.axesVisible = 'off';
+    settingsPDF.fontName = 'default';
+    settingsPDF.lineSpacing = 0.005;
+    settingsPDF.figureCount = 0;
+    settingsPDF.canvas = [0 0 1 1];
 
     if ispc
-        pdfSettings.fontSize = 10;
+        settingsPDF.fontSize = 10;
     elseif isunix || ismac
-        pdfSettings.fontSize = 8;
+        settingsPDF.fontSize = 8;
     end 
 
 end
