@@ -78,6 +78,7 @@ IM = single(nii.dat(:,:,:,1)).^0.5; % restore contrast
 
 % QC
 if sum(isfinite(nii.mat(:)))<numel(nii.mat(:))
+    warning(['There was an error in the NIfTI orientation matrix, trying to repair: ' PathNIfTI]);
     nii.mat = nii.mat0; % if there is any error in the orientation matrix, revert to the original orientation
 end
 
@@ -125,6 +126,7 @@ for iO=1:length(OtherList)
 
         % QC
         if sum(isfinite(nii.mat(:)))<numel(nii.mat(:))
+            warning(['There was an error in the NIfTI orientation matrix, trying to repair: ' OtherList{iO}]);
             nii.mat = nii.mat0; % if there is any error in the orientation matrix, revert to the original orientation
         end
 
