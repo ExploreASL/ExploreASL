@@ -105,8 +105,28 @@ else
     % add the visit-postfix as option
     x.dataset.subjectRegexp = strrep(x.dataset.subjectRegexp,'$','');
     x.dataset.subjectRegexp = [x.dataset.subjectRegexp '(|_\d+)$'];
+
+
+
+
+
+
+
+    %% THIS SUBJECT LOADING IS IDENTICAL TO THE SUBJECT LOADING PERFORMED BY xASL_init_Process for BIDS2Legacy
     % Then load subjects
     x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(x.opts.subjectFolder, x.dataset.subjectRegexp, 'List', [0 Inf], true)); % find dirs
+        % x.dataset.subjectRegexp should be replaced by '$sub-.*$' by the user for BIDS (not forced here)
+
+    
+    % Remove 'sub-' from subject name if it exists
+    for iSubject=1:numel(x.SUBJECTS)
+        if regexpi(x.SUBJECTS{iSubject},'sub-')==1
+            x.SUBJECTS{iSubject} = x.SUBJECTS{iSubject}(length('sub-')+1:end);
+        end 
+    end
+
+
+
 end
 
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
