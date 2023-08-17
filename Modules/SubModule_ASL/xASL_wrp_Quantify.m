@@ -249,7 +249,34 @@ if isfield(x,'Hematocrit')
     x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Hematocrit, [], x.MagneticFieldStrength);
 end
 
-
+if ~isfield(x.Q,'BloodT1')
+	% T1 relaxation time of arterial blood
+    % There are 3 options for x.Q.BloodT1:
+    % A) users have provided x.Q.BloodT1
+    % B) users have provided x.Hematocrit which is converted to x.Q.BloodT1 above
+    % C) it doesn't exist and is defaulted here based on MagneticFieldStrength
+	switch(x.MagneticFieldStrength)
+		case 0.2 
+			x.Q.BloodT1 = 776; % Rooney 2007
+		case 1
+			x.Q.BloodT1 = 1350; % Rooney 2007
+		case 1.5
+			x.Q.BloodT1 = 1540; % Rooney 2007 
+		case 3
+			x.Q.BloodT1 = 1650; % Alsop 2015 MRM
+		case 4
+			x.Q.BloodT1 = 1914; % Rooney 2007
+		case 7
+			%x.Q.BloodT1 = 2578; % Rooney 2007
+			x.Q.BloodT1 = 2100; % Ivanov 2017
+		otherwise
+			x.Q.BloodT1 = 1650; % Alsop 2015 MRM - assuming default 3 T
+			fprintf('%s\n',['Warning: Unknown T1-blood for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+            % PM: NOTE that this situation is unlikely, given that we
+            % default to x.MagneticFieldStrength = 3 at section 0
+            % Administration above
+	end
+end
 
 
 %% ------------------------------------------------------------------------------------------------
@@ -354,34 +381,7 @@ else
 				fprintf('%s\n',['Warning: Unknown T1 GM for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 		end
 	end
-	if ~isfield(x.Q,'BloodT1')
-		% T1 relaxation time of arterial blood
-        % There are 3 options for x.Q.BloodT1:
-        % A) users have provided x.Q.BloodT1
-        % B) users have provided x.Hematocrit which is converted to x.Q.BloodT1 above
-        % C) it doesn't exist and is defaulted here based on MagneticFieldStrength
-		switch(x.MagneticFieldStrength)
-			case 0.2 
-				x.Q.BloodT1 = 776; % Rooney 2007
-			case 1
-				x.Q.BloodT1 = 1350; % Rooney 2007
-			case 1.5
-				x.Q.BloodT1 = 1540; % Rooney 2007 
-			case 3
-				x.Q.BloodT1 = 1650; % Alsop 2015 MRM
-			case 4
-				x.Q.BloodT1 = 1914; % Rooney 2007
-			case 7
-				%x.Q.BloodT1 = 2578; % Rooney 2007
-				x.Q.BloodT1 = 2100; % Ivanov 2017
-			otherwise
-				x.Q.BloodT1 = 1650; % Alsop 2015 MRM - assuming default 3 T
-				fprintf('%s\n',['Warning: Unknown T1-blood for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
-                % PM: NOTE that this situation is unlikely, given that we
-                % default to x.MagneticFieldStrength = 3 at section 0
-                % Administration above
-		end
-	end
+
     if ~isfield(x.Q, 'T2art')
 		if x.MagneticFieldStrength == 3
 			x.Q.T2art = 165; % ms Gregori JMRI 2013; Lee ISMRM 2003
