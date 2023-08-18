@@ -1,16 +1,15 @@
 function [settingsPDF] = xASL_qc_ParsePdfConfig(layoutStructure, x, currentFigure, line, settingsPDF)
-% xASL_qc_ParsePdfConfig function used by xASL_qc_CreatePDF to parse the configuration file loaded by xASL_adm_LoadPdfConfig.
-%   This function will run recursively, and will print all text, images, scans and other content specified in the json file.
-%   The json file should contain a structure with fields specified in the manual.
+% xASL_qc_ParsePdfConfig function used by xASL_qc_GenerateReport to parse the configuration file loaded by xASL_adm_LoadPdfConfig.
+%   
 %   
 % FORMAT: xASL_qc_ParsePdfConfig(json, x, currentFigure, line, settingsPDF)
 %
 % INPUT:
-%   layoutStructure - json structure containing all information to be printed (REQUIRED)
-%   x           - structure containing fields with all information required to run this submodule (REQUIRED)
-%   currentFigure      - currentFigure handle to print to (OPTIONAL, defaults to matlab main figure)
-%   line        - line to print to (OPTIONAL, defaults to [0 0.93 1 0] when it generates a new page)
-%   settingsPDF    - settings used to print (OPTIONAL, will set default settings if not specified)
+%   layoutStructure     - json structure containing all information to be printed (REQUIRED)
+%   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
+%   currentFigure       - currentFigure handle to print to (OPTIONAL, defaults to matlab main figure)
+%   line                - line to print to (OPTIONAL, defaults to [0 0.93 1 0] when it generates a new page)
+%   settingsPDF         - settings used to print (OPTIONAL, will set default settings if not specified)
 %
 % OUTPUT: 
 %   settingsPDF    - settings to print with
@@ -19,10 +18,9 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig(layoutStructure, x, currentFigur
 %   xASL_Report_SubjectName.pdf - printed PDF rapport containing QC images & values
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function iterates over all values in x.Output and all
-%              images in x.Output_im, and prints them in a PDF file.
-%              x.Output & x.Output_im should contain the QC/result output
-%              of all ExploreASL pipeline steps.
+% DESCRIPTION:  xASL_qc_ParsePdfConfig function used by xASL_qc_GenerateReport to parse the configuration file loaded by xASL_adm_LoadPdfConfig.
+%               This function will run recursively, and will print all text, images, scans and other content specified in the json file.
+%               The json file should contain a structure with fields specified in the manual.
 % 
 % EXAMPLE: xASL_qc_ParsePdfConfig(x);
 % __________________________________
@@ -316,6 +314,7 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintText(input, currentFigure, line,
 
     % It then prints the text to the current figure.
     ax = axes('Position', line , 'Visible', settingsPDF.axesVisible, 'Parent', currentFigure);
+    String = strrep(String, '_', ' ');
     text(0, 0, String, 'Parent', ax, 'FontSize', settingsPDF.fontSize, 'FontWeight', settingsPDF.fontWeight, 'Color', settingsPDF.color, 'FontName', settingsPDF.fontName, 'Interpreter', 'none', 'VerticalAlignment', 'top');
     
     % And finally it updates the line position for the next line to be printed.
@@ -395,7 +394,7 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, 
     settingsTitle = settingsPDF;
     settingsTitle.fontWeight = 'bold';
     line = xASL_qc_ParsePdfConfig_sub_PrintText('Participant Information', currentFigure, line, settingsTitle );
-    
+
     for iEntry = 1:size(PatientInfo, 2)
         if strcmp(PatientInfo{1, iEntry}, 'participant_id')
             line = xASL_qc_ParsePdfConfig_sub_PrintText(['Participant: ', PatientInfo{2, iEntry}], currentFigure, line, settingsPDF );
@@ -477,7 +476,7 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
     if size(TempValue, 1) == 1
         TextString = sprintf([sprintf('%-20s', [qcStruct.alias, ':']), sprintf('%8s', TempValue), sprintf('%-12s', [qcStruct.unit, ' ' , qcStruct.range]), ' \n']);
     end
-
+    
     % Print the string to the PDF report.
     line = xASL_qc_ParsePdfConfig_sub_PrintText(TextString, currentFigure, line, settingsPDF);
 

@@ -30,6 +30,11 @@
                             "contour": "true",
                             "opacity": "0.3",
                             "color": "r"
+                        },
+                        "Pop_Path_SliceGradient": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
                         }
                     }
                 },{
