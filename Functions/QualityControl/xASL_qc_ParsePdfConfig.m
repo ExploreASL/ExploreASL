@@ -69,9 +69,11 @@ end
 % ====================================================================================================================================================
 
 function [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentField, x, currentFigure, line, settingsPDF)
+% This function parses the content of the json file, and calls the appropriate function to print the content.
 
+    % It first checks if the currentField is a struct, and if it contains a field "type" which specifies the type of content to be printed.
+    % If the currentField is not a struct, it will ignore the currentField and the next iteration will start.
     if ~isstruct(currentField)
-%        fprintf('xASL_qc_ParsePdfConfig_sub_parseContent couldnt find struct of printable content \n');
         return;
     end
 
@@ -79,6 +81,8 @@ function [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentFi
         error([currentField, 'contains no field specifying the type of content, add field "type": "text" or "type": "image" to this json field for example']);
     end
 
+    % Depending on the type of content, it will call the appropriate function to print the content.
+    % With exception of the type "settings", which is used to change variables like the font instead.
     switch currentField.type
         case 'text' 
             line = xASL_qc_ParsePdfConfig_sub_PrintText(currentField, currentFigure, line, settingsPDF);
@@ -102,6 +106,10 @@ end
 % ====================================================================================================================================================
 
 function  xASL_qc_ParsePdfConfig_sub_printPage(pageStruct, x, settingsPDF)
+% This function prints pages using the layout defined in the json file.
+% It first creates a new figure, and then iterates over and prints all content in the pageStruct
+% The pageStruct should contain a field "content" which contains all content to be printed on the page.
+% The pageStruct should also contain a field "pageIdentifier" which is used to name the printed PDF file.
 
     %% Create the figure defaults
     figPrimary = figure('visible', 'off', 'Units', 'centimeters', 'Position', [0 0 21 29.7]);
@@ -117,9 +125,9 @@ function  xASL_qc_ParsePdfConfig_sub_printPage(pageStruct, x, settingsPDF)
     %% Parse pageStruct and create the page as defined in the json file
     xASL_qc_ParsePdfConfig(pageStruct, x, figPrimary, [0 0.93 1 0], settingsPDF);
 
+    % Finally it prints the page to a PDF file using the pageIdentifier as filename in the subject directory.
     fileName = ['xASL_Report_', pageStruct.pageIdentifier];
     printPathFile = fullfile(x.dir.xASLDerivatives, x.SUBJECT, fileName); 
-
     print(figPrimary, printPathFile, '-dpdf', '-bestfit');
 
 end
@@ -127,6 +135,11 @@ end
 % ====================================================================================================================================================
 
 function xASL_qc_ParsePdfConfig_sub_printBlock(blockStruct, x, pageFig, settingsPDF)
+% This function prints a content blocks using the layout defined in the json file.
+% Content blocks can be used when you have a predefined layout that you want to use multiple times.
+% The blockStruct should contain a field "content" which contains all content to be printed in the block.
+% Using the function xASL_qc_ParsePdfConfig_sub_createNewCanvas it will create a new subcanvas for the block to be printed in.
+
     position = xASL_str2num(blockStruct.position);
     size = xASL_str2num(blockStruct.size);
     [settingsPDF.canvas, line] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position, size, settingsPDF.canvas);
@@ -136,6 +149,14 @@ end
 % ====================================================================================================================================================
 
 function [newCanvas, line] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position, size, oldCanvas)
+% This function creates a new canvas based on the old canvas, and the position and size of the new canvas.
+% The canvas is used to define the position and size where content is printed.
+% This is for example used to define where a new image, scan or block is printed on the page.
+% This function ensures that the new canvas is within the old canvas, and scaled appropriately.
+% This is for example important when a predefined block contains images, which need to be scaled appropriately.
+    
+    % A canvas is defined as a 4 element vector [x y width height] where x and y are the lower left corner of the canvas.
+    % This function also returns the variable line, which is the position of the next line to be printed.
     newPosition = [oldCanvas(1) + position(1) * oldCanvas(3) oldCanvas(2) + position(2) * oldCanvas(4)];
     newSize = [oldCanvas(3:4) .* size];
     newCanvas = [newPosition, newSize];
@@ -147,12 +168,20 @@ end
 % ====================================================================================================================================================
 
 function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintImage(input, x, currentFigure, settingsPDF, position)
+% This function prints images using the layout defined in the json file.
+
+    % It first checks what the type is of the input.
+    % If the image is defined as a struct, it will use the fields in the struct to define the image.
+    % If the image is defined as a string, it will use the string as the path to the image.
     header = '';
     switch nargin
     case 4
         imageStruct = input;
         position = [xASL_str2num(imageStruct.position) xASL_str2num(imageStruct.size)];
 
+        % It then checks what the user used to define the path to the image.
+        % In the json file, the user can define the path to the image in 4 different ways:
+        % If the path isnt defined in the json file, it will use throw a warning and return.
         if isfield(imageStruct, 'xPath') && isfield(x.P, imageStruct.name)
             ImagePath = x.P.(imageStruct.name);
         elseif isfield(imageStruct, 'absolutePath')
@@ -176,13 +205,16 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintImage(input, x, current
         ImagePath = input;
     end
 
+    % First it calculates the size of the canvas for the image to be printed in.
     [canvas] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), settingsPDF.canvas);
 
-    cla;
+    % Finally it prints the image to the current figure, and updates the figure count.
     ax = axes('Position', canvas, 'Visible', settingsPDF.axesVisible, 'Parent', currentFigure);
     [img, ~, alphachannel] = imread(ImagePath);
     fg = imshow(img);
+    %imagesc(img);
 
+    % add alpha channel if png.
     if strcmp('png', ImagePath(end-2:end))
         fg.AlphaData = alphachannel;
     end
@@ -193,17 +225,19 @@ end
 % ====================================================================================================================================================
 
 function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintScan(scanStruct, x, currentFigure, settingsPDF)
-    position = [xASL_str2num(scanStruct.position) xASL_str2num(scanStruct.size)];
-    [canvas] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), settingsPDF.canvas);
+% This function prints scans using the layout defined in the json file.
 
+    % It first checks if the requected scan exists in the x.P structure, and if it doesnt it will throw a warning and return.
     if ~isfield(x.P, scanStruct.name)
         warning (['could not print', scanStruct.name, 'check if nifti exists in ExploreASL/Derivatives/Population']);
         return
     end
 
+    % It then makes a list of all scans to be printed, and creates a header for the image.
     ImIn = {x.P.(scanStruct.name)};
     header = scanStruct.name;
     
+    % Any overlay scans to be printed are added to the list of scans to be printed, and added to the header.
     if isfield(scanStruct, 'overlay')
         fields = fieldnames(scanStruct.overlay);
         for iField = 1:length(fields)
@@ -214,6 +248,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintScan(scanStruct, x, cur
         end
     end
 
+    % The slices to be printed are defined in the json file, and are added to the x.S structure for printing.
     if isfield(scanStruct, 'slice')
         [x.S.TraSlices] = xASL_qc_ParsePdfConfig_sub_getSliceFromStruct(scanStruct.slice, 'TraSlice');
         [x.S.CorSlices] = xASL_qc_ParsePdfConfig_sub_getSliceFromStruct(scanStruct.slice, 'CorSlice');
@@ -224,13 +259,17 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintScan(scanStruct, x, cur
         x.S.CorSlices = [25, 50, 90];
     end
 
-    % Create the image from the defined scans
+    % Create the image from the scans defined in the json file.
     img = xASL_vis_CreateVisualFig(x, ImIn);   
 
-    % Delete all previously defined graphics objects, and create new axes and image
-    cla;
+    % First it calculates the size of the canvas for the image to be printed in.
+    position = [xASL_str2num(scanStruct.position) xASL_str2num(scanStruct.size)];
+    [canvas] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), settingsPDF.canvas);
+
+    % Finally it prints the image to the current figure, and updates the figure count.
     ax = axes('Position', canvas, 'Visible', settingsPDF.axesVisible, 'Parent', currentFigure);
     fg = imshow(img);
+    %imagesc(img); 
 
     % Print the image header and update the figure count
     settingsPDF.figureCount = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, settingsPDF, canvas);
@@ -239,6 +278,8 @@ end
 % ====================================================================================================================================================
 
 function [slice] = xASL_qc_ParsePdfConfig_sub_getSliceFromStruct(struct, name)
+% This function changes the strings in the json file to numbers, and returns the slice to be printed.
+% This specifically cannot use xASL_str2num, because the way that function returns NaNs is not compatible the image generation function.
 
     if isfield(struct, name) && ~isempty(struct.(name))
         slice = str2num(struct.(name));
@@ -252,31 +293,44 @@ end
 % ====================================================================================================================================================
 
 function line = xASL_qc_ParsePdfConfig_sub_PrintText(input, currentFigure, line, settingsPDF)
+% This function prints text using the layout defined in the json file.
 
+    % It first checks what the type is of the input.
+    % If the text is defined as a struct, it will use the fields in the struct to define the text.
+    % If the text is defined as a string, it will use the string as the text to be printed.
     switch class(input)
         case {'string', 'char'} 
             String = input;
         case 'struct'
             textStruct = input;
             String = textStruct.text;
+            % It then checks if the textStruct contains a field "settings" which is used to change variables like the font.
             if isfield(textStruct, 'settings')
                 settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(textStruct.settings, settingsPDF);
             end
+            % If the input cannot be parsed, it will throw an error.
         otherwise
             class(input)
             error('xASL_qc_ParsePdfConfig_sub_PrintText couldnt find string of printable text')
     end
 
+    % It then prints the text to the current figure.
     ax = axes('Position', line , 'Visible', settingsPDF.axesVisible, 'Parent', currentFigure);
     text(0, 0, String, 'Parent', ax, 'FontSize', settingsPDF.fontSize, 'FontWeight', settingsPDF.fontWeight, 'Color', settingsPDF.color, 'FontName', settingsPDF.fontName, 'Interpreter', 'none', 'VerticalAlignment', 'top');
+    
+    % And finally it updates the line position for the next line to be printed.
     line = xASL_qc_ParsePdfConfig_sub_NewLine(line, settingsPDF);
 end
 
 % ====================================================================================================================================================
 
 function line = xASL_qc_ParsePdfConfig_sub_NewLine(line, settingsPDF)
+% This function updates the line position for the next line to be printed.
+
+    % The "newline" distance has so far been hardcoded based on experience, but this can be improved in the future.
     line(2) = line(2) - (settingsPDF.lineSpacing) - (settingsPDF.fontSize * 0.001);
 
+    % It simply checks if the line position is lower than 0, and if it is it will throw a warning that the text is printed outside the canvas.
     if line(2) < 0 
         warning('No space left on page!');
     elseif line(2) < settingsPDF.canvas(2) 
@@ -288,7 +342,9 @@ end
 % ====================================================================================================================================================
 
 function [figureCount] = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, settingsPDF, position)
+% This function prints a header underneith the image to be printed.
 
+    % If no header is specified, it will exit and not iterate the figure count.
     if isempty(header)
         figureCount = settingsPDF.figureCount;
         return
@@ -305,29 +361,41 @@ end
 % ====================================================================================================================================================
 
 function line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, settingsPDF)
+% This function prints the patient information to the PDF report.
+% The patient information is extracted from the participants.tsv file in the derivatives directory.
+% The patient information is printed similar to how a newline is printed.
+
     % Check if participant data exists.
     ParticipantsTSV = xASL_adm_GetFileList(x.D.ROOT, 'participants.tsv');
     PatientInfo = {};
 
+
+    % Check if participants.tsv exists
     if isempty(ParticipantsTSV)
+        fprintf ('No participants.tsv found in the ExploreASL derivatives folder.\n');
         return
     end
 
+    % Extract participant information from participants.tsv
     structParticipants = xASL_tsvRead(ParticipantsTSV{1});
     nParticipants = size(structParticipants, 1);
     for iPar = 2:nParticipants
         if structParticipants{iPar, 1} == x.SUBJECT
-            %Extract Participants table, and participants info
             PatientInfo = [structParticipants(1, :); structParticipants(iPar, :)];
         end
     end
 
+    % Check if participant information exists in the participants.tsv
     if isempty(PatientInfo)
-        fprintf ('no patient info found to be printed \n');
+        fprintf ('No patient information found in participants.tsc in the ExploreASL derivatives folder.\n');
         return
     end
     
-    line = xASL_qc_ParsePdfConfig_sub_PrintText('Participant Information', currentFigure, line, settingsPDF );
+    % Print the patient information to the PDF report. (WIP make it oneline?)
+    settingsTitle = settingsPDF;
+    settingsTitle.fontWeight = 'bold';
+    line = xASL_qc_ParsePdfConfig_sub_PrintText('Participant Information', currentFigure, line, settingsTitle );
+    
     for iEntry = 1:size(PatientInfo, 2)
         if strcmp(PatientInfo{1, iEntry}, 'participant_id')
             line = xASL_qc_ParsePdfConfig_sub_PrintText(['Participant: ', PatientInfo{2, iEntry}], currentFigure, line, settingsPDF );
@@ -341,6 +409,11 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, 
 end
 
 function [strout] = xASL_qc_ParsePdfConfig_sub_WildcardReplace(strin, x)
+% This function replaces wildcards in the path to the image.
+% Wildcards are defineds as <wildcard> in the json file, and are replaced with the corresponding field in the x structure.
+% <SUBJECT> is replaced with the the value in the x.SUBJECT field for example.
+% TODO: Add BIDS translations?
+
     strout = strin;
     substring = regexp(strin, '<\w*>', 'match');
     for substringIndex=1:length(substring)
@@ -356,6 +429,11 @@ end
 % ====================================================================================================================================================
 
 function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, line, settingsPDF)
+% This function prints QC values using the layout defined in the json file.
+% QC Values are extracted from the x.Output structure, and printed to the PDF report in a single line.
+% Certain settings can be applied to the QC values, for example a range can be specified.
+% If the QC value is outside the range, it will be printed in red.
+
     % Stop if module and field don't exists in output
     if ~isfield(x.Output, (qcStruct.module)) && ~isfield(x.Output.(qcStruct.module), qcStruct.parameter)
         return     
@@ -369,14 +447,17 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
 
     TempValue = x.Output.(qcStruct.module).(qcStruct.parameter);
     
+    % Check if the QC has an alias, if so replaced the parameter with the alias in the printed text.
     if ~isfield(qcStruct, 'alias') 
         qcStruct.alias = qcStruct.parameter;
     end
 
+    % Check if the QC has a unit, if not set it to an empty string.
     if ~isfield(qcStruct, 'unit') 
         qcStruct.unit = '';
     end
 
+    % Check if the QC has a range, if so check if the value is within the range, else print in red.
     if isfield(qcStruct, 'range') 
         [range] = strsplit(qcStruct.range, '-');
         if (TempValue < xASL_str2num(range{1})) || (TempValue > xASL_str2num(range{2}))
@@ -387,14 +468,17 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
         qcStruct.range = '';
     end
 
+    % Convert the value to a string, and print it to the PDF report.
     if isnumeric(TempValue)
         TempValue = xASL_num2str(TempValue);
     end
 
+    % Combine name, value, unit and range into a single string for printing.
     if size(TempValue, 1) == 1
         TextString = sprintf([sprintf('%-20s', [qcStruct.alias, ':']), sprintf('%8s', TempValue), sprintf('%-12s', [qcStruct.unit, ' ' , qcStruct.range]), ' \n']);
     end
 
+    % Print the string to the PDF report.
     line = xASL_qc_ParsePdfConfig_sub_PrintText(TextString, currentFigure, line, settingsPDF);
 
 end
@@ -404,6 +488,9 @@ end
 % ====================================================================================================================================================
 
 function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_loadSettings(json, settingsPDF)
+% This function replaces existing settings with new ones from the json file.
+% If the json file contains a field "fontSize" or "lineSpacing" it will convert the string to a number.
+% Otherwise it will simply replace the existing setting with the new one.
 
     fields = fieldnames(json);
     
@@ -419,7 +506,8 @@ end
 % ===================================================================================================================================================
 
 function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings()
-    % This function sets the default settings for the PDF report.
+% This function sets the default settings for the PDF report.
+
     settingsPDF.color = 'k';
     settingsPDF.HorizontalAlignment = 'left';
     settingsPDF.fontWeight = 'normal';

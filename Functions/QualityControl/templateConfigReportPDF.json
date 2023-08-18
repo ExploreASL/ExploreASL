@@ -20,10 +20,10 @@
                     "type": "scan",
                     "name": "Pop_Path_rT1",
                     "position": "[0.70 0.65]",
-                    "size": "[0.3 0.3]",
+                    "size": "[0.25 0.25]",
                     "slice": {
-                        "TraSlice": "[12 25 50 75]",
-                        "CorSlice": "[50 75]"
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
                     },
                     "overlay": {
                         "Pop_Path_qCBF": {
@@ -36,7 +36,7 @@
                     "type": "scan",
                     "name": "Pop_Path_rT1",
                     "position": "[0.70 0.35]",
-                    "size": "[0.3 0.3]",
+                    "size": "[0.25 0.25]",
                     "slice": {
                         "TraSlice": "[25 75]",
                         "CorSlice": "[25 75]",
@@ -53,10 +53,10 @@
                     "type": "scan",
                     "name": "Pop_Path_rT1",
                     "position": "[0.70 0.05]",
-                    "size": "[0.3 0.3]",
+                    "size": "[0.25 0.25]",
                     "slice": {
-                        "TraSlice": "[50]",
-                        "CorSlice": "[12 78]",
+                        "TraSlice": "[25 50 75]",
+                        "CorSlice": "[25 50 75]",
                         "SagSlice": "[25 50 75]"
                     },
                     "overlay": {
@@ -66,8 +66,6 @@
                             "color": "r"
                         }
                     }
-                },{
-                    "type": "patients"
                 },{
                     "type": "text",
                     "text": "You can make your own config file and place it as ConfigReportPDF.json in the ExploreASL derivatives folder."
@@ -92,6 +90,8 @@
                 },{
                     "type": "text",
                     "text": "This is usually simply Path_Pop_<name>."
+                },{
+                    "type": "patients"
                 },{
                     "type": "text",
                     "settings": {
@@ -230,7 +230,7 @@
                     "text": "You can define any amount of pages in your config file, this is a second page."
                 },{
                     "type": "text",
-                    "text": "You can also define premade 'blocks' of content, but automated text scaling does not work properly yet."
+                    "text": "You can also define premade 'blocks' of content."
                 },{
                     "type": "text",
                     "settings": {

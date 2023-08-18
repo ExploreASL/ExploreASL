@@ -1,5 +1,5 @@
 function [x] = xASL_qc_GenerateReport(x, subject)
-% xASL_qc_GenerateReport print output QC
+% xASL_qc_GenerateReport Generates a PDF report based on a predifined Json configuration file
 %
 % FORMAT: xASL_qc_GenerateReport(x)
 %
@@ -14,10 +14,11 @@ function [x] = xASL_qc_GenerateReport(x, subject)
 %   xASL_Report_SubjectName.pdf - printed PDF rapport containing QC images & values
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function iterates over all values in x.Output and all
-%              images in x.Output_im, and prints them in a PDF file.
-%              x.Output & x.Output_im should contain the QC/result output
-%              of all ExploreASL pipeline steps.
+% DESCRIPTION:  This function generates a PDF report based on a predifined Json configuration file.
+%               Using the function xASL_qc_ParsePdfConfig, the Json configuration file is parsed and all the pages are created.
+%               The function xASL_qc_ParsePdfConfig is called recursively to parse all the Json objects in the configuration file.
+%               Quality control values are obtained from the x structure using the function xASL_adm_LoadX.
+%               Scans are generated using the function xASL_vis_CreateVisualFig.
 % 
 % EXAMPLE: xASL_qc_GenerateReport(x);
 % __________________________________
