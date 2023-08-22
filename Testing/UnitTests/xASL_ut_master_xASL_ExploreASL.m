@@ -682,7 +682,9 @@ testDirsAndFiles.aslDir = fullfile(testDirsAndFiles.subDir,'ASL_1');
 
 % Check files
 testDirsAndFiles.catReport = fullfile(testDirsAndFiles.subDir,'catreport_T1.pdf');
-testDirsAndFiles.aslReport = fullfile(testDirsAndFiles.subDir,'xASL_Report_sub-001_1.pdf');
+if usejava('jvm') % Only check the existence of the report when JVM is run. Otherwise the report is not created
+	testDirsAndFiles.aslReport = fullfile(testDirsAndFiles.subDir,'xASL_Report_sub-001_1.pdf');
+end
 
 % Iterate over test directories and files
 fieldsTestDirsAndFiles = fieldnames(testDirsAndFiles);
@@ -703,7 +705,6 @@ UnitTest.tests(8).duration = toc(testTime);
 
 % Evaluate your test
 UnitTest.tests(8).passed = testCondition;
-
 
 %% Test run 9
 
