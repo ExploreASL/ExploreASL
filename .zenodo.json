@@ -1,15 +1,62 @@
 {
     "upload_type": "software", 
     "creators": [
-        {
-            "name": "Mutsaerts, Henk",
-            "affiliation": "Amsterdam University Medical Centers", 
-            "orcid": "0000-0003-0894-0307"
-        }, 
-        {   
-            "name": "Petr, Jan",
-            "affiliation": "HZDR, Dresden, Germany",
-            "orcid": "0000-0002-3201-6002"
-        }
-    ]
+		{
+		    "name": "Mutsaerts, Henk",
+		    "affiliation": "Amsterdam University Medical Centers", 
+		    "orcid": "0000-0003-0894-0307"
+		}, 
+		{   
+		    "name": "Petr, Jan",
+		    "affiliation": "HZDR, Dresden, Germany",
+		    "orcid": "0000-0002-3201-6002"
+		}
+   	 ],
+    "contributors":[
+		{
+		"type": "Other",
+		"name": "Stritt, Michael"
+		},{
+		"type": "Other",
+		"name": "Dijsselhof, Mathijs"
+		},{
+		"type": "Other",
+		"name": "Esteves Padrela, Beatriz"
+		},{
+		"type": "Other",
+		"name": "Groot, Paul"
+		},{
+		"type": "Other",
+		"name": "Vandermaele, Pieter"
+		},{
+		"type": "Other",
+		"name": "Pasternak, Maurice"
+		},{
+		"type": "Other",
+		"name": "Clement, Paticia"
+		},{
+		"type": "Other",
+		"name": "Ganji, Sandeep"
+		},{
+		"type": "Other",
+		"name": "Craig, Martin"
+		},{
+		"type": "Other",
+		"name": "Thomas, Dave"
+		},{
+		"type": "Other",
+		"name": "Mahroo, Amnah"
+		},{
+		"type": "Other",
+		"name": "Lorenzini, Luigi"
+		},{
+		"type": "Other",
+		"name": "Józsa, Tamás"
+		},{
+		"type": "Other",
+		"name": "Hammer, Maarten"
+		}
+
+	],
+	"description": "ExploreASL is a pipeline and toolbox for image processing and statistics of arterial spin labeling perfusion MR Images" 
 }
