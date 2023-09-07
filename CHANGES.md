@@ -2,6 +2,66 @@
 # ExploreASL Change Log
 
 ---
+## ExploreASL v1.11.0
+
+### Versions included software
+
+Versions included & used third-party tools (see `/External/README_SPM.txt`):
+
+* SPM12 7219 
+* CAT12 r1615 
+* LST 2.0.15 
+* dcm2niix 20220720
+
+### Feature improvements
+
+* Release issue #1423: New release.
+* Features #1002, #1214, #1301, #1341, #1387, #1447, #1458, #1469, #1471: Multi-PLD quantification with BASIL and FABBER.
+* Features #1128, #1300, #1367: Allow direct import of NIfTIs.
+* Features #1311, #1348, #1419: Use Matlab functions instead of SPM for I/O of JSON files.
+* Features #1396, #1408, #1411, #1449, #1468: Multi-TE time-encoded DEBBIE sequence quantification.
+
+### Bug fixes
+
+* Bugs #577, #684, #1330, #1424, #1431: Fix issue with subject number in population filenames and allow sessions 10 and higher.
+* Bug #1062: Fix TotalAcquiredPairs calculation with dummy scans for M0 splitting.
+* Bug #1178: Fix <SESSION> symbol interpretation in longitudinal registration.
+* Bug #1287: Fixed site-biasfield correction for more than 3 sites.
+* Bugs #1288, #1290, #1308, #1318, #1393, #1405, #1435: Correct import of DCM2BIDS and BIDS2Legacy with duplicate anatomical scans, missing scans, improve message formatting.
+* Bugs #1294, #1331, #1392, #1444: Fix import of GE and Siemens scans.
+* Bug #1295: Save temporary CSV with WMH counts to subject folder and not population folder.
+* Bug #1327: Fix WM maps conversion to native space.
+* Bug #1338, #1453: Fix an incorrect path and crashes for NonCommercial atlases for CAT12.
+* Bug #1361: if a single subject crashes the bids2legacy conversion, this won't crash other subjects anymore.
+* Bug #1376: Fix bug xASL_bids_Add2ParticipantsTSV.
+* Bug #1415: Correct import of PE-polar directions for M0.
+* Bug #1481: Provide default T1-blood when hematocrit values are missing.
+
+### Optimization
+
+* Issue #1120: Save motion parameters before and after spike removal.
+* Issues #1320, #1334: Avoid additional zipping of BIDS and Legacy data after import.
+* Issues #1270, #1326, #1356: Flavor-import testing allows to turn of certain dataset and other optimizations.
+* Issue #1375: Add an option for absolute threshold on motion spike removal.
+* Issues #1388, #1397: Optimizing token use in import in sourcestructure.json.
+
+### Documentation
+* Issues #1336, #1381, #1403: Fix issue in citation.cff for Zenodo release.
+
+### Other improvements
+
+* Issues #57, #89, #121, #222, #224, #229, #328, #413, #473, #507, #533, #541, #561, #751, #984, #991, #1018, #1034, #1048, #1052, #1057, #1072, #1158, #1181, #1194, #1208, #1209, #1230, #1268, #1299, #1344, #1402, #1417, #1455: Duplicit and review issues.
+* Issues #508, #1171, #1437: Fix Singularity and Docker deployment.
+* Issues #989, #1204, #1239: Add multi-PLD Siemens XA31 flavor.
+* Issues #1247, #1477, #1484: Standardized Testing Script Results with proper results saving.
+* Issues #1315, #1428: Add SequenceName tag to DCMTK reader.
+* Issues #1319, #1366: Add Philips Look-Locker flavor.
+* Issue #1324: Make ExploreASL and related code work on Apple Silicon.
+* Issues #1362, #1407, #1451: Add Siemens multi-TE time-encoded DEBBIE flavor. 
+* Issue #1372: Add Matlab version check to the ExploreASL start-up
+* Issue #1395: Calculate Siemens labeling duration from NumRFBlocks.
+
+---
 ## ExploreASL v1.10.1
 
 ### Versions included software
