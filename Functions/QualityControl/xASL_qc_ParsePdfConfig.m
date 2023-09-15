@@ -31,7 +31,7 @@ if nargin < 2
 end
 
 if nargin < 3 || isempty(currentFigure)
-    currentFigure = gcf;
+    currentFigure = figure('Visible','off');
 end
 
 if nargin < 4 || isempty(line)
