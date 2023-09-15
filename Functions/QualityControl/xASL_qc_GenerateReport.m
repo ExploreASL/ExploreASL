@@ -46,6 +46,17 @@ else
     x.SUBJECT = subject;
 end
 
+% Fix <SESSION> not existing
+bRemoveSESSIONfield = false;
+if ~isfield(x, 'SESSION')
+    if isfield(x, 'SESSIONS') && ~isempty(x.SESSIONS)
+        bRemoveSESSIONfield = true;
+        x.SESSION = x.SESSIONS{1};
+    else
+        warning('x.SESSIONS was missing, this might go wrong');
+    end
+end
+
 % Determine x.mat file
 PathX = fullfile(x.dir.xASLDerivatives, subject, 'x.mat');
 
@@ -78,10 +89,13 @@ fprintf('Printing ExploreASL PDF report:   \n');
 % Parse the entire Json Stack automatically making all the pages.
 xASL_qc_ParsePdfConfig(config, x);
 
-
+% Householding
 if ~isempty(subjectOld)
     % restore x.SUBJECT
     x.SUBJECT = subjectOld;
+end
+if bRemoveSESSIONfield
+    x = rmfield(x, 'SESSION');
 end
     
 

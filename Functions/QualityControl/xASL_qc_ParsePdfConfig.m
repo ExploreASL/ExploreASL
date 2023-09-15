@@ -410,7 +410,7 @@ end
 function [strout] = xASL_qc_ParsePdfConfig_sub_WildcardReplace(strin, x)
 % This function replaces wildcards in the path to the image.
 % Wildcards are defineds as <wildcard> in the json file, and are replaced with the corresponding field in the x structure.
-% <SUBJECT> is replaced with the the value in the x.SUBJECT field for example.
+% E.g., <SUBJECT> is replaced with the the value in the x.SUBJECT field
 % TODO: Add BIDS translations?
 
     strout = strin;
