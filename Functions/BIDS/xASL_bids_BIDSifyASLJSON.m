@@ -64,11 +64,20 @@ jsonOut = studyPar;
 jsonInMerged = xASL_bids_MergeStudyPar(jsonIn, studyPar, 'asl');
 	
 %% 3. Extract the scaling factors from the JSON header
+% Fujifilm fix
+if isfield(jsonInMerged, 'StationName') && ~isfield(jsonInMerged, 'Manufacturer')
+    if ~isempty(regexpi(jsonInMerged.StationName, 'fujifilm|philips|ge|siemens'))
+        jsonInMerged.Manufacturer = jsonInMerged.StationName;
+    end
+end
+
+
 if ~isempty(regexpi(jsonInMerged.Manufacturer, 'Philips'))
 	jsonOut.scaleFactor = xASL_adm_GetPhilipsScaling(jsonInMerged, headerASL);
 else
 	jsonOut.scaleFactor = 1;
 end
+
 
 %% 4. Convert certain DICOM fields
 % For GE, the NumberOfExcitations tag can act as a replacement for TotalAcquiredPairs
