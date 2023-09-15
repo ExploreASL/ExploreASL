@@ -36,8 +36,14 @@ if nargin < 1 || isempty(x)
 end
 
 % check input
+subjectOld = [];
 if nargin < 2 || isempty(subject)
     subject = x.SUBJECT;
+else
+    if isfield(x, 'SUBJECT')
+        subjectOld = x.SUBJECT;
+    end
+    x.SUBJECT = subject;
 end
 
 % Determine x.mat file
@@ -71,5 +77,12 @@ fprintf('Printing ExploreASL PDF report:   \n');
 
 % Parse the entire Json Stack automatically making all the pages.
 xASL_qc_ParsePdfConfig(config, x);
+
+
+if ~isempty(subjectOld)
+    % restore x.SUBJECT
+    x.SUBJECT = subjectOld;
+end
+    
 
 end
