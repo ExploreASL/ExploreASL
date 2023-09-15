@@ -45,6 +45,8 @@ end
 fields = fieldnames(layoutStructure);
 
 for iField = 1:length(fields)
+    % xASL_TrackProgress(iField, length(fields));
+    % This progress counting doesnt work, because the loop loops in itself
     currentField = layoutStructure.(fields{iField});
 
     if strcmp(fields{iField}, 'content') || strcmp(fields{iField}, 'pages')
@@ -258,7 +260,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintScan(scanStruct, x, cur
     end
 
     % Create the image from the scans defined in the json file.
-    img = xASL_vis_CreateVisualFig(x, ImIn);   
+    imageToPrint = xASL_vis_CreateVisualFig(x, ImIn, [], [], [], [], [], [], [], [], [], 0); % no verbosity   
 
     % First it calculates the size of the canvas for the image to be printed in.
     position = [xASL_str2num(scanStruct.position) xASL_str2num(scanStruct.size)];
@@ -266,8 +268,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintScan(scanStruct, x, cur
 
     % Finally it prints the image to the current figure, and updates the figure count.
     ax = axes('Position', canvas, 'Visible', settingsPDF.axesVisible, 'Parent', currentFigure);
-    fg = imshow(img);
-    %imagesc(img); 
+    fg = imshow(imageToPrint);
 
     % Print the image header and update the figure count
     settingsPDF.figureCount = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, settingsPDF, canvas);
