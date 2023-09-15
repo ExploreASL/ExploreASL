@@ -227,7 +227,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintScan(scanStruct, x, cur
 
     % It first checks if the requected scan exists in the x.P structure, and if it doesnt it will throw a warning and return.
     if ~isfield(x.P, scanStruct.name)
-        warning (['could not print', scanStruct.name, 'check if nifti exists in ExploreASL/Derivatives/Population']);
+        warning (['could not print ', scanStruct.name, ', check if NIfTI exists in ExploreASL/Derivatives/Population']);
         return
     end
 

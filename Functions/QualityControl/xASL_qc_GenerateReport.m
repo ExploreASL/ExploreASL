@@ -38,7 +38,11 @@ end
 % check input
 subjectOld = [];
 if nargin < 2 || isempty(subject)
-    subject = x.SUBJECT;
+    if isfield(x, 'SUBJECT')
+        subject = x.SUBJECT;
+    else 
+        warning('subject or x.SUBJECT missing, this might go wrong');
+    end
 else
     if isfield(x, 'SUBJECT')
         subjectOld = x.SUBJECT;
@@ -55,6 +59,21 @@ if ~isfield(x, 'SESSION')
     else
         warning('x.SESSIONS was missing, this might go wrong');
     end
+end
+
+% Fix x.P not existing
+if ~isfield(x, 'P') || isempty(x.P) || isempty(fields(x.P))
+    if ~isfield(x, 'dir')
+        warning('x.dir missing, this might go wrong');
+    end
+    if ~isfield(x.dir, 'SUBJECTDIR')
+        x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives, x.SUBJECT);
+    end
+    if ~isfield(x.dir, 'SESSIONDIR')
+        x.dir.SESSIONDIR = fullfile(x.dir.SUBJECTDIR, x.SESSION);
+    end
+
+    x = xASL_init_FileSystem(x);
 end
 
 % Determine x.mat file
