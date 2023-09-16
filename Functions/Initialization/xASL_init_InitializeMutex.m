@@ -64,19 +64,60 @@ end
 %% --------------------------------------------------------
 %% 2) Initialize mutex object
 x.mutex = xASL_GoNoGo(x.dir.LockDir);
+
+%% 3) Check if this module is locked by another process
+bLocked = 0;
+
 if ~x.mutex.Lock(x.settings.MUTEXID)
-    fprintf('Also, check that there is no filesystem permission issue\n');
 	fprintf(2,['ERROR in module_' x.ModuleName ': mutex is locked: %s in %s\n'], x.settings.MUTEXID, x.dir.LockDir);
-	fprintf('This means that this module is currently being parallel processed by another Matlab instance/worker\n');
+	fprintf('\n');
+    fprintf('This means that this module is currently being parallel processed by another Matlab instance/worker\n');
 	fprintf('If this is not the case, the locked folder needs to be removed before proceeding\n');
 	fprintf('Also, check that there is no filesystem permission issue\n');
     fprintf('Otherwise this error can be ignored\n');
+    fprintf('\n');
 
     bLocked = 1;
 else
-    bLocked = 0;
+    
+    %% 4) Check if any module for this subject is locked
+    if ~strcmpi(x.ModuleName, 'population')
+        % the population module is subject-independent
+        if ~isfield(x, 'mutex') || ~isprop(x.mutex, 'Root')
+            warning('mutex field missing, something odd going wrong');
+        else
+            [~, subjectName] = fileparts(x.mutex.Root);
+            lockDir = fullfile(x.dir.xASLDerivatives, 'lock');
+            moduleDirs = xASL_adm_GetFileList(lockDir, '.*', 'FPList', [], 1);
+
+            for iModule=1:length(moduleDirs)
+                if ~strcmpi(moduleDirs{iModule}, 'population') || ~strcmpi(moduleDirs{iModule}, 'import')
+                    thisModuleDir = fullfile(moduleDirs{iModule}, subjectName);
+
+                    otherLockedFolders = xASL_adm_GetFileList(thisModuleDir, '^locked$', 'FPListRec', [], 1);
+                    if ~isempty(otherLockedFolders)
+
+                        fprintf(['ERROR in module_' x.ModuleName ', there is another module locked for the same subject:\n']);
+                        for iOther=1:length(otherLockedFolders)
+                            fprintf('%s\n', otherLockedFolders{iOther});
+                        end
+                        fprintf('\n');
+	                    fprintf('This means that this module is currently being parallel processed by another Matlab instance/worker\n');
+	                    fprintf('If this is not the case, the locked folder needs to be removed before proceeding\n');
+	                    fprintf('Also, check that there is no filesystem permission issue\n');
+                        fprintf('Otherwise this error can be ignored\n');
+                        fprintf('\n');
+        
+                        bLocked = 1;
+                    end % ~isempty(otherLockedFolders)
+                end % ~strcmpi
+            end % iModule=1:length(moduleDirs)
+
+        end
+
+    end
+
 end
 
 
 end
-
