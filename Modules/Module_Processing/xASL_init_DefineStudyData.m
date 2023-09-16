@@ -306,12 +306,18 @@ end
 % ------------------------------------------------------------------------------------------------
 %% 7) Parallelization: If running parallel, select cases for this worker
 if x.opts.nWorkers>1
-    nSubjPerWorker = ceil(x.dataset.nSubjects/x.opts.nWorkers); % ceil to make sure all subjects are processed
-    nSubjSessPerWorker = nSubjPerWorker*x.dataset.nSessions;
-    iStartSubject = (x.opts.iWorker-1)*nSubjPerWorker+1;
-    iEndSubject = min(x.opts.iWorker*nSubjPerWorker, x.dataset.nSubjects);
-    iStartSubjectSession = (x.opts.iWorker-1)*nSubjSessPerWorker+1;
-    iEndSubjectSession = min(x.opts.iWorker*nSubjSessPerWorker, x.dataset.nSubjectsSessions);
+    nSubjPerWorker = x.dataset.nSubjects/x.opts.nWorkers; % ceil to make sure all subjects are processed
+
+    % e.g., if nWorkers=3 & nSubjects=10
+    % iWorker 1 does [1 2 3]
+    % iWorker 2 does [4 5 6 7]
+    % iWorker 3 does [8 9 10]
+
+    iStartSubject = round((x.opts.iWorker-1)*nSubjPerWorker+1);
+    iEndSubject = min( round(x.opts.iWorker*nSubjPerWorker), x.dataset.nSubjects);
+
+    iStartSubjectSession = (iStartSubject-1) * x.dataset.nSessions + 1;
+    iEndSubjectSession = iEndSubject * x.dataset.nSessions;
     
     if iStartSubject>x.dataset.nSubjects
         fprintf('Closing down this worker, had too many workers');
