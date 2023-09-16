@@ -204,5 +204,11 @@ for iFile=1:length(FilePathsAre)
     end
 end
 
+% Create a dummy WMH_SEGM in case of a FLAIR without WMH_SEGM
+if xASL_exist(x.P.Path_rFLAIR, 'file') && ~xASL_exist(x.P.Path_WMH_SEGM, 'file')
+    imageFLAIR = xASL_io_Nifti2Im(x.P.Path_rFLAIR);
+    imageWMH = zeros(size(imageFLAIR), 'logical');
+    xASL_io_CreateNifti(x.P.Path_WMH_SEGM, imageWMH, [], [], 0);
+end
 
 end
