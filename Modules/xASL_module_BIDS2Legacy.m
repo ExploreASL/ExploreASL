@@ -56,8 +56,17 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         diary(x.dir.diaryFile); % Start diary
     end
     
-    x = xASL_init_InitializeMutex(x, 'BIDS2Legacy'); % Start Mutex
+    [x, bLocked] = xASL_init_InitializeMutex(x, 'BIDS2Legacy'); % Start Mutex
+
     result = true; % Default for result
+
+    if bLocked
+        % If any module is locked for this subject, we skip this module for
+        % this subject
+        return;
+    end
+
+    
     xASL_adm_BreakString('BIDS to ExploreASL LEGACY CONVERSION'); % Print feedback
 	
 

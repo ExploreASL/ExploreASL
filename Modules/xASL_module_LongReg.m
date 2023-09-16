@@ -48,7 +48,15 @@ function [result, x] = xASL_module_LongReg(x)
 %% --------------------------------------------------------------
 %% Administration
 [x] = xASL_init_SubStructs(x);
-x = xASL_init_InitializeMutex(x, 'LongReg' ); % starts mutex locking process to ensure that everything will run only once
+[x, bLocked] = xASL_init_InitializeMutex(x, 'LongReg'); % starts mutex locking process to ensure that everything will run only once
+
+if bLocked
+    % If any module is locked for this subject, we skip this module for
+    % this subject
+    result = true;
+    return;
+end
+
 
 % 0.9 change working directory to make sure that unspecified output will go there...
 oldFolder = cd(x.dir.SUBJECTDIR);

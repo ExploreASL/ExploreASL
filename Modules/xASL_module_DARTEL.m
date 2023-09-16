@@ -39,7 +39,15 @@ function [result, x] = xASL_module_DARTEL(x)
 %% -------------------------------------------------------------------------------------------------------
 %% Administration
 [x] = xASL_init_SubStructs(x);
-x = xASL_init_InitializeMutex(x, 'DARTEL'); % starts mutex locking process to ensure that everything will run only once
+[x, bLocked] = xASL_init_InitializeMutex(x, 'DARTEL'); % starts mutex locking process to ensure that everything will run only once
+
+if bLocked
+    % If any module is locked for this subject, we skip this module for
+    % this subject
+    result = true;
+    return;
+end
+
 x.IMAGES_CREATE     = {['rc1' x.P.STRUCT] ['rc2' x.P.STRUCT]};
 x.ESTIMATE          = true; % 1 = estimate DARTEL flowfields, if not already processed. 0 = skip estimating
 x.WARP              = true; % 1 = apply DARTEL, creating warped maps; 0 = skip warping

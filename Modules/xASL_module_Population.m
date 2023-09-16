@@ -40,6 +40,7 @@ function [result, x] = xASL_module_Population(x)
 % Input check
 if x.opts.nWorkers>1 % don't run population module when ExploreASL is parallelized
     warning('Population module should not run in parallel, skipping...');
+    fprintf('%s\n', 'Best to run this module after you have ran ExploreASL in parallel, by restarting ExploreASL non-parallel');
     result = true;
     return;
 end
@@ -69,7 +70,15 @@ if ~bHasASL
     warning('Detected no ASL scans, skipping ASL-specific parts of the Population module');
 end
 
-x = xASL_init_InitializeMutex(x, 'Population'); % starts mutex locking process to ensure that everything will run only once
+[x, bLocked] = xASL_init_InitializeMutex(x, 'Population'); % starts mutex locking process to ensure that everything will run only once
+
+if bLocked
+    % If any module is locked, we skip this module
+    result = true;
+    return;
+end
+
+
 x = xASL_init_FileSystem(x);
 
 

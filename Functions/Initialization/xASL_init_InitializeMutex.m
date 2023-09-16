@@ -1,4 +1,4 @@
-function [x] = xASL_init_InitializeMutex(x, ModuleName)
+function [x, bLocked] = xASL_init_InitializeMutex(x, ModuleName)
 %xASL_init_InitializeMutex Initialize mutex system for ExploreASL modules
 %
 % FORMAT: [x] = xASL_init_InitializeMutex(x, ModuleName)
@@ -71,7 +71,10 @@ if ~x.mutex.Lock(x.settings.MUTEXID)
 	fprintf('If this is not the case, the locked folder needs to be removed before proceeding\n');
 	fprintf('Also, check that there is no filesystem permission issue\n');
     fprintf('Otherwise this error can be ignored\n');
-	return;
+
+    bLocked = 1;
+else
+    bLocked = 0;
 end
 
 
