@@ -42,19 +42,23 @@ if nargin<3 || isempty(B0)
     B0 = 3; % 3T field strength
 elseif length(B0)~=1
     warning('Incorrect B0 specified, skipping');
+    xASL_quant_Hct2BloodT1_printMissingHctWarning;
     return;
 end
 if nargin<2 || isempty(Y)
     Y = 0.97;
 elseif length(Y)~=1
     warning('Incorrect Y specified, skipping');
+    xASL_quant_Hct2BloodT1_printMissingHctWarning;
     return;
 end
 if nargin<1 || isempty(Hematocrit) || length(Hematocrit)~=1
     warning('Incorrect Hematocrit specified, so not using this');
+    xASL_quant_Hct2BloodT1_printMissingHctWarning;
     return;
 elseif isnan(Hematocrit)
     warning('Hematocrit value was missing (set to NaN), so not using this');
+    xASL_quant_Hct2BloodT1_printMissingHctWarning;
     return;
 end
 
@@ -68,6 +72,7 @@ elseif Hematocrit>1 && Hematocrit<100
     Hematocrit = Hematocrit/100;
 else
     warning('Hematocrit was defined in incorrect range, please correct! Skipping...');
+    xASL_quant_Hct2BloodT1_printMissingHctWarning;
     return;
 end
 
@@ -78,6 +83,7 @@ elseif Y>1 && y<100
     Y = Y/100;
 else
     warning('Incorrect Y range, skipping');
+    xASL_quant_Hct2BloodT1_printMissingHctWarning;
     return;
 end
 
@@ -108,5 +114,23 @@ if bVerbose
     fprintf('%s\n', ['Assuming field strength ' xASL_num2str(B0) ', arterial O2 saturation ' xASL_num2str(Y)]);
 end
 
+
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function xASL_quant_Hct2BloodT1_printMissingHctWarning(x)
+%xASL_quant_Hct2BloodT1_printMissingHctWarning We may print this message in
+%different cases, which is why this subfunction comes in handy
+
+
+fprintf('\n\n\n');
+fprintf('%s\n', 'WARNING: POSSIBLE CBF BIAS');
+fprintf('\n');
+fprintf('%s\n', 'Please be warned that if you are correcting CBF values for hematocrit in your study,')
+fprintf('%s\n', 'this scan will NOT be corrected and ExploreASL will use the default blood T1 value');
+fprintf('%s\n', 'This can create a significant CBF bias');
+fprintf('\n\n\n');
 
 end
