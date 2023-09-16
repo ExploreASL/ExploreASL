@@ -7,7 +7,7 @@
 % be a valid directory name for the filesystem that is used to store the folder
 % structure. The root folder must be specified before locking can occur.
 % After a lock is set, one or more status files can be created to set one or 
-% more independend states.
+% more independent states.
 % EXAMPLE: 
 % x.S = xASL_GoNoGo('C:\Temp\')
 % x.S.Lock('MySemaphore')
@@ -84,7 +84,7 @@ classdef xASL_GoNoGo < handle
                     state = regexprep(state,'\.status$','');
                 end
             else
-                % WARNING: not locked yet
+                warning([someState ' not locked yet']);
             end
         end
         
@@ -106,7 +106,7 @@ classdef xASL_GoNoGo < handle
                     delete(fullfile(obj.Root, obj.ID, [delStates{ii} '.status']));
                 end
             else
-                % WARNING: not locked yet
+                warning([someState ' not locked yet']);
             end
         end
 
@@ -118,7 +118,7 @@ classdef xASL_GoNoGo < handle
                     obj.State = union(oldState, someState);
                 end
             else
-                % WARNING: not locked yet
+                warning([someState ' not locked yet']);
             end
         end
         
@@ -130,7 +130,7 @@ classdef xASL_GoNoGo < handle
                     obj.State = setdiff(oldState, someState);
                 end
             else
-                % WARNING: not locked yet
+                warning([someState ' not locked yet']);
             end
         end
         
@@ -144,7 +144,8 @@ classdef xASL_GoNoGo < handle
                 end
                 b = ismember(someState,oldState);
             else
-                % WARNING: not locked yet
+                warning([someState ' not locked yet']);
+                b = [];
             end
         end
         

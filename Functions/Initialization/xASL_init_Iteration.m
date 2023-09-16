@@ -429,7 +429,7 @@ function [bAborted, x] = runIteration(db)
             CountErrors     = CountErrors+1;
             if stopAfterErrors>0
                 stopAfterErrors = stopAfterErrors -1;
-                fprintf('\nCONT: but continue with next iteration!\n');
+                fprintf('\nCONT: but continue with next iteration!   \n');
             else
                 % assume that there is a serious error in the template or
                 % batch if it occurs at the very first run
