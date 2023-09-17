@@ -60,13 +60,6 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
             % SUBJECTS
             x.SUBJECTS = xASL_adm_GetFileList(x.dir.RawData,[],false,[],true);
     
-            % Remove 'sub-' from subject name if it exists
-            for iSubject=1:numel(x.SUBJECTS)
-                if regexpi(x.SUBJECTS{iSubject},'sub-')==1
-                    x.SUBJECTS{iSubject} = x.SUBJECTS{iSubject}(length('sub-')+1:end);
-                end 
-            end
-    
 
         %% Check if data can be loaded
         %  This is non-specific for BIDS2Legacy
