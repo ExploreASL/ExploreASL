@@ -104,6 +104,13 @@ else
                         % for population or import modules, we can continue
                         % if other modules are locked
                     else
+                        % Manage visit suffix in name
+                        ivisitSuffix = regexp(subjectName, '_\d+$');
+                        
+                        if strcmp(iModuleName, 'BIDS2Legacy') && ~isempty(ivisitSuffix)
+                            subjectName = subjectName(1:ivisitSuffix-1);
+                        end
+
                         thisModuleDir = fullfile(moduleDirs{iModule}, subjectName);
     
                         otherLockedFolders = xASL_adm_GetFileList(thisModuleDir, '^locked$', 'FPListRec', [], 1);
