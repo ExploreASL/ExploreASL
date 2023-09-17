@@ -47,10 +47,10 @@ function x = xASL_stat_GetAcquisitionTime(x)
             MissingData(iSubjSess,1) = 1;
 
             % Define paths
-            PathMAT = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D_parms.mat'); % legacy
+            PathMAT = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D_parms.mat'); % legacy
             Parms = xASL_adm_LoadParms(PathMAT,[],0);
 			
-			%PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D.json');
+			%PathJSON = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, 'ASL4D.json');
 			%Parms = xASL_io_ReadJson(PathJSON);
 		           
             if isfield(Parms,'AcquisitionTime')

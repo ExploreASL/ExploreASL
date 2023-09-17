@@ -76,14 +76,14 @@ function [x] = xASL_init_DataLoading(x)
     % Check if data loading should be executed first
     if x.opts.bLoadableData
         % Check if a root directory was defined
-        if ~isfield(x.D,'ROOT') || isempty(x.D.ROOT)
+        if ~isfield(x.dir,'xASLDerivatives') || isempty(x.dir.xASLDerivatives)
             error('No root folder defined...');
         end
 
         % Fix a relative path
-        if strcmp(x.D.ROOT(1), '.')
-            cd(x.D.ROOT);
-            x.D.ROOT = pwd;
+        if strcmp(x.dir.x.dir.xASLDerivatives(1), '.')
+            cd(x.dir.xASLDerivatives);
+            x.dir.xASLDerivatives = pwd;
         end
 
         %% 5. xASL_init_DefineStudyData
@@ -169,7 +169,7 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
     % If the reproducibility is on, then delete the old RMS file
     if isfield(x.settings, 'bReproTesting')
         if x.settings.bReproTesting
-            xASL_delete(fullfile(x.D.ROOT, 'RMS_Reproducibility.mat'))
+            xASL_delete(fullfile(x.dir.xASLDerivatives, 'RMS_Reproducibility.mat'))
         end
     end
     
@@ -290,7 +290,7 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
                 %% Study-specific
                 if and(isfield(x.D, 'ROOT'), isfield(x.opts, 'bProcessData'))
                     if x.opts.bProcessData || x.opts.bLoadData
-                        x.D.PopDir = fullfile(x.D.ROOT,'Population');
+                        x.D.PopDir = fullfile(x.dir.xASLDerivatives,'Population');
             
                         % Structural module
                         x.D.T1CheckDir          = fullfile(x.D.PopDir, 'T1Check');
@@ -429,22 +429,22 @@ function [x] = xASL_init_LoadDataParameterFile(x)
         % ROOT
         if ~isfield(x.D,'ROOT')
             if isfield(x,'ROOT')
-                x.D.ROOT = x.ROOT;
+                x.dir.xASLDerivatives = x.ROOT;
             else
                 % Default
-                x.D.ROOT = pathstr;
+                x.dir.xASLDerivatives = pathstr;
             end
         end
         
-        % Check if x.D.ROOT does not exist
-        if ~exist(x.D.ROOT, 'dir')
-            % Check if x.D.ROOT was defined as a relative path
-            if exist(fullfile(pathstr,x.D.ROOT), 'dir')
-                x.D.ROOT = fullfile(pathstr,x.D.ROOT);
-                x.ROOT = x.D.ROOT;
+        % Check if x.dir.xASLDerivatives does not exist
+        if ~exist(x.dir.xASLDerivatives, 'dir')
+            % Check if x.dir.xASLDerivatives was defined as a relative path
+            if exist(fullfile(pathstr,x.dir.xASLDerivatives), 'dir')
+                x.dir.xASLDerivatives = fullfile(pathstr,x.dir.xASLDerivatives);
+                x.ROOT = x.dir.xASLDerivatives;
             else
-                warning([x.D.ROOT ' didnt exist as folder, trying path of DataPar file']);
-                x.D.ROOT = pathstr;
+                warning([x.dir.xASLDerivatives ' didnt exist as folder, trying path of DataPar file']);
+                x.dir.xASLDerivatives = pathstr;
                 x.ROOT = pathstr;
             end
         end
@@ -477,18 +477,18 @@ function [x] = xASL_init_RemoveLockDirs(x)
     
     
         %% LockDir within 2 directories (e.g. T1, FLAIR or ASL)
-        LockDir = fullfile(x.D.ROOT, 'lock');
+        LockDir = fullfile(x.dir.xASLDerivatives, 'lock');
     
         if exist(LockDir, 'dir')
             % fprintf('%s\n','Searching for locked previous ExploreASL image processing');
             LockDirFound = 0;
-            LockDir = xASL_adm_FindByRegExp(fullfile(x.D.ROOT, 'lock'), {'(ASL|Structural|LongReg_T1)', x.dataset.subjectRegexp, '.*module.*','^(locked)$'}, 'Match', 'Directories');
+            LockDir = xASL_adm_FindByRegExp(fullfile(x.dir.xASLDerivatives, 'lock'), {'(ASL|Structural|LongReg_T1)', x.dataset.subjectRegexp, '.*module.*','^(locked)$'}, 'Match', 'Directories');
             if ~isempty(LockDir)
                 warning('Locked folders were found, consider removing them before proceeding');
             end
     
             % LockDir within 2 directories (e.g. DARTEL)
-            LockDir = xASL_adm_FindByRegExp(fullfile(x.D.ROOT, 'lock'), {'(Population|DARTEL_T1)', '.*module.*','^(locked)$'}, 'Match','Directories');
+            LockDir = xASL_adm_FindByRegExp(fullfile(x.dir.xASLDerivatives, 'lock'), {'(Population|DARTEL_T1)', '.*module.*','^(locked)$'}, 'Match','Directories');
             if ~isempty(LockDir)
                 warning('Locked folders were found, consider removing them before proceeding');
             end
@@ -604,11 +604,11 @@ function x = xASL_init_PrintCheckSettings(x)
         % Get the ExploreASL text width
         textBreakExploreASL = xASL_adm_BreakString([], [], false, 0, 0);
     
-        if length(x.D.ROOT)>length(textBreakExploreASL)
-            fprintf('x.D.ROOT  %s\n', x.D.ROOT(1:length(textBreakExploreASL)-10));
-            fprintf('          ... %s\n', x.D.ROOT(length(textBreakExploreASL)-9:end));
+        if length(x.dir.xASLDerivatives)>length(textBreakExploreASL)
+            fprintf('x.dir.xASLDerivatives  %s\n', x.dir.xASLDerivatives(1:length(textBreakExploreASL)-10));
+            fprintf('          ... %s\n', x.dir.xASLDerivatives(length(textBreakExploreASL)-9:end));
         else
-            fprintf('x.D.ROOT  %s\n', x.D.ROOT);
+            fprintf('x.dir.xASLDerivatives  %s\n', x.dir.xASLDerivatives);
         end
         fprintf('x.settings.DELETETEMP %s\n',[num2str(x.settings.DELETETEMP) ' (delete temporary files)']);
         fprintf('x.settings.Quality    %s\n',[num2str(x.settings.Quality) ' (0 = fast try-out; 1 = normal high quality)']);
@@ -627,13 +627,13 @@ function x = xASL_init_PrintCheckSettings(x)
             end
         end
     
-        if ~isfield(x,'D')
-            warning('x.D didn''nt exist');
+        if ~isfield(x,'dir')
+            warning('x.dir didn''nt exist');
         else
             field_symbol = {'ROOT'};
             for iField=1:length(field_symbol)
-                if ~isfield(x.D,field_symbol{iField})
-                    warning(['x.D.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
+                if ~isfield(x.dir,field_symbol{iField})
+                    warning(['x.dir.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
                 end
             end
         end

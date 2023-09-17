@@ -119,7 +119,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
         for iS=1:length(CurrentSub) % count aligned T1w volumes
             LockFile = '';
-            LockFile = fullfile(x.D.ROOT, 'lock', 'xASL_module_Structural',CurrentSub{iS}, 'xASL_module_Structural', '010_LinearReg_T1w2MNI.status');
+            LockFile = fullfile(x.dir.xASLDerivatives, 'lock', 'xASL_module_Structural',CurrentSub{iS}, 'xASL_module_Structural', '010_LinearReg_T1w2MNI.status');
 
             if ~isempty(LockFile) && xASL_exist(LockFile, 'file')
                 RegLockFileCount = RegLockFileCount+1;
@@ -147,15 +147,15 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
             for iV=1:length(CurrentSub)
                 % Define paths
-                Path_T1{iV} = fullfile(x.D.ROOT, CurrentSub{iV},'T1.nii');
-                Path_rT1{iV} = fullfile(x.D.ROOT, CurrentSub{iV},'rT1.nii');
-%                 Path_c1T1{iV} = fullfile(x.D.ROOT, CurrentSub{iV},'c1T1.nii');
-%                 Path_rc1T1{iV} = fullfile(x.D.ROOT, CurrentSub{iV},'rc1T1.nii');
-%                 Path_c2T1{iV} = fullfile(x.D.ROOT, CurrentSub{iV},'c2T1.nii');
-%                 Path_rc2T1{iV} = fullfile(x.D.ROOT, CurrentSub{iV},'rc2T1.nii');
-%                 Path_c3T1{iV} = fullfile(x.D.ROOT, CurrentSub{iV},'c3T1.nii');
-%                 Path_rc3T1{iV} = fullfile(x.D.ROOT, CurrentSub{iV},'rc3T1.nii');
-%                 Path_Bmask{iV} = fullfile(x.D.ROOT, CurrentSub{iV},'rBrainMask.nii');
+                Path_T1{iV} = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'T1.nii');
+                Path_rT1{iV} = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'rT1.nii');
+%                 Path_c1T1{iV} = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'c1T1.nii');
+%                 Path_rc1T1{iV} = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'rc1T1.nii');
+%                 Path_c2T1{iV} = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'c2T1.nii');
+%                 Path_rc2T1{iV} = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'rc2T1.nii');
+%                 Path_c3T1{iV} = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'c3T1.nii');
+%                 Path_rc3T1{iV} = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'rc3T1.nii');
+%                 Path_Bmask{iV} = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'rBrainMask.nii');
 
                 % Reslice
                 xASL_spm_reslice(x.D.ResliceRef, Path_T1{iV}, [], [], x.settings.Quality);
@@ -183,18 +183,18 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                 tIM(tIM<=0) = NaN;
                 xASL_io_SaveNifti(Path_rT1{iV}, Path_rT1{iV}, tIM, [], false);
 
-                FirstStruct = fullfile(x.D.ROOT, CurrentSub{1},['r'  x.P.STRUCT '.nii']);
+                FirstStruct = fullfile(x.dir.xASLDerivatives, CurrentSub{1},['r'  x.P.STRUCT '.nii']);
 
-                OtherList{1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, [x.P.STRUCT '.nii']);
-                OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, ['c1' x.P.STRUCT '.nii']);
-                OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, ['c2' x.P.STRUCT '.nii']);
-                OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, [x.P.FLAIR '.nii']);
-                OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, [x.P.WMH_SEGM '.nii']);
-				OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, [x.P.T1c '.nii']);
-				OtherList{end+1,1} = fullfile(x.D.ROOT,CurrentSub{iV}, [x.P.T2 '.nii']);
+                OtherList{1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, [x.P.STRUCT '.nii']);
+                OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, ['c1' x.P.STRUCT '.nii']);
+                OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, ['c2' x.P.STRUCT '.nii']);
+                OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, [x.P.FLAIR '.nii']);
+                OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, [x.P.WMH_SEGM '.nii']);
+				OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, [x.P.T1c '.nii']);
+				OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, [x.P.T2 '.nii']);
 
                 for iSess = 1:x.dataset.nSessions
-                    SessionDir = fullfile(x.D.ROOT,CurrentSub{iV},x.SESSIONS{iSess});
+                    SessionDir = fullfile(x.dir.xASLDerivatives,CurrentSub{iV},x.SESSIONS{iSess});
                     OtherList{end+1,1} = fullfile(SessionDir, [x.P.ASL4D '.nii']);
                     OtherList{end+1,1} = fullfile(SessionDir, [x.P.M0 '.nii']);
                 end
@@ -272,14 +272,14 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
             %% ---------------------------------------------------------------------------------
             %% Firstly, clone 1st y_T1.nii, reslice & define all volumes:
             for iV=1:length(CurrentSub)
-                Path_T1 = fullfile(x.D.ROOT, CurrentSub{iV},'T1.nii');
-                Path_c1T1 = fullfile(x.D.ROOT, CurrentSub{iV},'c1T1.nii');
-                Path_c2T1 = fullfile(x.D.ROOT, CurrentSub{iV},'c2T1.nii');
-                Path_c3T1 = fullfile(x.D.ROOT, CurrentSub{iV},'c3T1.nii');
-                Path_rT1 = fullfile(x.D.ROOT, CurrentSub{iV},'rT1.nii');
-                Path_rc1T1 = fullfile(x.D.ROOT, CurrentSub{iV},'rc1T1.nii');
-                Path_rc2T1 = fullfile(x.D.ROOT, CurrentSub{iV},'rc2T1.nii');
-                Path_rc3T1 = fullfile(x.D.ROOT, CurrentSub{iV},'rc3T1.nii');
+                Path_T1 = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'T1.nii');
+                Path_c1T1 = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'c1T1.nii');
+                Path_c2T1 = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'c2T1.nii');
+                Path_c3T1 = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'c3T1.nii');
+                Path_rT1 = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'rT1.nii');
+                Path_rc1T1 = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'rc1T1.nii');
+                Path_rc2T1 = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'rc2T1.nii');
+                Path_rc3T1 = fullfile(x.dir.xASLDerivatives, CurrentSub{iV},'rc3T1.nii');
 
                 xASL_delete(Path_rT1);
 
@@ -317,8 +317,8 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
             %% ---------------------------------------------------------------------------------
             % Backup deformation field y_T1.nii for the first time point
-            TempRegFile = fullfile( x.D.ROOT, CurrentSub{1}, ['Temp_y_' x.P.STRUCT '.nii']);
-            DeformationFile = fullfile( x.D.ROOT, CurrentSub{1}, ['y_' x.P.STRUCT '.nii']);
+            TempRegFile = fullfile( x.dir.xASLDerivatives, CurrentSub{1}, ['Temp_y_' x.P.STRUCT '.nii']);
+            DeformationFile = fullfile( x.dir.xASLDerivatives, CurrentSub{1}, ['y_' x.P.STRUCT '.nii']);
 
             if xASL_exist(DeformationFile, 'file')
                 xASL_Move(DeformationFile, TempRegFile, true);
@@ -334,16 +334,16 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
             % Rename deformation file
             for iS=1:length(CurrentSub)
                 if strcmpi(x.WhichLongReg,'DARTEL')
-                    DeformationFile = fullfile(x.D.ROOT, CurrentSub{iS}, 'u_rc1T1_Template.nii');
+                    DeformationFile = fullfile(x.dir.xASLDerivatives, CurrentSub{iS}, 'u_rc1T1_Template.nii');
                 else
-                    DeformationFile = fullfile(x.D.ROOT, CurrentSub{iS}, 'y_rT1.nii');
+                    DeformationFile = fullfile(x.dir.xASLDerivatives, CurrentSub{iS}, 'y_rT1.nii');
                 end
-                LongRegFile = fullfile(x.D.ROOT, CurrentSub{iS}, 'LongReg_y_T1.nii');
+                LongRegFile = fullfile(x.dir.xASLDerivatives, CurrentSub{iS}, 'LongReg_y_T1.nii');
                 xASL_Move(DeformationFile, LongRegFile, true);
 
                 % return backed up deformation field
-                TempRegFile = fullfile( x.D.ROOT, CurrentSub{iS}, ['Temp_y_' x.P.STRUCT '.nii']);
-                TempRegFile2 = fullfile( x.D.ROOT, CurrentSub{iS}, ['y_' x.P.STRUCT '.nii']);
+                TempRegFile = fullfile( x.dir.xASLDerivatives, CurrentSub{iS}, ['Temp_y_' x.P.STRUCT '.nii']);
+                TempRegFile2 = fullfile( x.dir.xASLDerivatives, CurrentSub{iS}, ['y_' x.P.STRUCT '.nii']);
                 if  xASL_exist(TempRegFile,'file')
                     xASL_Move(TempRegFile, TempRegFile2, true);
                 end
@@ -352,7 +352,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                     'Template_0.nii' 'Template_1.nii' 'Template_2.nii' 'Template_3.nii' ...
                     'Template_4.nii' 'Template_5.nii' 'Template_6.nii' 'u_rc1T1_Template.nii'};
                 for iT=1:length(TempFiles)
-                    TempPath = fullfile(x.D.ROOT, CurrentSub{iS}, TempFiles{iT});
+                    TempPath = fullfile(x.dir.xASLDerivatives, CurrentSub{iS}, TempFiles{iT});
                     xASL_delete(TempPath);
                 end
             end
@@ -373,20 +373,20 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
             % MNI, as to compare the images in the "linear registered native space"
 
             x.P.SubjectID   = CurrentSub{1};
-            LongRegFile1    = fullfile(x.D.ROOT, CurrentSub{1}, ['LongReg_y_' x.P.STRUCT '.nii']);
-            y_File1         = fullfile(x.D.ROOT, CurrentSub{1}, ['y_' x.P.STRUCT '.nii']);
-            INPUTname       = fullfile(x.D.ROOT, CurrentSub{1}, [x.P.STRUCT '.nii']);
-            Path_rT1     = fullfile(x.D.ROOT, CurrentSub{1}, ['r' x.P.STRUCT '.nii']);
+            LongRegFile1    = fullfile(x.dir.xASLDerivatives, CurrentSub{1}, ['LongReg_y_' x.P.STRUCT '.nii']);
+            y_File1         = fullfile(x.dir.xASLDerivatives, CurrentSub{1}, ['y_' x.P.STRUCT '.nii']);
+            INPUTname       = fullfile(x.dir.xASLDerivatives, CurrentSub{1}, [x.P.STRUCT '.nii']);
+            Path_rT1     = fullfile(x.dir.xASLDerivatives, CurrentSub{1}, ['r' x.P.STRUCT '.nii']);
             xASL_spm_deformations(x, INPUTname, Path_rT1, 1); % TimePoint 1 without LongReg
 
             for iS=2:length(CurrentSub)
 
                 % Without LongReg
-                y_File2         = fullfile( x.D.ROOT, CurrentSub{iS}, ['y_' x.P.STRUCT '.nii']);
+                y_File2         = fullfile( x.dir.xASLDerivatives, CurrentSub{iS}, ['y_' x.P.STRUCT '.nii']);
                 xASL_Copy(y_File1, y_File2, true);
 
-                INPUTname       = fullfile( x.D.ROOT, CurrentSub{iS}, [    x.P.STRUCT '.nii']);
-                OUTPUTname      = fullfile( x.D.ROOT, CurrentSub{iS}, ['r' x.P.STRUCT '.nii']);
+                INPUTname       = fullfile( x.dir.xASLDerivatives, CurrentSub{iS}, [    x.P.STRUCT '.nii']);
+                OUTPUTname      = fullfile( x.dir.xASLDerivatives, CurrentSub{iS}, ['r' x.P.STRUCT '.nii']);
                 x.P.SubjectID   = CurrentSub{iS};
                 % Create rT1.nii with the same y_T1.nii as the first TimePoint, i.e. without LongReg
                 xASL_spm_deformations(x, INPUTname, OUTPUTname, 1);
@@ -397,7 +397,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                 %% Combine transformations
 
                 % names other time point
-                LongRegFile2    = fullfile( x.D.ROOT, CurrentSub{iS}, ['LongReg_y_' x.P.STRUCT '.nii']);
+                LongRegFile2    = fullfile( x.dir.xASLDerivatives, CurrentSub{iS}, ['LongReg_y_' x.P.STRUCT '.nii']);
 
                 if  xASL_exist(LongRegFile1,'file') && xASL_exist(LongRegFile2,'file') && xASL_exist(y_File1,'file') % if all files are there
 
@@ -425,7 +425,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                     matlabbatch{1}.spm.util.defs.comp{3}.def                    = {y_File1}; % go from first time point to common space
 
                     matlabbatch{1}.spm.util.defs.out{1}.savedef.ofname          = [x.P.STRUCT '.nii']; % y_ is prepended by default
-                    matlabbatch{1}.spm.util.defs.out{1}.savedef.savedir.saveusr = {fullfile(x.D.ROOT,CurrentSub{iS})};
+                    matlabbatch{1}.spm.util.defs.out{1}.savedef.savedir.saveusr = {fullfile(x.dir.xASLDerivatives,CurrentSub{iS})};
 
                     spm_jobman('run',matlabbatch);
 
@@ -434,7 +434,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                     xASL_im_FillNaNs(y_File2, 3, x.settings.Quality);
                 end
 
-                OUTPUT2name      = fullfile( x.D.ROOT, CurrentSub{iS}, ['r2' x.P.STRUCT '.nii']);
+                OUTPUT2name      = fullfile( x.dir.xASLDerivatives, CurrentSub{iS}, ['r2' x.P.STRUCT '.nii']);
                 xASL_spm_deformations(x, INPUTname, OUTPUT2name); % with LongReg
 
                 % Perform QC check for all volumes, compare with first volume
@@ -464,7 +464,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
 
         for iS=2:length(CurrentSub)
             x.P.SubjectID = CurrentSub{iS};
-            x.dir.SUBJECTDIR = fullfile(x.D.ROOT, CurrentSub{iS});
+            x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives, CurrentSub{iS});
             x = xASL_init_FileSystem(x);
 
             xASL_wrp_Resample2StandardSpace(x);
@@ -519,15 +519,15 @@ function xASL_vis_CreateVisualLongReg( x, CurrentSub)
     % This is before LongReg for the first TimePoint,
     % which we will compare all other TimePoints against,
     % for both before {1} & after {2} LongReg
-    T1wOri = fullfile( x.D.ROOT, CurrentSub{1}, ['r' x.P.STRUCT '.nii']);
+    T1wOri = fullfile( x.dir.xASLDerivatives, CurrentSub{1}, ['r' x.P.STRUCT '.nii']);
     imOri = RobustScaling(xASL_io_Nifti2Im(T1wOri));
 
     % Load files
     for iC=2:length(CurrentSub)
 
         % before LongReg = {1}, after LongReg = {2}
-        T1wFile{1} = fullfile( x.D.ROOT, CurrentSub{iC}, ['r' x.P.STRUCT '.nii']);
-        T1wFile{2} = fullfile( x.D.ROOT, CurrentSub{iC}, ['r2' x.P.STRUCT '.nii']);
+        T1wFile{1} = fullfile( x.dir.xASLDerivatives, CurrentSub{iC}, ['r' x.P.STRUCT '.nii']);
+        T1wFile{2} = fullfile( x.dir.xASLDerivatives, CurrentSub{iC}, ['r2' x.P.STRUCT '.nii']);
 
         for ii=1:2
             im{ii} = RobustScaling(xASL_io_Nifti2Im(T1wFile{ii})); % scale
@@ -555,8 +555,8 @@ function xASL_vis_CreateVisualLongReg( x, CurrentSub)
 
 
         % Plot first TimePoint & other TimePoint
-        OutIM1 = xASL_vis_CreateVisualFig(x, fullfile(x.D.ROOT, CurrentSub{1}, ['r' x.P.STRUCT '.nii']));
-        OutIM2 = xASL_vis_CreateVisualFig(x, fullfile(x.D.ROOT, CurrentSub{iC}, ['r2' x.P.STRUCT '.nii']));
+        OutIM1 = xASL_vis_CreateVisualFig(x, fullfile(x.dir.xASLDerivatives, CurrentSub{1}, ['r' x.P.STRUCT '.nii']));
+        OutIM2 = xASL_vis_CreateVisualFig(x, fullfile(x.dir.xASLDerivatives, CurrentSub{iC}, ['r2' x.P.STRUCT '.nii']));
         % Plot first TimePoint + AI image
         OutIM3 = xASL_vis_CreateVisualFig(x, {im{1}, AI{1}}, [], [], [], {x.S.gray x.S.jet256}, false);
         OutIM4 = xASL_vis_CreateVisualFig(x, {im{1}, AI{2}}, [], [], [], {x.S.gray x.S.jet256}, false);

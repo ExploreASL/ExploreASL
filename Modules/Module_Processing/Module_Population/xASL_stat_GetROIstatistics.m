@@ -90,9 +90,9 @@ function [x] = xASL_stat_GetROIstatistics(x)
 
 if x.S.InputNativeSpace
 	% Native space
-	x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
+	x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
 	x.S.masks.WBmask = sum(x.S.masks.WBmask,4) > 0;
-	x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},listSessions{1},'LeftRight_Atlas.nii'));
+	x.LeftMask = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},'LeftRight_Atlas.nii'));
 	x.LeftMask = (x.S.masks.WBmask .* (x.LeftMask == 1)) > 0;
 else
 	% Standard space
@@ -155,7 +155,7 @@ bWarnedPVWMH = false;
 namesROIlocal = x.S.NamesROI;
 
 if x.S.InputNativeSpace
-	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
+	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
 	atlasN = max(inputAtlasTmp(:));
 	x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
 	for kk = 1:atlasN
@@ -208,7 +208,7 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
     %% ------------------------------------------------------------------------------------------------------------
     %% 1. For all ROIs, skip ROIs smaller than 1 mL (296 voxels @ 1.5x1.5x1.5 mm)
 	if x.S.InputNativeSpace
-		VoxelSize = xASL_io_ReadNifti(fullfile(x.D.ROOT,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
+		VoxelSize = xASL_io_ReadNifti(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
 		VoxelSize = [norm(VoxelSize.mat(1:3,1)), norm(VoxelSize.mat(1:3,2)), norm(VoxelSize.mat(1:3,3))];
 	else
 		VoxelSize = [1.5 1.5 1.5];
@@ -254,19 +254,19 @@ for iSubject=1:x.dataset.nSubjects
 			%  to change much
 			if x.S.InputNativeSpace
 				% Reload the previous masks for this subject/session
-				if ~xASL_exist(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']),'file')
-					fprintf('%s\n',[fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']) ' missing...']);
+				if ~xASL_exist(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']),'file')
+					fprintf('%s\n',[fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']) ' missing...']);
 					continue;
 				end
 
-				x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']));
+				x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']));
 				x.S.masks.WBmask = sum(x.S.masks.WBmask,4) > 0;
-				x.LeftMask = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},'LeftRight_Atlas.nii'));
+				x.LeftMask = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},'LeftRight_Atlas.nii'));
 				x.LeftMask = (x.S.masks.WBmask .* (x.LeftMask == 1)) > 0;
 
 				x.LeftMask = xASL_im_IM2Column(x.LeftMask, x.S.masks.WBmask);
 
-				inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']));
+				inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']));
 				atlasN = max(inputAtlasTmp(:));
 				x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
 				for kk = 1:atlasN
@@ -285,8 +285,8 @@ for iSubject=1:x.dataset.nSubjects
 					end
 				end
 
-				x.dir.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
-				x.dir.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess});
+				x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject});
+				x.dir.SESSIONDIR = fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess});
 				x = xASL_init_FileSystem(x);
 				pGM_MNI = xASL_io_Nifti2Im(x.P.Path_PVgm);
 				pWM_MNI = xASL_io_Nifti2Im(x.P.Path_PVwm);
@@ -511,9 +511,9 @@ for iSubject=1:x.dataset.nSubjects
 		SusceptibilityMask = xASL_im_IM2Column(x.S.masks.WBmask, x.S.masks.WBmask); % default = no susceptibility mask
         if x.S.bMasking(1)==1
             if x.S.InputNativeSpace
-				fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},'MaskSusceptibility_Atlas.nii');
-                if xASL_exist(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},'MaskSusceptibility_Atlas.nii'))
-                    SusceptibilityMask = xASL_im_IM2Column(fullfile(x.D.ROOT,x.SUBJECTS{iSubject},listSessions{iSess},'MaskSusceptibility_Atlas.nii'),x.S.masks.WBmask);
+				fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},'MaskSusceptibility_Atlas.nii');
+                if xASL_exist(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},'MaskSusceptibility_Atlas.nii'))
+                    SusceptibilityMask = xASL_im_IM2Column(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},'MaskSusceptibility_Atlas.nii'),x.S.masks.WBmask);
                 end
             else
                 if HasGroupSusceptMask % use population-based susceptibility mask

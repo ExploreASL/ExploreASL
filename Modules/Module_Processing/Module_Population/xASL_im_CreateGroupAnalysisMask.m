@@ -156,8 +156,8 @@ if x.modules.population.bNativeSpaceAnalysis
 		for iSubject = 1:x.dataset.nSubjects
 			SubjSess = (iSubject-1)*x.dataset.nSessions + iSession;
 
-			x.dir.SUBJECTDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject});
-			x.dir.SESSIONDIR = fullfile(x.D.ROOT,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
+			x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject});
+			x.dir.SESSIONDIR = fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},x.SESSIONS{iSession});
 			x = xASL_init_FileSystem(x);
 
 			xASL_TrackProgress(SubjSess,x.dataset.nSubjects*x.dataset.nSessions);

@@ -185,7 +185,7 @@ if ~x.mutex.HasState(StateName{1})
     % if we rerun the structural module, then clean all modules (as they
     % are dependent of the structural module for segmentation/registration)
     % don't remove any previous WMH_SEGM
-    xASL_adm_CleanUpBeforeRerun(x.D.ROOT, [1 2], false, false, x.P.SubjectID);
+    xASL_adm_CleanUpBeforeRerun(x.dir.xASLDerivatives, [1 2], false, false, x.P.SubjectID);
 	
 	% Fix multiple T1w|T2w|T1c|FLAIR iterations
 	listFile     = {x.P.Path_T1, x.P.Path_FLAIR, x.P.Path_T2, x.P.Path_T1c};

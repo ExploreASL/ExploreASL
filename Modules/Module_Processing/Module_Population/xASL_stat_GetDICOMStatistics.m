@@ -71,11 +71,11 @@ for iSubject=1:x.dataset.nSubjects
         
         % Define paths
 		if HasSessions
-            PathMAT = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, [ScanType '_Parms.mat']);% Legacy
-            PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, [ScanType '.json']);
+            PathMAT = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, [ScanType '_Parms.mat']);% Legacy
+            PathJSON = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, [ScanType '.json']);
         else
-            PathMAT = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, [ScanType '_Parms.mat']); % Legacy
-            PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, [ScanType '.json']); 
+            PathMAT = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, [ScanType '_Parms.mat']); % Legacy
+            PathJSON = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, [ScanType '.json']); 
 		end
 		if exist(PathMAT,'file') || exist(PathJSON,'file')
 			Parms = xASL_adm_LoadParms(PathMAT,[],0);

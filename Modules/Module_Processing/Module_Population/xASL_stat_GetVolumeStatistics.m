@@ -43,8 +43,8 @@ for iSubject=1:x.dataset.nSubjects
     % In case this subject had a FLAIR (in native space) then we default it
     % by NaNs, and issue a warning if no WMH volumetric statistics were
     % found
-    Path_FLAIR = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'FLAIR.nii');
-    Path_WMH = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'WMH_SEGM.nii');
+    Path_FLAIR = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'FLAIR.nii');
+    Path_WMH = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'WMH_SEGM.nii');
     if xASL_exist(Path_FLAIR, 'file') || xASL_exist(Path_WMH, 'file')
         HasWMH = true;
     else

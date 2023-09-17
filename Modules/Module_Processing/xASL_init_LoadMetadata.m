@@ -96,7 +96,7 @@ function [x] = xASL_init_LoadMetadata(x)
         fprintf('No participants.tsv file detected\n');
     end
     
-    MatFileList = xASL_adm_GetFileList(x.D.ROOT, '^(?!(x|xASL|dcm2niiCatchedErrors)).*\.mat$', 'FPList', [0 Inf]);
+    MatFileList = xASL_adm_GetFileList(x.dir.xASLDerivatives, '^(?!(x|xASL|dcm2niiCatchedErrors)).*\.mat$', 'FPList', [0 Inf]);
     
     x = xASL_init_LoadMat(x, MatFileList); % legacy
     
@@ -170,14 +170,14 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
 %xASL_bids_LoadParticipantTSV 
 
     %% Load participants.tsv
-    PathTSV = fullfile(x.D.ROOT, 'participants.tsv');
+    PathTSV = fullfile(x.dir.xASLDerivatives, 'participants.tsv');
     bParticipantsTSV = false;
 
     % Backwards compatibility: rename to lowercase
-    fileListParticipantsTSVold = xASL_adm_GetFileList(x.D.ROOT,'^Participants.tsv$',false);
+    fileListParticipantsTSVold = xASL_adm_GetFileList(x.dir.xASLDerivatives,'^Participants.tsv$',false);
     if ~isempty(fileListParticipantsTSVold) % We added the _temp copy step so that the code works on case insensitive systems like windows as well. Please don't remove that step for backwards compatibility (at least not until release 2.0.0).
-        pathParticipantsTSVold = fullfile(x.D.ROOT, 'Participants.tsv');
-        pathParticipantsTSVoldTemp = fullfile(x.D.ROOT, 'Participants_temp.tsv');
+        pathParticipantsTSVold = fullfile(x.dir.xASLDerivatives, 'Participants.tsv');
+        pathParticipantsTSVoldTemp = fullfile(x.dir.xASLDerivatives, 'Participants_temp.tsv');
         xASL_Move(pathParticipantsTSVold,pathParticipantsTSVoldTemp);
         xASL_Move(pathParticipantsTSVoldTemp,PathTSV);
     end
@@ -266,7 +266,7 @@ function [x] = xASL_init_LoadMat(x, MatFileList)
     % be used in the pipeline (e.g. quantification parameters such as
     % hematocrit/bloodT1/T2star, or study parameters such as timepoint
     % (visit), session (run), cohort etc.
-    SiteMat = fullfile(x.D.ROOT, 'Site.mat');
+    SiteMat = fullfile(x.dir.xASLDerivatives, 'Site.mat');
 
     if exist(SiteMat,'file')
         FList{1} = SiteMat;

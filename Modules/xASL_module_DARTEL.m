@@ -293,9 +293,9 @@ spm_jobman('run',matlabbatch);
 fprintf('%s\n', 'Concatenating SPM & DARTEL flowfields:  0%');
 for iS=1:x.dataset.nSubjects
     xASL_TrackProgress(iS, x.dataset.nSubjects);
-    y_file  = fullfile(x.D.ROOT, x.SUBJECTS{iS}, ['y_' x.P.STRUCT '.nii']);
+    y_file  = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iS}, ['y_' x.P.STRUCT '.nii']);
     u_file  = fullfile(x.D.PopDir, ['u_rc1' x.P.STRUCT '_' x.SUBJECTS{iS} '_' x.DARTEL_TEMPLATE '.nii']);
-    y_y_file= fullfile(x.D.ROOT, x.SUBJECTS{iS},['y_y_' x.P.STRUCT '.nii']);
+    y_y_file= fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iS},['y_y_' x.P.STRUCT '.nii']);
 
     if xASL_exist(y_file, 'file')
 
@@ -322,7 +322,7 @@ for iS=1:x.dataset.nSubjects
         end
         
         matlabbatch{1}.spm.util.defs.out{1}.savedef.ofname = 'y_T1.nii';
-        matlabbatch{1}.spm.util.defs.out{1}.savedef.savedir.saveusr = {fullfile(x.D.ROOT, x.SUBJECTS{iS})};
+        matlabbatch{1}.spm.util.defs.out{1}.savedef.savedir.saveusr = {fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iS})};
 
         spm_jobman('run',matlabbatch);
 
@@ -331,7 +331,7 @@ for iS=1:x.dataset.nSubjects
         xASL_delete(u_file);
 
         x.P.SubjectID = x.SUBJECTS{iS};
-        x.dir.SUBJECTDIR = fullfile(x.D.ROOT, x.SUBJECTS{iS});
+        x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iS});
         x = xASL_init_FileSystem(x);
 
         xASL_wrp_Resample2StandardSpace(x);

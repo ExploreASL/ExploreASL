@@ -97,7 +97,7 @@ end
 if isfield(x.P,'SubjectID')
     
     for iSess=1:length(x.SESSIONS)
-        x.P.SessionDir{iSess} = fullfile(x.D.ROOT,x.P.SubjectID,x.SESSIONS{iSess});
+        x.P.SessionDir{iSess} = fullfile(x.dir.xASLDerivatives,x.P.SubjectID,x.SESSIONS{iSess});
     end
 
     if ~isfield(x.P,'SessionID')
@@ -108,7 +108,7 @@ if isfield(x.P,'SubjectID')
     %% ------------------------------------------------------------------------------------
     %% File definitions
     Path{1} = x.dir.SUBJECTDIR;
-    Path{2} = fullfile(x.D.ROOT,x.P.SubjectID,x.P.SessionID);
+    Path{2} = fullfile(x.dir.xASLDerivatives,x.P.SubjectID,x.P.SessionID);
 
     for iFD=1:length(FileDef)
         if iFD==1

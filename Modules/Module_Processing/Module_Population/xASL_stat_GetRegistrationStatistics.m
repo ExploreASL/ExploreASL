@@ -67,7 +67,7 @@ for iSubject=1:x.dataset.nSubjects
         TSV(1+iSubjSess, 3:nFields+2) = repmat({NaN}, [1 nFields]);
         
         % Define path of the parameter file
-		PathJSON = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, ['QC_collection_' x.SUBJECTS{iSubject} '.json']);
+		PathJSON = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, ['QC_collection_' x.SUBJECTS{iSubject} '.json']);
 
 		if exist(PathJSON, 'file')
 			% Load the file
