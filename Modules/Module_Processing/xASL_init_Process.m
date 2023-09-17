@@ -28,7 +28,11 @@ function x = xASL_init_Process(x)
     x = xASL_imp_DetermineStructureFromRawdata(x);
     
     % Create logging directory if it does not exist already
-    xASL_adm_CreateDir(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','log'));
+    xASL_adm_CreateDir(fullfile(x.dir.xASLDerivatives,'log'));
+
+    % Force x.D.ROOT to be derivatives
+    x.D.ROOT = x.dir.xASLDerivatives;
+    x.ROOT = x.dir.xASLDerivatives;
 
 end
 
@@ -54,7 +58,7 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
     % Copyright 2015-2022 ExploreASL
     
     
-        %% Load rawdata subjects -> X.SUBJECTS
+        %% Load rawdata subjects -> x.SUBJECTS
         if xASL_exist(x.dir.RawData,'dir')
             
             % SUBJECTS

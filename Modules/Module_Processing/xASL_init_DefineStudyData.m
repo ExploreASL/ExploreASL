@@ -110,11 +110,8 @@ else
 
 
 
-
-
-    %% THIS SUBJECT LOADING IS IDENTICAL TO THE SUBJECT LOADING PERFORMED BY xASL_init_Process for BIDS2Legacy
-    %% SO CAN BE REMOVED
     % Then load subjects
+    % x.opts.subjectFolder defaults to the derivatives folder
     x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(x.opts.subjectFolder, x.dataset.subjectRegexp, 'List', [0 Inf], true)); % find dirs
         % x.dataset.subjectRegexp should be replaced by '$sub-.*$' by the user for BIDS (not forced here)
 

@@ -59,14 +59,15 @@ function [x,dataPar] = xASL_bids_FinishImport_CreateDataPar(x)
         % Use pre-existing dataPar in the derivatives folder
         x.dir.dataPar = fListDataParLegacy{1};
         fprintf('Use provided dataPar.json from the derivatives folder\n');
-        return;
-    end
 
+        dataPar = x.dataPar;
+        x = rmfield(x,'dataPar');
 
-    if ~isfield(x,'dataPar')
+    elseif ~isfield(x,'dataPar')
         % Create default if no dataPar was provided
         fprintf('No dataPar.json provided, will create default version...\n');
         dataPar = struct();
+        
     else
         % dataPar was provided
         fprintf('Use provided dataPar.json from the study root folder...\n');

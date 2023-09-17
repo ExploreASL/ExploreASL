@@ -78,9 +78,8 @@ function [x] = ExploreASL_Process(x)
     % In the future, we will probably move to BIDS derivatives, but for now we keep the legacy format.
     % Therefore, here we copy all BIDS data to the legacy format, and then we run the processing.
 
-    x = xASL_init_Process(x);
+    x = xASL_init_Process(x); % this loads x.SUBJECTS from datasetRoot/rawdata
     if ~x.opts.bSkipBIDS2Legacy
-		% Datastructure loading that is supposed to be run only once for all subjects
 		try 
 			x = xASL_init_BIDS2Legacy(x);
 		catch ME
@@ -88,7 +87,7 @@ function [x] = ExploreASL_Process(x)
 			x = xASL_qc_AddLoggingInfo(x, ME);
 		end
 
-		% Iterating across all subjects
+		% Iterating across all subjects (can be parallelized)
         [~, x] = xASL_init_Iteration(x,'xASL_module_BIDS2Legacy');
 
 		% Finalize BIDS 2 Legacy conversion

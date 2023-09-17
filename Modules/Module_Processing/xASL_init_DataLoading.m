@@ -81,7 +81,7 @@ function [x] = xASL_init_DataLoading(x)
         end
 
         % Fix a relative path
-        if strcmp(x.dir.x.dir.xASLDerivatives(1), '.')
+        if strcmp(x.dir.xASLDerivatives(1), '.')
             cd(x.dir.xASLDerivatives);
             x.dir.xASLDerivatives = pwd;
         end
@@ -288,7 +288,7 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
                 x.D.c_PreFix{2} = 'rc2T1';
             
                 %% Study-specific
-                if and(isfield(x.D, 'ROOT'), isfield(x.opts, 'bProcessData'))
+                if and(isfield(x.dir, 'xASLDerivatives'), isfield(x.opts, 'bProcessData'))
                     if x.opts.bProcessData || x.opts.bLoadData
                         x.D.PopDir = fullfile(x.dir.xASLDerivatives,'Population');
             
@@ -628,9 +628,9 @@ function x = xASL_init_PrintCheckSettings(x)
         end
     
         if ~isfield(x,'dir')
-            warning('x.dir didn''nt exist');
+            warning('x.dir did not exist');
         else
-            field_symbol = {'ROOT'};
+            field_symbol = {'xASLDerivatives'};
             for iField=1:length(field_symbol)
                 if ~isfield(x.dir,field_symbol{iField})
                     warning(['x.dir.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
