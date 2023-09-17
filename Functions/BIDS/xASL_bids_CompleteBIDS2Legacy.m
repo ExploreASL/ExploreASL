@@ -47,13 +47,29 @@ end
 %% Create the dataPar.json 
 function [x,dataPar] = xASL_bids_FinishImport_CreateDataPar(x)
 
+
+    %% First check if dataPar.json did not exist already
+    fListDataParLegacy = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'),'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
+    if ~isempty(fListDataParLegacy)
+        
+        if length(fListDataParLegacy)>1
+            fprintf('Warning: multiple dataPar.json files within the derivatives directory, using the first...\n');
+        end
+        
+        % Use pre-existing dataPar in the derivatives folder
+        x.dir.dataPar = fListDataParLegacy{1};
+        fprintf('Use provided dataPar.json from the derivatives folder\n');
+        return;
+    end
+
+
     if ~isfield(x,'dataPar')
         % Create default if no dataPar was provided
         fprintf('No dataPar.json provided, will create default version...\n');
         dataPar = struct();
     else
         % dataPar was provided
-        fprintf('Export provided dataPar.json...\n');
+        fprintf('Use provided dataPar.json from the study root folder...\n');
         dataPar = x.dataPar;
         x = rmfield(x,'dataPar');
     end
@@ -84,19 +100,10 @@ function [x,dataPar] = xASL_bids_FinishImport_CreateDataPar(x)
         dataPar.x.settings.DELETETEMP = 1;
     end
 
-    % Write DataParFile if it does not exist already
-    fListDataPar = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'),'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
-    if isempty(fListDataPar)
-        fprintf('Creating /derivatives/ExploreASL/dataPar.json (did not exist yet)...\n');
-        xASL_io_WriteJson(fullfile(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), 'dataPar.json'), dataPar);
-    end
+    x.dir.dataPar = fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL', 'dataPar.json');
 
-    % Update dataPar path
-    fListDataParLegacy = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'),'(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
-    x.dir.dataPar = fListDataParLegacy{1};
-    if length(fListDataParLegacy)>1
-        fprintf('Multiple dataPar.json files within the derivatives directory...\n');
-    end
+    xASL_io_WriteJson(x.dir.dataPar, dataPar);
+
 
 end
 
