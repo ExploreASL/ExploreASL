@@ -87,9 +87,7 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         end
 
         %% 2. Define Subject
-        subjectBIDS = ['sub-' x.SUBJECT];
-
-        indicesCurrentSubject = find(cellfun( @(y) strcmp(y, subjectBIDS), {x.modules.bids2legacy.BIDS.subjects.name}));
+        indicesCurrentSubject = find(cellfun( @(y) strcmp(y, x.SUBJECT), {x.modules.bids2legacy.BIDS.subjects.name}));
 
 
         for iSubjSess=indicesCurrentSubject

@@ -119,7 +119,6 @@ else
         % x.dataset.subjectRegexp should be replaced by '$sub-.*$' by the user for BIDS (not forced here)
 
 
-
 end
 
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
@@ -155,9 +154,11 @@ if ~isfield(x,'SESSIONS')
 	end
 end
 
+x.dataset.nSessions = length(x.SESSIONS);
+
 % ------------------------------------------------------------------------------------------------
 %% 3) Create list of total baseline & follow-up subjects, before exclusions
-x.dataset.nSessions = length(x.SESSIONS);
+
 if ~isempty(x.dataset.TotalSubjects)
     % Temporarily fix for xASL_init_LongitudinalRegistration
     x.SUBJECTS = x.dataset.TotalSubjects;
@@ -251,6 +252,8 @@ end
 if ~isfield(x,'SUBJECTS')
     fprintf('%s\n','No subjects found');
     x.SUBJECTS = [];
+elseif isempty(x.SUBJECTS)
+    fprintf('%s\n','No subjects found');
 end
 
 x.dataset.nSubjects = length(x.SUBJECTS);
