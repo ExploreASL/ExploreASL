@@ -109,7 +109,7 @@ end
 
 %             %% Estimate effective resolution
 %             % Obtain native image resolution, to estimate FWHM
-%             NativeName  = fullfile( x.D.ROOT, x.SUBJECTS{iS}, x.SESSIONS{iSess}, [x.P.ASL4D  '.nii']);
+%             NativeName  = fullfile( x.dir.xASLDerivatives, x.SUBJECTS{iS}, x.SESSIONS{iSess}, [x.P.ASL4D  '.nii']);
 %             NativeIM    = xASL_io_ReadNifti(NativeName);
 %             NativeRes   = NativeIM.hdr.pixdim(2:4);
 %

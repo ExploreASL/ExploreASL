@@ -63,7 +63,7 @@ SuSeID = [x.SUBJECTS{DoSubject(1)} '_' x.SESSIONS{1}];
 iSubjSess = (DoSubject(1)-1)*x.dataset.nSessions+1;
 
 % Make sure that the directory exists
-PrintDir = fullfile(x.D.ROOT, x.SUBJECTS{DoSubject(1)});
+PrintDir = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{DoSubject(1)});
 xASL_adm_CreateDir(PrintDir);
 
 % Delete existing xASL report files

@@ -38,7 +38,7 @@ for iQC=1:length(QCnames)
     end
 end
             
-QC_SavePath = fullfile(x.D.ROOT, 'QCcategory.mat');
+QC_SavePath = fullfile(x.dir.xASLDerivatives, 'QCcategory.mat');
 save(QC_SavePath,'QCcategory');
 
 fprintf('\n');

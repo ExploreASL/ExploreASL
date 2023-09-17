@@ -26,7 +26,7 @@ function [x, IsLoaded] = xASL_adm_LoadX(x, Path_xASL, bOverwrite)
 % 3. Look for and update deprecated fields
 % 4. Add fields from disc to the current x-struct
 %
-% EXAMPLE: [x, IsLoaded] = xASL_adm_LoadX(x, fullfile(x.D.ROOT,'x.mat'), true);
+% EXAMPLE: [x, IsLoaded] = xASL_adm_LoadX(x, fullfile(x.dir.xASLDerivatives,'x.mat'), true);
 %
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL

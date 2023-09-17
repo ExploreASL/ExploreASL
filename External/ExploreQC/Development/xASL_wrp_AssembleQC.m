@@ -11,7 +11,7 @@ DirQC = fullfile(x.S.StatsDir, 'QC_stats');
 xASL_adm_CreateDir(DirQC);
 
 % a) make list of JSON files
-FileList = xASL_adm_GetFileList(x.D.ROOT, '^QC_collection_.*\.json$', 'FPListRec');
+FileList = xASL_adm_GetFileList(x.dir.xASLDerivatives, '^QC_collection_.*\.json$', 'FPListRec');
 
 TotalQC = struct;
 

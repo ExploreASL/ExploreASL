@@ -66,11 +66,11 @@ end
 if ~isfield(x.P,'STRUCT')
     x.P.STRUCT = 'T1';
 end
-if ~isfield(x.D,'ROOT')
-    x.D.ROOT = '';
+if ~isfield(x, 'dir') || ~isfield(x.dir,'xASLDerivatives')
+    x.dir.xASLDerivatives = '';
 end
 if ~isfield(x.D,'PopDir')
-    x.D.PopDir = fullfile(x.D.ROOT,'dartel');
+    x.D.PopDir = fullfile(x.dir.xASLDerivatives,'dartel');
 end
 if ~iscell(PathIn) % force cell format
     t_IN = PathIn;
@@ -106,7 +106,7 @@ else
 end
 if nargin<7 || isempty(DeformationPath)
     if ~strcmp(x.P.SubjectID, 'Unknown subject')
-        DeformationPath = fullfile(x.D.ROOT, x.P.SubjectID, ['y_' x.P.STRUCT '.nii']); % defaults at this
+        DeformationPath = fullfile(x.dir.xASLDerivatives, x.P.SubjectID, ['y_' x.P.STRUCT '.nii']); % defaults at this
     else
         warning('DeformationPath input parameter missing');
     end

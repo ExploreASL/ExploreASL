@@ -9,7 +9,7 @@ function xASL_qc_WADQC_GenerateDescriptor(x, iSubject, ScanTypeIs)
 %
 % OUTPUT: n/a
 % OUTPUT FILE:
-%    WAD_Path = fullfile(x.D.ROOT, SubPath{iScan}, ['qcdc_' x.SUBJECTS{iSubject} '_' ScanTypes{iScan} '.json'])
+%    WAD_Path = fullfile(x.dir.xASLDerivatives, SubPath{iScan}, ['qcdc_' x.SUBJECTS{iSubject} '_' ScanTypes{iScan} '.json'])
 %               This file is created for each subject/scantype, and contains the
 %               descriptor for QCDC, such that it knows where it can find QC
 %               information & images to later embed into the dummy DICOM, and later
@@ -67,9 +67,9 @@ FolderList{4} = {'dwiCheck'};
 
 for iScan=Indices
     
-    if ~exist(fullfile(x.D.ROOT, SubPath{iScan}), 'dir')
+    if ~exist(fullfile(x.dir.xASLDerivatives, SubPath{iScan}), 'dir')
         continue; % skip this ScanType
-    elseif isempty(xASL_adm_GetFileList(fullfile(x.D.ROOT, SubPath{iScan}), [NIfTIname{iScan} '.*\.nii'], [], [0 Inf]))
+    elseif isempty(xASL_adm_GetFileList(fullfile(x.dir.xASLDerivatives, SubPath{iScan}), [NIfTIname{iScan} '.*\.nii'], [], [0 Inf]))
         continue; % skip this ScanType
     end
     
@@ -131,7 +131,7 @@ for iScan=Indices
     wadqc.wad_qc_server.ae_title = 'dummy';
 
     %% f) Save
-    WAD_Path = fullfile(x.D.ROOT, SubPath{iScan}, ['qcdc_' x.SUBJECTS{iSubject} '_' ScanTypes{iScan} '.json']);
+    WAD_Path = fullfile(x.dir.xASLDerivatives, SubPath{iScan}, ['qcdc_' x.SUBJECTS{iSubject} '_' ScanTypes{iScan} '.json']);
     fclose all;
     xASL_delete(WAD_Path);
     xASL_io_WriteJson(WAD_Path, wadqc);
@@ -173,7 +173,7 @@ function [wadqc] = xASL_qc_WADQC_images(x, wadqc, iSubject, iScan, FolderList)
                 NameWithoutID = NameWithoutID(2:end);
             end
 
-            SubFolder = xASL_adm_GetSubFolder(Fpath, x.D.ROOT);
+            SubFolder = xASL_adm_GetSubFolder(Fpath, x.dir.xASLDerivatives);
 
             wadqc.qc_items.(NameWithoutID).type = 'file';
             wadqc.qc_items.(NameWithoutID).sub_path = SubFolder;

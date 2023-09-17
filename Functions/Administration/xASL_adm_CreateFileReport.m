@@ -56,7 +56,7 @@ if nargin<2 || isempty(bHasFLAIR)
     bHasFLAIR = false;
     iSubject = 1;
     while iSubject<=x.dataset.nSubjects && ~bHasFLAIR
-        if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'FLAIR.nii'))
+        if xASL_exist(fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'FLAIR.nii'))
             bHasFLAIR = true;
         else
             iSubject = iSubject+1;
@@ -74,7 +74,7 @@ if nargin<3 || isempty(bHasMoCo)
     while iSubject<=x.dataset.nSubjects && ~bHasMoCo % speeds up instead of for-loop
         CurrentSubject = iSubject;
         for iSession=1:x.dataset.nSessions
-            if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{CurrentSubject}, x.SESSIONS{iSession}, 'ASL4D.mat'))
+            if xASL_exist(fullfile(x.dir.xASLDerivatives, x.SUBJECTS{CurrentSubject}, x.SESSIONS{iSession}, 'ASL4D.mat'))
                 bHasMoCo = true;
             else
                 iSubject = iSubject+1;
@@ -93,7 +93,7 @@ if nargin<4 || isempty(bHasM0)
     while iSubject<=x.dataset.nSubjects && ~bHasM0 % speeds up instead of for-loop
         CurrentSubject = iSubject;        
         for iSession=1:x.dataset.nSessions
-            if xASL_exist(fullfile(x.D.ROOT, x.SUBJECTS{CurrentSubject}, x.SESSIONS{iSession}, 'M0.nii'))
+            if xASL_exist(fullfile(x.dir.xASLDerivatives, x.SUBJECTS{CurrentSubject}, x.SESSIONS{iSession}, 'M0.nii'))
                 bHasM0 = true;
             else
                 iSubject = iSubject+1;
@@ -138,14 +138,14 @@ if bHasLongitudinal
     FileTypes{end+1} = 'LongReg';
 end
 
-LockDir = fullfile(x.D.ROOT, 'lock');
-ReportName = fullfile(x.D.ROOT, 'FileReportSummary.csv');
+LockDir = fullfile(x.dir.xASLDerivatives, 'lock');
+ReportName = fullfile(x.dir.xASLDerivatives, 'FileReportSummary.csv');
 xASL_delete(ReportName);
 SummaryFid = fopen(ReportName,'wt');
 
-xASL_adm_DeleteFileList(x.D.ROOT, '^Missing_.*_files\.csv$', false, [0 Inf]);
+xASL_adm_DeleteFileList(x.dir.xASLDerivatives, '^Missing_.*_files\.csv$', false, [0 Inf]);
 for iScanType=1:length(FileTypes)
-    FileMissing{iScanType} = fullfile(x.D.ROOT, ['Missing_' FileTypes{iScanType} '_files.csv']); 
+    FileMissing{iScanType} = fullfile(x.dir.xASLDerivatives, ['Missing_' FileTypes{iScanType} '_files.csv']); 
     SummaryFid_{iScanType} = fopen(FileMissing{iScanType},'wt');
 end
 
@@ -268,7 +268,7 @@ fprintf('anat files:   ');
 for iExp=1:length(NativeRegExp_SubjectLevel)
     xASL_TrackProgress(iExp,length(NativeRegExp_SubjectLevel));
     for iSubject=1:x.dataset.nSubjects
-        FilePathNii    = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, NativeRegExp_SubjectLevel{iExp});
+        FilePathNii    = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, NativeRegExp_SubjectLevel{iExp});
         if ~xASL_exist(FilePathNii,'file')
             [Fpath, Ffile] = xASL_fileparts(FilePathNii);
             RegExpBIDS = ['(.*' Ffile '.*run.*|.*run.*' Ffile '.*)\.nii$'];
@@ -298,7 +298,7 @@ for iExp=1:length(NativeRegExp_SessionLevel)
     for iSubject=1:x.dataset.nSubjects
         for iSession=1:x.dataset.nSessions
             iSubjectSession = (iSubject-1)*x.dataset.nSessions+iSession;
-            FilePathNii    = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, NativeRegExp_SessionLevel{iExp});
+            FilePathNii    = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, x.SESSIONS{iSession}, NativeRegExp_SessionLevel{iExp});
 
             if ~xASL_exist(FilePathNii,'file')
                 [Fpath, Ffile] = xASL_fileparts(FilePathNii);
@@ -470,7 +470,7 @@ if bHasLongitudinal
     for iExp=1:length(RegExp_LongReg)
         xASL_TrackProgress(iExp,length(RegExp_LongReg));
         for iSubj=1:length(LongRegSubj) % this will skip if there are no longitudinal scans
-            FilePath        = fullfile(x.D.ROOT, LongRegSubj{iSubj}, RegExp_LongReg{iExp});
+            FilePath        = fullfile(x.dir.xASLDerivatives, LongRegSubj{iSubj}, RegExp_LongReg{iExp});
             if ~exist(FilePath,'file')
                 fprintf(SummaryFid_{7},'%s\n', FilePath );
                 CountMissing(7)     = CountMissing(7)+1;

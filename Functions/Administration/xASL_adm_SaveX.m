@@ -14,7 +14,7 @@ function xASL_adm_SaveX(x, Path_xASL, bOverwrite)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function saves the x.mat either to the predefined path or the the subject x.mat
 %
-% EXAMPLE: outside ExploreASL: xASL_adm_SaveX(x, fullfile(x.D.ROOT,'x.mat'));
+% EXAMPLE: outside ExploreASL: xASL_adm_SaveX(x, fullfile(x.dir.xASLDerivatives,'x.mat'));
 %           inside ExploreASL: xASL_adm_SaveX(x);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------

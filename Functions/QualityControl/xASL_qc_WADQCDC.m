@@ -23,7 +23,7 @@ function xASL_qc_WADQCDC(x, iSubject, ScanType)
 %                 the QCDC is not ran
 %              3. Previous QCDC results are cleaned. QCDC stores all its
 %                 results in a separate folder (Something like 2 layers up from the current
-%                 folder, here referred to as QCDCDir = [x.D.ROOT 'qcdc_output'])
+%                 folder, here referred to as QCDCDir = [x.dir.xASLDerivatives 'qcdc_output'])
 %                 from these result files, only the filled DICOM file is
 %                 interesting, all the rest are copies of the QC results
 %                 that we embedded into the DICOM
@@ -59,8 +59,8 @@ end % otherwise, simply iterate over all scantypes below
 
 for iScanType=1:length(ScanTypes)
 
-    WAD_Path = fullfile(x.D.ROOT, SubPath{iScanType}, ['qcdc_' x.SUBJECTS{iSubject} '_' ScanTypes{iScanType} '.json']);
-    DummyDir = fullfile(x.D.ROOT, SubPath{iScanType});
+    WAD_Path = fullfile(x.dir.xASLDerivatives, SubPath{iScanType}, ['qcdc_' x.SUBJECTS{iSubject} '_' ScanTypes{iScanType} '.json']);
+    DummyDir = fullfile(x.dir.xASLDerivatives, SubPath{iScanType});
     DummyFile = xASL_adm_GetFileList(DummyDir, ['^DummyDicom_' NIfTIname{iScanType} '.*.dcm$'],'List',[0 Inf]);
 
     if ~exist(WAD_Path,'file')
@@ -113,17 +113,17 @@ for iScanType=1:length(ScanTypes)
     end
 
     %% c) CleanUp previous QCDC results
-    QCDCDir = [x.D.ROOT 'qcdc_output_qcdc_' x.SUBJECTS{iSubject} '_' ScanTypes{iScanType}];
+    QCDCDir = [x.dir.xASLDerivatives 'qcdc_output_qcdc_' x.SUBJECTS{iSubject} '_' ScanTypes{iScanType}];
     xASL_adm_DeleteFileList(QCDCDir, '.*', true, [0 Inf]);
 
     %% d) Run QCDC
     if RunPython
         fprintf('Incorporating QC results into dummy dicom...\n');
-        cd(x.D.ROOT);
+        cd(x.dir.xASLDerivatives);
         system(['chmod +x ' xASL_adm_UnixPath(QCDC_Path)]);
         system(['chmod +x ' xASL_adm_UnixPath(QCDC_sh1)]);
         system(['chmod +x ' xASL_adm_UnixPath(QCDC_sh2)]);
-        result = system([PythonPath ' ' xASL_adm_UnixPath(QCDC_Path) ' ' xASL_adm_UnixPath(WAD_Path) ' ' xASL_adm_UnixPath(x.D.ROOT)]);
+        result = system([PythonPath ' ' xASL_adm_UnixPath(QCDC_Path) ' ' xASL_adm_UnixPath(WAD_Path) ' ' xASL_adm_UnixPath(x.dir.xASLDerivatives)]);
 
         if result~=0
             % throw error
@@ -132,7 +132,7 @@ for iScanType=1:length(ScanTypes)
 
         %% e) Clean up QCDC output results
         TempPath = fullfile(QCDCDir, DummyFile);
-        NewPath = fullfile(x.D.ROOT, SubPath{iScanType}, ['qcdc_' DummyFile]);
+        NewPath = fullfile(x.dir.xASLDerivatives, SubPath{iScanType}, ['qcdc_' DummyFile]);
         if exist(TempPath, 'file')
             xASL_Move(TempPath, NewPath, true);
             fprintf('QCDC has succesfully incorporated QC into dummy dicom\n');
@@ -146,7 +146,7 @@ for iScanType=1:length(ScanTypes)
 
         %% f) Try sending the DICOM to WAD-QC server
         if IsSuccess
-            cd(x.D.ROOT);
+            cd(x.dir.xASLDerivatives);
             [results, results2] = system(['storescu wad-qc 11112 ' xASL_adm_UnixPath(NewPath)]);
             if results==0 && isempty(results2)
                 fprintf('DICOM sent to WADQC server\n');

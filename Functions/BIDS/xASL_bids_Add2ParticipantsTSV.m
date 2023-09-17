@@ -42,7 +42,7 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 
 
 % Get path to participants.tsv
-PathTSV = fullfile(x.D.ROOT, 'participants.tsv');
+PathTSV = fullfile(x.dir.xASLDerivatives, 'participants.tsv');
 
 
 %% 1) Admin - Validate that there are not too many columns

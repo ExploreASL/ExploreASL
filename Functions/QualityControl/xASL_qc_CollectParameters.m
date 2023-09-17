@@ -109,7 +109,7 @@ x.Output = rmfield(x.Output,'SoftwareVersion');
 %% -----------------------------------------------------------------------------------------------
 %% Save QC output
 % Save current QC
-QC_Path = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, ['QC_collection_' x.SUBJECTS{iSubject} '.json']);
+QC_Path = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, ['QC_collection_' x.SUBJECTS{iSubject} '.json']);
 xASL_delete(QC_Path);
 xASL_io_WriteJson(QC_Path, x.Output);
 
