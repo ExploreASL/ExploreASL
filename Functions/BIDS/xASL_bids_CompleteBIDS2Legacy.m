@@ -113,7 +113,7 @@ function x = xASL_bids_FinishImport_CreateParticipants(x)
 
     % Define file names
     pathParticipantsTSV = fullfile(x.dir.DatasetRoot, 'participants.tsv');
-    pathParticipantsTSVxASL = fullfile(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), 'participants.tsv');
+    pathParticipantsTSVxASL = fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL', 'participants.tsv');
 
     % Backwards compatibility: rename to lowercase
     fileListParticipantsTSVold = xASL_adm_GetFileList(x.dir.DatasetRoot,'^Participants.tsv$',false);
@@ -137,7 +137,7 @@ function x = xASL_bids_FinishImport_CreateDatasetDescription(x)
 
 % Copy dataset_description JSON file
 xASL_Copy(fullfile(x.dir.DatasetRoot, 'rawdata', 'dataset_description.json'), ...
-	fullfile(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL'), 'dataset_description.json'));
+	fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL', 'dataset_description.json'));
 
 end
 
