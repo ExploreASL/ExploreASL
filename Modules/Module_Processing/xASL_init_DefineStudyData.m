@@ -43,12 +43,12 @@ function [x] = xASL_init_DefineStudyData(x)
 %               This function exists from the following parts:
 %
 % 1. Manage included & excluded subjects
-% 2. Create dummy defaults (exclusion list, ASL sessions)
-% 3. Create list of total baseline & follow-up subjects, before exclusions
-% 4. Create TimePoint data-lists
-% 5. Manage exclusions
-% 6. Add sessions as statistical variable, if they exist
-% 7. Parallelization: If running parallel, select cases for this worker
+% 2. Parallelization: If running parallel, select cases for this worker
+% 3. Create dummy defaults (exclusion list, ASL sessions)
+% 4. Create list of total baseline & follow-up subjects, before exclusions
+% 5. Create TimePoint data-lists
+% 6. Manage exclusions
+% 7. Add sessions as statistical variable, if they exist
 % 8. Add Longitudinal TimePoints (different T1 volumes) as covariate/set, after excluding
 % 9. Load & add statistical variables
 % 10. Make x.S.SetsOptions horizontal if vertical by transposing
@@ -96,6 +96,7 @@ if isfield(x.dataset,'ForceInclusionList')
     % This is an option if you want to select subjects yourself,
     % instead of using all the subjects that comply with the regular expression
     x.dataset.TotalSubjects = x.dataset.ForceInclusionList';
+    warning('Using custom list of subjects, on your own risk');
 else
     if ~isfield(x.dataset,'subjectRegexp')
         error('Please define the subjectRegexp of your dataset...');
@@ -120,8 +121,49 @@ end
 
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
 
+
 % ------------------------------------------------------------------------------------------------
-%% 2) Create dummy defaults (exclusion list, ASL sessions)
+%% 2) Parallelization: If running parallel, select cases for this worker
+if x.opts.nWorkers>1
+    nSubjPerWorker = x.dataset.nTotalSubjects/x.opts.nWorkers; % ceil to make sure all subjects are processed
+
+    % e.g., if nWorkers=3 & nTotalSubjects=10
+    % iWorker 1 does [1 2 3]
+    % iWorker 2 does [4 5 6 7]
+    % iWorker 3 does [8 9 10]
+
+    iStartSubject = round((x.opts.iWorker-1)*nSubjPerWorker+1);
+    iEndSubject = min( round(x.opts.iWorker*nSubjPerWorker), x.dataset.nTotalSubjects);
+
+    if iStartSubject>x.dataset.nTotalSubjects
+        warning('Closing down this worker, had too many workers');
+        exit;
+    end
+    
+    % Adapt SUBJECTS
+    x.dataset.TotalSubjects = x.dataset.TotalSubjects(iStartSubject:iEndSubject);
+    x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
+
+    
+    fprintf(['I am worker ' num2str(x.opts.iWorker) '/' num2str(x.opts.nWorkers) '\n']);
+    fprintf(['I will process subjects ' num2str(iStartSubject) '-' num2str(iEndSubject) '\n']);
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% ------------------------------------------------------------------------------------------------
+%% 3) Create dummy defaults (exclusion list, ASL sessions)
 fprintf('Automatically defining sessions...\n');
 if ~isfield(x,'dataset')
     x.dataset = struct;
@@ -154,7 +196,7 @@ end
 x.dataset.nSessions = length(x.SESSIONS);
 
 % ------------------------------------------------------------------------------------------------
-%% 3) Create list of total baseline & follow-up subjects, before exclusions
+%% 4) Create list of total baseline & follow-up subjects, before exclusions
 
 if ~isempty(x.dataset.TotalSubjects)
     % Temporarily fix for xASL_init_LongitudinalRegistration
@@ -171,12 +213,15 @@ if isempty(x.SUBJECTS)
     fprintf(2,'This should match with the subject folders inside the provided subjectFolder\n');
     fprintf(2,'This was %s ...\n\n', x.opts.subjectFolder);
     error('No subjects defined, x.SUBJECTS was empty...');
+elseif isfield(x.dataset, 'exclusion')
+    warning('Exclusion list may not work with longitudinal registration');
 end
 
 [~, TimePoint] = xASL_init_LongitudinalRegistration(x);
 
+
 % ------------------------------------------------------------------------------------------------
-%% 4) Create TimePoint data-lists
+%% 5) Create TimePoint data-lists
 for iT=unique(TimePoint)'
     x.dataset.TimePointTotalSubjects{iT} = '';
 end
@@ -190,8 +235,9 @@ end
 x = rmfield(x,'SUBJECTS');
 x.dataset = rmfield(x.dataset,'nSubjects');
 
+
 % ------------------------------------------------------------------------------------------------
-%% 5) Manage exclusions
+%% 6) Manage exclusions
 if     ~isfield(x.dataset,'exclusion')
         x.dataset.exclusion = {''};
         nExclusion = 0;
@@ -264,8 +310,9 @@ for iT=1:x.dataset.nTimePointsTotal
     x.dataset.nTimePointTotalSubjects(iT) = length(x.dataset.TimePointTotalSubjects{iT});
 end
 
+
 % ------------------------------------------------------------------------------------------------
-%% 6) Add sessions as statistical variable
+%% 7) Add sessions as statistical variable
 
 % Predefine SETS to avoid empty SETS & import predefined session settings as set settings
 x.S.SetsName{1} = 'session';
@@ -274,6 +321,7 @@ x.S.SetsID = 0;
 x.S.Sets1_2Sample(1) = 1; % sessions are always paired observations (e.g. belonging to same individual, looking at intra-individual changes)
 
 % NOT SURE IF WE STILL USE THIS, WE MAY PHASE THIS OUT
+% WE DO USE THIS FOR FEAST: CRUSHED VS NON-CRUSHED ASL
 % Define SetsOptions for sessions
 if ~isfield(x,'session')
     x.session = '';
@@ -294,41 +342,6 @@ for iSubj=1:x.dataset.nSubjects
 
         x.S.SetsID(iSubjSess,1) = iSess;
     end
-end
-
-% ------------------------------------------------------------------------------------------------
-%% 7) Parallelization: If running parallel, select cases for this worker
-if x.opts.nWorkers>1
-    nSubjPerWorker = x.dataset.nSubjects/x.opts.nWorkers;
-
-    % e.g., if nWorkers=3 & nSubjects=10
-    % iWorker 1 does [1 2 3]
-    % iWorker 2 does [4 5 6 7]
-    % iWorker 3 does [8 9 10]
-
-    iStartSubject = round((x.opts.iWorker-1)*nSubjPerWorker+1);
-    iEndSubject = min( round(x.opts.iWorker*nSubjPerWorker), x.dataset.nSubjects);
-
-    iStartSubjectSession = (iStartSubject-1) * x.dataset.nSessions + 1;
-    iEndSubjectSession = iEndSubject * x.dataset.nSessions;
-    
-    if iStartSubject>x.dataset.nSubjects
-        fprintf('Closing down this worker, had too many workers');
-        exit;
-    end
-    
-    % Adapt SUBJECTS
-    x.SUBJECTS = x.SUBJECTS(iStartSubject:iEndSubject);
-    x.dataset.nSubjects = length(x.SUBJECTS);
-    x.dataset.nSubjectsSessions = x.dataset.nSubjects*x.dataset.nSessions;
-
-    % Adapt SETSID (covariants)
-    if isfield(x.S,'SetsID') && ~isempty(x.S.SetsID)
-        x.S.SetsID = x.S.SetsID(iStartSubjectSession:iEndSubjectSession, :);
-    end
-    
-    fprintf(['I am worker ' num2str(x.opts.iWorker) '/' num2str(x.opts.nWorkers) '\n']);
-    fprintf(['I will process subjects ' num2str(iStartSubject) '-' num2str(iEndSubject) '\n']);
 end
 
 % ------------------------------------------------------------------------------------------------
