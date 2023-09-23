@@ -171,6 +171,10 @@ function [bTimeEncoded, timeEncodedMatrixSize, vectorPLD] = xASL_imp_DCM2NII_Che
         bTimeEncoded = false; % default
     end
     
+    % Set default output
+    timeEncodedMatrixSize = [];
+    vectorPLD = [];
+
     if isfield(x.dir, 'studyPar') && ~isempty(x.dir.studyPar)
         if xASL_exist(x.dir.studyPar, 'file')
             % Get the specific studyPar parameters
