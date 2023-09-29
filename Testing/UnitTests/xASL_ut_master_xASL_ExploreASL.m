@@ -449,16 +449,15 @@ end
 % Define one or multiple test conditions here
 if ~exist('x','var')
     testCondition = false;
-else
-    if ~isstruct(x)
-        testCondition = false;
-    end
+elseif ~isstruct(x)
+	testCondition = false;
+elseif ~isfield(x, 'opts') || ~isfield(x.opts, 'bDataLoaded')
+	testCondition = false;
+	% Check that data was not loaded
+elseif x.opts.bDataLoaded
+		testCondition = false;
 end
 
-% Check that data was not loaded
-if x.opts.bDataLoaded
-    testCondition = false;
-end
 
 % BIDS2Legacy & data loading
 try
@@ -547,16 +546,15 @@ end
 % Define one or multiple test conditions here
 if ~exist('x','var')
     testCondition = false;
-else
-    if ~isstruct(x)
-        testCondition = false;
-    end
+elseif ~isstruct(x)
+	testCondition = false;
+elseif ~isfield(x, 'opts') || ~isfield(x.opts, 'bDataLoaded')
+	testCondition = false;
+	% Check that data was not loaded
+elseif x.opts.bDataLoaded
+		testCondition = false;
 end
 
-% Check that data was not loaded
-if x.opts.bDataLoaded
-    testCondition = false;
-end
 
 % BIDS2Legacy & data loading
 try
