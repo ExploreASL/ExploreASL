@@ -99,6 +99,43 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput);
         
     %% 5. Run Basil and retrieve CBF output
+    if x.modules.asl.bAutomaticMerging == 1
+        if any(strcmp(x.SESSION,x.modules.asl.MergingList(:,2))) % If the SESSION is in the second column (second part of each pair), strcmp will have a 1, and 'any' recognizes when there's at least one 1.
+            % Find Pair session ==================
+            CurrentSession = x.SESSION;
+            PairSession = '';
+            % Iterate through MerlingList
+            for i=1:size(x.modules.asl.MergingList,1)
+                if strcmp(CurrentSession,x.modules.asl.MergingList{i,2})
+                    % Found current session
+                    PairSession = x.modules.asl.MergingList{i,1}; % the pair session is in the same row, first column
+                    break;
+                end
+            end
+            % =====================================
+           
+            CurrentScanPWIdir = sprintf('%s/PWI4D_FSLInput.nii',CurrentSession);
+            PairScanPWIdir = sprintf('%s/PWI4D.nii',PairSession);
+           
+            PairScanPath = replace (pathFSLInput, CurrentScanPWIdir,PairScanPWIdir);
+           
+            if exist (PairScanPath)
+                CurrentScanIm = xASL_io_Nifti2Im(pathFSLInput);
+                PairScanIm = xASL_io_Nifti2Im(PairScanPath);
+                ConcatIm = cat(4,PairScanIm,CurrentScanIm);
+                xASL_io_SaveNifti(pathFSLInput,pathFSLInput,ConcatIm)
+                %This has to go -> xASL_Copy('/data/radv/radG/RAD/share/BBB-ASL/FSL_ModelOptions.txt',pathFSLOptions, true) % True for overwritting
+                %Next thing to do is to create a correct
+                %FSLModelOptions.txt
+            else
+                fprintf('Subject %s doesnt have HAD8_ASL_1 PWI4D   \n', x.SUBJECT)
+            end
+        end
+    end
+    
+    
+    
+    
     if bUseFabber
         [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl ' FSLOptions], x);
     else
