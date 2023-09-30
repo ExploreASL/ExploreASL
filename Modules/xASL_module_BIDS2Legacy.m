@@ -1,7 +1,7 @@
 function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
 %xASL_module_BIDS2Legacy Convert BIDS rawdata to ExploreASL legacy format
 %
-% FORMAT: [x] = xASL_module_BIDS2Legacy(x [,bOverwrite]);
+% FORMAT: [x] = xASL_module_BIDS2Legacy(x [,bOverwrite, bVerbose]);
 %
 % INPUT:
 %   x             - ExploreASL x structure, containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
