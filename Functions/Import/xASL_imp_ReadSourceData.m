@@ -77,7 +77,7 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x) % PM: this should be re
     lastElement = lower(x.modules.import.imPar.folderHierarchy{end});
 
     % Condition for file extension
-    conditionFile = '\.(dcm|ima|xml|par|rec|nii|nii\.gz)';
+    conditionFile = '(zip|dcm|ima|xml|par|rec|nii|nii\.gz)';
 
     % Other extension
     conditionExtension = '\.';
