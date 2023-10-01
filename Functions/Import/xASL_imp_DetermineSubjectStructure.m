@@ -24,7 +24,7 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
     %% Check if imPar exists
@@ -70,7 +70,7 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
     %% Check if rawdata exists
