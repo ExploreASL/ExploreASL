@@ -1,0 +1,16 @@
+ExploreASL;
+addpath(genpath('WorkInProgress'));
+
+rootpath = '/data/radv/radG/RAD/share/DDI/D21_GE_1.5T/sourcedata/';
+
+Dlist = xASL_adm_GetFileList(rootpath, '^D\d*$', 'FPList',[],1);
+countIs = 0;
+for iList=1:length(Dlist)
+    xASL_TrackProgress(iList, length(Dlist));
+    OtherScans = xASL_adm_GetFileList(Dlist{iList}, 'OtherScans', 'FPListRec', [], 1);
+    Dlist{iList, 2} = numel(OtherScans);
+    countIs = countIs + 1;
+    if ~isempty(OtherScans)
+        ConvertDicomFolderStructure_CarefulSlow(OtherScans, 0);
+    end
+end
