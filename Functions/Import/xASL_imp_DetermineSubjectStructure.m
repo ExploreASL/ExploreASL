@@ -41,6 +41,8 @@ function x = xASL_imp_DetermineSubjectStructure(x)
         
     elseif (x.opts.bImport(3) || x.opts.bLoadData)
         % Determine structure from rawdata
+        warning('Loading subject-list from rawdata, this may cause conflicts');
+        fprintf('%s\n','Hint, ensure that the subjects in sourcedata and rawdata are identical');        
         x = xASL_imp_DetermineStructureFromRawdata(x);
 
     end
