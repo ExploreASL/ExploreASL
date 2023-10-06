@@ -311,6 +311,11 @@ function [x,DoSusceptibility,TemplateMask,ThresholdSuscept,MaskSusceptibility] =
         % regions of air cavities)
         MaskSusceptibility = MaskSusceptibility > ThresholdSuscept;
 
+        [fPath, fFile] = xASL_fileparts(x.P.Pop_Path_MaskSusceptibility);
+        pathMaskSusceptibility2 = fullfile(fPath, [fFile '_AFTER.nii']);
+
+        xASL_io_SaveNifti(x.P.Pop_Path_PWI, pathMaskSusceptibility2, MaskSusceptibility, [], false);
+
         % Combine susceptibility & FoV
         MaskSusceptibility = MaskSusceptibility & MaskFoV;
     else
