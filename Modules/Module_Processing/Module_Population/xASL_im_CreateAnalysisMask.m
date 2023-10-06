@@ -49,10 +49,11 @@ PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskSusc
 bSkipStandard = 0;
 
 if x.dataset.nSubjectsSessions<16
-    fprintf('%s\n', ['Too few subjects (' num2str(x.dataset.nSubjectsSessions) ') to create population-based analysis mask']);
-    x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask);
-    x.S.VBAmask = x.S.MaskSusceptibility;
-    bSkipStandard = 1;
+    % With too small datasets, created templated are not reliable
+    fprintf('\n\n%s\n\n', ['Only n=' num2str(x.dataset.nSubjectsSessions) ' subject*runs, population-based analysis mask may not be useful']);
+    % x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask);
+    % x.S.VBAmask = x.S.MaskSusceptibility;
+    % bSkipStandard = 1;
 elseif isempty(PathSusceptibilityMask)
     warning('Missing susceptibility maps, skipping...');
     bSkipStandard = 1;

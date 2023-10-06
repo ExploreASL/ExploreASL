@@ -163,8 +163,7 @@ end
 
 if ~x.bForceTemplates && x.dataset.nSubjectsSessions<6
     % With too small datasets, created templated won't be reliable
-    fprintf('%s\n',['Too few images (' num2str(x.dataset.nSubjectsSessions) ') for creating templates/parametric images, skipping...']);
-    return;
+    fprintf('\n\n%s\n\n', ['Only n=' num2str(x.dataset.nSubjectsSessions) ' subject*runs, group templates may not be useful']);
 end
 
 Size1 = sum(x.S.masks.WBmask(:));
