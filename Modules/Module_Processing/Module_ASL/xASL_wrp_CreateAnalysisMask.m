@@ -208,6 +208,7 @@ if DoSusceptibility
 
      MaskSusceptibility = BrainMask;
      MaskSusceptibility(MaskSuscept) = FinalMask(MaskSuscept);
+     MaskSusceptibility(~BrainMask) = 0;
 else
     MaskSusceptibility = BrainMask;
     % for e.g. 3D spiral the susceptibility mask is equal to the brain mask
