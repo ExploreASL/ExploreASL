@@ -173,11 +173,9 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
                     fprintf('%s\n', ['M0 parsed for subject ' SubjectID ' session ' SessionID ': image ' currentNifti]);
                 end
             end
-        else
-            if bVerbose
-                warning(['When parsing M0: no ASL4D.nii found for ' SubjectID 'in ' x.dir.xASLDerivatives '...']);
-            end
-        end
+		else
+			warning(['When parsing M0: no ASL4D.nii found for ' SubjectID 'in ' x.dir.xASLDerivatives '...']);
+		end
 
 
 

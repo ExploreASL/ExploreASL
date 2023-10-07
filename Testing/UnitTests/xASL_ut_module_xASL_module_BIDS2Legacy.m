@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_xASL_module_BIDS2Legacy(TestRepository)
-%xASL_ut_xASL_module_BIDS2Legacy Individual unit test for BIDS2Legacy
+function UnitTest = xASL_ut_module_xASL_module_BIDS2Legacy(TestRepository)
+%xASL_ut_module_xASL_module_BIDS2Legacy Individual unit test for BIDS2Legacy
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,7 +12,7 @@ function UnitTest = xASL_ut_xASL_module_BIDS2Legacy(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_xASL_module_BIDS2Legacy(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_module_xASL_module_BIDS2Legacy(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright (c) 2015-2023 ExploreASL
 
@@ -59,7 +59,7 @@ end
 if ~exist(fullfile(checkDirSubjSession,'ASL_1','M0.json'),'file')
     testCondition = false; % Test failed
 end
-if ~xASL_exist(fullfile(checkDirSubjSession,'ASL_1','M0.nii')
+if ~xASL_exist(fullfile(checkDirSubjSession,'ASL_1','M0.nii'),'file')
     testCondition = false; % Test failed
 end
 
@@ -67,7 +67,7 @@ end
 if ~exist(fullfile(checkDirSubjSession,'T1.json'),'file')
     testCondition = false; % Test failed
 end
-if  ~xASL_exist(fullfile(checkDirSubjSession,'T1.nii')
+if  ~xASL_exist(fullfile(checkDirSubjSession,'T1.nii'),'file')
     testCondition = false; % Test failed
 end
 
