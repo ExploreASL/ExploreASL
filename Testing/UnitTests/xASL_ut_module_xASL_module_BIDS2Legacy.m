@@ -1,5 +1,5 @@
-function UnitTest = xASL_ut_function_xASL_wrp_BIDS2Legacy(TestRepository)
-%xASL_ut_function_xASL_wrp_BIDS2Legacy Individual unit test for BIDS2Legacy
+function UnitTest = xASL_ut_xASL_module_BIDS2Legacy(TestRepository)
+%xASL_ut_xASL_module_BIDS2Legacy Individual unit test for BIDS2Legacy
 %
 % INPUT:        TestRepository - Path to test repository.
 %
@@ -12,9 +12,9 @@ function UnitTest = xASL_ut_function_xASL_wrp_BIDS2Legacy(TestRepository)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Should be run using xASL_ut_UnitTesting.
 %
-% EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_wrp_BIDS2Legacy(TestRepository);
+% EXAMPLE:      UnitTests(1) = xASL_ut_xASL_module_BIDS2Legacy(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
 %% Test run 1
