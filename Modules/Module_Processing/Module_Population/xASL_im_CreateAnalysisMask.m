@@ -114,11 +114,19 @@ if ~bSkipStandard
 	%% B) Create, combine & save vascular, susceptibity & FoV masks
 	MaskVascular = xASL_io_Nifti2Im(PathVascularMask)>=Threshold;
     MaskFoV = xASL_io_Nifti2Im(PathFoV)>=Threshold;
-        
+    
+
+
     % Legacy Susceptibility Masking
-    [x,DoSusceptibility, TemplateMask, ThresholdSuscept, MaskSusceptibility] = ...
-    xASL_im_CreateAnalysisMask_LegacySusceptibilityMasking(x, PathSusceptibilityMask, Threshold, MaskFoV);
-                    
+    MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);
+    susceptibilitySortedIntensities = sort(MaskSusceptibility(isfinite(MaskSusceptibility)));
+    indexIs = round(Threshold.*length(susceptibilitySortedIntensities));
+    ThresholdSuscept = susceptibilitySortedIntensities(indexIs);
+    MaskSusceptibility = MaskSusceptibility >= ThresholdSuscept;
+
+    % Combine susceptibility & FoV
+    MaskSusceptibility = MaskSusceptibility & MaskFoV;    
+
 	% Save them
 	xASL_io_SaveNifti(PathFoV, fullfile(x.S.StatsDir,'MaskVascular.nii'), MaskVascular, 8, true);
 	xASL_io_SaveNifti(PathFoV, fullfile(x.S.StatsDir,'MaskSusceptibility.nii'), MaskSusceptibility, 8, true);
@@ -238,15 +246,11 @@ ImOut{1} = xASL_vis_CreateVisualFig(x, {PathT1 FoVim}, [], IntScale, [], ColorMa
 % ImOut{2} = xASL_vis_CreateVisualFig(x, {PathT1 ImVascular}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
 
 % 2) Susceptibility
-if DoSusceptibility
-    ImSusceptibility = 1-xASL_io_Nifti2Im(PathSusceptibilityMask);
-    % ImSusceptibility(ImSusceptibility>0.5) = 0.5; % ThresholdSuscept
-    ImSusceptibility(ImSusceptibility<(1-ThresholdSuscept)) = 1-ThresholdSuscept;
-    ImSusceptibility = ImSusceptibility-(1-ThresholdSuscept);
-    ImSusceptibility(~TemplateMask) = 0;
-else
-    ImSusceptibility = MaskSusceptibility;
-end
+ImSusceptibility = 1-xASL_io_Nifti2Im(PathSusceptibilityMask);
+% ImSusceptibility(ImSusceptibility>0.5) = 0.5; % ThresholdSuscept
+ImSusceptibility(ImSusceptibility<(1-ThresholdSuscept)) = 1-ThresholdSuscept;
+ImSusceptibility = ImSusceptibility-(1-ThresholdSuscept);
+
 
 ImOut{2} = xASL_vis_CreateVisualFig(x, {PathT1 ImSusceptibility}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
 
@@ -283,52 +287,3 @@ x.S.SagSlices = [];
 
 
 end
-
-
-%% Legacy Susceptibility Masking
-function [x,DoSusceptibility,TemplateMask,ThresholdSuscept,MaskSusceptibility] = xASL_im_CreateAnalysisMask_LegacySusceptibilityMasking(x, PathSusceptibilityMask, Threshold, MaskFoV)
-
-    if isfield(x, 'Q') && isfield(x.Q, 'Sequence') && ~isempty(regexpi(x.Q.Sequence, '2d_epi|3d_grase'))
-        fprintf('Using legacy susceptibility masking...\n');
-        DoSusceptibility = true;
-
-		if strcmpi(x.Q.Sequence,'2D_EPI')
-            Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
-        elseif strcmpi(x.Q.Sequence,'3D_GRASE')
-            Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
-		end
-		
-		MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);
-
-        TemplateMask = xASL_io_Nifti2Im(Path_Template)~=1; % MaskSusceptibility<0.85 &
-        TemplateMask(:,:,1:10) = 0;
-        TemplateMask = TemplateMask & MaskSusceptibility<0.8;
-        ThrValues = MaskSusceptibility(TemplateMask);
-        ThresholdSuscept = Threshold.*max(ThrValues(:));
-
-        % Remove some extremes using 95% percentile,
-        % as here we aim to obtain the 95% threshold within the probability map
-        % (i.e. excluding the manually created mask to isolate the skull
-        % regions of air cavities)
-        MaskSusceptibility = MaskSusceptibility > ThresholdSuscept;
-
-        [fPath, fFile] = xASL_fileparts(x.P.Pop_Path_MaskSusceptibility);
-        pathMaskSusceptibility2 = fullfile(fPath, [fFile '_AFTER.nii']);
-
-        xASL_io_SaveNifti(x.P.Pop_Path_PWI, pathMaskSusceptibility2, MaskSusceptibility, [], false);
-
-        % Combine susceptibility & FoV
-        MaskSusceptibility = MaskSusceptibility & MaskFoV;
-    else
-    	% Print warning
-    	fprintf('Susceptibility masking is turned off...\n');
-		DoSusceptibility = false;
-    	% Defaults
-    	TemplateMask = [];
-		MaskSusceptibility = MaskFoV;
-		ThresholdSuscept = NaN;
-    end
-
-end
-
-
