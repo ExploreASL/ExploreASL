@@ -41,7 +41,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %
 %              0. Administration
 %              0.a Manage masking
-%              0.b Obtain ASL sequence
+%              0.b Native space atlas input
 %              0.c Determine whether group mask exists
 %              1. Skip ROI masks that are smaller than 1 mL
 %                 as this would be too noisy for ASL (ignored when x.S.IsASL==false)
@@ -150,9 +150,7 @@ else
 end
 
 
-%% 0.b Obtain ASL sequence
-x = xASL_adm_DefineASLSequence(x);
-
+%% 0.b Native space atlas input
 bWarnedPVWMH = false;
 namesROIlocal = x.S.NamesROI;
 

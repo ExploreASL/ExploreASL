@@ -84,8 +84,6 @@ elseif x.LabEffNorm ==true
     x.S.output_ID = [x.S.output_ID '_LabEffNorm'];
 end
 
-% Obtain ASL sequence
-x = xASL_adm_DefineASLSequence(x);
 
 %% ------------------------------------------------------------------------------------------------------------
 %% 1) Load the atlas

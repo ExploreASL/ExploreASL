@@ -72,8 +72,6 @@ end
 x = xASL_init_InitializeMutex(x, 'Population'); % starts mutex locking process to ensure that everything will run only once
 x = xASL_init_FileSystem(x);
 
-% Obtain ASL sequence
-x = xASL_adm_DefineASLSequence(x);
 
 StateName{1}  = '010_CreatePopulationTemplates';
 StateName{2}  = '020_CreateAnalysisMask';
@@ -102,11 +100,7 @@ if ~x.mutex.HasState(StateName{1})
     SusceptPath = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility' x.S.TemplateNumberName '_bs-mean.nii']);
 
     if ~xASL_exist(SusceptPath, 'file')
-        if x.dataset.nSubjects<6 % in this case, a group template doesn't make sense and no warning is required
-            fprintf('Susceptibility mask template was missing...\n');
-        else
-            warning('Susceptibility mask template was missing...');
-        end
+        warning('Susceptibility mask template was missing...');
         
         if ~isempty(FoVPath)
             xASL_io_SaveNifti(FoVPath{1}, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}), [], false);
