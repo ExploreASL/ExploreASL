@@ -51,8 +51,7 @@ if ~exist(fullfile(checkDirSubjSession,'ASL_1','ASL4D.json'),'file') ...
     || ~exist(fullfile(checkDirSubjSession,'ASL_1','ASL4Dcontext_Source.tsv'),'file')
     testCondition = false; % Test failed
 end
-if ~exist(fullfile(checkDirSubjSession,'ASL_1','ASL4D.nii'),'file') ...
-    && ~exist(fullfile(checkDirSubjSession,'ASL_1','ASL4D.nii.gz'),'file')
+if ~xASL_exist(fullfile(checkDirSubjSession,'ASL_1','ASL4D.nii'),'file')
     testCondition = false; % Test failed
 end
 
@@ -60,8 +59,7 @@ end
 if ~exist(fullfile(checkDirSubjSession,'ASL_1','M0.json'),'file')
     testCondition = false; % Test failed
 end
-if ~exist(fullfile(checkDirSubjSession,'ASL_1','M0.nii'),'file') ...
-    && ~exist(fullfile(checkDirSubjSession,'ASL_1','M0.nii.gz'),'file')
+if ~xASL_exist(fullfile(checkDirSubjSession,'ASL_1','M0.nii')
     testCondition = false; % Test failed
 end
 
@@ -69,8 +67,7 @@ end
 if ~exist(fullfile(checkDirSubjSession,'T1.json'),'file')
     testCondition = false; % Test failed
 end
-if  ~exist(fullfile(checkDirSubjSession,'T1.nii'),'file') ...
-    &&  ~exist(fullfile(checkDirSubjSession,'T1.nii.gz'),'file')
+if  ~xASL_exist(fullfile(checkDirSubjSession,'T1.nii')
     testCondition = false; % Test failed
 end
 
