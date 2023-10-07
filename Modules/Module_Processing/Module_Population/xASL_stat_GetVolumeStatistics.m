@@ -29,6 +29,8 @@ x.S.unit = 'L';
 
 fprintf('%s\n',['Printing tsv-files with ' x.S.output_ID ' statistics...  ']);
 
+bAnyWMHFound = false; % by default we don't add WMH volumes to participants.tsv below,
+% only if these are found
 
 for iSubject=1:x.dataset.nSubjects
     xASL_TrackProgress(iSubject,x.dataset.nSubjects);
@@ -117,6 +119,7 @@ for iSubject=1:x.dataset.nSubjects
             DidExist = 2;
             
             HasWMH = true; % even if no WMH existed in native space
+            bAnyWMHFound = true; % to keep track that we want to add this to participants.tsv below
         catch ME
             fprintf('%s\n', ME.message);
         end
@@ -139,7 +142,7 @@ fprintf('\n');
 VarName = {'GM_vol' 'WM_vol' 'CSF_vol' 'GM_ICVRatio' 'GMWM_ICVRatio'};
 VarData = {GM_vol WM_vol CSF_vol GM_ICVRatio GMWM_ICVRatio};
 
-if HasWMH
+if bAnyWMHFound
     VarName(end+1:end+2) = {'WMH_vol' 'WMH_count'};
     VarData(end+1:end+2) = {WMH_vol WMH_count};
 end
