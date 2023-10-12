@@ -46,8 +46,13 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
 		% Either 1 TE or matching the number of the volumes
 		if length(jsonOut.EchoTime) > 1 && nVolumes>length(jsonOut.EchoTime)
 			if mod(nVolumes,length(jsonOut.EchoTime)) == 0
-				jsonOut.EchoTime = repmat(jsonOut.EchoTime(:), 1, nVolumes/length(jsonOut.EchoTime))';
-				jsonOut.EchoTime = jsonOut.EchoTime(:);
+				switch(jsonOut.Manufacturer)
+					case {'Siemens', 'Philips'}
+						jsonOut.EchoTime = repmat(jsonOut.EchoTime(:), 1, nVolumes/length(jsonOut.EchoTime))';
+						jsonOut.EchoTime = jsonOut.EchoTime(:);
+					otherwise
+						warning(['Cannot resots multi-TE for ' jsouOut.Manufacturer]);
+				end
 			else
 				warning('Number of EchoTimes %d does not match the number of volumes %d\n',length(jsonOut.EchoTime),nVolumes);
 			end
@@ -62,11 +67,17 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
             if length(jsonOut.PostLabelingDelay) > 1 && length(jsonOut.PostLabelingDelay) < nVolumes
                 % So here, we first make sure that each PLD is repeated for the whole block of echo-times
 				if mod(nVolumes,length(jsonOut.PostLabelingDelay)*NumberEchoTimes) == 0
-					% Repeat the PLD for each TE first, then for repetitions: 
-					% Example 1: 4PLDs, 3 TEs, 2 repetitions -> 24 volumes [1 1 1 2 2 2 3 3 3 4 4 4 1 1 1 2 2 2 3 3 3 4 4 4]
-					% Example 2: 4PLDs,  1 TE, 2 repetitions ->  8 volumes [1 2 3 4 1 2 3 4]
-					jsonOut.PostLabelingDelay = repmat(jsonOut.PostLabelingDelay(:)', NumberEchoTimes, nVolumes/length(jsonOut.PostLabelingDelay)/NumberEchoTimes);
-					jsonOut.PostLabelingDelay = jsonOut.PostLabelingDelay(:);
+					switch (jsonOut.Manufacturer)
+						case 'Siemens'
+							% Repeat the PLD for each TE first, then for repetitions:
+							% Example 1: 4PLDs, 3 TEs, 2 repetitions -> 24 volumes [1 1 1 2 2 2 3 3 3 4 4 4 1 1 1 2 2 2 3 3 3 4 4 4]
+							% Example 2: 4PLDs,  1 TE, 2 repetitions ->  8 volumes [1 2 3 4 1 2 3 4]
+							jsonOut.PostLabelingDelay = repmat(jsonOut.PostLabelingDelay(:)', NumberEchoTimes, nVolumes/length(jsonOut.PostLabelingDelay)/NumberEchoTimes);
+							jsonOut.PostLabelingDelay = jsonOut.PostLabelingDelay(:);
+						case 'Philips'
+							jsonOut.PostLabelingDelay = repmat(jsonOut.PostLabelingDelay(:)', 1, nVolumes/length(jsonOut.PostLabelingDelay));
+							jsonOut.PostLabelingDelay = jsonOut.PostLabelingDelay(:);
+					end
 				else
 					warning('Number of PLDs %d and TEs %d does not match the number of volumes %d\n', length(jsonOut.PostLabelingDelay), NumberEchoTimes, nVolumes);
 				end
