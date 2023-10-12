@@ -27,10 +27,7 @@ function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePa
     if exist(SavePathJSON{1}, 'file') && ~isempty(first_match)
         [~, ~, fext] = fileparts(first_match);
         if  strcmpi(fext,'.PAR')
-            if length(SavePathJSON) > 1
-                warning('xASL_bids_Par2JSON only works with a single file');
-            end
-            parms = xASL_bids_Par2JSON(first_match, SavePathJSON{1});
+            parms = xASL_bids_Par2JSON(first_match, SavePathJSON);
         elseif strcmpi(fext,'.nii')
             parms = [];
         elseif imPar.bMatchDirectories

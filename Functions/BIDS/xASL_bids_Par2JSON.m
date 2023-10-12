@@ -5,7 +5,7 @@ function parms = xASL_bids_Par2JSON(pathPar, pathJSON)
 %
 % INPUT:
 %   pathPar   - path to the Philips PAR-file
-%   pathJSON  - path to the output JSON sidecar
+%   pathJSON  - path to the output JSON sidecar or a list of files
 %
 % OUTPUT:
 %   parms     - OPTIONAL - outputs the loaded/extracted parameters
@@ -20,7 +20,7 @@ function parms = xASL_bids_Par2JSON(pathPar, pathJSON)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 % Admin
 
@@ -28,42 +28,57 @@ if nargin<2 || isempty(pathPar) || isempty(pathJSON)
 	error('Need the paths of .PAR and .JSON files.');
 end
 
-% Parms already exist, so its content is loaded
-if exist(pathJSON, 'file')
-	parms = xASL_io_ReadJson(pathJSON);
+if iscell(pathJSON)
+	nJSON = length(pathJSON);
+else
+	nJSON = 1;
 end
 
-% Parse the PAR header
-hdr = xASL_adm_ParReadHeader(pathPar);
+for iJSON = 1:nJSON
+	% Either load JSON or one from the list of JSONs
+	if iscell(pathJSON)
+		currentPathJSON = pathJSON{iJSON};
+	else
+		currentPathJSON = pathJSON;
+	end
 
-% Extract DICOM tags
-if isfield(hdr,'InversionTime')
-	parms.InversionTime = hdr.InversionTime;
-elseif isfield(parms,'InversionTime')
-	parms.InversionTime = parms.InversionTime*1000;
+	% Parms already exist, so its content is loaded
+	if exist(currentPathJSON, 'file')
+		parms = xASL_io_ReadJson(currentPathJSON);
+	end
+
+	% Parse the PAR header
+	hdr = xASL_adm_ParReadHeader(pathPar);
+
+	% Extract DICOM tags
+	if isfield(hdr,'InversionTime')
+		parms.InversionTime = hdr.InversionTime;
+	elseif isfield(parms,'InversionTime')
+		parms.InversionTime = parms.InversionTime*1000;
+	end
+	parms.RepetitionTime                = hdr.RepetitionTime;
+	parms.EchoTime                      = unique([hdr.SliceInformation(:).EchoTime]);
+	parms.NumberOfTemporalPositions     = hdr.MaxNumberOfDynamics;
+	parms.MRScaleSlope                  = unique([hdr.SliceInformation(:).ScaleSlope]);
+	parms.RescaleSlopeOriginal          = unique([hdr.SliceInformation(:).RescaleSlope]);
+	parms.RescaleIntercept              = unique([hdr.SliceInformation(:).RescaleIntercept]);
+	switch (hdr.ScanMode)
+		case '3D'
+			parms.MRAcquisitionType             = '3D';
+		case 'MS'
+			parms.MRAcquisitionType             = '2D';
+	end
+	parms.VascularCrushing = logical(hdr.FlowCompensation);
+	parms.AcquisitionDuration = hdr.ScanDuration;
+
+	% Converts parameters from the legacy to the BIDS format
+	parms = xASL_bids_parms2BIDS(parms, [], 1, 0);
+
+	% To make sure that this is not removed for non-ASL sequences
+	parms.RepetitionTime                = hdr.RepetitionTime/1000;
+
+	% Saves the JSON sidecar
+	xASL_io_WriteJson(currentPathJSON, parms);
 end
-parms.RepetitionTime                = hdr.RepetitionTime;
-parms.EchoTime                      = unique([hdr.SliceInformation(:).EchoTime]);
-parms.NumberOfTemporalPositions     = hdr.MaxNumberOfDynamics;
-parms.MRScaleSlope                  = unique([hdr.SliceInformation(:).ScaleSlope]);
-parms.RescaleSlopeOriginal          = unique([hdr.SliceInformation(:).RescaleSlope]);
-parms.RescaleIntercept              = unique([hdr.SliceInformation(:).RescaleIntercept]);
-switch (hdr.ScanMode)
-	case '3D'
-		parms.MRAcquisitionType             = '3D';
-	case 'MS'
-		parms.MRAcquisitionType             = '2D';
-end
-parms.VascularCrushing = logical(hdr.FlowCompensation);
-parms.AcquisitionDuration = hdr.ScanDuration;
-
-% Converts parameters from the legacy to the BIDS format
-parms = xASL_bids_parms2BIDS(parms, [], 1, 0);
-
-% To make sure that this is not removed for non-ASL sequences
-parms.RepetitionTime                = hdr.RepetitionTime/1000;		
-
-% Saves the JSON sidecar
-xASL_io_WriteJson(pathJSON, parms);
 
 return

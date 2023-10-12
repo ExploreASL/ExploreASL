@@ -291,6 +291,25 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
             end
 
             %% Iterate over volumes
+
+			% Check for increasing TE numbers. If existing, then save echo number as well
+			bUseEchoNumber = 0;
+			if length(vectorKeep) > 1 % for all multifile volumes
+				fTempNii = niiEntries{1}; % We read the JSON
+				[Gpath, Gfile] = xASL_fileparts(fTempNii);
+				tempJSON = fullfile(Gpath,[Gfile '.json']);
+				tempJSON = xASL_io_ReadJson(tempJSON);
+				if isfield(tempJSON, 'EchoNumber') && ~isempty(tempJSON.EchoNumber) % if the JSON contains echoNumber
+					fTempNii = niiEntries{end}; % We read the last JSON
+					[Gpath, Gfile] = xASL_fileparts(fTempNii);
+					tempJSONLast = fullfile(Gpath,[Gfile '.json']);
+					tempJSONLast = xASL_io_ReadJson(tempJSONLast);
+					if tempJSON.EchoNumber ~= tempJSONLast.EchoNumber % If the echo numbers differ, we use them in the filename
+						bUseEchoNumber = 1;
+					end
+				end
+			end
+
             for iVolume=sort(vectorKeep)
                 fTempNii = niiEntries{iVolume};
 				
@@ -317,7 +336,11 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     if exist(tempJSON,'file')
                         tempJSON = xASL_io_ReadJson(tempJSON);
                         if isfield(tempJSON,'SeriesNumber')
-                            DestFileName = [DestFileName '_' num2str(tempJSON.SeriesNumber)];
+							if bUseEchoNumber
+								DestFileName = [DestFileName '_' num2str(tempJSON.SeriesNumber) '_' num2str(tempJSON.EchoNumber)];
+							else
+								DestFileName = [DestFileName '_' num2str(tempJSON.SeriesNumber)];
+							end
                         end
                     else
                         warning('JSON sidecar missing after dcm2niix conversion');
