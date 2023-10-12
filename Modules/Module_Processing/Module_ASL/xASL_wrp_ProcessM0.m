@@ -110,6 +110,12 @@ if xASL_exist(pathM0json, 'file')
 		% Select only non-zero TEs
 		uniqueNonzeroTE = unique(jsonM0.EchoTime(jsonM0.EchoTime > 0));
 		if length(uniqueNonzeroTE) > 1
+            % First check if the number of TEs equals the number of M0 volumes
+            if length(uniqueNonzeroTE)~=size(imM0,4)
+                warning('M0 JSON contains more echo times than number of M0.nii volumes');
+                fprintf('%s\n', 'Hint: check if your data are BIDS compatible');
+            end
+
 			% Find the smallest of the previously selected positive nonzero TEs
 			minTE = min(uniqueNonzeroTE);
 			fprintf('Multi-TE M0 present. Using the shortest TE=%.1f ms for M0 calibration.\n', minTE*1000);
