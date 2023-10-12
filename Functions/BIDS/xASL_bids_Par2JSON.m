@@ -48,6 +48,14 @@ parms.NumberOfTemporalPositions     = hdr.MaxNumberOfDynamics;
 parms.MRScaleSlope                  = unique([hdr.SliceInformation(:).ScaleSlope]);
 parms.RescaleSlopeOriginal          = unique([hdr.SliceInformation(:).RescaleSlope]);
 parms.RescaleIntercept              = unique([hdr.SliceInformation(:).RescaleIntercept]);
+switch (hdr.ScanMode)
+	case '3D'
+		parms.MRAcquisitionType             = '3D';
+	case 'MS'
+		parms.MRAcquisitionType             = '2D';
+end
+parms.VascularCrushing = logical(hdr.FlowCompensation);
+parms.AcquisitionDuration = hdr.ScanDuration;
 
 % Converts parameters from the legacy to the BIDS format
 parms = xASL_bids_parms2BIDS(parms, [], 1, 0);
