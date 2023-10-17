@@ -57,6 +57,10 @@ switch ScanType
     case 'Structural'
         x = xASL_qc_CollectQC_Structural(x, iSubject);
     case 'ASL'
+		% Check for a session subfield and create when necessary
+		if ~isfield(x.Output.ASL, x.SESSIONS{iSession})
+			x.Output.ASL.(x.SESSIONS{iSession}) = struct;
+		end
 		x = xASL_qc_CollectQC_ASL(x, iSubject, iSession);
     case 'func'
 		x = xASL_qc_CollectQC_func(x, iSubject);
@@ -98,8 +102,10 @@ switch ScanType
         x.Output.(ScanType).Version_ExploreASL = x.Output.SoftwareVersion.ExploreASL;
         x.Output.(ScanType).Version_Matlab = x.Output.SoftwareVersion.Matlab;
         x.Output.(ScanType).Version_SPM12 = x.Output.SoftwareVersion.SPM12;        
-    case {'ASL', 'dwi', 'func'}
+    case {'dwi', 'func'}
         x.Output.(ScanType).Version_FSL = x.Output.SoftwareVersion.FSL;
+    case {'ASL'}
+        x.Output.ASL.(x.SESSIONS{iSession}).Version_FSL = x.Output.SoftwareVersion.FSL;
 end
 % now remove the SoftwareVersion field to avoid redundancy
 x.Output = rmfield(x.Output,'SoftwareVersion');

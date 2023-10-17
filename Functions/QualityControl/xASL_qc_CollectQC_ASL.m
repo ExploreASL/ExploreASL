@@ -189,7 +189,7 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
     end
     FieldsFilled = SumData/nFields;
     if FieldsFilled>0.2 % threshold to avoid listing empty values
-        x.Output.('ASL') = xASL_qc_FillFields(x.Output.('ASL'), ASL);
+        x.Output.('ASL').(SessionID) = xASL_qc_FillFields(x.Output.('ASL').(SessionID), ASL);
     end
 
 end

@@ -56,7 +56,7 @@ NIfTIname = {'T1', 'ASL4D', 'func', 'dwi'};
 if nargin>2 && ~isempty(ScanTypeIs)
     Indices = find(cellfun(@(x) strcmp(x,ScanTypeIs), ScanTypes));
 else
-    Indices = 1:length(ScanTypes)
+    Indices = 1:length(ScanTypes);
 end
 
 % Define folders to check in population folder for QC images
