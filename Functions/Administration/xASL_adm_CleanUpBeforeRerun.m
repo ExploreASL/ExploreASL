@@ -403,7 +403,7 @@ try
                 if exist(ListQCjson{iQC}, 'file')
                     QCmat = xASL_io_ReadJson(ListQCjson{iQC});
                     for iMod=iModule % SAME CODE AS ABOVE
-                        if iMod~=3 % if not a Population module
+                        if iMod~=3 && iMod~=2 % if not a Population or ASL module
                             if isfield(QCmat, RemoveFields{iMod})
                                 QCmat = rmfield(QCmat, RemoveFields{iMod});
                             end
