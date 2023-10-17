@@ -1,22 +1,23 @@
-function x = xASL_qc_CollectParameters(x, iSubject, ScanType)
+function x = xASL_qc_CollectParameters(x, iSubject, ScanType, iSession)
 %xASL_qc_CollectParameters Collect all parameters from structural & ASL, spread over the derivative folders
 %
-% FORMAT: x = xASL_qc_CollectParameters(x, iSubject, ScanType, CollectQCFunction)
+% FORMAT: x = xASL_qc_CollectParameters(x, iSubject, ScanType, CollectQCFunction [, iSession])
 %
 % INPUT:
 %   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
 %   iSubject            - index of current subject (REQUIRED)
 %   ScanType            - string for ScanType, options = 'Structural' 'ASL' 'func' 'dwi' (REQUIRED)
+%   iSession            - index of current session (OPTIONAL, default 1, but RECOMMENDED for ScanType == 'ASL')
 %
 % OUTPUT:
 %   x                   - same as input
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function collects QC parameters for a module.
+% DESCRIPTION: This function collects QC parameters for a module for a given subject and for ASL for a given subject+session
 % 
-% EXAMPLE: x = xASL_qc_CollectParameters_Structural(x, 10, 'ASL');
+% EXAMPLE: x = xASL_qc_CollectParameters_Structural(x, 10, 'ASL', 1);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2023 ExploreASL
 
 
 %% -----------------------------------------------------------------------------------------------
@@ -34,35 +35,37 @@ if nargin<2 || isempty(iSubject)
     error('Missing iSubject...');
 end
 
+% It is recommended to provide session number for ASL
+if nargin<4 || isempty(iSession)
+	iSession = 1;
+	if strcmp(ScanType, 'ASL')
+		warning('Missing iSession for ASL, setting to 1');
+	end
+end
+
 if ~isfield(x,'Output')
     x.Output  = struct; 
 end
-if ~isfield(x.Output,ScanType)
+if ~isfield(x.Output, ScanType)
     x.Output.(ScanType) = struct; 
 end
 
+%% -----------------------------------------------------------------------------------------------
+%% Collect subject-specific (i.e. structural/anatomical) QC results
+
 switch ScanType
     case 'Structural'
-        QCCollectFunction = @xASL_qc_CollectQC_Structural;
+        x = xASL_qc_CollectQC_Structural(x, iSubject);
     case 'ASL'
-        QCCollectFunction = @xASL_qc_CollectQC_ASL;
+		x = xASL_qc_CollectQC_ASL(x, iSubject, iSession);
     case 'func'
-        QCCollectFunction = @xASL_qc_CollectQC_func;
+		x = xASL_qc_CollectQC_func(x, iSubject);
     case 'dwi'
-        QCCollectFunction = [];
 end
+fprintf('\n');
 
 if ~isfield(x,'DoWADQCDC')
     x.DoWADQCDC = false; % default
-end
-
-
-
-%% -----------------------------------------------------------------------------------------------
-%% Collect subject-specific (i.e. structural/anatomical) QC results
-if ~isempty(QCCollectFunction)
-    x = QCCollectFunction(x, iSubject);
-    fprintf('\n');
 end
 
 %% Remove empty fields

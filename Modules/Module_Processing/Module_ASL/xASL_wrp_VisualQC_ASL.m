@@ -168,7 +168,7 @@ xASL_qc_PrintOrientation(x.P.Path_ASL4D, x.dir.SESSIONDIR, 'RigidRegASL');
 % This function summarizes the T1w orientation. Especially check the determinant, for left-right flips
 
 %% 9) Collect several other parameters & store all in PDF overview
-x = xASL_qc_CollectParameters(x, x.iSubject, 'ASL'); % Quick & Dirty solution, 0 == skip structural part
+x = xASL_qc_CollectParameters(x, x.iSubject, 'ASL', x.iSession); % Quick & Dirty solution, 0 == skip structural part
 
 xASL_adm_SaveX(x); % future: do this in each xWrapper
 xASL_qc_CreatePDF(x, x.iSubject);

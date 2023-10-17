@@ -1,11 +1,12 @@
-function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
+function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
 %xASL_qc_CollectQC_ASL Collect ASL QC parameters
 %
-% FORMAT: [x] = xASL_qc_CollectQC_ASL(x, iSubject)
+% FORMAT: [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
 %
 % INPUT:
 %   x 	     - structure containing fields with all information required to run this submodule (REQUIRED)
 %   iSubject - index of current subject (REQUIRED)
+%   iSession - index of current session (REQUIRED)
 %
 % OUTPUT:
 %   x        - same as input
@@ -35,15 +36,15 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject)
 %               VoxelSize Z - slice thickness
 %               RigidBody2Anat_mm - Net Displacement Vector (RMS) from ASL to T1w image (mm) from registration
 %
-% EXAMPLE: x = xASL_qc_CollectQC_ASL(x, 10);
+% EXAMPLE: x = xASL_qc_CollectQC_ASL(x, 10, 1);
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
     %% Admin
     ASL = struct;
     SubjectID = x.SUBJECTS{iSubject};
-    SessionID = x.SESSIONS{1};
+    SessionID = x.SESSIONS{iSession};
     ASL_ID = [SubjectID '_' SessionID];
 
     %% -----------------------------------------------------------------------------------------------
