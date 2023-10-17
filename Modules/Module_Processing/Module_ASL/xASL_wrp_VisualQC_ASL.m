@@ -28,7 +28,7 @@ function xASL_wrp_VisualQC_ASL(x)
 %
 % EXAMPLE: xASL_wrp_VisualQC_ASL(x);
 % __________________________________
-% Copyright (C) 2015-2022 ExploreASL
+% Copyright (C) 2015-2023 ExploreASL
 
 
 %% -----------------------------------------------------------------------------------
@@ -91,8 +91,8 @@ PathPopUnwarped = fullfile(x.D.PopDir, ['rASL_Unwarped_' x.P.SubjectID '_' x.P.S
 
 if xASL_exist(PathPopB0,'file') && xASL_exist(PathPopUnwarped,'file')% if we have TopUp results
     [Output1, Output2] = xASL_vis_VisualQC_TopUp(PathPopB0, PathPopUnwarped, x, x.iSubject, x.D.ASLCheckDir);
-    x.Output.ASL.MeanAI_PreTopUp_Perc = Output1;
-    x.Output.ASL.MeanAI_PostTopUp_Perc = Output2;
+    x.Output.ASL.(x.SESSIONS{x.iSession}).MeanAI_PreTopUp_Perc = Output1;
+    x.Output.ASL.(x.SESSIONS{x.iSession}).MeanAI_PostTopUp_Perc = Output2;
     xASL_delete(PathPopB0);
     xASL_delete(PathPopUnwarped);
 end
@@ -144,7 +144,7 @@ if nVolumes>10
         if ~isempty(TempASL)
             ASLFields = fields(TempASL);
             for iA=1:length(ASLFields)
-                x.Output.ASL.(['ASL_' ASLFields{iA}]) = TempASL.(ASLFields{iA});
+                x.Output.ASL.(x.SESSIONS{x.iSession}).(['ASL_' ASLFields{iA}]) = TempASL.(ASLFields{iA});
             end
         end
 
@@ -159,7 +159,7 @@ xASL_delete(x.P.Pop_Path_PWI4D);
 if xASL_exist(x.P.Path_mean_control,'file')
     % if mean control doesnt exist, changes are we have a 3D file, then
     % BET doesnt really work, and coverage is usually fine
-    x.Output.ASL.ASL_CoveragePerc = xASL_qc_ComputeFoVCoverage(x.P.Path_mean_control, x);
+    x.Output.ASL.(x.SESSIONS{x.iSession}).ASL_CoveragePerc = xASL_qc_ComputeFoVCoverage(x.P.Path_mean_control, x);
 end
 
 

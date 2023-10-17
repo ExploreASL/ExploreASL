@@ -579,7 +579,7 @@ if bRegistrationCBF
 end
 
 % Write the Tanimoto coefficient to the output QC structure
-x.Output.ASL.TC_ASL2T1w_Perc = TanimotoPerc(end);
+x.Output.ASL.(x.SESSIONS{x.iSession}).TC_ASL2T1w_Perc = TanimotoPerc(end);
 
 %% ----------------------------------------------------------------------------------------
 %% Delete temporary files
