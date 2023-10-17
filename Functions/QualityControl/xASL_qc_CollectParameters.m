@@ -125,8 +125,8 @@ if xASL_exist(QC_Path, 'file')
 		% Copy QC of other ASL sessions, but not the current one to the current QC
 		listFields = fieldnames(oldOutput.ASL);
 		for iField = 1:length(listFields)
-			if ~isempty(regexp(listFields(iField), 'ASL_\d+', 'once')) && ~strcmp(listFields{iField}, x.SESSIONS{iSession})
-				x.Output.ASL.(listFields{iField}) = oldOutput.ASL.(listFields(iField));
+			if ~isempty(regexp(listFields{iField}, 'ASL_\d+', 'once')) && ~strcmp(listFields{iField}, x.SESSIONS{iSession})
+				x.Output.ASL.(listFields{iField}) = oldOutput.ASL.(listFields{iField});
 			end
 		end
 	end
