@@ -111,8 +111,29 @@ try
             Ind = 1;
         else
             Ind = iSubjSess;
-        end
-        StrucFields{iField} = sort(fieldnames(x.Output.(OutputFields{iField})(Ind)));
+		end
+		if strcmp(OutputFields{iField},'ASL')
+			% Save the fields to print and their name for the given substructure
+			printFields{iField} = x.Output.(OutputFields{iField});
+			StrucFields{iField} = sort(fieldnames(x.Output.(OutputFields{iField})));
+
+			% Select the ASL session with the lowest number
+			aslField = length(StrucFields{iField});
+			for iF = length(StrucFields{iField}):-1:1
+				if ~isempty(regexp(StrucFields{iField}{iF}, 'ASL_\d+'))
+					aslField = iF;
+				end
+			end
+
+			% Take fields only for that ASL session
+			printFields{iField} = printFields{iField}.(StrucFields{iField}{aslField});
+			StrucFields{iField} = sort(fieldnames(printFields{iField}));
+		else
+			% Save the fields to print and their name for the given substructure
+			printFields{iField} = x.Output.(OutputFields{iField});
+			StrucFields{iField} = sort(fieldnames(x.Output.(OutputFields{iField})(Ind)));
+		end
+        
         for iV=1:length(StrucFields{iField})
             % Ensure prefix=ScanType
             if ~strcmp(OutputFields{iField},'Structural') && ~strcmp(OutputFields{iField},'SoftwareVersion')
@@ -126,7 +147,7 @@ try
             else
                 Str{iField}(iV).name = StrucFields{iField}{iV};
             end
-            Str{iField}(iV).value = x.Output.(OutputFields{iField})(Ind).(StrucFields{iField}{iV});
+            Str{iField}(iV).value = printFields{iField}.(StrucFields{iField}{iV});
         end
     end 
 
@@ -170,11 +191,11 @@ try
                 end
 
             else % add extra layer
-                TempFields = fieldnames(x.Output.(OutputFields{iField}).(Str{iField}(ii).name));
+                TempFields = fieldnames(printFields{iField}.(Str{iField}(ii).name));
                 TempValue = '';
                 for iK=1:length(TempFields)
                     TempName = [TempName  '/' TempFields{iK}];
-                    TV2 = x.Output.(OutputFields{iField}).(Str{iField}(ii).name).(TempFields{iK});
+                    TV2 = printFields{iField}.(Str{iField}(ii).name).(TempFields{iK});
                     if  isnumeric(TV2)
                         TV2 = num2str(TV2); 
                     end
