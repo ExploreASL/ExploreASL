@@ -192,6 +192,15 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
         x.Output.('ASL').(SessionID) = xASL_qc_FillFields(x.Output.('ASL').(SessionID), ASL);
     end
 
+	% Keep only subfields in x.Output.ASL for each ASL session, but no other fields that might have been filled previously by mistake
+	listFields = fields(x.Output.('ASL'));
+
+	for iField = 1:length(listFields)
+		currentField = listFields{iField};
+		if isempty(regexp(currentField, 'ASL_\d+'))
+			x.Output.('ASL') = rmfield(x.Output.('ASL'), currentField);
+		end
+	end
 end
 
 
