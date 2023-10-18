@@ -95,47 +95,54 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     end
 
     %% 4. Create option_file that contains options which are passed to the FSL command
-	% FSLOptions is a character array containing CLI args for the BASIL/FABBER command
-	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput);
-        
-    %% 5. Run Basil and retrieve CBF output
-    if x.modules.asl.bAutomaticMerging == 1
-        if any(strcmp(x.SESSION,x.modules.asl.MergingList(:,2))) % If the SESSION is in the second column (second part of each pair), strcmp will have a 1, and 'any' recognizes when there's at least one 1.
-            % Find Pair session ==================
-            CurrentSession = x.SESSION;
-            PairSession = '';
-            % Iterate through MerlingList
-            for i=1:size(x.modules.asl.MergingList,1)
-                if strcmp(CurrentSession,x.modules.asl.MergingList{i,2})
-                    % Found current session
-                    PairSession = x.modules.asl.MergingList{i,1}; % the pair session is in the same row, first column
+	bMergingTxt = 0; % only active if SessionMergingList + last session of list -> merge FSLOptions.txt
+    PairSessions = [];
+    % For testing:
+    % x.modules.asl.SessionMergingList = {{'ASL_0','ASL_1', 'ASL_2'}; {'ASL_3', 'ASL_4','ASL_5'}};
+   
+    % 4.1 Check if necessary to merge sessions (and FSLOptions.txt)
+    if isfield(x.modules.asl,'SessionMergingList')
+       index=0;
+            for V=1:numel(x.modules.asl.SessionMergingList)
+                if ismember(x.SESSION, x.modules.asl.SessionMergingList{V})
+                    index=V;
                     break;
                 end
             end
-            % =====================================
+            ListCurrentSession = x.modules.asl.SessionMergingList{index};
            
+        if strcmp(x.SESSION,ListCurrentSession{end}) % If the SESSION is the last of the list, we want to merge the .txt and concatenate it with the previous sessions of the list
+            
+            bMergingTxt = 1; % only active for the last session of a Merging list -> merge FSLOptions.txt
+
+            % Find PWI4Ds of the sessions to merge
+            CurrentSession = x.SESSION;
+            PairSessions = ListCurrentSession(1:end-1);
             CurrentScanPWIdir = sprintf('%s/PWI4D_FSLInput.nii',CurrentSession);
-            PairScanPWIdir = sprintf('%s/PWI4D.nii',PairSession);
+            
+            for nSession = 1: numel(PairSessions)
+            
+                PairScanPWIdir = sprintf('%s/PWI4D.nii',PairSessions{nSession});
+                PairScanPath = replace (pathFSLInput, CurrentScanPWIdir,PairScanPWIdir);
            
-            PairScanPath = replace (pathFSLInput, CurrentScanPWIdir,PairScanPWIdir);
-           
-            if exist (PairScanPath)
+            if xASL_exist (PairScanPath,'file')
                 CurrentScanIm = xASL_io_Nifti2Im(pathFSLInput);
                 PairScanIm = xASL_io_Nifti2Im(PairScanPath);
-                ConcatIm = cat(4,PairScanIm,CurrentScanIm);
+                ConcatIm = cat(4,CurrentScanIm, PairScanIm);
                 xASL_io_SaveNifti(pathFSLInput,pathFSLInput,ConcatIm)
-                %This has to go -> xASL_Copy('/data/radv/radG/RAD/share/BBB-ASL/FSL_ModelOptions.txt',pathFSLOptions, true) % True for overwritting
-                %Next thing to do is to create a correct
-                %FSLModelOptions.txt
+                % Even if this loop runs more than 1 time, it will always
+                % concatenate before [pair nii, current concatenated nii]
             else
-                fprintf('Subject %s doesnt have HAD8_ASL_1 PWI4D   \n', x.SUBJECT)
+                fprintf('Subject %s doesnt a PWI4D of the pair session %s  \n', x.SUBJECT, PairSessions{nSession})
+            end
             end
         end
     end
     
-    
-    
-    
+    % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
+	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput);
+        
+    %% 5. Run Basil and retrieve CBF output
     if bUseFabber
         [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl ' FSLOptions], x);
     else
