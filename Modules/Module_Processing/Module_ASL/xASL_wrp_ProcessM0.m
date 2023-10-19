@@ -111,8 +111,8 @@ if xASL_exist(pathM0json, 'file')
 		uniqueNonzeroTE = unique(jsonM0.EchoTime(jsonM0.EchoTime > 0));
 		if length(uniqueNonzeroTE) > 1
             % First check if the number of TEs equals the number of M0 volumes
-            if length(uniqueNonzeroTE)~=size(imM0,4)
-                warning('M0 JSON contains more echo times than number of M0.nii volumes');
+            if length(uniqueNonzeroTE)>size(imM0,4)
+                warning('M0 JSON contains more unique echo times than number of M0.nii volumes');
                 fprintf('%s\n', 'Hint: check if your data are BIDS compatible');
             end
 
