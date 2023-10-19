@@ -85,6 +85,10 @@ switch lower(x.Q.Sequence)
         error('Unknown ASL sequence!');
 end
 
+
+
+
+
 %% 1. Negative vascular signal
 NegativeMaskNative = xASL_im_MaskNegativeVascularSignal(x, 1); % native space
 NegativeMaskMNI = xASL_im_MaskNegativeVascularSignal(x, 2); % standard space
@@ -146,6 +150,10 @@ xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Pop_Path_BrainMaskProcessing, BrainMaskP
 xASL_io_SaveNifti(x.P.Path_PWI, x.P.Path_MaskVascular, MaskVascularNative, 8, false);
 xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Pop_Path_MaskVascular, MaskVascularMNI, 8, false);
 
+
+
+
+
 %% 5. Create susceptibility mask in standard space
 if DoSusceptibility
 	
@@ -206,12 +214,18 @@ if DoSusceptibility
      FinalThreshold = (ThresholdIntensity+SortedInt)/2; % average of 2 thresholds
      FinalMask = MixedIm>FinalThreshold;
 
-     MaskSusceptibility = BrainMask;
-     MaskSusceptibility(MaskSuscept) = FinalMask(MaskSuscept);
-     MaskSusceptibility(~BrainMask) = 0;
+     % %% Brief explanation what these masks here mean:
+     % BrainMask   => brain parenchyma (GM+WM) == 1, CSF & outside the brain == 0
+     % MaskSuscept => potential susceptibility regions, where artifacts may occur == 1, otherwise == 0
+     % FinalMask   => within MaskSuscept, voxels we want to include in the mask == 1, otherwise == 0
+
+     MaskSusceptibility = BrainMask; % we start with a wholebrain parenchyme mask
+     MaskSusceptibility(MaskSuscept) = FinalMask(MaskSuscept); % within potential susceptibility regions, we mask out susceptibility artifacts
+     MaskSusceptibility(~BrainMask) = 0; % we ensure that voxels without susceptibility artifacts, outside the brain, are still masked out
 else
     MaskSusceptibility = BrainMask;
-    % for e.g. 3D spiral the susceptibility mask is equal to the brain mask
+    % for e.g. 3D spiral the susceptibility mask is equal to the brain
+    % mask, effectively not masking out susceptibility artifacts
 end
 
 xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Pop_Path_MaskSusceptibility, MaskSusceptibility, [], false);
