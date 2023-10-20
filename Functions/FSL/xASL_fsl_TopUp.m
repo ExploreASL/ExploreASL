@@ -297,9 +297,15 @@ fprintf('\n');
 if ~exist('OutputPath','var') || isempty(OutputPath)
     % Skipping TopUp application, wasn't required
 elseif result1~=0
-        fprintf('TopUp application skipped as TopUp failed to run\n');
+        warning('TopUp application skipped as TopUp did not run');
+elseif ~xASL_exist(PathResults1) % TopUp_fieldcoef.nii
+        warning('TopUp application skipped as TopUp failed, missing output files');
 else
-    
+    tempImFieldCoef = xASL_io_Nifti2Im(PathResults1); % TopUp_fieldcoef.nii
+    if xASL_stat_SumNan(tempImFieldCoef(:))==0
+        error('TopUp failed, output files are empty (zeroes only)');
+    end
+
     if strcmp(ScanType, 'asl')
         PathApplyTopUp{1} = fullfile(InDir, 'ASL4D.nii');
         PathApplyTopUp{2} = fullfile(InDir, 'M0.nii');
