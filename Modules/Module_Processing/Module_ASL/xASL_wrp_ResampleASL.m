@@ -266,50 +266,41 @@ for iSpace=1:2
         
         
     % =====================================================================
-    % C) Single- or multi-PLD subtraction
+    % C) Single- and multi-PLD subtraction
     else
+        % Firstly, equalize PLD for single- and multi-PLD
+        nPLD = length(x.Q.Initial_PLD);
+        factorPLD = nVolumes/nPLD;
+        initialPLD = repmat(x.Q.Initial_PLD, [factorPLD 1]);
+        % this vector now has the length of the number of volumes
+        % either all values are identical (in the case of single-PLD)
+        % or a combination of multi-PLD
+        
+        % Secondly, equalize LabDur for single- and multi-PLD
+        nLabDur = length(x.Q.LabelingDuration);
+        factorLabDur = nVolumes/nLabDur;
+        LabDuration = repmat(x.Q.LabelingDuration, [factorLabDur 1]);
+        
         if dim4>1 && ~x.modules.asl.bContainsDeltaM
             % Paired subtraction
             [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
             PWI4D = ControlIm - LabelIm;
             
-            if numel(x.Q.Initial_PLD)>1
-                % Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
-                % we need the PLD vector now for the pairwise subtractions only
-                initialPLD_PWI4D = x.Q.Initial_PLD(1:2:end);
-            else
-                initialPLD_PWI4D = x.Q.Initial_PLD;
-            end
-        end
-
-        % After subtraction, we obtain the unique PLDs
-        initialPLD_PWI3D = unique(initialPLD_PWI4D, 'stable');
-        
-        
-        % Average PWI - multiPLD
-        if x.modules.asl.bMultiPLD 
-			% Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
-			% and we need the PLD vector now for the pairwise subtractions only
-			initialPLD_PWI4D = x.Q.Initial_PLD(1:2:end);
-
-			% The labeling durations also need to be taken into account and unique combinations of PLDs with LDs should be considered
-			if numel(x.Q.Initial_PLD) == numel(x.Q.LabelingDuration)
-				InitialLabDur_PWI4D = x.Q.LabelingDuration(1:2:end);
-			else
-				InitialLabDur_PWI4D = ones(size(initialPLD_PWI4D)) * x.Q.LabelingDuration;
-			end
-
+            % Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
+            % we need the PLD vector now for the pairwise subtractions only            
+            initialPLD_PWI4D = initialPLD(1:2:end);
+            % Do the same for LabDur
+            LabDuration_PWI4D = LabDuration(1:2:end);
 
 			% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
 			% indexAverage_PLD_LabDur lists for each original position to where it should be averaged
-			[~, ~, iUnique_PLD_LabDur] = unique([initialPLD_PWI4D, InitialLabDur_PWI4D], 'stable', 'rows');
+			[~, ~, iUnique_PLD_LabDur] = unique(unique([initialPLD_PWI4D, LabDuration_PWI4D], 'stable', 'rows'), 'stable', 'rows');
 
-            % MultiPLD PWI after averaging
-			PWI4D = zeros(size(PWI4D,1), size(PWI4D,2), size(PWI4D,3), max(iUnique_PLD_LabDur)); % preallocate PWI
+            % MultiPLD-multiLabDur PWI3D after averaging
+			PWI3D = zeros(size(PWI4D,1), size(PWI4D,2), size(PWI4D,3), max(iUnique_PLD_LabDur)); % preallocate PWI
             for iPLD_LabDur = 1:max(iUnique_PLD_LabDur)
                 PWI3D(:, :, :, iPLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, iUnique_PLD_LabDur == iPLD_LabDur), 4); % Averaged PWI4D 
             end
-            
         else
             PWI4D = ASL_im;
         end
