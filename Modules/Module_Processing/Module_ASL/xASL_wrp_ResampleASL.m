@@ -205,6 +205,15 @@ end
 %% ------------------------------------------------------------------------------------------
 % 8. Pair-wise control-label subtraction
 % for both native & standard space
+
+% Nomenclature:
+% ASL4D = original timeseries
+% PWI4D = subtracted timeseries -> for quantification purposes
+% PWI3D = averaged per TE—PLD—LabDur combination -> for QC purposes
+% PWI   = single perfusion-weighted volume -> for registration purposes
+
+% 
+
 % Load ASL time series (after being pre-processed)
 StringSpaceIs = {'native' 'standard'};
 PathASL = {x.P.Path_rdespiked_ASL4D x.P.Path_rtemp_despiked_ASL4D};
@@ -262,42 +271,43 @@ for iSpace=1:2
         if dim4>1 && ~x.modules.asl.bContainsDeltaM
             % Paired subtraction
             [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
-            ASL_im = ControlIm - LabelIm;
+            PWI4D = ControlIm - LabelIm;
             
             if numel(x.Q.Initial_PLD)>1
                 % Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
                 % we need the PLD vector now for the pairwise subtractions only
-                Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
+                initialPLD_PWI4D = x.Q.Initial_PLD(1:2:end);
             else
-                Initial_PLD_PWI = x.Q.Initial_PLD;
+                initialPLD_PWI4D = x.Q.Initial_PLD;
             end
         end
 
         % After subtraction, we obtain the unique PLDs
-        Initial_PLD_PWI_averaged = unique(Initial_PLD_PWI, 'stable');
+        initialPLD_PWI3D = unique(initialPLD_PWI4D, 'stable');
         
         
         % Average PWI - multiPLD
         if x.modules.asl.bMultiPLD 
 			% Skip every other value in x.Q.Initial_PLD as it was stored for both control and label images 
 			% and we need the PLD vector now for the pairwise subtractions only
-			Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
+			initialPLD_PWI4D = x.Q.Initial_PLD(1:2:end);
 
 			% The labeling durations also need to be taken into account and unique combinations of PLDs with LDs should be considered
 			if numel(x.Q.Initial_PLD) == numel(x.Q.LabelingDuration)
-				Initial_LabDur_PWI = x.Q.LabelingDuration(1:2:end);
+				InitialLabDur_PWI4D = x.Q.LabelingDuration(1:2:end);
 			else
-				Initial_LabDur_PWI = ones(size(Initial_PLD_PWI)) * x.Q.LabelingDuration;
+				InitialLabDur_PWI4D = ones(size(initialPLD_PWI4D)) * x.Q.LabelingDuration;
 			end
-        
+
+
 			% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
 			% indexAverage_PLD_LabDur lists for each original position to where it should be averaged
-			[~, ~, indexAverage_PLD_LabDur] = unique([Initial_PLD_PWI, Initial_LabDur_PWI], 'stable', 'rows');
+			[~, ~, iUnique_PLD_LabDur] = unique([initialPLD_PWI4D, InitialLabDur_PWI4D], 'stable', 'rows');
 
             % MultiPLD PWI after averaging
-			PWI4D = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), max(indexAverage_PLD_LabDur)); % preallocate PWI
-            for nPLD = 1:max(indexAverage_PLD_LabDur)
-                PWI4D(:, :, :, nPLD) = xASL_stat_MeanNan(ASL_im(:, :, :, indexAverage_PLD_LabDur == nPLD), 4); % Averaged PWI4D 
+			PWI4D = zeros(size(PWI4D,1), size(PWI4D,2), size(PWI4D,3), max(iUnique_PLD_LabDur)); % preallocate PWI
+            for iPLD_LabDur = 1:max(iUnique_PLD_LabDur)
+                PWI3D(:, :, :, iPLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, iUnique_PLD_LabDur == iPLD_LabDur), 4); % Averaged PWI4D 
             end
             
         else
@@ -310,12 +320,16 @@ for iSpace=1:2
     
     % =====================================================================
     % D) Save subtracted to disk
-    
-    % Save PWI3D
+
+    % Save PWI (single volume)
     fprintf('%s\n', PathPWI{iSpace});
-    xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWI3D, 32, false);
+    xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWI, 32, false);
+
+    % Save PWI3D (averaged volume for each PLD-labdur combination)
+    fprintf('%s\n', PathPWI{iSpace});
+    xASL_io_SaveNifti(PathASL{iSpace}, PathPWI3D{iSpace}, PWI3D, 32, false);
     
-    % Save PWI4D
+    % Save PWI4D (subtracted only, not yet averaged)
     fprintf('%s\n', PathPWI4D{iSpace});
     xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);    
 end
