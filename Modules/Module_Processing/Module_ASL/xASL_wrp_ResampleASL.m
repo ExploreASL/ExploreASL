@@ -216,14 +216,15 @@ end
 
 % Load ASL time series (after being pre-processed)
 StringSpaceIs = {'native' 'standard'};
-PathASL = {x.P.Path_rdespiked_ASL4D x.P.Path_rtemp_despiked_ASL4D};
+PathASL4D = {x.P.Path_rdespiked_ASL4D x.P.Path_rtemp_despiked_ASL4D};
 PathPWI = {x.P.Path_PWI x.P.Pop_Path_PWI};
+PathPWI3D = {x.P.Path_PWI3D x.P.Pop_Path_PWI3D};
 PathPWI4D = {x.P.Path_PWI4D x.P.Pop_Path_PWI4D};
 
 for iSpace=1:2
     fprintf('%s\n', ['Saving in ' StringSpaceIs{iSpace} ' space:']);
     
-    ASL_im = xASL_io_Nifti2Im(PathASL{iSpace}); % Load time-series nifti
+    ASL_im = xASL_io_Nifti2Im(PathASL4D{iSpace}); % Load time-series nifti
     dim4 = size(ASL_im, 4);
 
     
@@ -241,7 +242,7 @@ for iSpace=1:2
     % B) Time-Encoded subtraction
     elseif x.modules.asl.bTimeEncoded
         % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
-        ASL_im = xASL_quant_HadamardDecoding(PathASL{iSpace}, x.Q);
+        ASL_im = xASL_quant_HadamardDecoding(PathASL4D{iSpace}, x.Q);
 		
 		% Calculate Hadamard block size (number of unique PLDs * multiTEs) = number of volumes per block
         vectorSizePLD = length(unique(x.Q.Initial_PLD));
@@ -314,15 +315,15 @@ for iSpace=1:2
 
     % Save PWI (single volume)
     fprintf('%s\n', PathPWI{iSpace});
-    xASL_io_SaveNifti(PathASL{iSpace}, PathPWI{iSpace}, PWI, 32, false);
+    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI{iSpace}, PWI, 32, false);
 
     % Save PWI3D (averaged volume for each PLD-labdur combination)
     fprintf('%s\n', PathPWI{iSpace});
-    xASL_io_SaveNifti(PathASL{iSpace}, PathPWI3D{iSpace}, PWI3D, 32, false);
+    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI3D{iSpace}, PWI3D, 32, false);
     
     % Save PWI4D (subtracted only, not yet averaged)
     fprintf('%s\n', PathPWI4D{iSpace});
-    xASL_io_SaveNifti(PathASL{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);    
+    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);    
 end
 
 
