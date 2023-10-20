@@ -97,25 +97,32 @@ for iSubject=1:x.dataset.nSubjects
         % find current JPG
         JPGList = xASL_adm_GetFileList(x.D.ASLCheckDir, ['(?i)^Tra_qCBF_' NameSubjSess '.*'],'List', [0 Inf]);
         % find current sCoV
-        Index = find(cellfun(@(x) strcmp(x,NameSubjSess), subjectSessionList));
+        Index = find(cellfun(@(y) strcmp(y, NameSubjSess), subjectSessionList));
         
-        if ~isempty(JPGList)
-            if isempty(Index) % if we cannot determine the sCoV
+        if isempty(JPGlist) % if we did not find an ASL jpg image, skip this subject-session
+            fprintf('\n');
+            warning(['Missing transversal ASL jpg image in ' x.D.ASLCheckDir]);
+            fprintf('%s\n\n', ['Did something go wrong in the ASL module for ' NameSubjSess '?']);
+        else
+            if isempty(Index) % if we cannot determine the sCoV, copy this subject-session to 4_Unknown_sCoV
+                fprintf('\n');
+                warning(['Missing sCoV value in ' PathTSV]);
+                fprintf('%s\n\n', ['Did something go wrong in the ASL module for ' NameSubjSess '?']);
                 Ddir = DirUnknown_sCoV;
             else
                 sCoV = xASL_str2num(sCoVList{Index});
 
                 % find folder
                 if ~isfinite(sCoV) || ~isnumeric(sCoV) || sCoV<=0
-                    % for illegal sCoV
+                    % for illegal sCoV, 4_Unknown_sCoV
                     Ddir = DirUnknown_sCoV;
                 elseif sCoV<Threshold1
-                    % for relatively low sCoV
+                    % for relatively low sCoV, 1_CBFContrast
                     Ddir = DirCBF;
                 elseif sCoV<Threshold2
-                    % for intermediate sCoV
+                    % for intermediate sCoV, 2_VascularContrast
                     Ddir = DirVasc;
-                else % for high sCoV
+                else % for high sCoV, 3_ArtifactContrast
                     Ddir = DirArti;
                 end
             end
