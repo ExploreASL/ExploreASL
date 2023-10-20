@@ -99,6 +99,11 @@ M0ScaleVolume  = ASLvoxelVolume/M0voxelVolume;
 % Load and scale the M0 for the ASL-M0 volume changes
 imM0 = xASL_io_Nifti2Im(x.P.Path_M0).*M0ScaleVolume;
 
+% First check if we have a valid M0
+if xASL_stat_SumNan(imM0(:))==0
+    error('Invalid M0, M0 image processing will fail, skipping');
+end
+
 % Try to load M0.json
 [pathM0json, filenameM0json,~] = xASL_fileparts(x.P.Path_M0);
 pathM0json = fullfile(pathM0json, [filenameM0json, '.json']);
