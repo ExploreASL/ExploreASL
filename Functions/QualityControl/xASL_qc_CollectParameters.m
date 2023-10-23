@@ -15,7 +15,8 @@ function x = xASL_qc_CollectParameters(x, iSubject, ScanType, iSession)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function collects QC parameters for a module for a given subject and for ASL for a given subject+session
 % 
-% EXAMPLE: x = xASL_qc_CollectParameters_Structural(x, 10, 'ASL', 1);
+% EXAMPLE: x = xASL_qc_CollectParameters(x, 10, 'func');
+%          x = xASL_qc_CollectParameters(x, 10, 'ASL', 4);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
 
