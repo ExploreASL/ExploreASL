@@ -97,13 +97,13 @@ if ~x.mutex.HasState(StateName{1})
     % as 3D spiral doesnt have a susceptibility artifact (or negligible)
 
     FoVPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV' x.S.TemplateNumberName '_bs-mean_Unmasked\.nii$'], 'FPList');
-    SusceptPath = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility' x.S.TemplateNumberName '_bs-mean.nii']);
+    PathTemplateSusceptibilityMask = fullfile(x.D.TemplatesStudyDir,['MaskSusceptibility' x.S.TemplateNumberName '_bs-mean.nii']);
 
-    if ~xASL_exist(SusceptPath, 'file')
+    if ~xASL_exist(PathTemplateSusceptibilityMask, 'file')
         warning('Susceptibility mask template was missing...');
         
         if ~isempty(FoVPath)
-            xASL_io_SaveNifti(FoVPath{1}, SusceptPath, xASL_io_Nifti2Im(FoVPath{1}), [], false);
+            xASL_io_SaveNifti(FoVPath{1}, PathTemplateSusceptibilityMask, xASL_io_Nifti2Im(FoVPath{1}), [], false);
             fprintf('and was replaced by FoV mask...\n');
         end
     end

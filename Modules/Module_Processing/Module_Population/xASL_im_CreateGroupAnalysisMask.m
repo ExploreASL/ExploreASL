@@ -44,7 +44,7 @@ if nargin<2 || isempty(Threshold)
     Threshold = 0.95; % default threshold
 end
 
-PathSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskSusceptibility' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList');
+PathTemplateSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskSusceptibility' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList');
 
 bSkipStandard = 0;
 
@@ -54,7 +54,7 @@ if x.dataset.nSubjectsSessions<16
     % x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask);
     % x.S.VBAmask = x.S.MaskSusceptibility;
     % bSkipStandard = 1;
-elseif isempty(PathSusceptibilityMask)
+elseif isempty(PathTemplateSusceptibilityMask)
     warning('Missing susceptibility maps, skipping...');
     bSkipStandard = 1;
 end
@@ -78,7 +78,7 @@ PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pWM' x.S.TemplateNumber
 PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pCSF' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
 PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^T1' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
 
-if ~isempty(PathSusceptibilityMask); PathSusceptibilityMask = PathSusceptibilityMask{1}; end
+if ~isempty(PathTemplateSusceptibilityMask); PathTemplateSusceptibilityMask = PathTemplateSusceptibilityMask{1}; end
 if ~isempty(PathFoV); PathFoV = PathFoV{1}; end
 if ~isempty(PathVascularMask); PathVascularMask = PathVascularMask{1}; end
 if ~isempty(PathpGM); PathpGM = PathpGM{1}; end
@@ -118,7 +118,7 @@ if ~bSkipStandard
 
 
     % Legacy Susceptibility Masking
-    MaskSusceptibility = xASL_io_Nifti2Im(PathSusceptibilityMask);
+    MaskSusceptibility = xASL_io_Nifti2Im(PathTemplateSusceptibilityMask);
     susceptibilitySortedIntensities = sort(MaskSusceptibility(isfinite(MaskSusceptibility)));
     indexIs = round(Threshold.*length(susceptibilitySortedIntensities));
     ThresholdSuscept = susceptibilitySortedIntensities(indexIs);
@@ -246,7 +246,7 @@ ImOut{1} = xASL_vis_CreateVisualFig(x, {PathT1 FoVim}, [], IntScale, [], ColorMa
 % ImOut{2} = xASL_vis_CreateVisualFig(x, {PathT1 ImVascular}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
 
 % 2) Susceptibility
-ImSusceptibility = 1-xASL_io_Nifti2Im(PathSusceptibilityMask);
+ImSusceptibility = 1-xASL_io_Nifti2Im(PathTemplateSusceptibilityMask);
 % ImSusceptibility(ImSusceptibility>0.5) = 0.5; % ThresholdSuscept
 ImSusceptibility(ImSusceptibility<(1-ThresholdSuscept)) = 1-ThresholdSuscept;
 ImSusceptibility = ImSusceptibility-(1-ThresholdSuscept);
