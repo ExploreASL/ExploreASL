@@ -192,13 +192,21 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
         x.Output.ASL.(SessionID) = xASL_qc_FillFields(x.Output.ASL.(SessionID), ASL);
     end
 
-	% Keep only subfields in x.Output.ASL for each ASL session, but no other fields that might have been filled previously by mistake
+	% Keep only subfields in x.Output.ASL.ASL_X for ASL session
+	% In previous versions, we have parameters for session one only directly under x.Output.ASL - if these are detected
+	% they are removed as obsolete and a warning is issued.
 	listFields = fields(x.Output.ASL);
 
+	bIssuedWarningAboutExtraFields = 0;
 	for iField = 1:length(listFields)
 		currentField = listFields{iField};
-		if isempty(regexp(currentField, 'ASL_\d+'))
+		if isempty(regexp(currentField, 'ASL_\d+', 'once'))
 			x.Output.ASL = rmfield(x.Output.ASL, currentField);
+			if ~bIssuedWarningAboutExtraFields
+				% Obsolete fields are present, report a warning once
+				warning('QC parameters for ASL are now provided inside x.Output.ASL.ASL_X for session X. Obsolete fields directly in x.Output.ASL were detected and removed.')
+				bIssuedWarningAboutExtraFields = 1;
+			end
 		end
 	end
 end
