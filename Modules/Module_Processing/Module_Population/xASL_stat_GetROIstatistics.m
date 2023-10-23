@@ -687,9 +687,9 @@ function [S] = RemoveSuffixes(S)
 % DESCRIPTION: This function removes strings from previous output_ID usage,
 %              allowing to reuse this field
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_im_CreateAnalysisMask(x);
+% EXAMPLE: S = RemoveSuffixes(S);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 % Define here which strings to remove
 StrRemove = {'PVEC0' 'PVEC1' 'PVEC2' 'AI' 'paired t-test'};

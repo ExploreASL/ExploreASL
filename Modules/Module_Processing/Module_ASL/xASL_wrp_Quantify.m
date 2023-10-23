@@ -542,7 +542,7 @@ if strcmp(pathOutputCBF, x.P.Pop_Path_qCBF)
     % Mask susceptibility voxels (i.e. set them to NaN)
     if ~xASL_exist(x.P.Pop_Path_MaskSusceptibility,'file')
         warning([x.P.Pop_Path_MaskSusceptibility ' missing, cannot create ' x.P.Pop_Path_qCBF_masked]);
-        fprintf('Please rerun xASL_wrp_CreateAnalysisMask (7th step of ASL module)...\n');
+        fprintf('Please rerun xASL_wrp_CreateIndividualMask (7th step of ASL module)...\n');
         return;
     else
         xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_qCBF_masked, MaskedCBF, [], false);

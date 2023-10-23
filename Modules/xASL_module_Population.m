@@ -122,7 +122,7 @@ x = xASL_adm_CreateFileReport(x);
 %% ------------------------------------------------------------------------------------------------------------
 %% 2    Create population-based analysis mask for ROI-based analysis & VBA
 if ~x.mutex.HasState(StateName{2}) && bHasASL
-    x = xASL_im_CreateAnalysisMask(x);
+    x = xASL_im_CreateGroupAnalysisMask(x);
     x.mutex.AddState(StateName{2});
     fprintf('%s\n',[StateName{2} ' was performed']);
 elseif bHasASL

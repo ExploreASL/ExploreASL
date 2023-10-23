@@ -80,7 +80,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 
 	% Here, we don't mask implicitly, but we will provide an explicit mask to BASIL/FABBER.
 	% This mask can be used: x.P.Path_BrainMaskProcessing
-	% This is a relatively conservative mask that is created by xASL_wrp_CreateAnalysisMask for image processing (pGM+pWM+pCSF).*FoV mask
+	% This is a relatively conservative mask that is created by xASL_wrp_CreateIndividualMask for image processing (pGM+pWM+pCSF).*FoV mask
     %
 	% BrainMask = xASL_io_Nifti2Im(x.P.Path_BrainMaskProcessing); % load the brain mask used for processing
     % PWI(BrainMask==0) = 0; % set voxels outside the mask to zero

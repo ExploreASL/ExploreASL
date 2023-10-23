@@ -495,7 +495,7 @@ if ~x.mutex.HasState(StateName{iState})
         if size(xASL_io_Nifti2Im(x.P.Path_PWI),4)>1
             warning('Skipped vascular masking because we had too many images');
 		else
-            xASL_wrp_CreateAnalysisMask(x);
+            xASL_wrp_CreateIndividualMask(x);
 
             x.mutex.AddState(StateName{iState});
             xASL_adm_CompareDataSets([], [], x); % unit testing

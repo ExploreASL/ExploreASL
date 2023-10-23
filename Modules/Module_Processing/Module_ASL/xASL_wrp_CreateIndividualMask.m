@@ -1,8 +1,8 @@
-function xASL_wrp_CreateAnalysisMask(x)
-%xASL_wrp_CreateAnalysisMask Create analysis mask from a combination of FoV
+function xASL_wrp_CreateIndividualMask(x)
+%xASL_wrp_CreateIndividualMask Create analysis mask from a combination of FoV
 % & removal of high and negative intravascular ASL voxels
 %
-% FORMAT: xASL_wrp_CreateAnalysisMask(x)
+% FORMAT: xASL_wrp_CreateIndividualMask(x)
 %
 % INPUT:
 %   x - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -41,9 +41,9 @@ function xASL_wrp_CreateAnalysisMask(x)
 %                 15% of the intensity (for a bit more robustness against individual variability in sinus sizes).
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: xASL_wrp_CreateAnalysisMask(x);
+% EXAMPLE: xASL_wrp_CreateIndividualMask(x);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2023 ExploreASL
 %
 %% 0. Create native space FoV mask
 % Use either original or motion estimated ASL4D
