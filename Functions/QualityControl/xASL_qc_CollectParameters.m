@@ -58,10 +58,6 @@ switch ScanType
     case 'Structural'
         x = xASL_qc_CollectQC_Structural(x, iSubject);
     case 'ASL'
-		% Check for a session subfield and create when necessary
-		if ~isfield(x.Output.ASL, x.SESSIONS{iSession})
-			x.Output.ASL.(x.SESSIONS{iSession}) = struct;
-		end
 		x = xASL_qc_CollectQC_ASL(x, iSubject, iSession);
     case 'func'
 		x = xASL_qc_CollectQC_func(x, iSubject);

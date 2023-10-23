@@ -186,7 +186,13 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
                    SumData = SumData+1;
             end
         end
-    end
+	end
+
+	% Check for a session subfield and create when necessary
+	if ~isfield(x.Output.ASL, SessionID)
+		x.Output.ASL.(SessionID) = struct;
+	end
+
     FieldsFilled = SumData/nFields;
     if FieldsFilled>0.2 % threshold to avoid listing empty values
         x.Output.ASL.(SessionID) = xASL_qc_FillFields(x.Output.ASL.(SessionID), ASL);
