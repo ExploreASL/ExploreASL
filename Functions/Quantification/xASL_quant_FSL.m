@@ -96,7 +96,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 
     %% 4. Create option_file that contains options which are passed to the FSL command
 	bMergingTxt = 0; % only active if SessionMergingList + last session of list -> merge FSLOptions.txt
-    PairSessions = [];
+    SessionsToMerge = {}; % To be used later during the txt merging
     % For testing:
     % x.modules.asl.SessionMergingList = {{'ASL_0','ASL_1', 'ASL_2'}; {'ASL_3', 'ASL_4','ASL_5'}};
    
@@ -109,38 +109,40 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
                     break;
                 end
             end
-            ListCurrentSession = x.modules.asl.SessionMergingList{index};
-           
-        if strcmp(x.SESSION,ListCurrentSession{end}) % If the SESSION is the last of the list, we want to merge the .txt and concatenate it with the previous sessions of the list
-            
-            bMergingTxt = 1; % only active for the last session of a Merging list -> merge FSLOptions.txt
+            CurrentSessionList = x.modules.asl.SessionMergingList{index};
 
-            % Find PWI4Ds of the sessions to merge
-            CurrentSession = x.SESSION;
-            PairSessions = ListCurrentSession(1:end-1);
-            CurrentScanPWIdir = sprintf('%s/PWI4D_FSLInput.nii',CurrentSession);
-            
-            for nSession = 1: numel(PairSessions)
-            
-                PairScanPWIdir = sprintf('%s/PWI4D.nii',PairSessions{nSession});
-                PairScanPath = replace (pathFSLInput, CurrentScanPWIdir,PairScanPWIdir);
-           
-            if xASL_exist (PairScanPath,'file')
-                CurrentScanIm = xASL_io_Nifti2Im(pathFSLInput);
-                PairScanIm = xASL_io_Nifti2Im(PairScanPath);
-                ConcatIm = cat(4,CurrentScanIm, PairScanIm);
-                xASL_io_SaveNifti(pathFSLInput,pathFSLInput,ConcatIm)
-                % Even if this loop runs more than 1 time, it will always
-                % concatenate before [pair nii, current concatenated nii]
-            else
-                fprintf('Subject %s doesnt a PWI4D of the pair session %s  \n', x.SUBJECT, PairSessions{nSession})
+            if strcmp(x.SESSION,CurrentSessionList{end}) % If the SESSION is the last of the list, we want to merge the .txt and concatenate it with the previous sessions of the list
+
+                bMergingTxt = 1; % only active for the last session of a Merging list -> merge FSLOptions.txt
+                bUseFabber = 1;
+                
+                % Find PWI4Ds of the sessions to merge
+                CurrentSession = x.SESSION;
+                ListSessions = CurrentSessionList(1:end-1);
+                CurrentScanPWIdir = sprintf('%s/PWI4D_FSLInput.nii',CurrentSession);
+
+                for nSession = 1: numel(ListSessions)
+
+                    PairScanPWIdir = sprintf('%s/PWI4D.nii',ListSessions{nSession});
+                    PairScanPath = replace (pathFSLInput, CurrentScanPWIdir,PairScanPWIdir);
+
+                    if xASL_exist (PairScanPath,'file')
+                        SessionsToMerge = [SessionsToMerge, ListSessions{nSession}]; % Creates a List of sessions that do exist
+                        CurrentScanIm = xASL_io_Nifti2Im(pathFSLInput);
+                        PairScanIm = xASL_io_Nifti2Im(PairScanPath);
+                        ConcatIm = cat(4,CurrentScanIm, PairScanIm);
+                        xASL_io_SaveNifti(pathFSLInput,pathFSLInput,ConcatIm)
+                        % Even if this loop runs more than 1 time, it will always
+                        % concatenate before [pair nii, current concatenated nii]
+                    else
+                        fprintf('Subject %s doesnt a PWI4D of the pair session %s  \n', x.SUBJECT, ListSessions{nSession})
+                    end
+                end
             end
-            end
-        end
     end
-    
+
     % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
-	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput);
+	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, bMergingTxt, SessionsToMerge);
         
     %% 5. Run Basil and retrieve CBF output
     if bUseFabber
@@ -230,7 +232,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     
 end
 
-function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput)
+function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, bMergingTxt, SessionsToMerge)
 %xASL_sub_FSLOptions generates the options and saves them in a file and returns some commandline options as well
 %
 % FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput)
@@ -241,6 +243,8 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, 
 %   bUseFabber      - Use FABBER, alternative BASIL (REQUIRED)
 %   pathFSLInput    - Path to the data input file (REQUIRED)
 %   pathFSLOutput   - Path to the output directory (REQUIRED)
+%   bMergingTxt     - Merge FSLOptions.txt (DEBBIE - only 1 for the last session of MergingLists)
+%   SessionsToMerge  - Sessions to merge
 %
 % OUTPUT:
 % FSLOptions      - command-line options
@@ -268,7 +272,12 @@ end
 if ~isfield(x.Q.BASIL,'bMasking') || isempty(x.Q.BASIL.bMasking)
 		fprintf('BASIL: Setting default option bMasking = true\n');
 		x.Q.BASIL.bMasking = true;
-	end
+end
+
+% If we need to merge sessions, we will use Fabber
+if bMergingTxt
+    bUseFabber = 1;
+end
 
 if ~bUseFabber
 	% BASIL specific options
@@ -446,7 +455,7 @@ switch lower(x.Q.LabelingType)
 		end
 
 		if bUseFabber
-			%Echo Times
+			%Echo Times 
 			nPLD = length(PLDs); % Number of PLDs in the PLD vector
 			nVolume = size(PWI,4); % Number of volumes in PWI
 
@@ -474,6 +483,60 @@ switch lower(x.Q.LabelingType)
 					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE, TEs(iTE));
 				end
 			end
+            
+            % So far e have all the info for the current scan.   Now we can
+            % add info of the scan concatenated
+
+            if bMergingTxt
+                CurrentASLJSONdir = fullfile(x.dir.SESSIONDIR,'/ASL4D.json');
+
+                for nSession = 1: numel(SessionsToMerge)
+                    SessionsToMergeJSONdir = replace (CurrentASLJSONdir, x.SESSION,SessionsToMerge{nSession});
+
+                    SessionsToMergeJSON = spm_jsonread(SessionsToMergeJSONdir);
+                    NewPLDs = SessionsToMergeJSON.PostLabelingDelay;
+                    NewLabDurs = SessionsToMergeJSON.LabelingDuration;
+                    NewTimeEncodedMatrixSize = SessionsToMergeJSON.TimeEncodedMatrixSize;
+                    NewEchoTimes = unique(SessionsToMergeJSON.EchoTime);
+
+                    % For Time-encoded, we skip the first volume per block -> the same as above
+            		if x.modules.asl.bTimeEncoded
+            			[NewPLDs, ~] = unique(NewPLDs, 'stable');
+
+            			numberBlocks = numel(NewPLDs)/NewTimeEncodedMatrixSize;
+            			index = (ones(numberBlocks,1)*(2:NewTimeEncodedMatrixSize) + (0:(numberBlocks-1))' * NewTimeEncodedMatrixSize * ones(1,NewTimeEncodedMatrixSize-1))';
+            			NewPLDs = NewPLDs(index(:));
+            		else
+            			% For normal multi-timepoint, we look for unique PLD+LabDur combinations
+            			[~, indexNew, ~] = unique([NewPLDs(:), NewLabDurs(:)], 'stable', 'rows');
+
+            			NewPLDs = NewPLDs(indexNew);
+            		end
+
+
+                    for iPLD_new = iPLD+1:(length(NewPLDs)+iPLD) % Uses the previous iPLD and continues from there
+                        fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD_new, NewPLDs(iPLD_new-iPLD) + NewLabDurs);
+                        fprintf(FIDoptionFile, '--nte%d=%d\n', iPLD_new, length(NewEchoTimes)); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
+                    end
+                        
+                    New_nVolume = length(NewEchoTimes) * length(NewPLDs);
+
+        			if length(NewEchoTimes) == 1
+        				% For a single-TE, we have to repeat it for each volume
+        				for iTE_new = iPLD+1:(New_nVolume+nVolume) 
+        					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE_new, NewEchoTimes(1));
+        				end
+        			else
+                        % For multi-TE, we print all of them
+        				for iTE_new = iPLD+1:(New_nVolume+nVolume) 
+                            NewEchoTimesVector = repmat (NewEchoTimes',1,length(NewPLDs));
+        					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE_new, NewEchoTimesVector(iTE_new-iTE));
+        				end
+        			end
+
+                end
+            end
+
 
 			% Right now, we assume that we have averaged over PLDs
 			%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
@@ -494,13 +557,20 @@ switch lower(x.Q.LabelingType)
 		end
 
 		% Print labeling durations
-		if x.modules.asl.bMultiPLD
-			for iLabDurs = 1:length(LabDurs)
-				fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
-			end
-		else
-			fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs);
-		end
+        if x.modules.asl.bMultiPLD
+            for iLabDurs = 1:length(LabDurs)
+                fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
+            end
+            if bMergingTxt
+                for iNewLabDurs = iLabDurs+1:iLabDurs+length(NewPLDs) % LabDurs / tau we only need one per PLD
+                    fprintf(FIDoptionFile, '--tau%d=%.2f\n', iNewLabDurs, NewLabDurs);
+
+                end
+            end
+
+        else
+            fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs);
+        end
 end
 
 if ~bUseFabber
