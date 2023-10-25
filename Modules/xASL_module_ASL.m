@@ -53,7 +53,7 @@ function [result, x] = xASL_module_ASL(x)
 %
 % EXAMPLE: [~, x] = xASL_module_ASL(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
 %% Admin
@@ -244,6 +244,15 @@ else
 	x.Q.NumberEchoTimes = 1;
 end
 %% D6. Recognizing automatic quantification (e.g. DEBBIE sequence)
+if ~isfield(x.modules.asl, 'SessionMergingList')
+	x.modules.asl.SessionMergingList = {};
+else
+	% The parameter should be a list of lists, but if a single list is provided, it converts it
+	if ~isempty(x.modules.asl.SessionMergingList) && iscell(x.modules.asl.SessionMergingList) && ~iscell(iscell(x.modules.asl.SessionMergingList{1}))
+		x.modules.asl.SessionMergingList = {x.modules.asl.SessionMergingList};
+	end
+end
+
 if x.modules.asl.bMultiTE == 1 && x.modules.asl.bMultiPLD == 1 % This causes a problem for recognizing HAD8 as DEBBIE (no bMultiTE), that's why I've added the TimeEncoded check
     x.modules.asl.bAutomaticMerging = 1;
 elseif x.modules.asl.bTimeEncoded == 1

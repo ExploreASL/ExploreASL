@@ -95,54 +95,49 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     end
 
     %% 4. Create option_file that contains options which are passed to the FSL command
-	bMergingTxt = 0; % only active if SessionMergingList + last session of list -> merge FSLOptions.txt
-    SessionsToMerge = {}; % To be used later during the txt merging
+	bMergingSessions = 0; % only active if SessionMergingList + last session of list -> merge FSLOptions.txt
+    sessionsToMerge = {}; % To be used later during the txt merging
     % For testing:
-    % x.modules.asl.SessionMergingList = {{'ASL_0','ASL_1', 'ASL_2'}; {'ASL_3', 'ASL_4','ASL_5'}};
+    % x.modules.asl.SessionMergingList = {{'ASL_1', 'ASL_2'}; {'ASL_3', 'ASL_4','ASL_5'}};
    
     % 4.1 Check if necessary to merge sessions (and FSLOptions.txt)
-    if isfield(x.modules.asl,'SessionMergingList')
-       index=0;
-            for V=1:numel(x.modules.asl.SessionMergingList)
-                if ismember(x.SESSION, x.modules.asl.SessionMergingList{V})
-                    index=V;
-                    break;
-                end
-            end
-            CurrentSessionList = x.modules.asl.SessionMergingList{index};
+    if ~isempty(x.modules.asl, 'SessionMergingList')
+		% Find the sublist containing the current session
+		for iSubList=1:numel(x.modules.asl.SessionMergingList)
+			if ~isempty(x.modules.asl.SessionMergingList{iSubList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iSubList}))
+				sessionsToMerge = x.modules.asl.SessionMergingList{iSubList};
+			end
+		end
 
-            if strcmp(x.SESSION,CurrentSessionList{end}) % If the SESSION is the last of the list, we want to merge the .txt and concatenate it with the previous sessions of the list
+		% If there are sessions to merge and the current session is the last of the list then we want to merge the .txt and concatenate it with the previous sessions of the list
+		if ~isempty(sessionsToMerge) && strcmp(x.SESSION, sessionsToMerge{end})
 
-                bMergingTxt = 1; % only active for the last session of a Merging list -> merge FSLOptions.txt
-                bUseFabber = 1;
-                
-                % Find PWI4Ds of the sessions to merge
-                CurrentSession = x.SESSION;
-                ListSessions = CurrentSessionList(1:end-1);
-                CurrentScanPWIdir = sprintf('%s/PWI4D_FSLInput.nii',CurrentSession);
+			bMergingSessions = 1; 
+			bUseFabber = 1;
 
-                for nSession = 1: numel(ListSessions)
+			% Find PWI4Ds of the sessions to merge
+			CurrentScanPWIdir = sprintf('%s/PWI4D_FSLInput.nii', x.SESSION);
+			for nSession = 1: (numel(sessionsToMerge) - 1)
 
-                    PairScanPWIdir = sprintf('%s/PWI4D.nii',ListSessions{nSession});
-                    PairScanPath = replace (pathFSLInput, CurrentScanPWIdir,PairScanPWIdir);
+				PairScanPWIdir = sprintf('%s/PWI4D.nii', sessionsToMerge{nSession});
+				PairScanPath = replace (pathFSLInput, CurrentScanPWIdir, PairScanPWIdir);
 
-                    if xASL_exist (PairScanPath,'file')
-                        SessionsToMerge = [SessionsToMerge, ListSessions{nSession}]; % Creates a List of sessions that do exist
-                        CurrentScanIm = xASL_io_Nifti2Im(pathFSLInput);
-                        PairScanIm = xASL_io_Nifti2Im(PairScanPath);
-                        ConcatIm = cat(4,CurrentScanIm, PairScanIm);
-                        xASL_io_SaveNifti(pathFSLInput,pathFSLInput,ConcatIm)
-                        % Even if this loop runs more than 1 time, it will always
-                        % concatenate before [pair nii, current concatenated nii]
-                    else
-                        fprintf('Subject %s doesnt a PWI4D of the pair session %s  \n', x.SUBJECT, ListSessions{nSession})
-                    end
-                end
-            end
+				if xASL_exist (PairScanPath,'file')
+					CurrentScanIm = xASL_io_Nifti2Im(pathFSLInput);
+					PairScanIm = xASL_io_Nifti2Im(PairScanPath);
+					ConcatIm = cat(4,CurrentScanIm, PairScanIm);
+					xASL_io_SaveNifti(pathFSLInput, pathFSLInput, ConcatIm)
+					% Even if this loop runs more than 1 time, it will always
+					% concatenate before [pair nii, current concatenated nii]
+				else
+					error(['Cannot merge sessions for subject ' x.SUBJECT ' as session '  sessionsToMerge{nSession} ' is missing.']);
+				end
+			end
+		end
     end
 
     % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
-	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, bMergingTxt, SessionsToMerge);
+	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, bMergingSessions, SessionsToMerge);
         
     %% 5. Run Basil and retrieve CBF output
     if bUseFabber
@@ -232,7 +227,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     
 end
 
-function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, bMergingTxt, SessionsToMerge)
+function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, bMergingSessions, SessionsToMerge)
 %xASL_sub_FSLOptions generates the options and saves them in a file and returns some commandline options as well
 %
 % FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput)
@@ -243,7 +238,7 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, 
 %   bUseFabber      - Use FABBER, alternative BASIL (REQUIRED)
 %   pathFSLInput    - Path to the data input file (REQUIRED)
 %   pathFSLOutput   - Path to the output directory (REQUIRED)
-%   bMergingTxt     - Merge FSLOptions.txt (DEBBIE - only 1 for the last session of MergingLists)
+%   bMergingSessions     - Merge FSLOptions.txt (DEBBIE - only 1 for the last session of MergingLists)
 %   SessionsToMerge  - Sessions to merge
 %
 % OUTPUT:
@@ -275,7 +270,7 @@ if ~isfield(x.Q.BASIL,'bMasking') || isempty(x.Q.BASIL.bMasking)
 end
 
 % If we need to merge sessions, we will use Fabber
-if bMergingTxt
+if bMergingSessions
     bUseFabber = 1;
 end
 
@@ -487,7 +482,7 @@ switch lower(x.Q.LabelingType)
             % So far e have all the info for the current scan.   Now we can
             % add info of the scan concatenated
 
-            if bMergingTxt
+            if bMergingSessions
                 CurrentASLJSONdir = fullfile(x.dir.SESSIONDIR,'/ASL4D.json');
 
                 for nSession = 1: numel(SessionsToMerge)
@@ -561,7 +556,7 @@ switch lower(x.Q.LabelingType)
             for iLabDurs = 1:length(LabDurs)
                 fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
             end
-            if bMergingTxt
+            if bMergingSessions
                 for iNewLabDurs = iLabDurs+1:iLabDurs+length(NewPLDs) % LabDurs / tau we only need one per PLD
                     fprintf(FIDoptionFile, '--tau%d=%.2f\n', iNewLabDurs, NewLabDurs);
 
