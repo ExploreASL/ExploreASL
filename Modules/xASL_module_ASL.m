@@ -223,7 +223,7 @@ if ~isfield(x.modules.asl, 'SessionMergingList')
 	x.modules.asl.SessionMergingList = {};
 else
 	% The parameter should be a list of lists, but if a single list is provided, it converts it
-	if ~isempty(x.modules.asl.SessionMergingList) && iscell(x.modules.asl.SessionMergingList) && ~iscell(iscell(x.modules.asl.SessionMergingList{1}))
+	if ~isempty(x.modules.asl.SessionMergingList) && iscell(x.modules.asl.SessionMergingList) && ~iscell(x.modules.asl.SessionMergingList{1})
 		x.modules.asl.SessionMergingList = {x.modules.asl.SessionMergingList};
 	end
 end
