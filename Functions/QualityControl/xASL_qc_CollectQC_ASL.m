@@ -203,15 +203,17 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
 	% they are removed as obsolete and a warning is issued.
 	listFields = fields(x.Output.ASL);
 
-	bIssuedWarningAboutExtraFields = 0;
+	bIssuedWarningAboutExtraFields = false;
 	for iField = 1:length(listFields)
 		currentField = listFields{iField};
 		if isempty(regexp(currentField, 'ASL_\d+', 'once'))
 			x.Output.ASL = rmfield(x.Output.ASL, currentField);
 			if ~bIssuedWarningAboutExtraFields
 				% Obsolete fields are present, report a warning once
-				warning('QC parameters for ASL are now provided inside x.Output.ASL.ASL_X for session X. Obsolete fields directly in x.Output.ASL were detected and removed.')
-				bIssuedWarningAboutExtraFields = 1;
+				warning('QC parameters for ASL are now provided inside field x.Output.ASL.ASL_n for run n (e.g. ASL_1 ASL_2 ASL_3) instead of x.Output.ASL');
+                fprintf('%s\n', 'The QC output of previous ExploreASL runs of the ASL module were deleted from x.Output.ASL');
+                fprintf('%s\n', '(and will be removed from the resulting QC_*.json file)');
+				bIssuedWarningAboutExtraFields = true;
 			end
 		end
 	end
