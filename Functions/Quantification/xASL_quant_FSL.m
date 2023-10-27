@@ -113,6 +113,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 		if ~isempty(sessionsToMerge) && strcmp(x.SESSION, sessionsToMerge{end})
 
 			bMergingSessions = 1; 
+            bUseFabber = 1; 
 
 			% Find PWI4Ds of the sessions to merge and concatenate them
 			imPWI4Dconcatenated = [];
@@ -500,7 +501,7 @@ switch lower(x.Q.LabelingType)
             if bMergingSessions
                 CurrentASLJSONdir = fullfile(x.dir.SESSIONDIR,'/ASL4D.json');
 
-                for iSession = 1: numel(sessionsToMerge)
+                for iSession = 1: numel(sessionsToMerge(2:end))
                     sessionsToMergeJSONdir = replace (CurrentASLJSONdir, x.SESSION,sessionsToMerge{iSession});
 
                     sessionsToMergeJSON = spm_jsonread(sessionsToMergeJSONdir);
