@@ -2,7 +2,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig(layoutStructure, x, currentFigur
 % xASL_qc_ParsePdfConfig function used by xASL_qc_GenerateReport to parse the configuration file loaded by xASL_adm_LoadPdfConfig.
 %   
 %   
-% FORMAT: xASL_qc_ParsePdfConfig(json, x, currentFigure, line, settingsPDF)
+% FORMAT: xASL_qc_ParsePdfConfig(layoutStructure, x[, currentFigure, line, settingsPDF])
 %
 % INPUT:
 %   layoutStructure     - json structure containing all information to be printed (REQUIRED)
@@ -22,7 +22,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig(layoutStructure, x, currentFigur
 %               This function will run recursively, and will print all text, images, scans and other content specified in the json file.
 %               The json file should contain a structure with fields specified in the manual.
 % 
-% EXAMPLE: xASL_qc_ParsePdfConfig(x);
+% EXAMPLE: xASL_qc_ParsePdfConfig(layoutStructure, x);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
 
