@@ -228,39 +228,6 @@ else
 	end
 end
 
-if x.modules.asl.bMultiTE == 1 && x.modules.asl.bMultiPLD == 1 % This causes a problem for recognizing HAD8 as DEBBIE (no bMultiTE), that's why I've added the TimeEncoded check
-    x.modules.asl.bAutomaticMerging = 1;
-elseif x.modules.asl.bTimeEncoded == 1
-    x.modules.asl.bAutomaticMerging = 1;  
-else
-    x.modules.asl.bAutomaticMerging = 0;
-end
-if x.modules.asl.bAutomaticMerging == 1
-    if ~isfield(x.modules.asl,'MergingList') || isempty(x.modules.asl.MergingList)
-        % No sessions list provided by the user
-        N_sessions = length(x.SESSIONS);
-        if mod(N_sessions,2) == 1
-            %Odd nr of sessions
-            warning('The number of sessions is not even. Please provide the pairs of sessions in dataPar, correspondant to the pairs you want to concatenate before quantification')
-        else
-            %Even nr of sessions -> JAN: Now it runs this both times,
-            %because x.modules.asl.MergingList is not saved from session1
-            N_pairs = N_sessions/2;
-            SessionsList = cell(N_pairs,2);
-            for i=1:N_sessions
-                SessionsList{i} = sprintf('ASL_%d',i);
-            end
-            x.modules.asl.MergingList = SessionsList;
-        end
-    else
-        % There is a sessions list provided by the user
-        if mod(length(x.modules.asl.MergingList),2) == 1
-            warning('The number of sessions is not even. Please provide the pairs of sessions in dataPar, correspondant to the pairs you want to concatenate before quantification')
-        else
-            % JAN: suggestiong on how do we verify is the list provided by the user is correct?
-        end
-    end
-end
 
 %% E1. Default quantification parameters in the Q field
 if ~isfield(x.modules.asl,'ApplyQuantification') || isempty(x.modules.asl.ApplyQuantification)
