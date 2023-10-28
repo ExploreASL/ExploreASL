@@ -48,9 +48,9 @@ function [result, x] = xASL_module_LongReg(x)
 %% --------------------------------------------------------------
 %% Administration
 [x] = xASL_init_SubStructs(x);
-[x, bLocked] = xASL_init_InitializeMutex(x, 'LongReg'); % starts mutex locking process to ensure that everything will run only once
+x = xASL_init_InitializeMutex(x, 'LongReg'); % starts mutex locking process to ensure that everything will run only once
 
-if bLocked
+if x.mutex.bAnyModuleLocked
     % If any module is locked for this subject, we skip this module for
     % this subject
     result = true;

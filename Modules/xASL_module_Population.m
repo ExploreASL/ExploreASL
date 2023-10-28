@@ -70,9 +70,9 @@ if ~bHasASL
     warning('Detected no ASL scans, skipping ASL-specific parts of the Population module');
 end
 
-[x, bLocked] = xASL_init_InitializeMutex(x, 'Population'); % starts mutex locking process to ensure that everything will run only once
+x = xASL_init_InitializeMutex(x, 'Population'); % starts mutex locking process to ensure that everything will run only once
 
-if bLocked
+if x.mutex.bAnyModuleLocked
     % If any module is locked, we skip this module
     result = true;
     return;
