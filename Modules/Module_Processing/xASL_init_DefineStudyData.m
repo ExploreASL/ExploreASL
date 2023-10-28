@@ -302,7 +302,7 @@ end
 % ------------------------------------------------------------------------------------------------
 %% 7) Parallelization: If running parallel, select cases for this worker
 if x.opts.nWorkers>1
-    nSubjPerWorker = x.dataset.nSubjects/x.opts.nWorkers; % ceil to make sure all subjects are processed
+    nSubjPerWorker = x.dataset.nSubjects/x.opts.nWorkers;
 
     % e.g., if nWorkers=3 & nSubjects=10
     % iWorker 1 does [1 2 3]
