@@ -1,4 +1,4 @@
-function [x, bLocked] = xASL_init_InitializeMutex(x, ModuleName)
+function [x] = xASL_init_InitializeMutex(x, ModuleName)
 %xASL_init_InitializeMutex Initialize mutex system for ExploreASL modules
 %
 % FORMAT: [x] = xASL_init_InitializeMutex(x, ModuleName)
@@ -66,8 +66,6 @@ end
 x.mutex = xASL_GoNoGo(x.dir.LockDir);
 
 %% 3) Check if this module is locked by another process
-bLocked = 0;
-
 if ~x.mutex.Lock(x.settings.MUTEXID)
 	fprintf(2,['ERROR in module_' x.ModuleName ': mutex is locked: %s in %s\n'], x.settings.MUTEXID, x.dir.LockDir);
 	fprintf('\n');
@@ -77,7 +75,7 @@ if ~x.mutex.Lock(x.settings.MUTEXID)
     fprintf('Otherwise this error can be ignored\n');
     fprintf('\n');
 
-    bLocked = 1;
+    x.mutex.bAnyModuleLocked = true;
 else
     
     %% 4) Check if any module for this subject is locked
@@ -127,7 +125,7 @@ else
                             fprintf('Otherwise this error can be ignored\n');
                             fprintf('\n');
             
-                            bLocked = 1;
+                            x.mutex.bAnyModuleLocked = true;
                         end
                     end
                 end
