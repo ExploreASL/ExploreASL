@@ -29,6 +29,16 @@ classdef xASL_GoNoGo < handle
         Root = []; % root directory for storing lock files
     end
     
+    properties
+        bAnyModuleLocked = false;
+        % Here, we default this boolean to false, inside xASL_init_InitializeMutex
+        % this boolean is set to true if any other module is locked for the
+        % same subject-session-run
+        
+        % Because we want to ensure that if one module is locked, no other module will run in parallel 
+        % for the same subject-session-run
+    end
+
     properties (SetAccess = private)
         ID = [];
         Locked = false;
