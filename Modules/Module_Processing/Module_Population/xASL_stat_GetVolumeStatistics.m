@@ -58,20 +58,16 @@ for iSubject=1:x.dataset.nSubjects
     CSF_vol{iSubject,1}         = x.SUBJECTS{iSubject};
     GM_ICVRatio{iSubject,1}     = x.SUBJECTS{iSubject};
     GMWM_ICVRatio{iSubject,1}   = x.SUBJECTS{iSubject};
+    WMH_vol{iSubject,1}         = x.SUBJECTS{iSubject};
+    WMH_count{iSubject,1}       = x.SUBJECTS{iSubject};
 
     GM_vol{iSubject,2}          = NaN;
     WM_vol{iSubject,2}          = NaN;
     CSF_vol{iSubject,2}         = NaN;
     GM_ICVRatio{iSubject,2}     = NaN;
     GMWM_ICVRatio{iSubject,2}   = NaN;    
-    
-    if HasWMH
-        WMH_vol{iSubject,1}         = x.SUBJECTS{iSubject};
-        WMH_count{iSubject,1}       = x.SUBJECTS{iSubject};
-
-        WMH_vol{iSubject,2}         = NaN;
-        WMH_count{iSubject,2}       = NaN;
-    end
+    WMH_vol{iSubject,2}         = NaN;
+    WMH_count{iSubject,2}       = NaN;
 
     DidExist = 0;
     if exist(PathCSV,'file')
@@ -105,6 +101,7 @@ for iSubject=1:x.dataset.nSubjects
     PathCSV = xASL_adm_GetFileList(x.D.TissueVolumeDir, ['(?i)^WMH_LST_(LGA|LPA)_' x.SUBJECTS{iSubject} '(\.csv|\.tsv)$'], 'FPList', [0 Inf]);
     
     DidExist = 0;
+
     if ~isempty(PathCSV)
         DidExist = 1;
         try
@@ -124,11 +121,14 @@ for iSubject=1:x.dataset.nSubjects
             fprintf('%s\n', ME.message);
         end
     end
-    if HasWMH && DidExist==0
-        fprintf('%s\n', ['WMH volume for subject ' x.SUBJECTS{iSubject} ' was not found']);
+    if HasWMH && ~DidExist
+        % when a native space FLAIR exists, but a standard space WMH does
+        % not exist, we want to default and issue this message
+        fprintf('\n%s\n', ['WMH volume for subject ' x.SUBJECTS{iSubject} ' was not found']);
         vol(iSubject,4:5) = NaN;
-    elseif HasWMH && DidExist==1
-        fprintf('%s\n', ['WMH volume for subject ' x.SUBJECTS{iSubject} ' could not be read']);
+    elseif ~HasWMH
+        % when a native space FLAIR does not exists, we want to default
+        % only
         vol(iSubject,4:5) = NaN;
     end    
 end
@@ -145,6 +145,8 @@ VarData = {GM_vol WM_vol CSF_vol GM_ICVRatio GMWM_ICVRatio};
 if bAnyWMHFound
     VarName(end+1:end+2) = {'WMH_vol' 'WMH_count'};
     VarData(end+1:end+2) = {WMH_vol WMH_count};
+else
+    fprintf('%s\n', 'No WMH detected, so not reporting this in participants.tsv');
 end
     
 for iData=1:length(VarData)
