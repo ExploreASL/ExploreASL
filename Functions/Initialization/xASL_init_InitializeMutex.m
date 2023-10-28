@@ -63,6 +63,8 @@ end
 
 %% --------------------------------------------------------
 %% 2) Initialize mutex object
+% xASL_GoNoGo initializes the x.mutex object and states, and it deals with
+% locking of the current module only
 x.mutex = xASL_GoNoGo(x.dir.LockDir);
 
 %% 3) Check if this module is locked by another process
@@ -79,8 +81,12 @@ if ~x.mutex.Lock(x.settings.MUTEXID)
 else
     
     %% 4) Check if any module for this subject is locked
+    % Here we check if any other module for the same subject is locked.
+    % So whereas xASL_GoNoGo in step 2 above only checks the current
+    % module, here we check if ANY module for this subject is locked.
+
     if ~strcmpi(x.ModuleName, 'population')
-        % Here we check if any other module for the same subject is locked.
+
         % If the current module is the population module, we don't need to
         % perform this check because the population module is cannot be
         % iterated over subjects, it is always run once.
