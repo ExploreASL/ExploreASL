@@ -80,7 +80,13 @@ else
     
     %% 4) Check if any module for this subject is locked
     if ~strcmpi(x.ModuleName, 'population')
-        % the population module is subject-independent
+        % Here we check if any other module for the same subject is locked.
+        % If the current module is the population module, we don't need to
+        % perform this check because the population module is cannot be
+        % iterated over subjects, it is always run once.
+        % Plus, at the start of the population module itself, we already
+        % check if nWorkers>1, in which case we skip the population module
+        % (== the population module should not run in parallel).
         if ~isfield(x, 'mutex') || ~isprop(x.mutex, 'Root')
             warning('mutex field missing, something odd going wrong');
         else
