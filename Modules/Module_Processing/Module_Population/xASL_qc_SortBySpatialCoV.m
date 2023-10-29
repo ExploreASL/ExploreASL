@@ -99,7 +99,7 @@ for iSubject=1:x.dataset.nSubjects
         % find current sCoV
         Index = find(cellfun(@(y) strcmp(y, NameSubjSess), subjectSessionList));
         
-        if isempty(JPGlist) % if we did not find an ASL jpg image, skip this subject-session
+        if isempty(JPGList) % if we did not find an ASL jpg image, skip this subject-session
             fprintf('\n');
             warning(['Missing transversal ASL jpg image in ' x.D.ASLCheckDir]);
             fprintf('%s\n\n', ['Did something go wrong in the ASL module for ' NameSubjSess '?']);
