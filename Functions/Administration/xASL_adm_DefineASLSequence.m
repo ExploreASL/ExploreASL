@@ -27,6 +27,21 @@ if ~isfield(x.Q, 'readoutDim') || isempty(x.Q.readoutDim)
     warning('x.Q.readoutDim parameter missing');
 end
 
+% Check for illegal sequence definitions
+if isfield(x.Q,'Sequence')
+    if isempty(regexpi(x.Q.Sequence, '(2d_epi|3d_grase|3d_spiral)'))
+        warning('Unknown ASL sequence');
+
+        if strcmpi(x.Q.readoutDim,'2D')
+            x.Q.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of Vendor
+            fprintf('%s\n', '2D readout detected, assuming 2D EPI');
+        end
+    end
+end
+
+% Assume vendor=GE for 3D spiral sequences 
+% (though this is tricky for special cases, Siemens and Philips are both
+% working on a 3D spiral)
 if isfield(x.Q,'Sequence') && (~isfield(x.Q, 'Vendor') || isempty(x.Q.Vendor))
     if strcmpi(x.Q.Sequence,'3d_spiral')
         warning('x.Q.Vendor missing but 3D spiral sequence detected, assuming vendor GE');
@@ -47,10 +62,13 @@ end
 if ~isfield(x.Q,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Vendor')
     if strcmpi(x.Q.readoutDim,'2D')
        x.Q.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of Vendor
+       fprintf('%\s', '2D readout detected, assuming 2D EPI');
     elseif strcmpi(x.Q.readoutDim,'3D') && ( ~isempty(regexpi(x.Q.Vendor,'Philips')) || ~isempty(regexpi(x.Q.Vendor,'Siemens')) )
            x.Q.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
+           fprintf('%\s', '3D readout detected with vendor Philips or Siemens, assuming 3D GRASE');
     elseif strcmpi(x.Q.readoutDim,'3D') && ~isempty(regexpi(x.Q.Vendor,'GE'))
            x.Q.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
+           fprintf('%\s', '3D readout detected with vendor GE, assuming 3D spiral');
     elseif strcmpi(x.Q.readoutDim,'3D') && ~isempty(regexpi(x.Q.Vendor,'Gold Standard Phantoms'))
         x.Q.Sequence = '3D_GRASE'; % assume that this is simulated 3D GRASE by the DRO
         fprintf('%s\n', 'Processing as if this is a 3D GRASE sequence');
