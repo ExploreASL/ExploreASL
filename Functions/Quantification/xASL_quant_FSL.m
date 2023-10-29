@@ -534,12 +534,12 @@ switch lower(x.Q.LabelingType)
 
         			if length(NewEchoTimes) == 1
         				% For a single-TE, we have to repeat it for each volume
-        				for iTE_new = iPLD+1:(New_nVolume+nVolume) 
+        				for iTE_new = iTE+1:(New_nVolume+nVolume) % starting from the last iTE
         					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE_new, NewEchoTimes(1));
         				end
         			else
                         % For multi-TE, we print all of them
-        				for iTE_new = iPLD+1:(New_nVolume+nVolume) 
+        				for iTE_new = iTE+1:(New_nVolume+nVolume) % starting from the last iTE
                             NewEchoTimesVector = repmat (NewEchoTimes',1,length(NewPLDs));
         					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE_new, NewEchoTimesVector(iTE_new-iTE));
         				end
