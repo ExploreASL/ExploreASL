@@ -44,50 +44,45 @@ if nargin<2 || isempty(Threshold)
     Threshold = 0.95; % default threshold
 end
 
-PathTemplateSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskSusceptibility' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList');
 
-bSkipStandard = 0;
+
+bSkipStandard = false;
 
 if x.dataset.nSubjectsSessions<16
     % With too small datasets, created templated are not reliable
     fprintf('\n\n%s\n\n', ['Only n=' num2str(x.dataset.nSubjectsSessions) ' subject*runs, population-based analysis mask may not be useful']);
     % x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask);
     % x.S.VBAmask = x.S.MaskSusceptibility;
-    % bSkipStandard = 1;
-elseif isempty(PathTemplateSusceptibilityMask)
-    warning('Missing susceptibility maps, skipping...');
-    bSkipStandard = 1;
 end
 
-% We skip creating a group mask if we have fewer images than specified above.
+PathTemplateSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskSusceptibility' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList');
+PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskVascular' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^T1' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
+
+pathsTemplates = {'PathTemplateSusceptibilityMask' 'PathFoV' 'PathVascularMask' 'PathpGM' 'PathpWM' 'PathpCSF' 'PathT1'};
+
+for iTemplate=1:length(pathsTemplates)
+    nameTemplate = pathsTemplates{iTemplate};
+    pathTemplate = eval(nameTemplate);
+    if isempty(pathTemplate)
+        warning(['Skipping because of missing template: ' nameTemplate]);
+        bSkipStandard = true;
+    end
+end
+
 % Not sure if this is the same for the NativeSpaceAnalysis, this still has to be fixed by Jan.
 if bSkipStandard && ~x.modules.population.bNativeSpaceAnalysis
     return;
 end
 
 
-
-% Define pre-existing paths, including warning when less or more than 1 are found
-% First for SubjectsSessions (e.g. ASL)
-PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
-PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskVascular' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
-
-% Then for Subjects (e.g. structural)
-PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pGM' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
-PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pWM' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
-PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pCSF' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
-PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^T1' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
-
-if ~isempty(PathTemplateSusceptibilityMask); PathTemplateSusceptibilityMask = PathTemplateSusceptibilityMask{1}; end
-if ~isempty(PathFoV); PathFoV = PathFoV{1}; end
-if ~isempty(PathVascularMask); PathVascularMask = PathVascularMask{1}; end
-if ~isempty(PathpGM); PathpGM = PathpGM{1}; end
-if ~isempty(PathpWM); PathpWM = PathpWM{1}; end
-if ~isempty(PathpCSF); PathpCSF = PathpCSF{1}; end
-if ~isempty(PathT1); PathT1 = PathT1{1}; end
-
-
 if ~bSkipStandard
+    % PM: these fallbacks for anatomical templates could be removed,
+    % because the ASL modules won't run without anatomical images.
+    % If a dataset doesn't have T1w images, these can be supplied using 
+    % x.modules.asl.bUseMNIasDummyStructural == 1
+    
     if isempty(PathpGM)
         warning('Missing pGM image, using MNI version');
         PathpGM = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii');
@@ -95,7 +90,7 @@ if ~bSkipStandard
     if isempty(PathpWM)
         warning('Missing pWM image, using MNI version');
         PathpWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii');
-    end    
+    end
     
 	%% Creation GM, WM & WholeBrain masks by p>0.5
 	GMmask = xASL_io_Nifti2Im(PathpGM)>0.5;
