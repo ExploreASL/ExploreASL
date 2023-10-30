@@ -58,7 +58,11 @@ end
 PathTemplateSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskSusceptibility' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList');
 PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
 PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskVascular' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
+
 PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^T1' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pGM' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pWM' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
+PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pCSF' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
 
 pathsTemplates = {'PathTemplateSusceptibilityMask' 'PathFoV' 'PathVascularMask' 'PathpGM' 'PathpWM' 'PathpCSF' 'PathT1'};
 
