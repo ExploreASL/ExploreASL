@@ -30,7 +30,9 @@ end
 % Check for illegal sequence definitions
 if isfield(x.Q,'Sequence')
     if isempty(regexpi(x.Q.Sequence, '(2d_epi|3d_grase|3d_spiral)'))
-        warning('Unknown ASL sequence');
+        warning(['Unknown ASL sequence: ' xASL_num2str(x.Q.Sequence)]);
+        fprintf('%s\n', 'Trying to fix this');
+        x.Q = rmfield(x.Q, 'Sequence');
 
         if strcmpi(x.Q.readoutDim,'2D')
             x.Q.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of Vendor
