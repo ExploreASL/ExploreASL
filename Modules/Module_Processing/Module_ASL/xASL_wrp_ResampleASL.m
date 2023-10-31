@@ -345,23 +345,24 @@ end
 % 9. Save PWI NIfTI & time-series-related maps (SD, SNR)
 MaskIM = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rgrey.nii'));
 MaskIM = MaskIM>(0.7*max(MaskIM(:)));
-PWI4D = xASL_stat_MeanNan(ASL_im, 4); % repeat this here, in case it is skipped above for single volumes (e.g. GE 3D spiral)
 
-if size(ASL_im, 4)>3
+if size(PWI4D, 4)>3
+    %% PM: here we need to use the positions for the earliest echo, and the latest PLD-labdur
+    
     % Save SD & SNR maps
-    SD = xASL_stat_StdNan(ASL_im, 0, 4);
+    SD = xASL_stat_StdNan(PWI4D, 0, 4); 
     SNR = PWI4D./SD;
     SNR(SNR<0) = 0; % clip @ zero    
     
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Pop_Path_SD, SD ,[], 0);
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Pop_Path_SNR, SNR, [], 0);
+    xASL_io_SaveNifti(x.P.Path_PWI, x.P.Pop_Path_SD, SD ,[], 0);
+    xASL_io_SaveNifti(x.P.Path_PWI, x.P.Pop_Path_SNR, SNR, [], 0);
     fprintf('%s\n','Standard space SD & SNR saved, & part1 & part2 for reproducibility');
 
     
     % Calculate two halves, for reproducibility (wsCV) CBF & spatial CoV
-    HalfVol                         = round(size(ASL_im,4)/2);
-    Part1                           = xASL_stat_MeanNan(ASL_im(:,:,:,1:HalfVol),4);
-    Part2                           = xASL_stat_MeanNan(ASL_im(:,:,:,HalfVol+1:end),4);
+    HalfVol                         = round(size(PWI4D,4)/2);
+    Part1                           = xASL_stat_MeanNan(PWI4D(:,:,:,1:HalfVol),4);
+    Part2                           = xASL_stat_MeanNan(PWI4D(:,:,:,HalfVol+1:end),4);
 
     % Determine mask
     if isequal(size(MaskIM),size(Part1),size(Part2))
@@ -383,12 +384,12 @@ if size(ASL_im, 4)>3
 
     fprintf('%s\n',['pGM>0.7: wsCV mean CBF = ' num2str(wsCV_mean,3) '%, wsCV spatial CoV = ' num2str(wsCV_CoV,3) '%'])
 
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,fullfile(x.D.PopDir,['PWI_part1_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part1, 32);
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D,fullfile(x.D.PopDir,['PWI_part2_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part2, 32);
+    xASL_io_SaveNifti(x.P.Path_PWI,fullfile(x.D.PopDir,['PWI_part1_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part1, 32);
+    xASL_io_SaveNifti(x.P.Path_PWI,fullfile(x.D.PopDir,['PWI_part2_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part2, 32);
     fprintf('%s\n','Also saved part1 & part2 for reproducibility');
     
 else
-    fprintf('%s\n',['Standard space SD, SNR & reproducibility part1 & part2 maps were skipped, had only ' num2str(size(ASL_im,4)) ' volumes(s)']);
+    fprintf('%s\n',['Standard space SD, SNR & reproducibility part1 & part2 maps were skipped, had only ' num2str(size(PWI4D,4)) ' volumes(s)']);
 end
 
 
@@ -408,6 +409,8 @@ end
 
 %% ------------------------------------------------------------------------------------------
 % 11. Report spatial CoV as QC
+%% PM: here we also need PWI4D for the first TE and last PLD/labdur
+
 CoV0 = xASL_stat_ComputeSpatialCoV(PWI4D, MaskIM)*100;
 fprintf('%s\n',['Standard space spatial CoV pGM>0.7 = ' num2str(CoV0,3) '%']);
 
