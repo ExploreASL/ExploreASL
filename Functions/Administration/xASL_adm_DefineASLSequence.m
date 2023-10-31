@@ -6,8 +6,8 @@ function [x] = xASL_adm_DefineASLSequence(x)
 %
 % INPUT:
 %   x                - x structure containing all input parameters (REQUIRED)
-%   x.Q.readoutDim   - dimensionality of readout (2D or 3D)
-%   x.Q.Vendor       - Either 'GE', 'Philips', 'Siemens'
+%   x.Q.readoutDim   - dimensionality of readout (2D or 3D) (OPTIONAL)
+%   x.Q.Vendor       - Either 'GE', 'Philips', 'Siemens' (OPTIONAL)
 % OUTPUT:
 %   x               - x structure containing all output parameters
 %   x.Q.Sequence    - sequence type (readout)
@@ -19,7 +19,7 @@ function [x] = xASL_adm_DefineASLSequence(x)
 %
 % EXAMPLE: x = xASL_adm_DefineASLSequence(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 
 %% Check quantification fields readoutDim & x.Q.Sequence
@@ -59,27 +59,30 @@ end
 
 %% Try to work out which ASL sequence we have
 % First assume that 2D is 2D EPI, irrespective of Vendor
-if ~isfield(x.Q,'Sequence') && isfield(x.Q,'readoutDim') && strcmpi(x.Q.readoutDim,'2D')
-    x.Q.Sequence = '2D_EPI';
-    fprintf('%\s', '2D readout detected, assuming 2D EPI');
-elseif ~isfield(x.Q,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Vendor')
-   
-    if strcmpi(x.Q.readoutDim,'3D') && ( ~isempty(regexpi(x.Q.Vendor,'Philips')) || ~isempty(regexpi(x.Q.Vendor,'Siemens')) )
-           x.Q.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
-           fprintf('%\s', '3D readout detected with vendor Philips or Siemens, assuming 3D GRASE');
-    elseif strcmpi(x.Q.readoutDim,'3D') && ~isempty(regexpi(x.Q.Vendor,'GE'))
-           x.Q.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
-           fprintf('%\s', '3D readout detected with vendor GE, assuming 3D spiral');
-    elseif strcmpi(x.Q.readoutDim,'3D') && ~isempty(regexpi(x.Q.Vendor,'Gold Standard Phantoms'))
-        x.Q.Sequence = '3D_GRASE'; % assume that this is simulated 3D GRASE by the DRO
-        fprintf('%s\n', 'Processing as if this is a 3D GRASE sequence');
-        fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of a single 3D volume');
-        fprintf('%s\n', 'and intermediate amount of geometric distortion and smoothness');
-    elseif strcmpi(x.Q.readoutDim,'2D') && ~isempty(regexpi(x.Q.Vendor,'Gold Standard Phantoms'))
-        fprintf('%s\n', 'Processing as if this is a 2D EPI sequence');
-        fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of multi-slice 2D acquisitions');
-        fprintf('%s\n', 'and heavy geometric distortion and minimal smoothness');
-    end
+if ~isfield(x.Q, 'Sequence') && isfield(x.Q, 'readoutDim') 
+	if strcmpi(x.Q.readoutDim,'2D')
+		x.Q.Sequence = '2D_EPI';
+		if ~isempty(regexpi(x.Q.Vendor,'Gold Standard Phantoms'))
+			fprintf('%s\n', 'Processing as if this is a 2D EPI sequence');
+			fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of multi-slice 2D acquisitions');
+			fprintf('%s\n', 'and heavy geometric distortion and minimal smoothness');
+		else
+			fprintf('%\s', '2D readout detected, assuming 2D EPI');
+		end
+	elseif isfield(x.Q, 'Vendor') && strcmpi(x.Q.readoutDim,'3D')
+		if  ~isempty(regexpi(x.Q.Vendor, 'Philips')) || ~isempty(regexpi(x.Q.Vendor, 'Siemens'))
+			x.Q.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
+			fprintf('%\s', '3D readout detected with vendor Philips or Siemens, assuming 3D GRASE');
+		elseif ~isempty(regexpi(x.Q.Vendor, 'GE'))
+			x.Q.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
+			fprintf('%\s', '3D readout detected with vendor GE, assuming 3D spiral');
+		elseif ~isempty(regexpi(x.Q.Vendor, 'Gold Standard Phantoms'))
+			x.Q.Sequence = '3D_GRASE'; % assume that this is simulated 3D GRASE by the DRO
+			fprintf('%s\n', 'Processing as if this is a 3D GRASE sequence');
+			fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of a single 3D volume');
+			fprintf('%s\n', 'and intermediate amount of geometric distortion and smoothness');
+		end
+	end
 end
 
 %% Warn if we couldn't detect a sequence, default to 3D spiral
