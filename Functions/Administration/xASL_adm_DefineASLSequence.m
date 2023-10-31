@@ -34,10 +34,6 @@ if isfield(x.Q,'Sequence')
         fprintf('%s\n', 'Trying to fix this');
         x.Q = rmfield(x.Q, 'Sequence');
 
-        if strcmpi(x.Q.readoutDim,'2D')
-            x.Q.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of Vendor
-            fprintf('%s\n', '2D readout detected, assuming 2D EPI');
-        end
     end
 end
 
@@ -61,11 +57,13 @@ end
 
 
 % Obtain ASL sequence
-if ~isfield(x.Q,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Vendor')
-    if strcmpi(x.Q.readoutDim,'2D')
-       x.Q.Sequence = '2D_EPI'; % assume that 2D is 2D EPI, irrespective of Vendor
-       fprintf('%\s', '2D readout detected, assuming 2D EPI');
-    elseif strcmpi(x.Q.readoutDim,'3D') && ( ~isempty(regexpi(x.Q.Vendor,'Philips')) || ~isempty(regexpi(x.Q.Vendor,'Siemens')) )
+% First assume that 2D is 2D EPI, irrespective of Vendor
+if ~isfield(x.Q,'Sequence') && isfield(x.Q,'readoutDim') && strcmpi(x.Q.readoutDim,'2D')
+    x.Q.Sequence = '2D_EPI';
+    fprintf('%\s', '2D readout detected, assuming 2D EPI');
+elseif ~isfield(x.Q,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Vendor')
+   
+    if strcmpi(x.Q.readoutDim,'3D') && ( ~isempty(regexpi(x.Q.Vendor,'Philips')) || ~isempty(regexpi(x.Q.Vendor,'Siemens')) )
            x.Q.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
            fprintf('%\s', '3D readout detected with vendor Philips or Siemens, assuming 3D GRASE');
     elseif strcmpi(x.Q.readoutDim,'3D') && ~isempty(regexpi(x.Q.Vendor,'GE'))
@@ -82,6 +80,7 @@ if ~isfield(x.Q,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Vendor
         fprintf('%s\n', 'and heavy geometric distortion and minimal smoothness');
     end
 end
+
 if ~isfield(x.Q,'Sequence') || isempty(x.Q.Sequence)
     warning('No x.Q.Sequence defined');
     fprintf('If there are multiple sequence types, this needs to be implemented yet here\n');
