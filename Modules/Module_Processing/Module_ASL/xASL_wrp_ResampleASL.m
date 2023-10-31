@@ -282,7 +282,9 @@ for iSpace=1:2
         nLabDur = length(x.Q.LabelingDuration);
         factorLabDur = nVolumes/nLabDur;
         LabDuration = repmat(x.Q.LabelingDuration, [factorLabDur 1]);
-        
+
+
+        %% 1) Create PWI4D
         if dim4>1 && ~x.modules.asl.bContainsDeltaM
             % Paired subtraction
             [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
@@ -293,21 +295,32 @@ for iSpace=1:2
             initialPLD_PWI4D = initialPLD(1:2:end);
             % Do the same for LabDur
             LabDuration_PWI4D = LabDuration(1:2:end);
-
-			% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
-			% indexAverage_PLD_LabDur lists for each original position to where it should be averaged
-			[~, ~, iUnique_PLD_LabDur] = unique(unique([initialPLD_PWI4D, LabDuration_PWI4D], 'stable', 'rows'), 'stable', 'rows');
-
-            % MultiPLD-multiLabDur PWI3D after averaging
-			PWI3D = zeros(size(PWI4D,1), size(PWI4D,2), size(PWI4D,3), max(iUnique_PLD_LabDur)); % preallocate PWI
-            for iPLD_LabDur = 1:max(iUnique_PLD_LabDur)
-                PWI3D(:, :, :, iPLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, iUnique_PLD_LabDur == iPLD_LabDur), 4); % Averaged PWI4D 
-            end
-        else
+        else % the same but then without subtraction
             PWI4D = ASL_im;
+            
+            initialPLD_PWI4D = initialPLD;
+            LabDuration_PWI4D = LabDuration;
         end
-        
-        PWI3D = xASL_stat_MeanNan(PWI4D, 4);
+       
+        %% 2) Create PWI3D
+
+		% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
+		% indexAverage_PLD_LabDur lists for each original position to where it should be averaged
+		[~, ~, iUnique_PLD_LabDur] = unique(unique([initialPLD_PWI4D, LabDuration_PWI4D], 'stable', 'rows'), 'stable', 'rows');
+
+        % MultiPLD-multiLabDur PWI3D after averaging
+        for iPLD_LabDur = 1:max(iUnique_PLD_LabDur)
+            PWI3D(:, :, :, iPLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, iUnique_PLD_LabDur == iPLD_LabDur), 4); % Averaged PWI4D 
+        end
+
+        %% 3) Create PWI
+        % We create a dummy CBF image for registration purposes
+        % The earliest echo, and latest PLD-labeling duration combination
+        % are the best for this, having most SNR and CBF-weighting,
+        % respectively
+
+        PWI = PWI3D(:, :, :, iPLD_LabDur==max(iUnique_PLD_LabDur));
+
     end
     
     
