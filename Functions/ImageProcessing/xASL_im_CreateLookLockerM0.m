@@ -18,9 +18,12 @@ asl_calib_M0 = fullfile(asl_calib_directory ,'M0t.nii');
 if ~exist(asl_calib_directory,'dir')
     mkdir(asl_calib_directory)
 end
-% add LL recovery correction !!!!!!!!!!!!!!
+% Look-Locker recovery correction 
+ControlImage = xASL_io_Nifti2Im(PathControl4D);
+xASL_im_LookLockerIntensityCorrection(x.P.Path_ASL4D, PathControl4D, ControlImage , x);
+
 TIstring = regexprep(num2str((x.Q.Initial_PLD(1:end/2)/1000)'),' +', ',');
-ASL_Calib_Options = ['-c ' PathControl4D ' --mode satrecov --tissref wm --te  13.894  -m ' x.P.Path_PVwm ' --tis ' TIstring ' --fa ' num2str(x.Q.FlipAngle) ' -o ' asl_calib_directory];
+ASL_Calib_Options = ['-c ' PathControl4D ' --mode satrecov --tissref wm --te  ' num2str(x.EchoTime) '  -m ' x.P.Path_PVwm ' --tis ' TIstring ' --fa ' num2str(x.Q.FlipAngle) ' -o ' asl_calib_directory];
 [~, resultFSL] = xASL_fsl_RunFSL(['asl_calib ' ASL_Calib_Options], x);
 xASL_Copy(asl_calib_M0,x.P.Path_M0);
 

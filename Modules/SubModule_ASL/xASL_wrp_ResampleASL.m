@@ -298,7 +298,7 @@ for iSpace=1:2
                 
                 if iSpace == 1 % only for native space
                     PathControl4D = fullfile(x.dir.SESSIONDIR ,'Control4D_FSLInput.nii');
-                    xASL_im_LookLockerIntensityCorrection(PathASL{iSpace}, PathControl4D, ControlIm, x); % correct Look-Locker PWI for steady state magnetisation effects and save                end
+                    xASL_io_SaveNifti(PathASL{iSpace}, PathControl4D, ControlIm, [], 0); % use PWI4D path
                 end
             else
                 Initial_PLD_PWI = x.Q.Initial_PLD(1:2:end);
