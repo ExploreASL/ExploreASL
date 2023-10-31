@@ -22,7 +22,7 @@ function [x] = xASL_adm_DefineASLSequence(x)
 % Copyright 2015-2021 ExploreASL
 
 
-%% Check Quantification fields
+%% Check quantification fields readoutDim & x.Q.Sequence
 if ~isfield(x.Q, 'readoutDim') || isempty(x.Q.readoutDim)
     warning('x.Q.readoutDim parameter missing');
 end
@@ -37,6 +37,7 @@ if isfield(x.Q,'Sequence')
     end
 end
 
+%% Check vendor field
 % Assume vendor=GE for 3D spiral sequences 
 % (though this is tricky for special cases, Siemens and Philips are both
 % working on a 3D spiral)
@@ -56,7 +57,7 @@ elseif ~isempty(regexpi(x.Q.Vendor, 'Gold Standard Phantoms'))
 end
 
 
-% Obtain ASL sequence
+%% Try to work out which ASL sequence we have
 % First assume that 2D is 2D EPI, irrespective of Vendor
 if ~isfield(x.Q,'Sequence') && isfield(x.Q,'readoutDim') && strcmpi(x.Q.readoutDim,'2D')
     x.Q.Sequence = '2D_EPI';
@@ -81,6 +82,10 @@ elseif ~isfield(x.Q,'Sequence') && isfield(x.Q,'readoutDim') && isfield(x.Q, 'Ve
     end
 end
 
+%% Warn if we couldn't detect a sequence, default to 3D spiral
+% We default to 3D spiral because this sequence has whole-brain coverage
+% and negligible geometric distortion, so we don't do any special
+% readout-specific image processing for this sequence
 if ~isfield(x.Q,'Sequence') || isempty(x.Q.Sequence)
     warning('No x.Q.Sequence defined');
     fprintf('If there are multiple sequence types, this needs to be implemented yet here\n');
