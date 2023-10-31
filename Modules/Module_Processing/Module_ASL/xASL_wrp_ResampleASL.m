@@ -231,7 +231,8 @@ for iSpace=1:2
     % =====================================================================
     % A) Check subtraction
     if numel(size(ASL_im))>4
-        error('Unknown multi-dimensionality of ASL4D.nii');
+        warning('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions');
+        error(['NIfTI has more than 4 dimensions: ' PathASL4D{iSpace}]);
         
     elseif dim4>1 && round(dim4/2)~=dim4/2
         warning('Odd (i.e., not even) number of control-label pairs, skipping');
