@@ -25,7 +25,7 @@ function [x] = xASL_init_InitializeMutex(x, ModuleName)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [x] = xASL_init_InitializeMutex(x, 'xASL_module_Structural')
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 % Check inputs
 if ~isfield(x.settings,'RERUN') || ~isfield(x.settings,'MUTEXID') || ~isfield(x.dir,'LockDir')
@@ -98,38 +98,46 @@ else
         else
             [~, subjectName] = fileparts(x.mutex.Root);
             lockDir = fullfile(x.dir.xASLDerivatives, 'lock');
-            moduleDirs = xASL_adm_GetFileList(lockDir, '.*', 'FPList', [], 1);
+						
+			% Go through all module that have lock dirs already and are thus potentially locked
+			checkModuleList = xASL_adm_GetFileList(lockDir, '.*', 'FPList', [], 1);
+            for iCheckModule=1:length(checkModuleList)
+                [~, checkModuleName] = fileparts(checkModuleList{iCheckModule});
 
-            for iModule=1:length(moduleDirs)
-                % first check the name of the current module
-                % (manage xASL_module_ prefix)
-                thisModule = x.ModuleName;
-                [~, iModuleName] = fileparts(moduleDirs{iModule});
-
-                if strcmp(iModuleName(1:12), 'xASL_module_')
-                    iModuleName = iModuleName(13:end);
-                    if strcmpi(iModuleName, thisModule)
+				% Verify that it is really a directory with an ASL module lock files
+                if strcmp(checkModuleName(1:12), 'xASL_module_')
+                    checkModuleName = checkModuleName(13:end); % Extract the name of the module
+                    if strcmpi(checkModuleName, x.ModuleName)
                         % this is the current module, so we can continue if this is locked
-                    elseif strcmpi(moduleDirs{iModule}, 'population') || ~strcmpi(moduleDirs{iModule}, 'import')
-                        % for population or import modules, we can continue
-                        % if other modules are locked
+                    elseif strcmpi(checkModuleName, 'population') || strcmpi(checkModuleName, 'import')
+                        % for population or import modules, we can continue if other modules are locked
                     else
-                        % Manage visit suffix in name
-                        ivisitSuffix = regexp(subjectName, '_\d+$');
+                        % For BIDS2Legacy, no visit suffix is given. For other modules, a suffix is given
+						bLockedFolders = false;
+						
+						if strcmp(x.ModuleName, 'BIDS2Legacy') && ~strcmp(checkModuleName, 'BIDS2Legacy')
+							% In case we are in BIDS2Legacy and are checking other modules, we need to add a suffix
+							
+							% List all visits
+							checkModulePath = xASL_adm_GetFileList(checkModuleList{iCheckModule}, ['^' subjectName '_\d+$'], 'FPListRec', [], 1);
+							for iVisit = 1:length(checkModulePath)
+								if ~isempty(xASL_adm_GetFileList(fullfile(checkModulePath{iVisit}, ['xASL_module_' checkModuleName]), '^locked$', 'FPListRec', [], 1))
+									bLockedFolders = true;
+								end
+							end
+						elseif ~strcmp(x.ModuleName, 'BIDS2Legacy') && strcmp(checkModuleName, 'BIDS2Legacy')
+							% In case we are in another module and checking for BIDS2Legacy, we have to remove the suffix
+							ivisitSuffix = regexp(subjectName, '_\d+$');
+							if  ~isempty(ivisitSuffix)
+								subjectName = subjectName(1:ivisitSuffix-1);
+							end
+							checkModulePath = fullfile(checkModuleList{iCheckModule}, subjectName, ['xASL_module_' checkModuleName]);
+							bLockedFolders = ~isempty(xASL_adm_GetFileList(checkModulePath, '^locked$', 'FPListRec', [], 1));
+						end
                         
-                        if strcmp(iModuleName, 'BIDS2Legacy') && ~isempty(ivisitSuffix)
-                            subjectName = subjectName(1:ivisitSuffix-1);
-                        end
-
-                        thisModuleDir = fullfile(moduleDirs{iModule}, subjectName);
+                        if bLockedFolders
     
-                        otherLockedFolders = xASL_adm_GetFileList(thisModuleDir, '^locked$', 'FPListRec', [], 1);
-                        if ~isempty(otherLockedFolders)
-    
-                            fprintf(['ERROR in module_' x.ModuleName ', there is another module locked for the same subject:\n']);
-                            for iOther=1:length(otherLockedFolders)
-                                fprintf('%s\n', otherLockedFolders{iOther});
-                            end
+                            fprintf(['ERROR in module_' x.ModuleName ', there is another module locked for the same subject: ' checkModuleName '\n']);
                             fprintf('\n');
 	                        fprintf('This means that this module is currently being parallel processed by another Matlab instance/worker\n');
 	                        fprintf('If this is not the case, the locked folder needs to be removed before proceeding\n');
