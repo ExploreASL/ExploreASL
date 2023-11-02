@@ -251,71 +251,107 @@ for iSpace=1:2
         %% 2) Create PWI3D
 		% Calculate Hadamard block size (number of unique PLDs.*labeling durations.* echo times) = number of volumes per repetition
         
-        % Get PLDs
-        unique_InitialPLD = unique(x.Q.Initial_PLD);
 
-        if x.modules.asl.bTimeEncoded
-            % with time encoded, we always skip the latest PLD
-            % because that is a dummy PLD (it is in reality the control
-            % scan)
-            unique_InitialPLD = unique_InitialPLD(1:end-1);
+        %% 1) EchoTime vectors (identical to below)
+        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
+        nTE = length(x.EchoTime);
+        if nTE>nVolumes
+            EchoTime_PWI4D = x.EchoTime(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
+        else
+            EchoTime_PWI4D = x.EchoTime;
         end
+        nTE = length(EchoTime_PWI4D);
 
-        nUnique_InitialPLD = length(unique_InitialPLD);
+        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
+        factorTE = nVolumes/nTE;
+        EchoTime_PWI4D = repmat(EchoTime_PWI4D(:), [factorTE 1]);
+        fprintf('%s\n', ['EchoTime vector: ' xASL_num2str(EchoTime_PWI4D)]);
+        uniqueTE = uniquetol(EchoTime_PWI4D, 0.001); % this needs to be moved to the EchoTime vector 
+        % instead of nUniqueTE which we don't use anymore
+
+
+        % % nUniqueTE = length(uniqueTE); % Obtain the number of echo times
+        % % % We do this here now for each sequence, but we could also do this
+        % % % at the start of the ASL module
+        % % 
+        % % iUniqueTE = 1:nTEs;
+        % % iUniqueTE = repmat(iUniqueTE, [1 nVolumes/nTEs]);
+
+
         
-        % Get echo time vector
-        if length(x.EchoTime)>nVolumes
-            TE = x.EchoTime(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
+        % % % %% 2) PLD vectors
+        % % % unique_InitialPLD = unique(x.Q.Initial_PLD);
+        % % % 
+        % % % % with time encoded, we always skip the latest PLD
+        % % % % because that is a dummy PLD (it is in reality the control
+        % % % % scan)
+        % % % unique_InitialPLD = unique_InitialPLD(1:end-1);
+        % % % nUnique_InitialPLD = length(unique_InitialPLD);
+        % % % 
+        % % % for iPLD=1:nUnique_InitialPLD
+        % % %     startIndex = (iPLD-1).*nTEs+1;
+        % % %     endIndex = iPLD.*nTEs;
+        % % %     iUnique_InitialPLD(startIndex:endIndex) = iPLD;
+        % % % end
+        % % % iUnique_InitialPLD = repmat(iUnique_InitialPLD, [1 nVolumes/length(iUnique_InitialPLD)]);
+
+
+        %% 2) PLD vectors (identical to below)
+        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
+        nPLD = length(x.Q.Initial_PLD);
+        if nPLD>nVolumes
+            initialPLD_PWI4D = x.Q.Initial_PLD(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
+        else
+            initialPLD_PWI4D = x.Q.Initial_PLD;
         end
+        nPLD = length(initialPLD_PWI4D);
 
-        uniqueTE = uniquetol(TE, 0.001);
-        nTEs = length(uniqueTE); % Obtain the number of echo times
-        % We do this here now for each sequence, but we could also do this
-        % at the start of the ASL module
+        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
+        factorPLD = nVolumes/nPLD;
+        initialPLD_PWI4D = repmat(initialPLD_PWI4D(:), [factorPLD 1]);
+        fprintf('%s\n', ['Initial PLD vector: ' xASL_num2str(initialPLD_PWI4D)]);
 
-        % nVolumesPerRepetition = nTEs .* (nUnique_InitialPLD - (nUnique_InitialPLD./x.Q.TimeEncodedMatrixSize));
-        nVolumesPerRepetition = nTEs .* nUnique_InitialPLD;
 
-        % nVolumesPerRepetition is also called blockSize by some
-		nRepetitions = nVolumes ./ nVolumesPerRepetition;
         
-        % First check if the number of volumes fits with the number of
-        % expected volumes per repetition (for the amount of echotimes, PLDs, and labeling durations)
-        if nRepetitions~=round(nRepetitions)
-            error(['nVolumes ' xASL_num2str(size(PWI4D,4)) ' cannot be composed of ' xASL_num2str(nVolumesPerRepetition) ' volumes per repetition']);
-        end
 
-        % Create the index vectors for the volumes
-        iUniqueTE = 1:nTEs;
-        iUniqueTE = repmat(iUniqueTE, [1 nVolumes/nTEs]);
-
-        % Create the index vectors for the PLDs
-        for iPLD=1:nUnique_InitialPLD
-            startIndex = (iPLD-1).*nTEs+1;
-            endIndex = iPLD.*nTEs;
-            iUnique_InitialPLD(startIndex:endIndex) = iPLD;
-        end
-        iUnique_InitialPLD = repmat(iUnique_InitialPLD, [1 nVolumes/length(iUnique_InitialPLD)]);
-
-
-        % Secondly, equalize LabDur for single- and multi-PLD
+        %% 3) Labeling duration (LD) vectors (identical to below)
+        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
         nLabDur = length(x.Q.LabelingDuration);
-        factorLabDur = nVolumes/nLabDur;
-        LabDuration = repmat(x.Q.LabelingDuration(:), [factorLabDur 1]);
-
-
-        % Now we average across repetitions
-        % If there are no repetitions, this will do nothing
-        [~, ~, iUnique_TE_PLD] = unique([iUniqueTE(:), iUnique_InitialPLD(:), ], 'stable', 'rows');
-
-
-		for iTE_PLD = 1:max(iUnique_TE_PLD) % loop over each unique TE-PLD-LabDur combination to the highest index
-	        PWI3D(:,:,:,iTE_PLD) = xASL_stat_MeanNan(PWI4D(:,:,:, iUnique_TE_PLD == iTE_PLD), 4);
+        if nLabDur>nVolumes
+            LabDuration_PWI4D = x.Q.LabelingDuration(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
+        else
+            LabDuration_PWI4D = x.Q.LabelingDuration;
         end
+        nLabDur = length(LabDuration_PWI4D);
 
-        %% 3) Create PWI
-        % Create single PWI for further steps in ASL module
-        PWI = xASL_stat_MeanNan(PWI3D(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs for each first echo time
+        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
+        factorLabDur = nVolumes/nLabDur;
+        LabDuration_PWI4D = repmat(LabDuration_PWI4D(:), [factorLabDur 1]);
+        fprintf('%s\n', ['Labeling duration vector: ' xASL_num2str(LabDuration_PWI4D)]);
+
+
+
+
+        %% Original warnings
+        % %% This part needs to be synced with the below part still
+        % %% That we give equal warnings for all ASL flavor, if the number of TE/PLD/labdurs 
+        % %% don't fit within the number of volumes
+        % %% unless we already give this in the import, then we can remove it here
+        % 
+        % % nVolumesPerRepetition = nTEs .* (nUnique_InitialPLD - (nUnique_InitialPLD./x.Q.TimeEncodedMatrixSize));
+        % nVolumesPerRepetition = nTEs .* nUnique_InitialPLD;
+        % 
+        % % nVolumesPerRepetition is also called blockSize by some
+		% nRepetitions = nVolumes ./ nVolumesPerRepetition;
+        % 
+        % % First check if the number of volumes fits with the number of
+        % % expected volumes per repetition (for the amount of echotimes, PLDs, and labeling durations)
+        % if nRepetitions~=round(nRepetitions)
+        %     error(['nVolumes ' xASL_num2str(size(PWI4D,4)) ' cannot be composed of ' xASL_num2str(nVolumesPerRepetition) ' volumes per repetition']);
+        % end
+
+
+
         
         
     % =====================================================================
@@ -324,24 +360,52 @@ for iSpace=1:2
         %% First we create full vectors that include all volumes
         fprintf([xASL_num2str(nVolumes) ' volumes found with:\n']);
 
-        %% 1) EchoTimes        
+        %% 1) EchoTime vectors (identical to above)
+        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
         nTE = length(x.EchoTime);
+        if nTE>nVolumes
+            EchoTime_PWI4D = x.EchoTime(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
+        else
+            EchoTime_PWI4D = x.EchoTime;
+        end
+        nTE = length(EchoTime_PWI4D);
+
+        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
         factorTE = nVolumes/nTE;
-        EchoTime = repmat(x.EchoTime(:), [factorTE 1]);
-        uniqueTE = uniquetol(TE, 0.001);
-        fprintf('%s\n', ['EchoTime vector: ' xASL_num2str(EchoTime)]);
+        EchoTime_PWI4D = repmat(EchoTime_PWI4D(:), [factorTE 1]);
+        fprintf('%s\n', ['EchoTime vector: ' xASL_num2str(EchoTime_PWI4D)]);
+        uniqueTE = uniquetol(EchoTime_PWI4D, 0.001);
 
-        %% 2) PLDs
+
+        %% 2) PLD vectors (identical to above)
+        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
         nPLD = length(x.Q.Initial_PLD);
-        factorPLD = nVolumes/nPLD;
-        initialPLD = repmat(x.Q.Initial_PLD(:), [factorPLD 1]);
-        fprintf('%s\n', ['Initial PLD vector: ' xASL_num2str(initialPLD)]);
+        if nPLD>nVolumes
+            initialPLD_PWI4D = x.Q.Initial_PLD(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
+        else
+            initialPLD_PWI4D = x.Q.Initial_PLD;
+        end
+        nPLD = length(initialPLD_PWI4D);
 
-        %% 3) Labeling duration (LD)
+        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)        
+        factorPLD = nVolumes/nPLD;
+        initialPLD_PWI4D = repmat(initialPLD_PWI4D(:), [factorPLD 1]);
+        fprintf('%s\n', ['Initial PLD vector: ' xASL_num2str(initialPLD_PWI4D)]);
+
+        %% 3) Labeling duration (LD) vectors (identical to above)
+        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
         nLabDur = length(x.Q.LabelingDuration);
+        if nLabDur>nVolumes
+            LabDuration_PWI4D = x.Q.LabelingDuration(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
+        else
+            LabDuration_PWI4D = x.Q.LabelingDuration;
+        end
+        nLabDur = length(LabDuration_PWI4D);
+
+        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
         factorLabDur = nVolumes/nLabDur;
-        LabDuration = repmat(x.Q.LabelingDuration(:), [factorLabDur 1]);
-        fprintf('%s\n', ['Labeling duration vector: ' xASL_num2str(LabDuration)]);
+        LabDuration_PWI4D = repmat(LabDuration_PWI4D(:), [factorLabDur 1]);
+        fprintf('%s\n', ['Labeling duration vector: ' xASL_num2str(LabDuration_PWI4D)]);
 
         % these vectors now has the length of the number of volumes
         % either all values are identical (in the case of single-PLD)
@@ -360,48 +424,46 @@ for iSpace=1:2
             LabDuration_PWI4D = LabDuration(1:2:end);
         else % the same but then without subtraction
             PWI4D = ASL_im;
-            
-            EchoTime_PWI4D = EchoTime;
-            initialPLD_PWI4D = initialPLD;
-            LabDuration_PWI4D = LabDuration;
         end
-       
-        %% 2) Create PWI3D
-
-		% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
-		% indexAverage_PLD_LabDur lists for each original position to where it should be averaged
-		[~, ~, iUnique_TE_PLD_LabDur] = unique([EchoTime_PWI4D(:), initialPLD_PWI4D(:), LabDuration_PWI4D(:)], 'stable', 'rows');
-
-        % MultiPLD-multiLabDur PWI3D after averaging
-        for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur)
-            indicesAre = iUnique_TE_PLD_LabDur == iTE_PLD_LabDur;
-            PWI3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, indicesAre), 4); % Averaged PWI4D
-            EchoTime_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(EchoTime_PWI4D(indicesAre), 4);
-            initialPLD_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(initialPLD_PWI4D(indicesAre), 4);
-            LabDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(LabDuration_PWI4D(indicesAre), 4);
-        end
-
-        %% 3) Create PWI
-        % We create a dummy CBF image for registration purposes
-        % The earliest echo, the latest PLD and the longest labeling duration
-        % are the best for this, having most SNR, CBF-weighting, and SNR,
-        % respectively
-        
-        % The earliest echo has the most SNR for perfusion-weighting
-        iMinTE = EchoTime_PWI3D == min(EchoTime_PWI3D(:));
-        % The latest PLD has the most perfusion-weighting
-        iMaxPLD = initialPLD_PWI3D == max(initialPLD_PWI3D(:));
-        % The longest labeling duration has the most SNR and most perfusion-weighting
-        iMaxLabDuration = LabDuration_PWI3D == max(LabDuration_PWI3D(:));
-        % We take the index that has all these        
-        i3D = iMinTE & iMaxPLD & iMaxLabDuration;
-        if isempty(i3D) || sum(i3D)~=1
-            error('Illegal index for PWI image');
-        end
-
-        PWI = PWI3D(:, :, :, i3D);
 
     end
+       
+
+    %% 2) Create PWI3D
+
+	% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
+	% indexAverage_PLD_LabDur lists for each original position to where it should be averaged
+	[~, ~, iUnique_TE_PLD_LabDur] = unique([EchoTime_PWI4D(:), initialPLD_PWI4D(:), LabDuration_PWI4D(:)], 'stable', 'rows');
+
+    % MultiPLD-multiLabDur PWI3D after averaging
+    for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur)
+        indicesAre = iUnique_TE_PLD_LabDur == iTE_PLD_LabDur;
+        PWI3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, indicesAre), 4); % Averaged PWI4D
+        EchoTime_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(EchoTime_PWI4D(indicesAre), 4);
+        initialPLD_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(initialPLD_PWI4D(indicesAre), 4);
+        LabDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(LabDuration_PWI4D(indicesAre), 4);
+    end
+
+    %% 3) Create PWI
+    % We create a dummy CBF image for registration purposes
+    % The earliest echo, the latest PLD and the longest labeling duration
+    % are the best for this, having most SNR, CBF-weighting, and SNR,
+    % respectively
+    
+    % The earliest echo has the most SNR for perfusion-weighting
+    iMinTE = EchoTime_PWI3D == min(EchoTime_PWI3D(:));
+    % The latest PLD has the most perfusion-weighting
+    iMaxPLD = initialPLD_PWI3D == max(initialPLD_PWI3D(:));
+    % The longest labeling duration has the most SNR and most perfusion-weighting
+    iMaxLabDuration = LabDuration_PWI3D == max(LabDuration_PWI3D(:));
+    % We take the index that has all these        
+    i3D = iMinTE & iMaxPLD & iMaxLabDuration;
+    if isempty(i3D) || sum(i3D)~=1
+        error('Illegal index for PWI image');
+    end
+
+    PWI = PWI3D(:, :, :, i3D);
+
     
     
     % =====================================================================
