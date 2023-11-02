@@ -242,29 +242,43 @@ for iSpace=1:2
     % =====================================================================
     % B) Time-Encoded subtraction
     elseif x.modules.asl.bTimeEncoded
-        % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
-        ASL_im = xASL_quant_HadamardDecoding(PathASL4D{iSpace}, x.Q);
-		
-		% Calculate Hadamard block size (number of unique PLDs * multiTEs) = number of volumes per block
-        vectorSizePLD = length(unique(x.Q.Initial_PLD));
-        blockSize = x.Q.NumberEchoTimes * (vectorSizePLD - (vectorSizePLD/x.Q.TimeEncodedMatrixSize)); 
-		
-        if blockSize ~= size(ASL_im,4) % In case there is more than 1 block, we will average across repetitions
-			if mod(size(ASL_im,4), blockSize)
-				% Number of total volumes cannot be divided by blockSize
-				error(['Total number of volumes ' xASL_num2str(size(ASL_im,4)) ' cannot be composed of blocks of size ' xASL_num2str(blockSize)]);
-			else
-				PWI4D = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), blockSize); % preallocate PWI
-				for iBlock = 1:blockSize
-					PWI4D(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,iBlock:blockSize:end), 4); % Averaged PWI4D across repetitions
-				end
-			end
-        else % if Hadamard Block size == unique PLDs * number of multi-TEs -> a single repetitions -> we don't want to average
-            PWI4D = ASL_im;
-        end
         
+        %% 1) Create PWI4D
+        % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
+        PWI4D = xASL_quant_HadamardDecoding(PathASL4D{iSpace}, x.Q);
+		
+        %% 2) Create PWI3D
+		% Calculate Hadamard block size (number of unique PLDs.*labeling durations.* echo times) = number of volumes per repetition
+        unique_InitialPLD = unique(x.Q.Initial_PLD);
+        nUnique_InitialPLD = length(unique_InitialPLD);
+
+        nEchoTimes = length(uniquetol(x.EchoTime,0.001)); % Obtain the number of echo times
+        % We do this here now for each sequence, but we could also do this
+        % at the start of the ASL module
+
+        nVolumesPerRepetition = nEchoTimes .* (nUnique_InitialPLD - (nUnique_InitialPLD./x.Q.TimeEncodedMatrixSize));
+        % nVolumesPerRepetition is also called blockSize by some
+		nRepetitions = size(PWI4D,4) ./ nVolumesPerRepetition;
+        
+        % First check if the number of volumes fits with the number of
+        % expected volumes per repetition (for the amount of echotimes, PLDs, and labeling durations)
+        if nRepetitions>round(nRepetitions)
+            fprintf('%s\n', ['Detected ' xASL_num2str(size(PWI4D,4)) ' volumes, which is more than expected']);
+            error(['nVolumes ' xASL_num2str(size(PWI4D,4)) ' cannot be composed of ' xASL_num2str(nVolumesPerRepetition) ' volumes per repetition']);
+        elseif nRepetitions<round(nRepetitions)
+            fprintf('%s\n', ['Detected ' xASL_num2str(size(PWI4D,4)) ' volumes, which is less than expected']);
+            error(['nVolumes ' xASL_num2str(size(PWI4D,4)) ' cannot be composed of ' xASL_num2str(nVolumesPerRepetition) ' volumes per repetition']);
+        end
+
+        % Now we average across repetitions
+        % If there are no repetitions, this will do nothing
+		for iVolume = 1:nVolumesPerRepetition
+	        PWI3D(:,:,:,iVolume) = xASL_stat_MeanNan(PWI4D(:,:,:,iVolume:nVolumesPerRepetition:end), 4);
+        end
+
+        %% 3) Create PWI
         % Create single PWI for further steps in ASL module
-        PWI3D = xASL_stat_MeanNan(PWI4D(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
+        PWI = xASL_stat_MeanNan(PWI3D(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs for each first echo time
         
         
     % =====================================================================
