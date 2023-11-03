@@ -105,7 +105,7 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
     end
     
     % SUBJECT, SUBJECTDIR & LockDir
-    if ~isempty(regexpi(ModName,'(Import|BIDS2Legacy|Struct|ASL|func|LongReg|dwi)', 'once'))
+    if ~isempty(regexpi(ModName,'(Import|BIDS2Legacy|Structural|ASL|func|LongReg|dwi)', 'once'))
         dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
         dbSettings.x.dir.SUBJECTDIR = fullfile('<ROOT>', '<SUBJECT>');
         dbSettings.x.dir.LockDir = fullfile(dbSettings.x.dir.LockDir, '<SUBJECT>');
