@@ -109,24 +109,56 @@ else
                     checkModuleName = checkModuleName(13:end); % Extract the name of the module
                     if strcmpi(checkModuleName, x.ModuleName)
                         % this is the current module, so we can continue if this is locked
+						
+						% Note that we are checking here only for cross-module activity. We do not care if there is an activity within the same module, because 
+						% a parallel activity within the same module only matters if exactly the same visit/session/subject would have been processed and this behavior
+						% is protected by the module locking itself.
+						
                     elseif strcmpi(checkModuleName, 'population') || strcmpi(checkModuleName, 'import')
                         % for population or import modules, we can continue if other modules are locked
-                    else
-                        % For BIDS2Legacy, no visit suffix is given. For other modules, a suffix is given
+					else
+						% We are in a BIDS2Legacy, structural, or ASL module and we are checking for activity in one of those other modules
+						
+						% By default, no locks are detected
 						bLockedFolders = false;
 						
-						if strcmp(x.ModuleName, 'BIDS2Legacy') && ~strcmp(checkModuleName, 'BIDS2Legacy')
-							% In case we are in BIDS2Legacy and are checking other modules, we need to add a suffix
+						if ~strcmp(checkModuleName, 'BIDS2Legacy')
+							% We are checking for activity in one of the processing modules
 							
-							% List all visits
-							checkModulePath = xASL_adm_GetFileList(checkModuleList{iCheckModule}, ['^' subjectName '_\d+$'], 'FPListRec', [], 1);
-							for iVisit = 1:length(checkModulePath)
-								if ~isempty(xASL_adm_GetFileList(fullfile(checkModulePath{iVisit}, ['xASL_module_' checkModuleName]), '^locked$', 'FPListRec', [], 1))
-									bLockedFolders = true;
-								end
+							if strcmp(x.ModuleName, 'BIDS2Legacy')
+								% If we are now in the BIDS2Legacy module, we don't have a visit suffix, so we have to search through all visits to find locks
+								% In the future, BIDS2Legacy will also have visits and this option will be removed
+								checkModulePath = xASL_adm_GetFileList(checkModuleList{iCheckModule}, ['^' subjectName '_\d+$'], 'FPListRec', [], 1);
+							else
+								% If we are in a processing module, we only check for activity in the same visit
+								checkModulePath = xASL_adm_GetFileList(checkModuleList{iCheckModule}, ['^' subjectName '$'], 'FPListRec', [], 1);
 							end
+							
+							% Check all the necessary visits for the presence of locks
+							for iVisit = 1:length(checkModulePath)
+								if strcmpi(checkModuleName, 'structural') || strcmpi(checkModuleName, 'LongReg') || strcmpi(checkModuleName, 'DARTEL') || strcmpi(checkModuleName, 'Analyze')
+									% For structural module, we only check a single session
+									if ~isempty(xASL_adm_GetFileList(fullfile(checkModulePath{iVisit}, ['xASL_module_' checkModuleName]), '^locked$', 'FPListRec', [], 1))
+										bLockedFolders = true;
+									end
+								elseif strcmpi(checkModuleName, 'asl') || strcmpi(checkModuleName, 'func') || strcmpi(checkModuleName, 'dwi') 
+									% For other modules, we check for multiple sessions
+									checkSessionPath = xASL_adm_GetFileList(checkModulePath{iVisit}, ['xASL_module_' checkModuleName '_' checkModuleName '_\d+$'], 'FPListRec', [], 1);
+									for iSession = 1:length(checkSessionPath)
+										if ~isempty(xASL_adm_GetFileList(checkSessionPath{iVisit}, '^locked$', 'FPListRec', [], 1))
+											bLockedFolders = true;
+										end
+									end
+								else
+									error(['Unknown module ' checkModuleName]);
+								end
+								
+								
+							end
+									
 						elseif ~strcmp(x.ModuleName, 'BIDS2Legacy') && strcmp(checkModuleName, 'BIDS2Legacy')
-							% In case we are in another module and checking for BIDS2Legacy, we have to remove the suffix
+							% In case we are in a processing module (not in BIDS2Legacy) and we are checking for locked BIDS2Legacy, we have to remove the suffix and check for all cases for this subject
+							% In the future, we will update the BIDS2Legacy to lock visit wise, we will not remove this lock and we will only check for a specific visit
 							ivisitSuffix = regexp(subjectName, '_\d+$');
 							if  ~isempty(ivisitSuffix)
 								subjectName = subjectName(1:ivisitSuffix-1);
