@@ -12,15 +12,7 @@ function [summary, summaryTable] = xASL_test_Summarize(ResultsDir)
 %
 % EXAMPLE:      [summary] = xASL_test_Summarize('/User/ASLTestResults/2022-20-01-results');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
-
-% Add testing directory
-TestingPath = mfilename('fullpath');    % Path of the current script
-filepath = fileparts(TestingPath);      % Testing directory
-xASL_dir = fileparts(filepath);         % All subfolders of xASL directory
-warning('off','all')                    % Turn of warnings (only add path related)
-addpath(genpath(xASL_dir))              % Add all scripts to path (including testing directory)
-warning('on','all')
+% Copyright 2015-2023 ExploreASL
 
 MatFileList = xASL_adm_GetFileList(ResultsDir,'^*.mat$','List',[0 Inf], false);
 TsvFileList = xASL_adm_GetFileList(ResultsDir,'^*.tsv$','List',[0 Inf], false);

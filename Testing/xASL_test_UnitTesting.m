@@ -120,10 +120,13 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
     UnitTests = orderfields(UnitTests, UnitTestTemplate);
     
     %% Export TSV
+    UnitTestsCells{1,1} = 'Unit Test' ;
+    UnitTestsCells{1,2} = 'type' ;
+    UnitTestsCells{1,3} = 'passed' ;
     for iTest = 1:size(UnitTests,2)
-        UnitTestsCells{iTest,1} = UnitTests(iTest).name;
-        UnitTestsCells{iTest,2} = UnitTests(iTest).unit;
-        UnitTestsCells{iTest,3} = num2str(UnitTests(iTest).passed);
+        UnitTestsCells{iTest + 1,1} = UnitTests(iTest).name;
+        UnitTestsCells{iTest + 1,2} = UnitTests(iTest).unit;
+        UnitTestsCells{iTest + 1,3} = num2str(UnitTests(iTest).passed);
     end
 
     % Save path
