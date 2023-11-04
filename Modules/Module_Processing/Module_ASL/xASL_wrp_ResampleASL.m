@@ -267,10 +267,12 @@ for iSpace=1:2
         EchoTime_PWI4D = repmat(EchoTime_PWI4D(:), [factorTE 1]);
         fprintf('%s\n', ['EchoTime vector: ' xASL_num2str(EchoTime_PWI4D)]);
         uniqueTE = uniquetol(EchoTime_PWI4D, 0.001); % this needs to be moved to the EchoTime vector 
+        
+        nUniqueTE = length(uniqueTE); % Obtain the number of echo times
         % instead of nUniqueTE which we don't use anymore
 
 
-        % % nUniqueTE = length(uniqueTE); % Obtain the number of echo times
+        % % 
         % % % We do this here now for each sequence, but we could also do this
         % % % at the start of the ASL module
         % % 
@@ -279,37 +281,38 @@ for iSpace=1:2
 
 
         
-        % % % %% 2) PLD vectors
-        % % % unique_InitialPLD = unique(x.Q.Initial_PLD);
-        % % % 
-        % % % % with time encoded, we always skip the latest PLD
-        % % % % because that is a dummy PLD (it is in reality the control
-        % % % % scan)
-        % % % unique_InitialPLD = unique_InitialPLD(1:end-1);
-        % % % nUnique_InitialPLD = length(unique_InitialPLD);
-        % % % 
-        % % % for iPLD=1:nUnique_InitialPLD
-        % % %     startIndex = (iPLD-1).*nTEs+1;
-        % % %     endIndex = iPLD.*nTEs;
-        % % %     iUnique_InitialPLD(startIndex:endIndex) = iPLD;
-        % % % end
-        % % % iUnique_InitialPLD = repmat(iUnique_InitialPLD, [1 nVolumes/length(iUnique_InitialPLD)]);
+        %% 2) PLD vectors
+        unique_InitialPLD = unique(x.Q.Initial_PLD);
 
+        % with time encoded, we always skip the latest PLD
+        % because that is a dummy PLD (it is in reality the control
+        % scan)
+        unique_InitialPLD = unique_InitialPLD(1:end-1);
+        nUnique_InitialPLD = length(unique_InitialPLD);
 
-        %% 2) PLD vectors (identical to below)
-        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-        nPLD = length(x.Q.Initial_PLD);
-        if nPLD>nVolumes
-            initialPLD_PWI4D = x.Q.Initial_PLD(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
-        else
-            initialPLD_PWI4D = x.Q.Initial_PLD;
+        for iPLD=1:nUnique_InitialPLD
+            startIndex = (iPLD-1).*nUniqueTE+1;
+            endIndex = iPLD.*nUniqueTE;
+            iUnique_InitialPLD(startIndex:endIndex) = iPLD;
         end
-        nPLD = length(initialPLD_PWI4D);
+        iUnique_InitialPLD = repmat(iUnique_InitialPLD, [1 nVolumes/length(iUnique_InitialPLD)]);
+        initialPLD_PWI4D = iUnique_InitialPLD;
 
-        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
-        factorPLD = nVolumes/nPLD;
-        initialPLD_PWI4D = repmat(initialPLD_PWI4D(:), [factorPLD 1]);
-        fprintf('%s\n', ['Initial PLD vector: ' xASL_num2str(initialPLD_PWI4D)]);
+        % %% 2) PLD vectors (identical to below)
+        %% ->> THIS is what it should be
+        % % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
+        % nPLD = length(x.Q.Initial_PLD);
+        % if nPLD>nVolumes
+        %     initialPLD_PWI4D = x.Q.Initial_PLD(end-nVolumes+1:end); % can we do this based on the ASL4Dcontext.tsv ?
+        % else
+        %     initialPLD_PWI4D = x.Q.Initial_PLD;
+        % end
+        % nPLD = length(initialPLD_PWI4D);
+        % 
+        % % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
+        % factorPLD = nVolumes/nPLD;
+        % initialPLD_PWI4D = repmat(initialPLD_PWI4D(:), [factorPLD 1]);
+        % fprintf('%s\n', ['Initial PLD vector: ' xASL_num2str(initialPLD_PWI4D)]);
 
 
         
@@ -439,9 +442,9 @@ for iSpace=1:2
     for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur)
         indicesAre = iUnique_TE_PLD_LabDur == iTE_PLD_LabDur;
         PWI3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, indicesAre), 4); % Averaged PWI4D
-        EchoTime_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(EchoTime_PWI4D(indicesAre), 4);
-        initialPLD_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(initialPLD_PWI4D(indicesAre), 4);
-        LabDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(LabDuration_PWI4D(indicesAre), 4);
+        EchoTime_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(EchoTime_PWI4D(indicesAre));
+        initialPLD_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(initialPLD_PWI4D(indicesAre));
+        LabDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(LabDuration_PWI4D(indicesAre));
     end
 
     %% 3) Create PWI
@@ -463,23 +466,50 @@ for iSpace=1:2
     end
 
     PWI = PWI3D(:, :, :, i3D);
-
+    EchoTime_PWI = min(EchoTime_PWI3D(:));
+    initialPLD_PWI = max(initialPLD_PWI3D(:));
+    LabDuration_PWI = max(LabDuration_PWI3D(:));
     
     
-    % =====================================================================
-    % D) Save subtracted to disk
+    %% =====================================================================
+    %% D) Save subtracted to disk
 
-    % Save PWI (single volume)
+    %% Save PWI4D (subtracted only, not yet averaged)
+    fprintf('%s\n', PathPWI4D{iSpace});
+    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);
+
+    % Also save JSON sidecar
+    [fPath, fFile, fExt] = xASL_fileparts(PathPWI4D{iSpace});
+    pathJSON = fullfile(fPath, [fFile '.json']);
+    json.EchoTime = EchoTime_PWI4D;
+    json.initialPLD = initialPLD_PWI4D;
+    json.LabDuration = LabDuration_PWI4D;
+    spm_jsonwrite(pathJSON, json);
+
+    %% Save PWI3D (averaged volume for each PLD-labdur combination)
+    fprintf('%s\n', PathPWI{iSpace});
+    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI3D{iSpace}, PWI3D, 32, false);
+
+    % Also save JSON sidecar
+    [fPath, fFile, fExt] = xASL_fileparts(PathPWI3D{iSpace});
+    pathJSON = fullfile(fPath, [fFile '.json']);
+    json.EchoTime = EchoTime_PWI3D;
+    json.initialPLD = initialPLD_PWI3D;
+    json.LabDuration = LabDuration_PWI3D;
+    spm_jsonwrite(pathJSON, json);
+
+    %% Save PWI (single volume)
     fprintf('%s\n', PathPWI{iSpace});
     xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI{iSpace}, PWI, 32, false);
 
-    % Save PWI3D (averaged volume for each PLD-labdur combination)
-    fprintf('%s\n', PathPWI{iSpace});
-    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI3D{iSpace}, PWI3D, 32, false);
-    
-    % Save PWI4D (subtracted only, not yet averaged)
-    fprintf('%s\n', PathPWI4D{iSpace});
-    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);    
+    % Also save JSON sidecar
+    [fPath, fFile, fExt] = xASL_fileparts(PathPWI{iSpace});
+    pathJSON = fullfile(fPath, [fFile '.json']);
+    json.EchoTime = EchoTime_PWI;
+    json.initialPLD = initialPLD_PWI;
+    json.LabDuration = LabDuration_PWI;
+    spm_jsonwrite(pathJSON, json);
+
 end
 
 
