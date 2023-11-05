@@ -3,7 +3,10 @@ function [imDecoded] = xASL_quant_HadamardDecoding(imPath, xQ)
 %
 % FORMAT:       [imDecoded] = xASL_quant_HadamardDecoding(imPath, xQ)
 %
-% INPUT:        imPath - Path to the encoded ASL4D image we want to decode (STRING, REQUIRED)
+% INPUT:        imPath - Path to the encoded ASL4D image we want to decode (STRING OR 4D MATRIX, REQUIRED)
+%                        Alternatively, this can contain the image matrix
+%                        (xASL_io_Nifti2Im below allows both path and image
+%                        matrix inputs)
 %
 %               xQ     - x.Q field with Hadamard input parameters containing the following subfields
 %                          - TimeEncodedMatrixType (REQUIRED)
@@ -138,9 +141,20 @@ if ~isempty(xQ.TimeEncodedMatrixType)
 		end
 	end
 end
+   
+switch xQ.vendor
+	case 'Siemens'
+		% This is where this code was initially based on, so for
+		% Siemens we don't do anything specific
+	case 'Philips'
+		xQ.TimeEncodedMatrix = xQ.TimeEncodedMatrix * -1;
+		% Philips uses an inverse matrix compared to Siemens
+	case 'GE'
+		warning('Time encoded ASL data detected for GE, but GE usually does the decoding in K-space on the scanner');
+	otherwise
+		warning(['Time encoded ASL data not yet tested for vendor ' xQ.vendor]);
+end
 
-if strcmp(xQ.Vendor,'Philips')
-	xQ.TimeEncodedMatrix = xQ.TimeEncodedMatrix * -1;
 end
 
 % Load time-series nifti
