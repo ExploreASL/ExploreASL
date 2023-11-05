@@ -212,7 +212,11 @@ end
 % PWI3D = averaged per TE—PLD—LabDur combination -> for QC purposes
 % PWI   = single perfusion-weighted volume -> for registration purposes
 
-% 
+% The quantification module xASL_wrp_Quantify only uses PWI4D from here,
+% and recalculates PWI3D and PWI for quantification, potentially improving
+% quantification. So the user can, after QC, potentially remove some
+% volumes from PWI4D, but should be aware that the information in the JSON sidecar
+% (TE, PLD, LabDur) should be adapted accordingly.
 
 % Load ASL time series (after being pre-processed)
 StringSpaceIs = {'native' 'standard'};
@@ -220,295 +224,39 @@ PathASL4D = {x.P.Path_rdespiked_ASL4D x.P.Path_rtemp_despiked_ASL4D};
 PathPWI = {x.P.Path_PWI x.P.Pop_Path_PWI};
 PathPWI3D = {x.P.Path_PWI3D x.P.Pop_Path_PWI3D};
 PathPWI4D = {x.P.Path_PWI4D x.P.Pop_Path_PWI4D};
+PathPWIjson = {x.P.Path_PWI_json x.P.Pop_Path_PWI_json};
+PathPWI3Djson = {x.P.Path_PWI3D_json x.P.Pop_Path_PWI3D_json};
+PathPWI4Djson = {x.P.Path_PWI4D_json x.P.Pop_Path_PWI4D_json};
 
 for iSpace=1:2
     fprintf('%s\n', ['Saving in ' StringSpaceIs{iSpace} ' space:']);
     
     ASL_im = xASL_io_Nifti2Im(PathASL4D{iSpace}); % Load time-series nifti
-    dim4 = size(ASL_im, 4);
-
     
-    % =====================================================================
-    % A) Check subtraction
     if numel(size(ASL_im))>4
         warning('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions');
-        error(['NIfTI has more than 4 dimensions: ' PathASL4D{iSpace}]);
-        
-    elseif dim4>1 && round(dim4/2)~=dim4/2
-        warning('Odd (i.e., not even) number of control-label pairs, skipping');
-        return;
-        
-        
-    % =====================================================================
-    % B) Time-Encoded subtraction
-    elseif x.modules.asl.bTimeEncoded
-        
-        %% 1) Create PWI4D
-        % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
-        PWI4D = xASL_quant_HadamardDecoding(PathASL4D{iSpace}, x.Q);
-		nVolumes = size(PWI4D,4);
-
-        %% 2) Create PWI3D
-		% Calculate Hadamard block size (number of unique PLDs.*labeling durations.* echo times) = number of volumes per repetition
-        
-
-        %% 1) EchoTime vectors (identical to below)
-        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-        nTE = length(x.EchoTime);
-        if nTE>nVolumes
-            EchoTime_PWI4D = x.EchoTime(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
-        else
-            EchoTime_PWI4D = x.EchoTime;
-        end
-        nTE = length(EchoTime_PWI4D);
-
-        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
-        factorTE = nVolumes/nTE;
-        EchoTime_PWI4D = repmat(EchoTime_PWI4D(:), [factorTE 1]);
-        fprintf('%s\n', ['EchoTime vector: ' xASL_num2str(EchoTime_PWI4D)]);
-        uniqueTE = uniquetol(EchoTime_PWI4D, 0.001); % this needs to be moved to the EchoTime vector 
-        
-        nUniqueTE = length(uniqueTE); % Obtain the number of echo times
-        % instead of nUniqueTE which we don't use anymore
-
-
-        % % 
-        % % % We do this here now for each sequence, but we could also do this
-        % % % at the start of the ASL module
-        % % 
-        % % iUniqueTE = 1:nTEs;
-        % % iUniqueTE = repmat(iUniqueTE, [1 nVolumes/nTEs]);
-
-
-        
-        %% 2) PLD vectors
-        unique_InitialPLD = unique(x.Q.Initial_PLD);
-
-        % with time encoded, we always skip the latest PLD
-        % because that is a dummy PLD (it is in reality the control
-        % scan)
-        unique_InitialPLD = unique_InitialPLD(1:end-1);
-        nUnique_InitialPLD = length(unique_InitialPLD);
-
-        for iPLD=1:nUnique_InitialPLD
-            startIndex = (iPLD-1).*nUniqueTE+1;
-            endIndex = iPLD.*nUniqueTE;
-            iUnique_InitialPLD(startIndex:endIndex) = iPLD;
-        end
-        iUnique_InitialPLD = repmat(iUnique_InitialPLD, [1 nVolumes/length(iUnique_InitialPLD)]);
-        initialPLD_PWI4D = iUnique_InitialPLD;
-
-        % %% 2) PLD vectors (identical to below)
-        %% ->> THIS is what it should be
-        % % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-        % nPLD = length(x.Q.Initial_PLD);
-        % if nPLD>nVolumes
-        %     initialPLD_PWI4D = x.Q.Initial_PLD(end-nVolumes+1:end); % can we do this based on the ASL4Dcontext.tsv ?
-        % else
-        %     initialPLD_PWI4D = x.Q.Initial_PLD;
-        % end
-        % nPLD = length(initialPLD_PWI4D);
-        % 
-        % % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
-        % factorPLD = nVolumes/nPLD;
-        % initialPLD_PWI4D = repmat(initialPLD_PWI4D(:), [factorPLD 1]);
-        % fprintf('%s\n', ['Initial PLD vector: ' xASL_num2str(initialPLD_PWI4D)]);
-
-
-        
-
-        %% 3) Labeling duration (LD) vectors (identical to below)
-        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-        nLabDur = length(x.Q.LabelingDuration);
-        if nLabDur>nVolumes
-            LabDuration_PWI4D = x.Q.LabelingDuration(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
-        else
-            LabDuration_PWI4D = x.Q.LabelingDuration;
-        end
-        nLabDur = length(LabDuration_PWI4D);
-
-        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
-        factorLabDur = nVolumes/nLabDur;
-        LabDuration_PWI4D = repmat(LabDuration_PWI4D(:), [factorLabDur 1]);
-        fprintf('%s\n', ['Labeling duration vector: ' xASL_num2str(LabDuration_PWI4D)]);
-
-
-
-
-        %% Original warnings
-        % %% This part needs to be synced with the below part still
-        % %% That we give equal warnings for all ASL flavor, if the number of TE/PLD/labdurs 
-        % %% don't fit within the number of volumes
-        % %% unless we already give this in the import, then we can remove it here
-        % 
-        % % nVolumesPerRepetition = nTEs .* (nUnique_InitialPLD - (nUnique_InitialPLD./x.Q.TimeEncodedMatrixSize));
-        % nVolumesPerRepetition = nTEs .* nUnique_InitialPLD;
-        % 
-        % % nVolumesPerRepetition is also called blockSize by some
-		% nRepetitions = nVolumes ./ nVolumesPerRepetition;
-        % 
-        % % First check if the number of volumes fits with the number of
-        % % expected volumes per repetition (for the amount of echotimes, PLDs, and labeling durations)
-        % if nRepetitions~=round(nRepetitions)
-        %     error(['nVolumes ' xASL_num2str(size(PWI4D,4)) ' cannot be composed of ' xASL_num2str(nVolumesPerRepetition) ' volumes per repetition']);
-        % end
-
-
-
-        
-        
-    % =====================================================================
-    % C) Single- and multi-PLD subtraction
-    else
-        %% First we create full vectors that include all volumes
-        fprintf([xASL_num2str(nVolumes) ' volumes found with:\n']);
-
-        %% 1) EchoTime vectors (identical to above)
-        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-        nTE = length(x.EchoTime);
-        if nTE>nVolumes
-            EchoTime_PWI4D = x.EchoTime(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
-        else
-            EchoTime_PWI4D = x.EchoTime;
-        end
-        nTE = length(EchoTime_PWI4D);
-
-        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
-        factorTE = nVolumes/nTE;
-        EchoTime_PWI4D = repmat(EchoTime_PWI4D(:), [factorTE 1]);
-        fprintf('%s\n', ['EchoTime vector: ' xASL_num2str(EchoTime_PWI4D)]);
-        uniqueTE = uniquetol(EchoTime_PWI4D, 0.001);
-
-
-        %% 2) PLD vectors (identical to above)
-        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-        nPLD = length(x.Q.Initial_PLD);
-        if nPLD>nVolumes
-            initialPLD_PWI4D = x.Q.Initial_PLD(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
-        else
-            initialPLD_PWI4D = x.Q.Initial_PLD;
-        end
-        nPLD = length(initialPLD_PWI4D);
-
-        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)        
-        factorPLD = nVolumes/nPLD;
-        initialPLD_PWI4D = repmat(initialPLD_PWI4D(:), [factorPLD 1]);
-        fprintf('%s\n', ['Initial PLD vector: ' xASL_num2str(initialPLD_PWI4D)]);
-
-        %% 3) Labeling duration (LD) vectors (identical to above)
-        % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-        nLabDur = length(x.Q.LabelingDuration);
-        if nLabDur>nVolumes
-            LabDuration_PWI4D = x.Q.LabelingDuration(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
-        else
-            LabDuration_PWI4D = x.Q.LabelingDuration;
-        end
-        nLabDur = length(LabDuration_PWI4D);
-
-        % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
-        factorLabDur = nVolumes/nLabDur;
-        LabDuration_PWI4D = repmat(LabDuration_PWI4D(:), [factorLabDur 1]);
-        fprintf('%s\n', ['Labeling duration vector: ' xASL_num2str(LabDuration_PWI4D)]);
-
-        % these vectors now has the length of the number of volumes
-        % either all values are identical (in the case of single-PLD)
-        % or a combination of multi-PLD
-        
-
-        %% 1) Create PWI4D
-        if dim4>1 && ~x.modules.asl.bContainsDeltaM
-            % Paired subtraction
-            [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
-            PWI4D = ControlIm - LabelIm;
-            
-            % Skip every other value in the vectors as they were stored for both control and label images 
-            EchoTime_PWI4D = EchoTime(1:2:end);
-            initialPLD_PWI4D = initialPLD(1:2:end);
-            LabDuration_PWI4D = LabDuration(1:2:end);
-        else % the same but then without subtraction
-            PWI4D = ASL_im;
-        end
-
-    end
-       
-
-    %% 2) Create PWI3D
-
-	% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
-	% indexAverage_PLD_LabDur lists for each original position to where it should be averaged
-	[~, ~, iUnique_TE_PLD_LabDur] = unique([EchoTime_PWI4D(:), initialPLD_PWI4D(:), LabDuration_PWI4D(:)], 'stable', 'rows');
-
-    % MultiPLD-multiLabDur PWI3D after averaging
-    for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur)
-        indicesAre = iUnique_TE_PLD_LabDur == iTE_PLD_LabDur;
-        PWI3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, indicesAre), 4); % Averaged PWI4D
-        EchoTime_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(EchoTime_PWI4D(indicesAre));
-        initialPLD_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(initialPLD_PWI4D(indicesAre));
-        LabDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(LabDuration_PWI4D(indicesAre));
+        error(['ASL4D NIfTI has more than 4 dimensions: ' PathASL4D{iSpace}]);
     end
 
-    %% 3) Create PWI
-    % We create a dummy CBF image for registration purposes
-    % The earliest echo, the latest PLD and the longest labeling duration
-    % are the best for this, having most SNR, CBF-weighting, and SNR,
-    % respectively
+    [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D, PWI4D, PWI3D);
     
-    % The earliest echo has the most SNR for perfusion-weighting
-    iMinTE = EchoTime_PWI3D == min(EchoTime_PWI3D(:));
-    % The latest PLD has the most perfusion-weighting
-    iMaxPLD = initialPLD_PWI3D == max(initialPLD_PWI3D(:));
-    % The longest labeling duration has the most SNR and most perfusion-weighting
-    iMaxLabDuration = LabDuration_PWI3D == max(LabDuration_PWI3D(:));
-    % We take the index that has all these        
-    i3D = iMinTE & iMaxPLD & iMaxLabDuration;
-    if isempty(i3D) || sum(i3D)~=1
-        error('Illegal index for PWI image');
-    end
+    
+    % Save subtracted/averaged to disk
 
-    PWI = PWI3D(:, :, :, i3D);
-    EchoTime_PWI = min(EchoTime_PWI3D(:));
-    initialPLD_PWI = max(initialPLD_PWI3D(:));
-    LabDuration_PWI = max(LabDuration_PWI3D(:));
-    
-    
-    %% =====================================================================
-    %% D) Save subtracted to disk
-
-    %% Save PWI4D (subtracted only, not yet averaged)
+    % Save PWI4D (subtracted only)
     fprintf('%s\n', PathPWI4D{iSpace});
     xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);
+    spm_jsonwrite(PathPWI4Djson, x.Q);
 
-    % Also save JSON sidecar
-    [fPath, fFile, fExt] = xASL_fileparts(PathPWI4D{iSpace});
-    pathJSON = fullfile(fPath, [fFile '.json']);
-    json.EchoTime = EchoTime_PWI4D;
-    json.initialPLD = initialPLD_PWI4D;
-    json.LabDuration = LabDuration_PWI4D;
-    spm_jsonwrite(pathJSON, json);
-
-    %% Save PWI3D (averaged volume for each PLD-labdur combination)
+    % Save PWI3D (averaged volume for each TE-PLD-labdur combination)
     fprintf('%s\n', PathPWI{iSpace});
     xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI3D{iSpace}, PWI3D, 32, false);
+    spm_jsonwrite(PathPWI3Djson, x.Q);
 
-    % Also save JSON sidecar
-    [fPath, fFile, fExt] = xASL_fileparts(PathPWI3D{iSpace});
-    pathJSON = fullfile(fPath, [fFile '.json']);
-    json.EchoTime = EchoTime_PWI3D;
-    json.initialPLD = initialPLD_PWI3D;
-    json.LabDuration = LabDuration_PWI3D;
-    spm_jsonwrite(pathJSON, json);
-
-    %% Save PWI (single volume)
+    % Save PWI (single volume)
     fprintf('%s\n', PathPWI{iSpace});
     xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI{iSpace}, PWI, 32, false);
-
-    % Also save JSON sidecar
-    [fPath, fFile, fExt] = xASL_fileparts(PathPWI{iSpace});
-    pathJSON = fullfile(fPath, [fFile '.json']);
-    json.EchoTime = EchoTime_PWI;
-    json.initialPLD = initialPLD_PWI;
-    json.LabDuration = LabDuration_PWI;
-    spm_jsonwrite(pathJSON, json);
+    spm_jsonwrite(PathPWIjson, x.Q);
 
 end
 
