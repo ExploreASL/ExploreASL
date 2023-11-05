@@ -478,14 +478,13 @@ switch lower(x.Q.LabelingType)
 			nPLD = length(PLDs); % Number of PLDs in the PLD vector
 			nVolume = size(PWI,4); % Number of volumes in PWI
 
-			if ~bMergingSessions
-				TEs = round(x.EchoTime'/1000,3); % Convert Echo Times to seconds and keep 4 decimal digits
-				nTE = length(unique(x.EchoTime)); % Calculate the number of Echo Times
-				if (nPLD*nTE) ~= nVolume
-					error('The number of volumes %d does not match number of PLDs %d * number of TEs %d', nVolume, nPLD, nTE);
-				end
-				nTE = ones(size(PLDs))*nTE;
+			nTE = length(unique(x.Q.EchoTime)); % Calculate the number of Echo Times
+			TEs = round(x.Q.EchoTime'/1000,3); % Convert Echo Times to seconds and keep 4 decimal digits
+			
+			if (nPLD*nTE) ~= nVolume
+				error('The number of volumes %d does not match number of PLDs %d * number of TEs %d', nVolume, nPLD, nTE);
 			end
+			nTE = ones(size(PLDs))*nTE;
 
 			% Printing the values in the FSL option file (PLD=ti, LD=tau)
 			for iPLD = 1:length(PLDs)
