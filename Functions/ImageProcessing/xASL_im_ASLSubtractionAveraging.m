@@ -1,4 +1,4 @@
-function [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D, PWI4D, PWI3D)
+function [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, path_ASL4D, PWI4D, PWI3D)
 %xASL_im_ASLSubtractionAveraging Central function for ASL subtraction and averaging
 %
 % FORMAT: [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D [, PWI4D, PWI3D])
@@ -15,9 +15,10 @@ function [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D, PWI4
 %   x.Q.Initial_PLD - numerical vector. If this is a scalar, it will be extended to the number of image volumes (REQUIRED)
 %   x.Q.LabelingDuration - numerical vector. If this is a scalar, it will be extended to the number of image volumes (REQUIRED)
 % 
-%   ASL4D   - Path to the encoded ASL4D image we want to decode (STRING OR 4D MATRIX, REQUIRED)
+%   path_ASL4D - Path to the encoded ASL4D image we want to decode (STRING OR 4D MATRIX, REQUIRED)
 %             Alternatively, this can contain the image matrix
-%             (xASL_io_Nifti2Im below allows both path and image matrix inputs)
+%             (xASL_io_Nifti2Im below allows both path and image matrix inputs).
+%             Best if this is a path, so any motion correction can be applied.
 %   PWI4D   - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (STRING OR 4D MATRIX, OPTIONAL,
 %               DEFAULT = generated below from ASL4D)
 %   PWI3D   - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (STRING OR 4D MATRIX, OPTIONAL,
@@ -71,7 +72,10 @@ function [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D, PWI4
 
 
 
-ASL4D = xASL_io_Nifti2Im(ASL4D); % Load time-series nifti from path if input was a path
+
+
+
+ASL4D = xASL_io_Nifti2Im(path_ASL4D); % Load time-series nifti from path if input was a path
 % (input can also be an image matrix)
 nVolumes = size(ASL4D, 4);
 
@@ -87,7 +91,40 @@ elseif nVolumes>1 && mod(nVolumes, 2) ~= 0
     % mod(nVolumes, 2) ~= 0 here means that round(nVolumes/2)~=nVolumes/2
     return;
 end
-    
+
+%% B. Apply motion correction if this is needed
+if numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
+    % here we detect a path
+    [Fpath, Ffile] = xASL_fileparts(path_ASL4D);
+    sideCarMat = fullfile(Fpath, [Ffile '.mat']);
+
+    if exist(sideCarMat, 'file')
+        % we check if the mat-sidecar exists, with the motion estimation parameters
+        % If this file exists, we assume that the original ASL4D input file has not been
+        % interpolated yet (and the motion estimation has not been applied yet)
+
+        %% ------------------------------------------------------------------------------------------
+        % Apple motion correction & resample
+        if nVolumes>1
+            for iS=1:nVolumes
+                matlabbatch{1}.spm.spatial.realign.write.data{iS,1} = [path_ASL4D ',' num2str(iS)];
+            end
+        
+            matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
+            matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 4;
+            matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
+            matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
+            matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
+        
+            spm_jobman('run',matlabbatch); % this applies the motion correction in native space
+            
+            path_rASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
+            % Reload motion corrected timeseries:
+            ASL4D = xASL_io_Nifti2Im(path_rASL4D);
+            xASL_delete(path_rASL4D);
+        end
+    end
+% end
     
 % =====================================================================
 % B) Time-Encoded subtraction
@@ -212,73 +249,18 @@ if x.modules.asl.bTimeEncoded
 % =====================================================================
 % C) Single- and multi-PLD subtraction
 else
-    %% First we create full vectors that include all volumes
-    fprintf([xASL_num2str(nVolumes) ' volumes found with:\n']);
-
-    %% 1) x.Q.EchoTime vectors (identical to above)
-    % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-    nTE = length(x.Q.EchoTime);
-    if nTE>nVolumes
-        x.Q.EchoTime_PWI4D = x.Q.EchoTime(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
-    else
-        x.Q.EchoTime_PWI4D = x.Q.EchoTime;
-    end
-    nTE = length(x.Q.EchoTime_PWI4D);
-
-    % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
-    factorTE = nVolumes/nTE;
-    x.Q.EchoTime_PWI4D = repmat(x.Q.EchoTime_PWI4D(:), [factorTE 1]);
-    fprintf('%s\n', ['x.Q.EchoTime vector: ' xASL_num2str(x.Q.EchoTime_PWI4D)]);
-    uniqueTE = uniquetol(x.Q.EchoTime_PWI4D, 0.001);
-
-
-    %% 2) PLD vectors (identical to above)
-    % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-    nPLD = length(x.Q.Initial_PLD);
-    if nPLD>nVolumes
-        x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
-    else
-        x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD;
-    end
-    nPLD = length(x.Q.InitialPLD_PWI4D);
-
-    % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)        
-    factorPLD = nVolumes/nPLD;
-    x.Q.InitialPLD_PWI4D = repmat(x.Q.InitialPLD_PWI4D(:), [factorPLD 1]);
-    fprintf('%s\n', ['Initial PLD vector: ' xASL_num2str(x.Q.InitialPLD_PWI4D)]);
-
-    %% 3) Labeling duration (LD) vectors (identical to above)
-    % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-    nLabDur = length(x.Q.LabelingDuration);
-    if nLabDur>nVolumes
-        x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
-    else
-        x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration;
-    end
-    nLabDur = length(x.Q.LabelingDuration_PWI4D);
-
-    % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
-    factorLabDur = nVolumes/nLabDur;
-    x.Q.LabelingDuration_PWI4D = repmat(x.Q.LabelingDuration_PWI4D(:), [factorLabDur 1]);
-    fprintf('%s\n', ['Labeling duration vector: ' xASL_num2str(x.Q.LabelingDuration_PWI4D)]);
-
-    % these vectors now has the length of the number of volumes
-    % either all values are identical (in the case of single-PLD)
-    % or a combination of multi-PLD
-    
-
     %% 1) Create PWI4D
-    if dim4>1 && ~x.modules.asl.bContainsDeltaM
+    if nVolumes>1 && ~x.modules.asl.bContainsDeltaM
         % Paired subtraction
-        [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL_im);
+        [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL4D);
         PWI4D = ControlIm - LabelIm;
         
         % Skip every other value in the vectors as they were stored for both control and label images 
         x.Q.EchoTime_PWI4D = x.Q.EchoTime(1:2:end);
-        x.Q.InitialPLD_PWI4D = initialPLD(1:2:end);
-        x.Q.LabelingDuration_PWI4D = LabelingDuration(1:2:end);
+        x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD(1:2:end);
+        x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration(1:2:end);
     else % the same but then without subtraction
-        PWI4D = ASL_im;
+        PWI4D = ASL4D;
     end
 
 end
@@ -303,23 +285,36 @@ end
 % We create a dummy CBF image for registration purposes
 % The earliest echo, the latest PLD and the longest labeling duration
 % are the best for this, having most SNR, CBF-weighting, and SNR,
-% respectively
+% respectively. 
+% But from a single volume, we have little signal.
+% So we take a weighted average accordingly
 
-% The earliest echo has the most SNR for perfusion-weighting
+%% This would be taking a single volume only
+% % The earliest echo has the most SNR for perfusion-weighting
+% iMinTE = x.Q.EchoTime_PWI3D == min(x.Q.EchoTime_PWI3D(:));
+% % The latest PLD has the most perfusion-weighting
+% iMaxPLD = x.Q.InitialPLD_PWI3D == max(x.Q.InitialPLD_PWI3D(:));
+% % The longest labeling duration has the most SNR and most perfusion-weighting
+% iMaxLabelingDuration = x.Q.LabelingDuration_PWI3D == max(x.Q.LabelingDuration_PWI3D(:));
+% % We take the index that has all these        
+% i3D = iMinTE & iMaxPLD & iMaxLabelingDuration;
+% if isempty(i3D) || sum(i3D)~=1
+%     error('Illegal index for PWI image');
+% end
+% PWI = PWI3D(:, :, :, i3D);
+% x.Q.EchoTime_PWI = min(x.Q.EchoTime_PWI3D(:));
+% x.Q.initialPLD_PWI = max(x.Q.InitialPLD_PWI3D(:));
+% x.Q.LabelingDuration_PWI = max(x.Q.LabelingDuration_PWI3D(:));
+
+%% PM: do a weighted average here?
+
+%% Current quick&dirty fix was the average of all volumes with the lowest echo time
 iMinTE = x.Q.EchoTime_PWI3D == min(x.Q.EchoTime_PWI3D(:));
-% The latest PLD has the most perfusion-weighting
-iMaxPLD = x.Q.InitialPLD_PWI3D == max(x.Q.InitialPLD_PWI3D(:));
-% The longest labeling duration has the most SNR and most perfusion-weighting
-iMaxLabelingDuration = x.Q.LabelingDuration_PWI3D == max(x.Q.LabelingDuration_PWI3D(:));
-% We take the index that has all these        
-i3D = iMinTE & iMaxPLD & iMaxLabelingDuration;
-if isempty(i3D) || sum(i3D)~=1
-    error('Illegal index for PWI image');
-end
 
-PWI = PWI3D(:, :, :, i3D);
+PWI = xASL_stat_MeanNan(PWI3D(:, :, :, iMinTE), 4);
 x.Q.EchoTime_PWI = min(x.Q.EchoTime_PWI3D(:));
-x.Q.initialPLD_PWI = max(x.Q.InitialPLD_PWI3D(:));
-x.Q.LabelingDuration_PWI = max(x.Q.LabelingDuration_PWI3D(:));
+x.Q.initialPLD_PWI = mean(x.Q.InitialPLD_PWI3D(:)); %% Jan is this correct?
+x.Q.LabelingDuration_PWI = mean(x.Q.LabelingDuration_PWI3D(:)); %% Jan is this correct?
+
 
 end
