@@ -50,8 +50,11 @@ function [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, path_ASL4D,
 % DESCRIPTION: This function performs subtraction and averaging all across the ExploreASL ASL modules, such as xASL_wrp_Realign,
 %              and xASL_wrp_RegisterASL to compute temporary PWI images, xASL_wrp_ResampleASL for creating QC images and preparing
 %              quantification, and xASL_wrp_Quantify if PWI4D is not used by the quantification algorithm (such as BASIL)
-%              
 %
+% This function performs the following steps:
+% 1. Admin & checks
+% 2. Apply motion correction if this is needed
+%              
 % Nomenclature:
 % ASL4D = original timeseries
 % PWI4D = subtracted timeseries -> for quantification purposes
@@ -68,31 +71,63 @@ function [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, path_ASL4D,
 % Copyright (C) 2015-2023 ExploreASL
 
 
-%% 0. Admin
+%% 1. Admin & checks
+% Input image volumes should be correct
+% Creation of the PWI3D or PWI4D image volumes can be skipped if they are provided as input
+bCreatePWI3D = true;
+bCreatePWI4D = true;
 
 
-
-
-
-
-ASL4D = xASL_io_Nifti2Im(path_ASL4D); % Load time-series nifti from path if input was a path
-% (input can also be an image matrix)
-nVolumes = size(ASL4D, 4);
-
-
-% =====================================================================
-% A) Check subtraction
-if numel(size(ASL4D))>4
-    warning('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions');
-    error('ASL4D NIfTI has more than 4 dimensions');
+if nargin==4
+    if isempty(PWI3D) || ~isnumeric(PWI3D)
+        error('Illegal PWI3D');
+    elseif numel(size(PWI3D))>4 || numel(size(PWI3D))<3
+        error('PWI3D has incorrect number of dimensions');
+    else
+        bCreatePWI3D = false;
+    end
+end
+if nargin==3
+    if isempty(PWI4D) || ~isnumeric(PWI4D)
+        error('Illegal PWI4D');
+    elseif numel(size(PWI4D))~=4
+        error('PWI4D has incorrect number of dimensions');
+    else
+        bCreatePWI4D = false;
+    end
+end
+if nargin<2 || isempty(path_ASL4D)
+    error('path_ASL4D input missing');
+else
+    ASL4D = xASL_io_Nifti2Im(path_ASL4D); % Load time-series nifti from path if input was a path
+    % (input can also be an image matrix)
+    nVolumes = size(ASL4D, 4);
     
-elseif nVolumes>1 && mod(nVolumes, 2) ~= 0
-    warning('Odd (i.e., not even) number of control-label pairs, skipping');
-    % mod(nVolumes, 2) ~= 0 here means that round(nVolumes/2)~=nVolumes/2
-    return;
+    
+    % =====================================================================
+    if numel(size(ASL4D))>4
+        warning('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions');
+        error('ASL4D NIfTI has more than 4 dimensions');
+        
+    elseif nVolumes>1 && mod(nVolumes, 2) ~= 0
+        warning('Odd (i.e., not even) number of control-label pairs, skipping');
+        % mod(nVolumes, 2) ~= 0 here means that round(nVolumes/2)~=nVolumes/2
+        return;
+    end
+end
+if isempty(x)
+    error('x input missing');
 end
 
-%% B. Apply motion correction if this is needed
+
+
+%% 2. Apply motion correction if this is needed
+% At the beginning of the ASL module we estimate motion, and optionally remove outliers/spikes
+% This can already be applied, but in some cases this is not yet applied and by just loading ASL4D.nii
+% this is then forgotten. So here, we check if a .mat (e.g., ASL4D.mat) sidecar exists, and then run
+% resampling to apply motion correction. This creates a temporary r-prefixed file (e.g., rASL4D.nii)
+% which is deleted right after we reload its NIfTI as image volumes.
+
 if numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
     % here we detect a path
     [Fpath, Ffile] = xASL_fileparts(path_ASL4D);
@@ -127,13 +162,22 @@ if numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
 % end
     
 % =====================================================================
-% B) Time-Encoded subtraction
+% -> THIS WILL BE MOVED TO xASL_quant_HadamardDecoding
+%% 3. Time-Encoded subtraction
+% xASL_quant_HadamardDecoding should not only decode the image volumes but also the quantification parameters
+% that accompany the different volumes, i.e. EchoTime, PLD, and LabelingDuration.
+% When this is done appropriately, PWI derivative volumes are easily created based on these parameters
+
 if x.modules.asl.bTimeEncoded
     
-    %% 1) Create PWI4D
-    % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
-    PWI4D = xASL_quant_HadamardDecoding(ASL4D, x.Q);
-	nVolumes = size(PWI4D, 4);
+    if bCreatePWI4D
+        %% 1) Create PWI4D
+        % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
+        PWI4D = xASL_quant_HadamardDecoding(ASL4D, x.Q);
+	    nVolumes = size(PWI4D, 4);
+    end
+
+    if bCreatePWI3D
 
     %% 2) Create PWI3D
 	% Calculate Hadamard block size (number of unique PLDs.*labeling durations.* echo times) = number of volumes per repetition
@@ -149,11 +193,6 @@ if x.modules.asl.bTimeEncoded
     end
     nTE = length(x.Q.EchoTime_PWI4D);
 
-    % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
-    factorTE = nVolumes/nTE;
-    x.Q.EchoTime_PWI4D = repmat(x.Q.EchoTime_PWI4D(:), [factorTE 1]);
-    fprintf('%s\n', ['x.Q.EchoTime vector: ' xASL_num2str(x.Q.EchoTime_PWI4D)]);
-    uniqueTE = uniquetol(x.Q.EchoTime_PWI4D, 0.001); % this needs to be moved to the x.Q.EchoTime vector 
     
     nUniqueTE = length(uniqueTE); % Obtain the number of echo times
     % instead of nUniqueTE which we don't use anymore
@@ -196,10 +235,6 @@ if x.modules.asl.bTimeEncoded
     % end
     % nPLD = length(x.Q.InitialPLD_PWI4D);
     % 
-    % % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
-    % factorPLD = nVolumes/nPLD;
-    % x.Q.InitialPLD_PWI4D = repmat(x.Q.InitialPLD_PWI4D(:), [factorPLD 1]);
-    % fprintf('%s\n', ['Initial PLD vector: ' xASL_num2str(x.Q.InitialPLD_PWI4D)]);
 
 
     
@@ -214,12 +249,8 @@ if x.modules.asl.bTimeEncoded
     end
     nLabDur = length(x.Q.LabelingDuration_PWI4D);
 
-    % Then we deal with too short vectors (e.g., repetitions in the case of single-PLD)
-    factorLabDur = nVolumes/nLabDur;
-    x.Q.LabelingDuration_PWI4D = repmat(x.Q.LabelingDuration_PWI4D(:), [factorLabDur 1]);
-    fprintf('%s\n', ['Labeling duration vector: ' xASL_num2str(x.Q.LabelingDuration_PWI4D)]);
 
-
+    end
 
 
     %% TIME DECODING WARNING -> MOVE TO xASL_quant_HadamardDecoding (check the original code)
@@ -248,8 +279,8 @@ if x.modules.asl.bTimeEncoded
     
 % =====================================================================
 % C) Single- and multi-PLD subtraction
-else
-    %% 1) Create PWI4D
+elseif bCreatePWI4D
+    %% 4. Create PWI4D
     if nVolumes>1 && ~x.modules.asl.bContainsDeltaM
         % Paired subtraction
         [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL4D);
@@ -265,23 +296,24 @@ else
 
 end
    
-
-%% 2) Create PWI3D
-
-% After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
-% indexAverage_PLD_LabDur lists for each original position to where it should be averaged
-[~, ~, iUnique_TE_PLD_LabDur] = unique([x.Q.EchoTime_PWI4D(:), x.Q.InitialPLD_PWI4D(:), x.Q.LabelingDuration_PWI4D(:)], 'stable', 'rows');
-
-% MultiPLD-multiLabDur PWI3D after averaging
-for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur)
-    indicesAre = iUnique_TE_PLD_LabDur == iTE_PLD_LabDur;
-    PWI3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, indicesAre), 4); % Averaged PWI4D
-    x.Q.EchoTime_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.EchoTime_PWI4D(indicesAre));
-    x.Q.InitialPLD_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.InitialPLD_PWI4D(indicesAre));
-    x.Q.LabelingDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_PWI4D(indicesAre));
+if bCreatePWI3D
+    %% 5. Create PWI3D
+    
+    % After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
+    % indexAverage_PLD_LabDur lists for each original position to where it should be averaged
+    [~, ~, iUnique_TE_PLD_LabDur] = unique([x.Q.EchoTime_PWI4D(:), x.Q.InitialPLD_PWI4D(:), x.Q.LabelingDuration_PWI4D(:)], 'stable', 'rows');
+    
+    % MultiPLD-multiLabDur PWI3D after averaging
+    for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur)
+        indicesAre = iUnique_TE_PLD_LabDur == iTE_PLD_LabDur;
+        PWI3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, indicesAre), 4); % Averaged PWI4D
+        x.Q.EchoTime_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.EchoTime_PWI4D(indicesAre));
+        x.Q.InitialPLD_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.InitialPLD_PWI4D(indicesAre));
+        x.Q.LabelingDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_PWI4D(indicesAre));
+    end
 end
 
-%% 3) Create PWI
+%% 6. Create PWI
 % We create a dummy CBF image for registration purposes
 % The earliest echo, the latest PLD and the longest labeling duration
 % are the best for this, having most SNR, CBF-weighting, and SNR,
