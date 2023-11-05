@@ -55,7 +55,7 @@ convertTimeFieldsRange =       [0.5        5                10            10    
 convertTimeFieldsAllowOutliers=[0          0                1             1                  1                    0               0                  0         0    0          0                  0]; % For multiple values, don't print a warning if mean value is within the range
 					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
-xASLqFields = {'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LookLocker' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'...
+xASLqFields = {'EchoTime' 'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LookLocker' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'...
 	           'BackgroundSuppressionPulseTime' 'BackgroundSuppressionNumberPulses' 'TimeEncodedMatrixSize' 'NumberEchoTimes' 'TimeEncodedMatrixType' 'SoftwareVersions' 'TimeEncodedMatrix'};
 
 % Some JSON fields need to be updated to fit the BIDS definition

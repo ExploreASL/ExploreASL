@@ -63,8 +63,8 @@ MinimumtValue = NaN;
 %% Read basic image information
 tempnii = xASL_io_ReadNifti(InputPath);
 nFrames = double(tempnii.hdr.dim(5));
-if length(x.EchoTime)>1
-    nFrames=nFrames/numel(unique(x.EchoTime));
+if length(x.Q.EchoTime)>1
+    nFrames=nFrames/numel(unique(x.Q.EchoTime));
 end
 minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
 
@@ -226,7 +226,7 @@ end
 	% PM: assess this from logical ASL EPI mask? This does influence the weighting of rotations compared to translations
 	
 	% % FD = frame displacement
-	% if length(x.EchoTime)>2
+	% if length(x.Q.EchoTime)>2
 	%     FD{1} = rp(1:NumTEs:end,:); %multiTE -> gives back the normal rp for the plots
 	%     FD{2} = diff(rp(1:NumTEs:end,:));
 	% else
