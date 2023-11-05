@@ -33,12 +33,14 @@ function [result, x] = xASL_module_ASL(x)
 %
 % - A. Check if ASL exists, otherwise skip this module
 % - B. Manage mutex state — processing step
+%
+% - H. Skip processing if invalid image
+%
 % - C. Cleanup before rerunning
 %
 % - D - ASL processing parameters
 % - D1. Load ASL parameters (inheritance principle)
 % - D2. Default ASL processing settings in the x.modules.asl field
-%
 % #1543 THIS WILL BE THE FINAL ORDER
 % - D3. TE parsing
 % - D4. PLD parsing
@@ -53,7 +55,6 @@ function [result, x] = xASL_module_ASL(x)
 % - F. Backward and forward compatibility of filenames
 % - G1. Split ASL and M0 within the ASL time series
 % - G2. DeltaM parsing - check if all/some volumes are deltams
-% - H. Skip processing if invalid image
 %
 % EXAMPLE: [~, x] = xASL_module_ASL(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -123,6 +124,15 @@ else
 end
 
 
+%% H. Skip processing if invalid image
+tempASL = xASL_io_Nifti2Im(x.P.Path_ASL4D);
+if isempty(tempASL) || max(tempASL(:))==0 || numel(unique(tempASL(:)))==1
+    error('Invalid ASL image');
+else
+    nVolumes = size(tempASL, 4);
+end
+
+
 %% C. Cleanup before rerunning
 bCompleteRerun = false;
 if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
@@ -162,23 +172,147 @@ if ~isfield(x,'DoWADQCDC')
     x.DoWADQCDC = false; % default skip WAD-QC stuff
 end
 
-%% D3. Multi-PLD parsing
-if isfield(x.Q,'Initial_PLD') && numel(unique(x.Q.Initial_PLD))>1  % check for number of unique PLD's, more than 1 means multiPLD
-    fprintf(2,'Multi-PLD data detected, we will process this but this is a new feature that is still under development\n');
-    fprintf('PDLs: ');
-    for iPLD = 1:numel(x.Q.Initial_PLD)
-        if iPLD<numel(x.Q.Initial_PLD)
-            fprintf('%d, ',x.Q.Initial_PLD(iPLD));
-        else
-            fprintf('%d\n',x.Q.Initial_PLD(iPLD));
-        end
-    end
-    x.modules.asl.bMultiPLD = true;
+
+%% D3. Multi-TE parsing
+% PM: we do 3 times the same below for TE, PLD, LabelingDuration respectively, we could refactor this code in a for-loop
+% PM: And perhaps we should move these to a separate function
+
+x.modules.asl.bMultiTE = false; % by default, we use single-echo processing
+% The echo-time is then only used to scale the M0 to the deltaM if they have different echo-times
+
+if ~isfield(x.Q, 'EchoTime')
+    warning('Missing field x.Q.EchoTime, this can be needed for quantification');
+    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
+	x.Q.NumberEchoTimes = 1;
+elseif isempty(x.Q.EchoTime) || ~isnumeric(x.Q.EchoTime)
+    warning('Illegal field x.Q.EchoTime, this should not be empty and should contain numerical values');
+    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
+	x.Q.NumberEchoTimes = 1;
 else
-    x.modules.asl.bMultiPLD = false;
+    x.Q.uniqueEchoTimes = uniquetol(x.Q.EchoTime, 0.001);
+    x.Q.NumberEchoTimes = length(x.Q.uniqueEchoTimes); % Obtain the number of unique echo times
+    % PM: rename this parameter to x.Q.nUniqueTEs
+    
+    if sum(x.Q.EchoTime<=0)>0
+        warning('x.Q.EchoTime should be positive');
+    end
+
+    % Handle different number of echo times (== potentially different ASL sequences)
+    if x.Q.NumberEchoTimes==1
+        fprintf('%s\n', 'Single-echo ASL detected');
+    elseif x.Q.NumberEchoTimes==2
+        warning('Dual-echo ASL detected, dual-echo ASL processing not yet implemented');
+        fprintf('%s\n', 'We will process these ASL images as if they have a single echo, using the first echo only');
+        fprintf('%s\n', 'Assuming that this is a dual-echo ASL+BOLD sequence');
+        x.Q.EchoTime = min(x.Q.EchoTime);
+    elseif x.Q.NumberEchoTimes>2
+        x.modules.asl.bMultiTE = true;
+        fprintf('%s\n', 'Multiple echo times detected, processing this as multi-echo ASL');
+        fprintf('%s\n', 'Note that this feature is still under development');
+    end
+    
+    fprintf('%s\n', 'Detected the following unique echo times (ms):')
+    for iTE = 1:x.Q.NumberEchoTimes-1
+        fprintf('%.2f, ', round(x.Q.uniqueEchoTimes(iTE),4));
+    end
+    fprintf('%.2f\n', round(x.Q.uniqueEchoTimes(end),4));
 end
 
-%% D4. TimeEncoded parsing
+% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
+nTE = length(x.Q.EchoTime);
+factorTE = nVolumes/nTE;
+x.Q.EchoTime = repmat(x.Q.EchoTime(:), [factorTE 1]);
+nTE = length(x.Q.EchoTime);
+
+% Number of echoes should now be equal to the number of ASL volumes
+if nTE~=nVolumes
+    warning(['Number of echo times (n=' xASL_num2str(nTE) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
+end
+
+
+%% D4. Multi-PLD parsing
+x.modules.asl.bMultiPLD = false; % by default, we use single-PLD processing
+
+if ~isfield(x.Q,'Initial_PLD')
+    warning('Missing field x.Q.Initial_PLD, this is needed for ASL quantification');
+elseif isempty(x.Q.Initial_PLD) || ~isnumeric(x.Q.Initial_PLD)
+    warning('Illegal field x.Q.Initial_PLD, this should not be empty and should contain numerical values');
+else
+    x.Q.uniqueInitial_PLD = unique(x.Q.Initial_PLD);
+    x.Q.NumberPLDs = length(x.Q.uniqueInitial_PLD);
+    
+    if sum(x.Q.Initial_PLD<=0)>0
+        warning('x.Q.Initial_PLD should be positive');
+    end
+
+    % Handle different number of PLDs
+    if x.Q.NumberPLDs==1
+        fprintf('%s\n', 'Single-PLD ASL detected');
+    elseif x.Q.NumberPLDs>1
+        fprintf('%s\n', 'Multi PLDs detected, processing this as multi-PLD ASL');
+        fprintf('%s\n', 'Note that this feature is still under development');
+        x.modules.asl.bMultiPLD = true;
+    end
+
+    fprintf('%s\n', 'Detected the following unique PLDs (ms):')
+    for iPLD = 1:x.Q.NumberPLDs-1
+        fprintf('%d, ',x.Q.uniqueInitial_PLD(iPLD));
+    end
+    fprintf('%d\n',x.Q.uniqueInitial_PLD(end));
+end
+
+% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
+nPLD = length(x.Q.Initial_PLD);
+factorPLD = nVolumes/nPLD;
+x.Q.InitialPLD = repmat(x.Q.Initial_PLD(:), [factorPLD 1]);
+
+% Number of initial PLDs should be equal to number of ASL volumes
+if nPLD~=nVolumes
+    warning(['Number of PLDs (n=' xASL_num2str(nPLD) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
+end
+
+%% D5. Labeling Duration parsing
+
+if ~isfield(x.Q,'LabelingDuration')
+    warning('Missing field x.Q.LabelingDuration, this is needed for ASL quantification');
+elseif isempty(x.Q.LabelingDuration) || ~isnumeric(x.Q.LabelingDuration)
+    warning('Illegal field x.Q.LabelingDuration, this should not be empty and should contain numerical values');
+else
+    x.Q.uniqueLabelingDuration = unique(x.Q.LabelingDuration);
+    x.Q.NumberLDs = length(x.Q.uniqueLabelingDuration);
+    
+    if sum(x.Q.LabelingDuration<=0)>0
+        warning('x.Q.LabelingDuration should be positive');
+    end
+
+    % Handle different number of Labeling Durations
+    if x.Q.NumberLDs==1
+        fprintf('%s\n', 'Single-labeling duration ASL detected');
+    elseif x.Q.NumberLDs>1 && x.modules.asl.bMultiPLD
+        fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
+    elseif x.Q.NumberLD>1 && ~x.modules.asl.bMultiPLD
+        warning('Multi labeling durations detected but not multiple PLDs, is this correct?');
+    end
+
+    fprintf('%s\n', 'Detected the following unique Labeling Durations (ms):')
+    for iLD = 1:x.Q.NumberLDs-1
+        fprintf('%d, ',x.Q.uniqueLabelingDuration(iLD));
+    end
+    fprintf('%d\n',x.Q.uniqueLabelingDuration(end));
+end
+
+% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
+nLD = length(x.Q.LabelingDuration);
+factorLD = nVolumes/nLD;
+x.Q.LabelingDuration = repmat(x.Q.LabelingDuration(:), [factorLD 1]);
+
+% Number of initial PLDs should be equal to number of ASL volumes
+if nLD~=nVolumes
+    warning(['Number of Labeling Durations (n=' xASL_num2str(nLD) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
+end
+
+
+%% D6. TimeEncoded parsing
 % Check if TimeEncoded is defined
 if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize') || isfield(x.Q, 'TimeEncodedMatrix')
     fprintf(2,'Time encoded data detected, we will process this but this is a new feature that is still under development\n');
@@ -225,41 +359,7 @@ end
 %(some datasets will have a decoding matrix that we can use directly in the decoding part)
 
 
-%% D5. Multi-TE parsing
-x.modules.asl.bMultiTE = false; % by default, we use single-echo processing
-% The echo-time is then only used to scale the M0 to the deltaM if they have different echo-times
 
-if ~isfield(x.Q, 'EchoTime')
-    warning('Missing field x.Q.EchoTime, this can be needed for quantification');
-    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
-	x.Q.NumberEchoTimes = 1;
-elseif isempty(x.Q.EchoTime) || ~isnumeric(x.Q.EchoTime)
-    warning('Illegal field x.Q.EchoTime, this should not be empty and contain numerical values');
-    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
-	x.Q.NumberEchoTimes = 1;
-else
-    x.Q.uniqueEchoTimes = uniquetol(x.Q.EchoTime, 0.001);
-    x.Q.NumberEchoTimes = length(x.Q.uniqueEchoTimes); % Obtain the number of unique echo times
-    % PM: rename this parameter to x.Q.nUniqueTEs
-    
-    % Handle different number of echo times (== potentially different ASL sequences)
-    if x.Q.NumberEchoTimes==1
-        fprintf('%s\n', 'Single-echo ASL detected');
-    elseif x.Q.NumberEchoTimes==2
-        warning('Dual-echo ASL detected, dual-echo ASL processing not yet implemented');
-        fprintf('%s\n', 'We will process these ASL images as if they have a single echo, using the first echo only');
-        fprintf('%s\n', 'Assuming that this is a dual-echo ASL+BOLD sequence');
-    elseif x.Q.NumberEchoTimes>2
-        x.modules.asl.bMultiTE = true;
-        fprintf('%s\n', 'Multiple echo times detected, processing this as multi-echo ASL');
-    end
-    
-    fprintf('%s\n', 'Detected the following unique echo times (ms):')
-    for iTE = 1:x.Q.NumberEchoTimes-1
-        fprintf('%d, ', round(x.Q.uniqueEchoTimes(iTE)));
-    end
-    fprintf('%d\n', round(x.Q.uniqueEchoTimes(end)));
-end
 
 %% D6. Automatic session merging
 % Initialization
@@ -437,11 +537,7 @@ else
 end
 
 
-%% H. Skip processing if invalid image
-tempASL = xASL_io_Nifti2Im(x.P.Path_ASL4D);
-if isempty(tempASL) || max(tempASL(:))==0 || numel(unique(tempASL(:)))==1
-    error('Invalid ASL image');
-end
+
 
 
 %% -----------------------------------------------------------------------------
@@ -482,8 +578,7 @@ elseif ~x.mutex.HasState(StateName{iState})
         end
 
 %         % First, solve dimensionality (in case there are empty dims, that need restructuring)
-        nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D),4);
-
+        
         % Then, check matrix size: throw error if 2D data with 3 dimensions only
 
         if nVolumes>1 && ~x.modules.asl.bContainsDeltaM && (nVolumes/2~=round(nVolumes/2))
