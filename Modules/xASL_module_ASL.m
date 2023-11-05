@@ -201,25 +201,39 @@ end
 
 
 %% D5. Multi-TE parsing
-if isfield(x.Q,'EchoTime') && numel(unique(x.Q.EchoTime))>1
-    x.modules.asl.bMultiTE = true;
-    fprintf('Multiple echo times detected...\nTEs (ms): ');
-	
-	if ~isfield(x.Q,'NumberEchoTimes')
-		x.Q.NumberEchoTimes = length(uniquetol(x.Q.EchoTime,0.001)); % Obtain the number of echo times
-	end
-	
-	uniqueEchoTimes = uniquetol(x.Q.EchoTime,0.001);
-    for iTE = 1:length(uniqueEchoTimes)
-        if iTE<length(uniqueEchoTimes)
-            fprintf('%d, ', round(uniqueEchoTimes(iTE)));
-        else
-            fprintf('%d\n', round(uniqueEchoTimes(iTE)));
-        end
-    end
-else
-    x.modules.asl.bMultiTE = false;
+x.modules.asl.bMultiTE = false; % by default, we use single-echo processing
+% The echo-time is then only used to scale the M0 to the deltaM if they have different echo-times
+
+if ~isfield(x.Q, 'EchoTime')
+    warning('Missing field x.Q.EchoTime, this can be needed for quantification');
+    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
 	x.Q.NumberEchoTimes = 1;
+elseif isempty(x.Q.EchoTime) || ~isnumeric(x.Q.EchoTime)
+    warning('Illegal field x.Q.EchoTime, this should not be empty and contain numerical values');
+    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
+	x.Q.NumberEchoTimes = 1;
+else
+    x.Q.uniqueEchoTimes = uniquetol(x.Q.EchoTime, 0.001);
+    x.Q.NumberEchoTimes = length(x.Q.uniqueEchoTimes); % Obtain the number of unique echo times
+    % PM: rename this parameter to x.Q.nUniqueTEs
+    
+    % Handle different number of echo times (== potentially different ASL sequences)
+    if x.Q.NumberEchoTimes==1
+        fprintf('%s\n', 'Single-echo ASL detected');
+    elseif x.Q.NumberEchoTimes==2
+        warning('Dual-echo ASL detected, dual-echo ASL processing not yet implemented');
+        fprintf('%s\n', 'We will process these ASL images as if they have a single echo, using the first echo only');
+        fprintf('%s\n', 'Assuming that this is a dual-echo ASL+BOLD sequence');
+    elseif x.Q.NumberEchoTimes>2
+        x.modules.asl.bMultiTE = true;
+        fprintf('%s\n', 'Multiple echo times detected, processing this as multi-echo ASL');
+    end
+    
+    fprintf('%s\n', 'Detected the following unique echo times (ms):')
+    for iTE = 1:x.Q.NumberEchoTimes-1
+        fprintf('%d, ', round(x.Q.uniqueEchoTimes(iTE)));
+    end
+    fprintf('%d\n', round(x.Q.uniqueEchoTimes(end)));
 end
 
 %% D6. Automatic session merging
