@@ -32,10 +32,10 @@ end
 if x.modules.asl.bTimeEncoded 
 	% Here we select the 1st TE and the control images
 	% We thus calculate the size of each Hadamard block as the number of Hadamard phases and TEs
-	blockSize = x.Q.TimeEncodedMatrixSize * x.Q.NumberEchoTimes;
+	nVolumesPerRepetition = x.Q.TimeEncodedMatrixSize * x.Q.NumberEchoTimes;
         
     % For example for 64 volumes and 2 repetitions with 8 PLDs and 4 TEs, it takes volume 1 and 33
-    imMeanControl = imASLTimeSeries(:,:,:,1:blockSize:end);
+    imMeanControl = imASLTimeSeries(:,:,:,1:nVolumesPerRepetition:end);
 	
 elseif x.modules.asl.bMultiPLD
 	% Create mean control in native space
@@ -52,10 +52,10 @@ elseif x.modules.asl.bMultiPLD
 	idealPLD = unique(Initial_PLD);
 	
 	% Find the index of the one closest to 2000 ms
-	[~, ind] = min(abs(idealPLD-2000));
+	[~, iPLD] = min(abs(idealPLD-2000));
 	
 	% Pick up the ideal PLD as the one closest to 2000 ms
-	idealPLD = idealPLD(ind(1));
+	idealPLD = idealPLD(iPLD(1));
 	
 	if (isfield(x.Q,'LookLocker') && x.Q.LookLocker) || x.modules.asl.bContainsDeltaM
 		% For Look-Locker, get the middle one
