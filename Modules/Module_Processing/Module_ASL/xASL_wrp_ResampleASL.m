@@ -231,14 +231,15 @@ PathPWI4Djson = {x.P.Path_PWI4D_json x.P.Pop_Path_PWI4D_json};
 for iSpace=1:2
     fprintf('%s\n', ['Saving in ' StringSpaceIs{iSpace} ' space:']);
     
-    ASL_im = xASL_io_Nifti2Im(PathASL4D{iSpace}); % Load time-series nifti
+    % Here we reload this again, because we have different 
+    ASL4D = xASL_io_Nifti2Im(PathASL4D{iSpace}); % Load time-series nifti
     
-    if numel(size(ASL_im))>4
+    if numel(size(ASL4D))>4
         warning('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions');
         error(['ASL4D NIfTI has more than 4 dimensions: ' PathASL4D{iSpace}]);
     end
 
-    [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D, PWI4D, PWI3D);
+    [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D);
     
     
     % Save subtracted/averaged to disk
@@ -246,17 +247,17 @@ for iSpace=1:2
     % Save PWI4D (subtracted only)
     fprintf('%s\n', PathPWI4D{iSpace});
     xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);
-    spm_jsonwrite(PathPWI4Djson, x.Q);
+    spm_jsonwrite(PathPWI4Djson{iSpace}, x.Q);
 
     % Save PWI3D (averaged volume for each TE-PLD-labdur combination)
     fprintf('%s\n', PathPWI{iSpace});
     xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI3D{iSpace}, PWI3D, 32, false);
-    spm_jsonwrite(PathPWI3Djson, x.Q);
+    spm_jsonwrite(PathPWI3Djson{iSpace}, x.Q);
 
     % Save PWI (single volume)
     fprintf('%s\n', PathPWI{iSpace});
     xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI{iSpace}, PWI, 32, false);
-    spm_jsonwrite(PathPWIjson, x.Q);
+    spm_jsonwrite(PathPWIjson{iSpace}, x.Q);
 
 end
 
@@ -323,7 +324,7 @@ if x.settings.DELETETEMP
     xASL_delete(x.P.Path_rtemp_despiked_ASL4D);
     xASL_adm_DeleteFilePair(x.P.Path_temp_despiked_ASL4D, 'mat');
 else
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, ASL_im, 32);
+    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, ASL4D, 32);
 end
 
 
