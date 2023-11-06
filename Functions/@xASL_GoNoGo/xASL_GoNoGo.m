@@ -94,7 +94,7 @@ classdef xASL_GoNoGo < handle
                     state = regexprep(state,'\.status$','');
                 end
             else
-                warning([someState ' not locked yet']);
+                fprintf(['Warning: The following directory could not be locked: \n' obj.Root '\n']);
             end
         end
         
@@ -116,7 +116,7 @@ classdef xASL_GoNoGo < handle
                     delete(fullfile(obj.Root, obj.ID, [delStates{ii} '.status']));
                 end
             else
-                warning([someState ' not locked yet']);
+                fprintf(['Warning: The following directory could not be locked: \n' obj.Root '\n']);
             end
         end
 
@@ -128,7 +128,7 @@ classdef xASL_GoNoGo < handle
                     obj.State = union(oldState, someState);
                 end
             else
-                warning([someState ' not locked yet']);
+                fprintf(['Warning: The following directory could not be locked: \n' obj.Root '\n']);
             end
         end
         
@@ -140,7 +140,7 @@ classdef xASL_GoNoGo < handle
                     obj.State = setdiff(oldState, someState);
                 end
             else
-                warning([someState ' not locked yet']);
+                fprintf(['Warning: The following directory could not be locked: \n' obj.Root '\n']);
             end
         end
         
@@ -154,7 +154,7 @@ classdef xASL_GoNoGo < handle
                 end
                 b = ismember(someState,oldState);
             else
-                warning([someState ' not locked yet']);
+                fprintf(['Warning: The following directory could not be locked: \n' obj.Root '\n']);
                 b = [];
             end
         end
