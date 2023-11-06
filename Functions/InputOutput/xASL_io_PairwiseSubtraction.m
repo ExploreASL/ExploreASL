@@ -123,7 +123,7 @@ else
         matlabbatch{1}.spm.util.imcalc.outdir           = {path};
         matlabbatch{1}.spm.util.imcalc.options.dmtx     = 0;
         matlabbatch{1}.spm.util.imcalc.options.mask     = 0;
-        matlabbatch{1}.spm.util.imcalc.options.interp   = 1;
+        matlabbatch{1}.spm.util.imcalc.options.interp   = 4;
         matlabbatch{1}.spm.util.imcalc.options.dtype    = 16;
         for ii=1:size(tIM,4); matlabbatch{1}.spm.util.imcalc.input{ii,1} = [InputFile ',' num2str(ii)]; end  % Input all volumes
 
