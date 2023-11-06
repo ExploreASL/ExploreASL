@@ -96,70 +96,74 @@ if nargin==3
         bCreatePWI4D = false;
     end
 end
-if nargin<2 || isempty(path_ASL4D)
-    error('path_ASL4D input missing');
-else
-    ASL4D = xASL_io_Nifti2Im(path_ASL4D); % Load time-series nifti from path if input was a path
-    % (input can also be an image matrix)
-    nVolumes = size(ASL4D, 4);
-    
-    
-    % =====================================================================
-    if numel(size(ASL4D))>4
-        warning('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions');
-        error('ASL4D NIfTI has more than 4 dimensions');
+
+if bCreatePWI4D
+
+    if nargin<2 || isempty(path_ASL4D)
+        error('path_ASL4D input missing');
+    else
+        ASL4D = xASL_io_Nifti2Im(path_ASL4D); % Load time-series nifti from path if input was a path
+        % (input can also be an image matrix)
+        nVolumes = size(ASL4D, 4);
         
-    elseif nVolumes>1 && mod(nVolumes, 2) ~= 0
-        warning('Odd (i.e., not even) number of control-label pairs, skipping');
-        % mod(nVolumes, 2) ~= 0 here means that round(nVolumes/2)~=nVolumes/2
-        return;
-    end
-end
-if isempty(x)
-    error('x input missing');
-end
-
-
-
-%% 2. Apply motion correction if this is needed
-% At the beginning of the ASL module we estimate motion, and optionally remove outliers/spikes
-% This can already be applied, but in some cases this is not yet applied and by just loading ASL4D.nii
-% this is then forgotten. So here, we check if a .mat (e.g., ASL4D.mat) sidecar exists, and then run
-% resampling to apply motion correction. This creates a temporary r-prefixed file (e.g., rASL4D.nii)
-% which is deleted right after we reload its NIfTI as image volumes.
-
-if numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
-    % here we detect a path
-    [Fpath, Ffile] = xASL_fileparts(path_ASL4D);
-    sideCarMat = fullfile(Fpath, [Ffile '.mat']);
-
-    if exist(sideCarMat, 'file')
-        % we check if the mat-sidecar exists, with the motion estimation parameters
-        % If this file exists, we assume that the original ASL4D input file has not been
-        % interpolated yet (and the motion estimation has not been applied yet)
-
-        %% ------------------------------------------------------------------------------------------
-        % Apple motion correction & resample
-        if nVolumes>1
-            for iS=1:nVolumes
-                matlabbatch{1}.spm.spatial.realign.write.data{iS,1} = [path_ASL4D ',' num2str(iS)];
-            end
         
-            matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
-            matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 4;
-            matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
-            matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
-            matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
-        
-            spm_jobman('run',matlabbatch); % this applies the motion correction in native space
+        % =====================================================================
+        if numel(size(ASL4D))>4
+            warning('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions');
+            error('ASL4D NIfTI has more than 4 dimensions');
             
-            path_rASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
-            % Reload motion corrected timeseries:
-            ASL4D = xASL_io_Nifti2Im(path_rASL4D);
-            xASL_delete(path_rASL4D);
+        elseif nVolumes>1 && mod(nVolumes, 2) ~= 0
+            warning('Odd (i.e., not even) number of control-label pairs, skipping');
+            % mod(nVolumes, 2) ~= 0 here means that round(nVolumes/2)~=nVolumes/2
+            return;
         end
     end
-% end
+    if isempty(x)
+        error('x input missing');
+    end
+
+
+
+    %% 2. Apply motion correction if this is needed
+    % At the beginning of the ASL module we estimate motion, and optionally remove outliers/spikes
+    % This can already be applied, but in some cases this is not yet applied and by just loading ASL4D.nii
+    % this is then forgotten. So here, we check if a .mat (e.g., ASL4D.mat) sidecar exists, and then run
+    % resampling to apply motion correction. This creates a temporary r-prefixed file (e.g., rASL4D.nii)
+    % which is deleted right after we reload its NIfTI as image volumes.
+    
+    if numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
+        % here we detect a path
+        [Fpath, Ffile] = xASL_fileparts(path_ASL4D);
+        sideCarMat = fullfile(Fpath, [Ffile '.mat']);
+    
+        if exist(sideCarMat, 'file')
+            % we check if the mat-sidecar exists, with the motion estimation parameters
+            % If this file exists, we assume that the original ASL4D input file has not been
+            % interpolated yet (and the motion estimation has not been applied yet)
+    
+            %% ------------------------------------------------------------------------------------------
+            % Apple motion correction & resample
+            if nVolumes>1
+                for iS=1:nVolumes
+                    matlabbatch{1}.spm.spatial.realign.write.data{iS,1} = [path_ASL4D ',' num2str(iS)];
+                end
+            
+                matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
+                matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 4;
+                matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
+                matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
+                matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
+            
+                spm_jobman('run',matlabbatch); % this applies the motion correction in native space
+                
+                path_rASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
+                % Reload motion corrected timeseries:
+                ASL4D = xASL_io_Nifti2Im(path_rASL4D);
+                xASL_delete(path_rASL4D);
+            end
+        end
+    end
+end
     
 % =====================================================================
 % -> THIS WILL BE MOVED TO xASL_quant_HadamardDecoding
