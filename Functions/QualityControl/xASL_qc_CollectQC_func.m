@@ -1,11 +1,12 @@
-function [x] = xASL_qc_CollectQC_func(x, iSubject)
+function [x] = xASL_qc_CollectQC_func(x, iSubject, iSession)
 %xASL_qc_CollectQC_func Collect func QC parameters
 %
-% FORMAT: [x] = xASL_qc_CollectQC_func(x, iSubject)
+% FORMAT: [x] = xASL_qc_CollectQC_func(x, iSubject, iSession)
 %
 % INPUT:
 %   x 	     - structure containing fields with all information required to run this submodule (REQUIRED)
 %   iSubject - index of current subject (REQUIRED)
+%   iSession - index of current session (REQUIRED)
 %
 % OUTPUT:
 %   x        - same as input
@@ -40,14 +41,14 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject)
 %               VoxelSize Z - slice thickness
 %               RigidBody2Anat_mm - Net Displacement Vector (RMS) from func to T1w image (mm) from registration
 %
-% EXAMPLE: x = xASL_qc_CollectQC_func(x, 10);
+% EXAMPLE: x = xASL_qc_CollectQC_func(x, 10, 1);
 % __________________________________
-% Copyright (C) 2015-2019 Explorefunc
+% Copyright (C) 2015-2023 ExploreASL
 
 
     %% Admin
     SubjectID = x.SUBJECTS{iSubject};
-    SessionID = x.SESSIONS{1};
+    SessionID = x.SESSIONS{iSession};
     func.ID = [SubjectID '_' SessionID];
 
 
@@ -126,8 +127,29 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject)
     end
     FieldsFilled    = SumData/nFields;
     if  FieldsFilled>0.2 % threshold to avoid listing empty values
-        x.Output.('func') = xASL_qc_FillFields(x.Output.('func'), func);
+		x.Output.func.(SessionID) = xASL_qc_FillFields(x.Output.func.(SessionID), func);
     end
+
+	% Keep only subfields in x.Output.func.func_X for func sessions
+	% In previous versions, we have parameters for session one only directly under x.Output.func - if these are detected
+	% they are removed as obsolete and a warning is issued.
+	listFields = fields(x.Output.func);
+
+	bIssuedWarningAboutExtraFields = false;
+	for iField = 1:length(listFields)
+		currentField = listFields{iField};
+		if isempty(regexp(currentField, 'func_\d+', 'once'))
+			x.Output.func = rmfield(x.Output.func, currentField);
+			if ~bIssuedWarningAboutExtraFields
+				% Obsolete fields are present, report a warning once
+				warning('QC parameters for func are now provided inside field x.Output.func.func_n for run n (e.g. func_1 func_2 func_3) instead of x.Output.func');
+                fprintf('%s\n', 'The QC output of previous ExploreASL runs of the ASL module were deleted from x.Output.func');
+                fprintf('%s\n', '(and will be removed from the resulting QC_*.json file)');
+				bIssuedWarningAboutExtraFields = true;
+			end
+		end
+	end
+
 
 end
 

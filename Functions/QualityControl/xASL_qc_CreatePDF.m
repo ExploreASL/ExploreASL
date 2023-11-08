@@ -112,7 +112,7 @@ try
         else
             Ind = iSubjSess;
 		end
-		if strcmp(OutputFields{iField},'ASL')
+		if strcmp(OutputFields{iField}, 'ASL') || strcmp(OutputFields{iField}, 'func')
 			% Save the fields to print and their name for the given substructure
 			printFields{iField} = x.Output.(OutputFields{iField});
 			StrucFields{iField} = sort(fieldnames(x.Output.(OutputFields{iField})));
@@ -120,7 +120,7 @@ try
 			% Select the ASL session with the lowest number
 			aslField = length(StrucFields{iField});
 			for iF = length(StrucFields{iField}):-1:1
-				if ~isempty(regexp(StrucFields{iField}{iF}, 'ASL_\d+'))
+				if ~isempty(regexp(StrucFields{iField}{iF}, [OutputFields{iField} '_\d+']))
 					aslField = iF;
 				end
 			end

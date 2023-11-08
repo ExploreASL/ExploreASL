@@ -13,9 +13,9 @@ function x = xASL_qc_CollectParameters(x, iSubject, ScanType, iSession)
 %   x                   - same as input
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function collects QC parameters for a module for a given subject and for ASL for a given subject+session
+% DESCRIPTION: This function collects QC parameters for a module for a given subject and for ASL and func for a given subject+session
 % 
-% EXAMPLE: x = xASL_qc_CollectParameters(x, 10, 'func');
+% EXAMPLE: x = xASL_qc_CollectParameters(x, 10, 'func', 1);
 %          x = xASL_qc_CollectParameters(x, 10, 'ASL', 4);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
@@ -41,10 +41,12 @@ if nargin<4 || isempty(iSession)
 	iSession = 1;
 	if strcmp(ScanType, 'ASL')
 		warning('Missing iSession for ASL, setting to 1');
+	elseif strcmp(ScanType, 'func')
+		warning('Missing iSession for func, setting to 1');
 	end
 end
 
-if ~isfield(x,'Output')
+if ~isfield(x, 'Output')
     x.Output  = struct; 
 end
 if ~isfield(x.Output, ScanType)
@@ -60,8 +62,9 @@ switch ScanType
     case 'ASL'
 		x = xASL_qc_CollectQC_ASL(x, iSubject, iSession);
     case 'func'
-		x = xASL_qc_CollectQC_func(x, iSubject);
+		x = xASL_qc_CollectQC_func(x, iSubject, iSession);
     case 'dwi'
+		warning('QC collection is not yet implemented for DWI');
 end
 fprintf('\n');
 
@@ -118,15 +121,16 @@ if xASL_exist(QC_Path, 'file')
 	% Delete the old QC.json
 	xASL_delete(QC_Path);
 
-	if strcmp(ScanType, 'ASL') && isfield(oldOutput, 'ASL')
-		% Copy QC of other ASL sessions, but not the current one to the current QC
-		listFields = fieldnames(oldOutput.ASL);
+	if (strcmp(ScanType, 'ASL') && isfield(oldOutput, 'ASL')) || (strcmp(ScanType, 'func') && isfield(oldOutput, 'func'))
+		% Copy QC of other ASL/func sessions, but not the current one to the current QC
+		listFields = fieldnames(oldOutput.(ScanType));
 		for iField = 1:length(listFields)
-			if ~isempty(regexp(listFields{iField}, 'ASL_\d+', 'once')) && ~strcmp(listFields{iField}, x.SESSIONS{iSession})
-				x.Output.ASL.(listFields{iField}) = oldOutput.ASL.(listFields{iField});
+			if ~isempty(regexp(listFields{iField}, [ScanType '_\d+'], 'once')) && ~strcmp(listFields{iField}, x.SESSIONS{iSession})
+				x.Output.(ScanType).(listFields{iField}) = oldOutput.(ScanType).(listFields{iField});
 			end
 		end
 	end
+
 end
 
 % Save current QC
