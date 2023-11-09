@@ -158,8 +158,14 @@ end
 %% 1.   Load PWI
 fprintf('%s\n','Loading PWI & M0 images');
 
-% Load ASL PWI
-PWI = xASL_io_Nifti2Im(PWI_Path); % Load CBF nifti
+% Either load a PWI image or merge several PWIs
+if x.modules.asl.bMergingSessions == 1
+	PWI = xASL_wrp_Quantify_MergeSessions(x);
+else
+	% Load ASL single PWI
+	PWI = xASL_io_Nifti2Im(PWI_Path); % Load CBF nifti
+end
+
 ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
 % Assigns the shortest minimal positive TE for ASL
@@ -588,4 +594,30 @@ if xASL_exist(x.P.Pop_Path_qCBF, 'file') && (strcmp(pathOutputCBF, x.P.Pop_Path_
 end
 
 
+end
+
+function PWI = xASL_wrp_Quantify_MergeSessions(x)
+% Merge several PWIs based on the list in x.modules.asl.sessionsToMerge
+PWI = [];
+for iSession = 1:numel(x.modules.asl.sessionsToMerge)
+	pathCurrentPWI4D = replace(x.P.Path_PWI4D, x.modules.asl.sessionsToMerge{end}, x.modules.asl.sessionsToMerge{iSession});
+
+	if xASL_exist (pathCurrentPWI4D, 'file')
+		imPWI4Dcurrent = xASL_io_Nifti2Im(pathCurrentPWI4D);
+		if iSession == 1
+			% Take the first volume as it is
+			PWI = imPWI4Dcurrent;
+		else
+			% For the following ones, check dimensions
+			if isequal(size(imPWI4Dcurrent, 1:3), size(PWI, 1:3))
+				PWI = cat(4, PWI, imPWI4Dcurrent);
+			else
+				error(['Cannot merge sessions for subject ' x.SUBJECT ' as session '  x.modules.asl.sessionsToMerge{iSession} ' has a different matrix size from the previous sessions.']);
+			end
+		end
+	else
+		% If one of the sessions are missing, then we throw an error
+		error(['Cannot merge sessions for subject ' x.SUBJECT ' as session '  x.modules.asl.sessionsToMerge{iSession} ' is missing.']);
+	end
+end
 end
