@@ -36,7 +36,7 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
 %% ----------------------------------------------------------------------------
 %% Admin
@@ -186,9 +186,9 @@ if size(imNew,4)==1
 end
 
 if exist(tempMat, 'file')
-	tmpMat = load(tempMat);
+	motionMat = load(tempMat);
 	% Remove .mat if dimensions do not fit
-	if size(newNifti.dat,4) ~= size(tmpMat.mat,3)
+	if size(newNifti.dat,4) ~= size(motionMat.mat,3)
 		xASL_delete(tempMat);
 	end
 end
