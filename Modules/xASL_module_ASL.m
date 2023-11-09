@@ -243,7 +243,8 @@ else
     x.modules.asl.bMultiTE = false;
 	x.Q.NumberEchoTimes = 1;
 end
-%% D6. Recognizing automatic quantification (e.g. DEBBIE sequence)
+%% D6. Automatic session merging
+% Read the list of sessions to merge, defaulted to empty
 if ~isfield(x.modules.asl, 'SessionMergingList')
 	x.modules.asl.SessionMergingList = {};
 else
@@ -253,6 +254,23 @@ else
 	end
 end
 
+x.modules.asl.bMergingSessions = 0; % By default, we do not merge any sessions
+x.modules.asl.sessionsToMerge = {}; % The active sublist of sessions to merge for this particular session. SessionMerginList is the general list of lists to be merged
+  
+% Check if there is a list of sessions to merge
+if ~isempty(x.modules.asl.SessionMergingList)
+	% Find the sublist containing the current session
+	for iSubList=1:numel(x.modules.asl.SessionMergingList)
+		if ~isempty(x.modules.asl.SessionMergingList{iSubList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iSubList}))
+			x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iSubList};
+		end
+	end
+
+	% If there are sessions to merge and the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
+	if ~isempty(x.modules.asl.sessionsToMerge) && strcmp(x.SESSION, x.modules.asl.sessionsToMerge{end})
+		x.modules.asl.bMergingSessions = 1;
+	end
+end
 
 %% E1. Default quantification parameters in the Q field
 if ~isfield(x.modules.asl,'ApplyQuantification') || isempty(x.modules.asl.ApplyQuantification)

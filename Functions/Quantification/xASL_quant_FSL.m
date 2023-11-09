@@ -95,57 +95,43 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     end
 
     %% 4. Create option_file that contains options which are passed to the FSL command
-	bMergingSessions = 0; % only active if SessionMergingList + last session of list -> merge FSLOptions.txt
-    sessionsToMerge = {}; % To be used later during the txt merging
-    % For testing:
-    % x.modules.asl.SessionMergingList = {{'ASL_1', 'ASL_2'}; {'ASL_3', 'ASL_4','ASL_5'}};
-   
     % 4.1 Check if necessary to merge sessions (and FSLOptions.txt)
-    if ~isempty(x.modules.asl.SessionMergingList)
-		% Find the sublist containing the current session
-		for iSubList=1:numel(x.modules.asl.SessionMergingList)
-			if ~isempty(x.modules.asl.SessionMergingList{iSubList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iSubList}))
-				sessionsToMerge = x.modules.asl.SessionMergingList{iSubList};
-			end
-		end
 
-		% If there are sessions to merge and the current session is the last of the list then we want to merge the .txt and concatenate it with the previous sessions of the list
-		if ~isempty(sessionsToMerge) && strcmp(x.SESSION, sessionsToMerge{end})
+	% If there are sessions to merge and the current session is the last of the list then we want to merge the .txt and concatenate it with the previous sessions of the list
+	if x.modules.asl.bMergingSessions == 1
+		bUseFabber = 1;
 
-			bMergingSessions = 1; 
-            bUseFabber = 1; 
+		% Find PWI4Ds of the sessions to merge and concatenate them
+		imPWI4Dconcatenated = [];
+		for iSession = 1:numel(x.modules.asl.sessionsToMerge)
+			pathCurrentPWI4D = replace(x.P.Path_PWI4D, x.modules.asl.sessionsToMerge{end}, x.modules.asl.sessionsToMerge{iSession});
 
-			% Find PWI4Ds of the sessions to merge and concatenate them
-			imPWI4Dconcatenated = [];
-			for iSession = 1:numel(sessionsToMerge)
-				pathCurrentPWI4D = replace(x.P.Path_PWI4D, sessionsToMerge{end}, sessionsToMerge{iSession});
+			if xASL_exist (pathCurrentPWI4D, 'file')
+				imPWI4Dcurrent = xASL_io_Nifti2Im(pathCurrentPWI4D);
 
-				if xASL_exist (pathCurrentPWI4D, 'file')
-					imPWI4Dcurrent = xASL_io_Nifti2Im(pathCurrentPWI4D);
-
-					if iSession == 1
-						% Take the first volume as it is
-						imPWI4Dconcatenated = imPWI4Dcurrent;
-					else
-						% For the following ones, check dimensions
-						if isequal(size(imPWI4Dcurrent, 1:3), size(imPWI4Dconcatenated, 1:3))
-							imPWI4Dconcatenated = cat(4, imPWI4Dconcatenated, imPWI4Dcurrent);
-						else
-							error(['Cannot merge sessions for subject ' x.SUBJECT ' as session '  sessionsToMerge{iSession} ' has a different matrix size from the previous sessions.']);
-						end
-					end
+				if iSession == 1
+					% Take the first volume as it is
+					imPWI4Dconcatenated = imPWI4Dcurrent;
 				else
-					% If one of the sessions are missing, then we throw an error
-					error(['Cannot merge sessions for subject ' x.SUBJECT ' as session '  sessionsToMerge{iSession} ' is missing.']);
+					% For the following ones, check dimensions
+					if isequal(size(imPWI4Dcurrent, 1:3), size(imPWI4Dconcatenated, 1:3))
+						imPWI4Dconcatenated = cat(4, imPWI4Dconcatenated, imPWI4Dcurrent);
+					else
+						error(['Cannot merge sessions for subject ' x.SUBJECT ' as session '  x.modules.asl.sessionsToMerge{iSession} ' has a different matrix size from the previous sessions.']);
+					end
 				end
+			else
+				% If one of the sessions are missing, then we throw an error
+				error(['Cannot merge sessions for subject ' x.SUBJECT ' as session '  x.modules.asl.sessionsToMerge{iSession} ' is missing.']);
 			end
-			% Save the concatenated image
-			xASL_io_SaveNifti(pathFSLInput, pathFSLInput, imPWI4Dconcatenated);
 		end
-    end
+		% Save the concatenated image
+		xASL_io_SaveNifti(pathFSLInput, pathFSLInput, imPWI4Dconcatenated);
+	end
+
 
     % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
-	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, bMergingSessions, sessionsToMerge);
+	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, x.modules.asl.bMergingSessions);
         
     %% 5. Run Basil and retrieve CBF output
     if bUseFabber
@@ -235,10 +221,10 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     
 end
 
-function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, bMergingSessions, sessionsToMerge)
+function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, bMergingSessions)
 %xASL_sub_FSLOptions generates the options and saves them in a file and returns some commandline options as well
 %
-% FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput [, bMergingSessions, sessionsToMerge])
+% FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput [, bMergingSessions])
 % 
 % INPUT:
 %   pathFSLOptions  - filepath to the options file (REQUIRED)
@@ -246,8 +232,7 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, 
 %   bUseFabber      - Use FABBER, alternative BASIL (REQUIRED)
 %   pathFSLInput    - Path to the data input file (REQUIRED)
 %   pathFSLOutput   - Path to the output directory (REQUIRED)
-%   bMergingSessions     - Merge FSLOptions.txt (DEBBIE - only 1 for the last session of MergingLists) (OPTIONAL, DEFAULT 0)
-%   sessionsToMerge  - Sessions to merge (OPTIONAL, DEFAULT {})
+%   bMergingSessions - Merge FSLOptions.txt (DEBBIE - only 1 for the last session of MergingLists) (OPTIONAL, DEFAULT 0)
 %
 % OUTPUT:
 % FSLOptions      - command-line options
@@ -279,10 +264,6 @@ end
 
 if nargin<7 || isempty(bMergingSessions)
 	bMergingSessions = 0;
-end
-
-if nargin<8 || isempty(sessionsToMerge)
-	sessionsToMerge = {};
 end
 
 % If we need to merge sessions, we will use Fabber
@@ -501,8 +482,8 @@ switch lower(x.Q.LabelingType)
             if bMergingSessions
                 CurrentASLJSONdir = fullfile(x.dir.SESSIONDIR,'/ASL4D.json');
 
-                for iSession = 1: numel(sessionsToMerge(2:end))
-                    sessionsToMergeJSONdir = replace (CurrentASLJSONdir, x.SESSION,sessionsToMerge{iSession});
+                for iSession = 1: numel(x.modules.asl.sessionsToMerge(2:end))
+                    sessionsToMergeJSONdir = replace (CurrentASLJSONdir, x.SESSION, x.modules.asl.sessionsToMerge{iSession});
 
                     sessionsToMergeJSON = spm_jsonread(sessionsToMergeJSONdir);
                     NewPLDs = sessionsToMergeJSON.PostLabelingDelay;
