@@ -95,40 +95,10 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     end
 
     %% 4. Create option_file that contains options which are passed to the FSL command
-    % 4.1 Check if necessary to merge sessions (and FSLOptions.txt)
-
-	% If there are sessions to merge and the current session is the last of the list then we want to merge the .txt and concatenate it with the previous sessions of the list
+	% To be removed later when we are properly checking for merged multi-TE images
 	if x.modules.asl.bMergingSessions == 1
 		bUseFabber = 1;
-
-		% Find PWI4Ds of the sessions to merge and concatenate them
-		imPWI4Dconcatenated = [];
-		for iSession = 1:numel(x.modules.asl.sessionsToMerge)
-			pathCurrentPWI4D = replace(x.P.Path_PWI4D, x.modules.asl.sessionsToMerge{end}, x.modules.asl.sessionsToMerge{iSession});
-
-			if xASL_exist (pathCurrentPWI4D, 'file')
-				imPWI4Dcurrent = xASL_io_Nifti2Im(pathCurrentPWI4D);
-
-				if iSession == 1
-					% Take the first volume as it is
-					imPWI4Dconcatenated = imPWI4Dcurrent;
-				else
-					% For the following ones, check dimensions
-					if isequal(size(imPWI4Dcurrent, 1:3), size(imPWI4Dconcatenated, 1:3))
-						imPWI4Dconcatenated = cat(4, imPWI4Dconcatenated, imPWI4Dcurrent);
-					else
-						error(['Cannot merge sessions for subject ' x.SUBJECT ' as session '  x.modules.asl.sessionsToMerge{iSession} ' has a different matrix size from the previous sessions.']);
-					end
-				end
-			else
-				% If one of the sessions are missing, then we throw an error
-				error(['Cannot merge sessions for subject ' x.SUBJECT ' as session '  x.modules.asl.sessionsToMerge{iSession} ' is missing.']);
-			end
-		end
-		% Save the concatenated image
-		xASL_io_SaveNifti(pathFSLInput, pathFSLInput, imPWI4Dconcatenated);
 	end
-
 
     % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
 	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, x.modules.asl.bMergingSessions);
