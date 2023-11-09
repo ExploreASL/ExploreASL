@@ -26,7 +26,9 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %              2. Determine the bit precision
 %              3. Create new NIfTI
 %              4. Remove redundant .mat orientation files
-%              5. Delete any pre-existing NIfTI files with the same name
+%              5. Manage scale slopes
+%              6. Manage new filename
+%              7. Delete any pre-existing NIfTI files with the same name
 %
 % EXAMPLE: xASL_io_SaveNifti('c:\User\path\old.nii', 'c:\User\path\new.nii', im)
 %          xASL_io_SaveNifti('c:\User\path\old.nii', 'c:\User\path\new.nii', im, [], 0)
@@ -177,6 +179,22 @@ create(newNifti);
 
 newNifti.dat(:,:,:,:,:) = imNew;
 
+
+%% 4. Remove redundant .mat orientation files
+if size(imNew,4)==1
+    xASL_delete(tempMat);
+end
+
+if exist(tempMat, 'file')
+	tmpMat = load(tempMat);
+	% Remove .mat if dimensions do not fit
+	if size(newNifti.dat,4) ~= size(tmpMat.mat,3)
+		xASL_delete(tempMat);
+	end
+end
+
+
+%% 5. Manage scale slopes
 if exist('ScaleSlope16', 'var')
     newNifti = xASL_io_ReadNifti(tempName);
     newNifti.dat.scl_slope = ScaleSlope16;
@@ -188,6 +206,8 @@ if exist('InterceptN', 'var')
     create(newNifti);
 end
 
+
+%% 6. Manage new filename
 xASL_Move(tempName,pathNewNifti,1,0);
 
 if exist(tempMat, 'file')
@@ -195,21 +215,7 @@ if exist(tempMat, 'file')
 end
 
 
-%% 4. Remove redundant .mat orientation files
-if size(imNew,4)==1
-    xASL_delete(newMat);
-end
-
-if exist(newMat, 'file')
-	tmpMat = load(newMat);
-	% Remove .mat if dimensions do not fit
-	if size(newNifti.dat,4) ~= size(tmpMat.mat,3)
-		xASL_delete(newMat);
-	end
-end
-
-
-%% 5. Delete any pre-existing NIfTI files with the same name
+%% 7. Delete any pre-existing NIfTI files with the same name
 % Always avoid having two of the same files, of which one copy is zipped
 % E.g. in a rerun
 
