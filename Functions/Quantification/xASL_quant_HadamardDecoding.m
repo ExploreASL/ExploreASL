@@ -8,7 +8,7 @@ function [decodedPWI4D, decodedControl4D] = xASL_quant_HadamardDecoding(imPath, 
 %                        (xASL_io_Nifti2Im below allows both path and image
 %                        matrix inputs)
 %
-%               xQ     - x.Q field with Hadamard input parameters containing the following subfields
+%               xQ     - xQ field with Hadamard input parameters containing the following subfields
 %                          - TimeEncodedMatrixType (REQUIRED)
 %                             - Hadamard
 %                             - Walsh
@@ -149,7 +149,7 @@ if ~isempty(xQ.TimeEncodedMatrixType)
 	end
 end
    
-switch xQ.vendor
+switch xQ.Vendor
 	case 'Siemens'
 		% This is where this code was initially based on, so for
 		% Siemens we don't do anything specific
@@ -160,8 +160,6 @@ switch xQ.vendor
 		warning('Time encoded ASL data detected for GE, but GE usually does the decoding in K-space on the scanner');
 	otherwise
 		warning(['Time encoded ASL data not yet tested for vendor ' xQ.vendor]);
-end
-
 end
 
 %% 2. Load time-series nifti
@@ -178,7 +176,7 @@ nRepetitions = nEncodedVolumes / (xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes)
 %% 3. Obtain control4D images
 % Here we select the 1st TE and the control images
 % We thus calculate the size of each Hadamard block as the number of Hadamard phases and TEs
-nVolumesPerRepetition = x.Q.TimeEncodedMatrixSize * x.Q.NumberEchoTimes;
+nVolumesPerRepetition = xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes;
     
 % For example for 64 volumes and 2 repetitions with 8 PLDs and 4 TEs, it takes volume 1 and 33
 decodedControl4D = imEncoded(:,:,:,1:nVolumesPerRepetition:end);
