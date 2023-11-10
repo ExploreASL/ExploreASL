@@ -1,5 +1,5 @@
-function [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, path_ASL4D, PWI4D, PWI3D)
-%xASL_im_ASLSubtractionAveraging Central function for ASL subtraction and averaging
+function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubtractionAveraging(x, path_ASL4D, PWI4D, PWI3D)
+%xASL_im_ASLSubtractionAveraging Central function for ASL subtraction and averaging, for both PWI & controls
 %
 % FORMAT: [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D [, PWI4D, PWI3D])
 %
@@ -29,7 +29,10 @@ function [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, path_ASL4D,
 %   PWI3D   - 4D image matrix, see explanation below
 %   PWI4D   - 4D image matrix, see explanation below
 %   x       - updated structure, with the following quantification parameters:
-%             fitting to the nomenclature explained below 
+%             fitting to the nomenclature explained below
+%   Control - same as PWI but then non-subtracted controls
+%   Control3D - same as PWI3D but then non-subtracted controls
+%   Control4D - same as PWI4D but then non-subtracted controls
 %
 %   x.Q.EchoTimeLabelingDuration_PWI4D
 %   x.Q.Initial_PLD_PWI4D
@@ -49,7 +52,7 @@ function [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, path_ASL4D,
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function performs subtraction and averaging all across the ExploreASL ASL modules, such as xASL_wrp_Realign,
 %              and xASL_wrp_RegisterASL to compute temporary PWI images, xASL_wrp_ResampleASL for creating QC images and preparing
-%              quantification, and xASL_wrp_Quantify if PWI4D is not used by the quantification algorithm (such as BASIL)
+%              quantification, and xASL_wrp_Quantify if PWI4D is not used by the quantification algorithm (such as BASIL).
 %
 % This function performs the following steps:
 % 1. Admin & checks
@@ -57,10 +60,12 @@ function [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, path_ASL4D,
 %              
 % Nomenclature:
 % ASL4D = original timeseries
-% PWI4D = subtracted timeseries -> for quantification purposes
-% PWI3D = averaged per TE—PLD—LabDur combination -> for QC purposes
-% PWI   = single perfusion-weighted volume -> for registration purposes
-
+% PWI4D = subtracted timeseries -> for quantification purposes (also applies to control4D)
+% PWI3D = averaged per TE—PLD—LabDur combination -> for QC purposes  (also applies to control3D)
+% PWI   = single perfusion-weighted volume -> for registration purposes  (also applies to control)
+% 
+% % we use the same nomenclature for control: control4D, control3D, control, as these are the same control-label pairs but without subtraction
+%
 % The quantification submodule xASL_wrp_Quantify only uses PWI4D from here, and recalculates PWI3D and PWI for quantification, potentially improving
 % quantification. So the user can, after QC, potentially remove some volumes from PWI4D, but should be aware that the information in the JSON sidecar
 % (TE, PLD, LabDur) should be adapted accordingly.
@@ -177,7 +182,7 @@ if x.modules.asl.bTimeEncoded
     if bCreatePWI4D
         %% 1) Create PWI4D
         % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
-        PWI4D = xASL_quant_HadamardDecoding(ASL4D, x.Q);
+        [PWI4D, Control4D] = xASL_quant_HadamardDecoding(imPath, xQ);
 	    nVolumes = size(PWI4D, 4);
     end
 
@@ -287,8 +292,8 @@ elseif bCreatePWI4D
     %% 4. Create PWI4D
     if nVolumes>1 && ~x.modules.asl.bContainsDeltaM
         % Paired subtraction
-        [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(ASL4D);
-        PWI4D = ControlIm - LabelIm;
+        [Control4D, LabelIm] = xASL_quant_GetControlLabelOrder(ASL4D);
+        PWI4D = Control4D - LabelIm;
         
         % Skip every other value in the vectors as they were stored for both control and label images 
         x.Q.EchoTime_PWI4D = x.Q.EchoTime(1:2:end);
@@ -296,6 +301,7 @@ elseif bCreatePWI4D
         x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration(1:2:end);
     else % the same but then without subtraction
         PWI4D = ASL4D;
+        Control4D = NaN;
     end
 
 end
@@ -311,6 +317,8 @@ if bCreatePWI3D
     for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur)
         indicesAre = iUnique_TE_PLD_LabDur == iTE_PLD_LabDur;
         PWI3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, indicesAre), 4); % Averaged PWI4D
+        Control3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(Control4D(:, :, :, indicesAre), 4); % Averaged control4D (same indices are PWI4D)
+
         x.Q.EchoTime_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.EchoTime_PWI4D(indicesAre));
         x.Q.InitialPLD_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.InitialPLD_PWI4D(indicesAre));
         x.Q.LabelingDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_PWI4D(indicesAre));
@@ -343,11 +351,37 @@ end
 % x.Q.LabelingDuration_PWI = max(x.Q.LabelingDuration_PWI3D(:));
 
 %% PM: do a weighted average here?
+%
+%% Get mean control does it this way, choosing the PLD closest to 2000 ms
+    % 
+	% % Get unique PLDs
+	% idealPLD = unique(Initial_PLD);
+    % 
+	% % Find the index of the one closest to 2000 ms
+	% [~, iPLD] = min(abs(idealPLD-2000));
+    % 
+	% % Pick up the ideal PLD as the one closest to 2000 ms
+	% idealPLD = idealPLD(iPLD(1));
+    % 
+	% if (isfield(x.Q,'LookLocker') && x.Q.LookLocker) || x.modules.asl.bContainsDeltaM
+	% 	% For Look-Locker, get the middle one
+	% 	idealPLD = idealPLD(round(numel(idealPLD)/2));
+	% else
+	% 	% For normal multi-PLD, get the latest PLD
+	% 	idealPLD = idealPLD(end);
+	% end
+    % 
+	% % Find all dynamics with that PLD
+	% imMeanControl = imMeanControl(:,:,:,Initial_PLD==idealPLD);
+
+
 
 %% Current quick&dirty fix was the average of all volumes with the lowest echo time
 iMinTE = x.Q.EchoTime_PWI3D == min(x.Q.EchoTime_PWI3D(:));
 
 PWI = xASL_stat_MeanNan(PWI3D(:, :, :, iMinTE), 4);
+Control = xASL_stat_MeanNan(Control3D(:, :, :, iMinTE), 4);
+
 x.Q.EchoTime_PWI = min(x.Q.EchoTime_PWI3D(:));
 x.Q.initialPLD_PWI = mean(x.Q.InitialPLD_PWI3D(:)); %% Jan is this correct?
 x.Q.LabelingDuration_PWI = mean(x.Q.LabelingDuration_PWI3D(:)); %% Jan is this correct?

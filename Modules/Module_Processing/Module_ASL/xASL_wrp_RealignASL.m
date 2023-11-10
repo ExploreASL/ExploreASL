@@ -309,8 +309,17 @@ if bENABLE || bSpikeRemoval
     spm_jobman('run',matlabbatch);
     
     
-    % Create a mask from the mean PWI
-    xASL_io_PairwiseSubtraction(rInputPath, x.P.Path_mean_PWI_Clipped, 0, 0); % create PWI & mean_control
+    %% Create a mask from the mean PWI
+    %xASL_io_PairwiseSubtraction(rInputPath, x.P.Path_mean_PWI_Clipped, 0, 0); % create PWI & mean_control
+
+    PWI = xASL_im_ASLSubtractionAveraging(x, rInputPath);
+    xASL_io_SaveNifti(rInputPath, x.P.Path_mean_PWI_Clipped, PWI, 32, false);
+
+    %% PM: CREATE MEAN CONTROL & COMPARE MEAN CONTROL IMAGES
+    %% ALSO SAVE MEAN CONTROL HERE, which happened by xASL_io_PairwiseSubtraction as well
+
+    
+    
     MaskIm = xASL_im_ClipExtremes(x.P.Path_mean_PWI_Clipped, 0.95, 0.7);
     MaskIm = MaskIm>min(MaskIm(:));
     xASL_delete(x.P.Path_mean_PWI_Clipped);
@@ -319,13 +328,9 @@ if bENABLE || bSpikeRemoval
     IM = xASL_io_Nifti2Im(rInputPath);
 
     if  bASL % if subtractive/pairwise data
-        [~, ~, OrderContLabl] = xASL_quant_GetControlLabelOrder(IM);
+        [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(IM);
         
-        if OrderContLabl~=1
-            IM = IM(:,:,:,1:2:end-1)-IM(:,:,:,2:2:end); % control-label order doesn't matter for one-sample ttest p-values
-        else
-            IM = IM(:,:,:,2:2:end)-IM(:,:,:,1:2:end-1); % control-label order doesn't matter for one-sample ttest p-values
-        end
+        IM = ControlIm-LabelIm; % control-label order doesn't matter for one-sample ttest p-values
     end    
 end
 
