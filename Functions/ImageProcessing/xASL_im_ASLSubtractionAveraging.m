@@ -182,7 +182,7 @@ if x.modules.asl.bTimeEncoded
     if bCreatePWI4D
         %% 1) Create PWI4D
         % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
-        [PWI4D, Control4D] = xASL_quant_HadamardDecoding(imPath, xQ);
+        [PWI4D, Control4D] = xASL_quant_HadamardDecoding(path_ASL4D, x.Q);
 	    nVolumes = size(PWI4D, 4);
     end
 
@@ -200,7 +200,7 @@ if x.modules.asl.bTimeEncoded
     else
         x.Q.EchoTime_PWI4D = x.Q.EchoTime;
     end
-    nTE = length(x.Q.EchoTime_PWI4D);
+    nTE = length(x.Q.EchoTime_PWI4D); % Obtain the number of echo times
 
     
     nUniqueTE = length(uniqueTE); % Obtain the number of echo times
