@@ -1,9 +1,9 @@
-function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification)
+function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, imSliceNumber, x, bUseBasilQuantification)
 %xASL_quant_ASL Perform a multi-step quantification of single or multi-PLD with or without BASIL
-% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex]] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x[, bUseBasilQuantification])
+% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex]] = xASL_quant_ASL(PWI4D, M0_im, imSliceNumber, x[, bUseBasilQuantification])
 %
 % INPUT:
-%   PWI             - 3D (single PLD) or 4D (multi PLD) image matrix of perfusion-weighted image (REQUIRED)
+%   PWI4D           - 4D timeseries of (control-label subtracted) perfusion-weighted images (REQUIRED)
 %   M0_im           - M0 image (can be a single number or image matrix) (REQUIRED)
 %   imSliceNumber   - image matrix showing slice number in current ASL space (REQUIRED for 2D multi-slice)
 %   x               - struct containing pipeline environment parameters (REQUIRED)
@@ -41,6 +41,9 @@ function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNu
 %              standard space quantification yet (it would need to use
 %              imSliceNumber)
 %
+%              Note that in Matlab we only quantify single-PLD here,
+%              multi-PLD or multi-TE quantifications are performed with BASIL or FABBER here, respectively.
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification);
 % __________________________________
@@ -64,6 +67,8 @@ end
 
 if nargin < 4
 	error('Four input parameters required');
+elseif isempty(x) || ~isstruct(x)
+    error('Illegal x structure');
 end
 
 if  xASL_stat_SumNan(M0_im(:))==0 && x.modules.asl.ApplyQuantification(5)
@@ -82,14 +87,14 @@ ScaleImageABV = 1;
 % Convert to double precision to increase quantification precision
 % This is especially useful with the large factors that we can multiply and
 % divide with in ASL quantification
-PWI = double(PWI);
+PWI4D = double(PWI4D);
 M0_im = double(M0_im);
 
 if ~x.modules.asl.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 else
     
-    %% Single PLD part only
+    % If we have multiple PLDs but requested a single PLD quantification, we use the highest PLD
 	if ~x.modules.asl.bMultiPLD
 		x.Q.Initial_PLD = unique(x.Q.Initial_PLD);
 		if numel(x.Q.Initial_PLD)>1
@@ -153,10 +158,12 @@ else
         error('Wrong PLD definition!');
     end
 
+
+    %% 2. Run BASIL quantification
     if bUseBasilQuantification
         % Here we perform FSL quantification
 		
-		[PWI, ATT, ABV, Tex] = xASL_quant_FSL(PWI, x);
+		[PWI, ATT, ABV, Tex] = xASL_quant_FSL(PWI4D, x);
 		
 		% If resultFSL is not 0, something went wrong
         % This will issue a warning inside xASL_quant_FSL
@@ -164,14 +171,22 @@ else
         % This part should only run when we don't use FSL BASIL/FABBER
         % or as a fallback when FSL BASIL/FABBER crashed
         
-        %% 2    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
+        % First, we average PWI4D into PWI, for single-PLD only
+        % (later, when we have multi-PLD, multi-echo, or multi-labeling quantification here as well,
+        % then we could use PWI3D here)
+
+        % First read the PWI4D parameters
+        PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
+
+
+        %% 3    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'LabelingDuration')
             ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage);
         else
             warning('Please define both LabelingType and LabelingDuration of this dataset...');
         end
 
-        %% 3    Scaling to physiological units
+        %% 4    Scaling to physiological units
         % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
         % (& old Siemens sequence also didn't need the 1 gr->100 gr conversion)
         ScaleImage = ScaleImage.*60000.*100.*x.Q.Lambda;
@@ -270,9 +285,7 @@ if ~x.modules.asl.ApplyQuantification(3)
 	% Convert to double precision if not done previously
 	M0_im = double(M0_im);
 	PWI = double(PWI);
-	if numel(ABV) > 1
-		ABV = double(ABV);
-	end
+    ABV = double(ABV);
 end
 
 M0_im = repmat(M0_im, MatchSizeM0);
@@ -287,7 +300,7 @@ else
 end
 
 
-%% 6    Apply quantification
+%% 6    Apply scaling/quantification
 if x.modules.asl.ApplyQuantification(6)
     CBF = PWI.*ScaleImage;
 	if numel(ABV) > 1
@@ -297,9 +310,9 @@ else
     CBF = PWI;
 end
 
-if bUseBasilQuantification
-    CBF = xASL_stat_MeanNan(CBF, 4);
-end
+CBF = xASL_stat_MeanNan(CBF, 4); 
+% If there are multiple volumes, this will average
+% Otherwise, it won't do anything
 
 
 %% 6    Print parameters used
@@ -309,6 +322,12 @@ if x.modules.asl.ApplyQuantification(3)
 	if isfield(x.Q, 'LabelingDuration') && isfield(x.Q, 'Initial_PLD')
 		% Prepare unique PLDs+LabDur combinations
 		
+        %% THIS PART CAN NOW BE SKIPPED, AND WE JUST PRINT
+        % x.Q.uniquePLD
+        % x.Q.uniqueTE
+        % x.Q.uniqueLabDur
+
+
 		% First create a labeling duration vector of the same length
 		if length(x.Q.LabelingDuration)>1
 			LabDurs = x.Q.LabelingDuration;

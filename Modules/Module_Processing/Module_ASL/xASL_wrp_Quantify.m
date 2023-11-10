@@ -1,12 +1,12 @@
-function xASL_wrp_Quantify(x, PWI_Path, pathOutputCBF, M0Path, SliceGradientPath)
+function xASL_wrp_Quantify(x, PWI4D_Path, pathOutputCBF, M0Path, SliceGradientPath)
 %xASL_wrp_Quantify Submodule of ExploreASL ASL Module, that performs quantfication
 %
-% FORMAT: xASL_wrp_Quantify(x [, PWI_Path, pathOutputCBF, M0Path, SliceGradientPath])
+% FORMAT: xASL_wrp_Quantify(x [, PWI4D_Path, pathOutputCBF, M0Path, SliceGradientPath])
 %
 % INPUT:
 %   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
-%   PWI_Path            - path to NIfTI with perfusion-weighted image (PWI) (OPTIONAL, default = x.P.Pop_Path_PWI)
-%   pathOutputCBF          - path to NifTI to create, with the quantified CBF map (OPTIONAL, DEFAULT = x.P.Pop_Path_qCBF)
+%   PWI4D_Path          - path to NIfTI with perfusion-weighted image (PWI4D) (OPTIONAL, default = x.P.Pop_Path_PWI4D)
+%   pathOutputCBF       - path to NifTI to create, with the quantified CBF map (OPTIONAL, DEFAULT = x.P.Pop_Path_qCBF)
 %   M0Path              - path to NifTI containing M0 image (OPTIONAL, default = x.Pop_Path_M0)
 %   SliceGradientPath   - path to Slice gradient NIfTI (OPTIONAL, default = x.P.Pop_Path_SliceGradient_extrapolated)
 %
@@ -19,6 +19,7 @@ function xASL_wrp_Quantify(x, PWI_Path, pathOutputCBF, M0Path, SliceGradientPath
 % related derivatives). Note that we don't delete x.P.Path_PWI4D here, as
 % this NIfTI file may be needed by xASL_wrp_VisualQC_ASL.m
 %
+%           0. Admin
 %           1. Load PWI
 %           2. Prepare M0
 %           3. Hematocrit & blood T1 correction
@@ -74,8 +75,8 @@ if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
 end
 
 % by default, we use standard space NIfTIs
-if nargin<2 || isempty(PWI_Path)
-    PWI_Path = x.P.Pop_Path_PWI;
+if nargin<2 || isempty(PWI4D_Path)
+    PWI4D_Path = x.P.Pop_Path_PWI4D;
 end
 
 if nargin<3 || isempty(pathOutputCBF)
@@ -131,12 +132,16 @@ if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
 	end
 end
 
-if ~xASL_exist(PWI_Path, 'file')
+if ~xASL_exist(PWI4D_Path, 'file')
     warning('Skipped xASL_wrp_Quantify: files missing, please rerun step 4: xASL_wrp_ResampleASL');
-	if x.Q.bUseBasilQuantification
+
+    %% CHANGE THIS??? BECAUSE THIS NEEDS TO BE DEPENDENT ON DELETETEMP OR PWI4D/CBF4D PARAMETERS
+    if x.Q.bUseBasilQuantification
 		fprintf('%s\n', 'Note the PWI4D.nii used in BASIL is deleted after quantification');
-	end
-    fprintf('%s\n', ['Missing: ' PWI_Path]);
+    end
+
+    %% 
+    fprintf('%s\n', ['Missing: ' PWI4D_Path]);
     return;
 end
 
@@ -155,30 +160,49 @@ if x.Q.bUseBasilQuantification
 end
 
 %% ------------------------------------------------------------------------------------------------
-%% 1.   Load PWI
-fprintf('%s\n','Loading PWI & M0 images');
+%% 1.   Load PWI4D
+fprintf('%s\n','Loading PWI4D & M0 images');
 
 %% #1543 This goes to xASL_module_ASL
 % Either load a PWI image or merge several PWIs
 if x.modules.asl.bMergingSessions == 1
-	PWI = xASL_wrp_Quantify_MergeSessions(x); %% #1543 THIS WILL BE RENAMED TO xASL_im_MergePWI4D
+	PWI4D = xASL_wrp_Quantify_MergeSessions(x); %% #1543 THIS WILL BE RENAMED TO xASL_im_MergePWI4D
 else
 	% Load ASL single PWI
-	PWI = xASL_io_Nifti2Im(PWI_Path); % Load CBF nifti
+	PWI4D = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
 end
 
 ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
+%% PM: SHOULD WE CHANGE THIS TO THE PWI4D JSON sidecar only?
+%% AND THAT WE DON'T USE X.Q AT ALL, BUT TAKE THIS FROM THE PWI4D sidecar?
+% Load ASL PWI4D quantification parameters
+[fPath, fFile] = xASL_fileparts(PWI4D_Path);
+pathSidecar = fullfile(fPath, [fFile '.json']);
+
+if ~exist(pathSidecar, 'file')
+    warning('PWI4D JSON sidecar with quantification parameters was missing');
+else
+    JSON = spm_jsonread(pathSidecar);
+    x.Q.EchoTime_PWI4D = JSON.EchoTime_PWI4D;
+    x.Q.InitialPLD_PWI4D = JSON.InitialPLD_PWI4D;
+    x.Q.LabelingDuration_PWI4D = JSON.LabelingDuration_PWI4D;
+end
+
 
 % Assigns the shortest minimal positive TE for ASL
+%% THIS SHOULD THEN BE ADAPTED TOO
 ASLshortestTE = [];
-if isfield(ASL_parms, 'EchoTime')
-	ASLshortestTE = min(ASL_parms.EchoTime(ASL_parms.EchoTime > 0));
+if isfield(ASL_parms.Q, 'EchoTime')
+	ASLshortestTE = min(ASL_parms.Q.EchoTime(ASL_parms.Q.EchoTime > 0));
+else
+    warning('EchoTime field missing');
 end
 
-if xASL_stat_SumNan(PWI(:))==0
-    warning(['Empty PWI image:' PWI_Path]);
+if xASL_stat_SumNan(PWI4D(:))==0
+    warning(['Empty PWI4D image:' PWI4D_Path]);
 end
 
+%% AT JAN: CAN WE REMOVE THIS???
 % % % Philips dcm2niiX scaling fix:
 % % % in the new dcm2niiX with the default Philips scaling,
 % % % there can be a discrepancy in the rescale slope that was stored as
@@ -280,26 +304,26 @@ if ~isfield(x.Q,'BloodT1') || isempty(x.Q.BloodT1)
 	switch(x.MagneticFieldStrength)
 		case 0.2 
 			x.Q.BloodT1 = 776; % Rooney 2007 MRM
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 776 ms for 0.2 T (per Rooney 2007 MRM)');
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 776 ms for 0.2T (Rooney 2007 MRM)');
 		case 1
 			x.Q.BloodT1 = 1350; % Rooney 2007 MRM
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1350 for 1 T (per Rooney 2007 MRM)');
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1350 ms for 1T (Rooney 2007 MRM)');
 		case 1.5
 			x.Q.BloodT1 = 1540; % Rooney 2007 MRM
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1540 for 1.5 T (per Rooney 2007 MRM)');
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1540 ms for 1.5T (Rooney 2007 MRM)');
 		case 3
 			x.Q.BloodT1 = 1650; % Alsop 2015 MRM
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1650 for 3 T (per Alsop 2015 MRM)');
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1650 ms for 3T (Alsop 2015 MRM)');
 		case 4
 			x.Q.BloodT1 = 1914; % Rooney 2007
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1914 for 4 T (per Rooney 2007 MRM)');
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1914 ms for 4T (Rooney 2007 MRM)');
 		case 7
 			%x.Q.BloodT1 = 2578; % Rooney 2007 MRM
 			x.Q.BloodT1 = 2100; % Ivanov 2017 NeuroImage
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 2100 for 7 T (per Ivanov 2007 NeuroImage)');
+            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 2100 ms for 7T (Ivanov 2007 NeuroImage)');
 		otherwise
 			x.Q.BloodT1 = 1650; % Alsop 2015 MRM - assuming default 3 T
-			fprintf('%s\n',['Warning: Unknown T1-blood for ' xASL_num2str(x.MagneticFieldStrength) 'T scanner, using 3T value per Alsop 2015 MRM']);
+			fprintf('%s\n',['Warning: Unknown T1-blood for ' xASL_num2str(x.MagneticFieldStrength) 'T scanner, using 3T value (Alsop 2015 MRM)']);
             % PM: NOTE that this situation is unlikely, given that we
             % default to x.MagneticFieldStrength = 3 at section 0
             % Administration above
@@ -314,8 +338,10 @@ if strcmpi(x.Q.M0,'separate_scan')
 	
 	% Assigns the shortest minimal positive TE for M0
 	M0shortestTE = [];
-	if isfield(M0_parms, 'EchoTime')
-		M0shortestTE = min(M0_parms.EchoTime(M0_parms.EchoTime > 0));
+	if isfield(M0_parms.Q, 'EchoTime')
+		M0shortestTE = min(M0_parms.Q.EchoTime(M0_parms.Q.EchoTime > 0));
+    else
+        warning('Missing M0 Echo Time');
 	end
 
     % Check echo times
@@ -503,7 +529,7 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
 if ~x.modules.asl.bMultiPLD || x.Q.bUseBasilQuantification % multi-PLD with BASIL or single-PLD
-    [~, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
+    [~, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
 else
     % multi-PLD quantification without BASIL
     error('Multi PLD quantification without BASIL is not yet implemented.');
@@ -523,21 +549,21 @@ end
 % Both ExploreASL and BASIL-quantified maps will be saved similarly here
 fprintf('%s\n','Saving PWI & CBF niftis');
 
-xASL_io_SaveNifti(PWI_Path, pathOutputCBF, CBF, 32, 0);
+xASL_io_SaveNifti(PWI4D_Path, pathOutputCBF, CBF, 32, 0);
 
 if numel(ATT) > 1
 	% Save the ATT file
-	xASL_io_SaveNifti(PWI_Path, pathOutputATT, ATT, 32, 0);
+	xASL_io_SaveNifti(PWI4D_Path, pathOutputATT, ATT, 32, 0);
 end
 
 if numel(ABV) > 1 
 	% Save the ABV file
-	xASL_io_SaveNifti(PWI_Path, pathOutputABV, ABV, 32, 0);
+	xASL_io_SaveNifti(PWI4D_Path, pathOutputABV, ABV, 32, 0);
 end
 
 if numel(Tex) > 1
 	% Save the Tex file
-	xASL_io_SaveNifti(PWI_Path, pathOutputTex, Tex, 32, 0);
+	xASL_io_SaveNifti(PWI4D_Path, pathOutputTex, Tex, 32, 0);
 end
 
 %% 9.b Save files in standard space for BASIL native space output

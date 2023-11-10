@@ -1,10 +1,10 @@
-function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI, x)
+function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI4D, x)
 %xASL_quant_FSL Perform quantification using FSL BASIL/FABBER
 %
-% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI, x)
+% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI4D, x)
 % 
 % INPUT:
-%   PWI             - image matrix of perfusion-weighted image (REQUIRED)
+%   PWI4D           - image matrix of perfusion-weighted volumes (REQUIRED)
 %   x               - struct containing pipeline environment parameters (REQUIRED)
 %
 % OUTPUT:
@@ -38,12 +38,29 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 % Copyright 2015-2023 ExploreASL 
     
 
-    %% Admin
+    %% 0. Admin
     fprintf('%s\n','Quantification CBF using FSL BASIL/FABBER:');   
 
+    % Define defaults
 	Tex_map = [];
 	ATT_map = [];
 	ABV_map = [];
+
+	if ~isfield(x.Q, 'BASIL')
+		x.Q.BASIL = [];
+	end
+	if ~isfield(x.Q.BASIL, 'bCleanUp') || isempty(x.Q.BASIL.bCleanUp)
+		x.Q.BASIL.bCleanUp = true;
+    end
+
+	% Define if BASIL or FABBER is used - multiTE needs FABBER 
+	if isfield(x.modules.asl, 'bMultiTE') && x.modules.asl.bMultiTE == 1
+		bUseFabber = 1;
+        FSLfunctionName = 'fabber_asl';
+	else
+		bUseFabber = 0;
+        FSLfunctionName = 'basil';
+	end
     
     %% 1. Define paths
     % For input, output, and options
@@ -51,13 +68,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     pathFSLOptions = fullfile(x.dir.SESSIONDIR, 'FSL_ModelOptions.txt');
     dirFSLOutput = 'FSL_Output';
 	pathFSLOutput = fullfile(x.dir.SESSIONDIR, dirFSLOutput);
-	
-	% Define if BASIL or FABBER is used - multiTE needs FABBER 
-	if isfield(x.modules.asl, 'bMultiTE') && x.modules.asl.bMultiTE == 1
-		bUseFabber = 1;
-	else
-		bUseFabber = 0;
-	end
+
 
     %% 2. Delete previous output
     xASL_adm_DeleteFileList(x.dir.SESSIONDIR, ['(?i)^' dirFSLOutput '.*$'], 1, [0 Inf]);
@@ -73,10 +84,14 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 	xASL_delete(pathFSLOutput);
     %xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
     
-    %% 3. Write the PWI as Nifti file for Basil/Fabber to read as input
+    %% 3. Write the PWI4D as Nifti file for Basil/Fabber to read as input
     % FIXME would be good to have a brain mask at this point -> PM: if this would be a brainmask as well, we can skip creating a dummy input image here
     
-    PWI(isnan(PWI)) = 0;
+    PWI4D(isnan(PWI4D)) = 0;
+
+    %% THIS IS TRICKY: WE NEED TO CHECK HERE IF THIS DOESN'T CREATES ZEROS INSIDE THE BRAIN.
+    %% PROBABLY BETTER TO DO THE SMOOTHING EXTRAPOLATION INSTEAD OF SETTING NANS TO 0
+
 
 	% Here, we don't mask implicitly, but we will provide an explicit mask to BASIL/FABBER.
 	% This mask can be used: x.P.Path_BrainMaskProcessing
@@ -86,13 +101,9 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     % PWI(BrainMask==0) = 0; % set voxels outside the mask to zero
     
     
-    if ~x.modules.asl.bMultiPLD
-        % SinglePLD
-        xASL_io_SaveNifti(x.P.Path_PWI, pathFSLInput, PWI, [], 0); % use PWI path
-    else
-        % MultiPLD
-        xASL_io_SaveNifti(x.P.Path_PWI4D, pathFSLInput, PWI, [], 0); % use PWI4D path
-    end
+    % For both single- and multi-PLD we use the PWI4D
+    xASL_io_SaveNifti(x.P.Path_PWI4D, pathFSLInput, PWI4D, [], 0); % use PWI4D path
+
 
     %% 4. Create option_file that contains options which are passed to the FSL command
     % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
@@ -112,60 +123,45 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, x.modules.asl.bMergingSessions);
         
     %% 5. Run Basil and retrieve CBF output
-    if bUseFabber
-        [~, resultFSL] = xASL_fsl_RunFSL(['fabber_asl ' FSLOptions], x);
-    else
-        [~, resultFSL] = xASL_fsl_RunFSL(['basil ' FSLOptions], x);
-    end
+    [~, resultFSL] = xASL_fsl_RunFSL([FSLfunctionName ' ' FSLOptions], x);
     
     % Check if FSL failed
-    if isnan(resultFSL) 
-		if bUseFabber
-			error('FSL FABBER was not found, exiting...');
-		else
-			error('FSL BASIL was not found, exiting...');
-		end
+    if isnan(resultFSL)
+        error([FSLfunctionName ' was not found, exiting...']);
     elseif resultFSL~=0
-		if bUseFabber
-			error('Something went wrong running FSL FABBER...');
-		else
-			error('Something went wrong running FSL BASIL...');
-		end
+		error(['Something went wrong running ' FSLfunctionName '...']);
     end
     
     fprintf('%s\n', 'The following warning (if mentioned above) can be ignored:');
     fprintf('%s\n', '/.../fsl/bin/basil: line 124: imcp: command not found');
     
+
+    % CBF/nocalib, mean fit (->> is this what "ftiss" means?)
     pathBasilCBF = xASL_adm_GetFileList(pathFSLOutput, '^mean_ftiss\.nii$', 'FPListRec');
     
 	if isempty(pathBasilCBF)
-		if bUseFabber
-			error('FSL FABBER failed');
-		else
-			error('FSL BASIL failed');
-		end
+        error([FSLfunctionName ' failed']);
 	end
    
     pathBasilCBF = pathBasilCBF{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
-       
     CBF_nocalib = xASL_io_Nifti2Im(pathBasilCBF);
-        
+    
+    % ATT
 	pathBasilATT = xASL_adm_GetFileList(pathFSLOutput, '^mean_delttiss\.nii$', 'FPListRec');
 	if ~isempty(pathBasilATT)
-		pathBasilATT = pathBasilATT{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
-		ATT_map = xASL_io_Nifti2Im(pathBasilATT);
+		ATT_map = xASL_io_Nifti2Im(pathBasilATT{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
     
+    % ABV
     pathBasilABV = xASL_adm_GetFileList(pathFSLOutput, '^mean_fblood\.nii$', 'FPListRec');
 	if ~isempty(pathBasilABV)
-		pathBasilABV = pathBasilABV{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
-		ABV_map = xASL_io_Nifti2Im(pathBasilABV);
+		ABV_map = xASL_io_Nifti2Im(pathBasilABV{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
     
+    % Tex
     pathFabberTex = xASL_adm_GetFileList(pathFSLOutput, '^mean_T_exch\.nii$', 'FPListRec');
 	if ~isempty(pathFabberTex)
-		pathFabberTex = pathFabberTex{end}; % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
-		Tex_map = xASL_io_Nifti2Im(pathFabberTex);
+		Tex_map = xASL_io_Nifti2Im(pathFabberTex{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
 	
     %% 6. Scaling to physiological units
@@ -176,19 +172,11 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
     % & old Siemens sequence also didn't need the 1 gr->100 gr conversion
 
-	if numel(ABV_map) > 1
-		ABV_map = ABV_map ./ x.Q.LabelingEfficiency;
-	end
+	ABV_map = ABV_map ./ x.Q.LabelingEfficiency;
     
     %% 7. Householding
 	% Basils Output is in the subfolder '/FSL_Output' which contains multiple steps if there are multiple iterations, and always contains
     % a symbolic link (symlink) to the foldername of the latest iteration/step ('stepX_latest').
-	if ~isfield(x.Q, 'BASIL')
-		x.Q.BASIL = [];
-	end
-	if ~isfield(x.Q.BASIL, 'bCleanUp') || isempty(x.Q.BASIL.bCleanUp)
-		x.Q.BASIL.bCleanUp = true;
-	end
 	
 	if x.Q.BASIL.bCleanUp
 		xASL_delete(pathFSLInput);

@@ -264,7 +264,8 @@ end
 % Deal with too short vectors (e.g., repetitions in the case of single-PLD)
 nPLD = length(x.Q.Initial_PLD);
 factorPLD = nVolumes/nPLD;
-x.Q.InitialPLD = repmat(x.Q.Initial_PLD(:), [factorPLD 1]);
+x.Q.Initial_PLD = repmat(x.Q.Initial_PLD(:), [factorPLD 1]);
+nPLD = length(x.Q.Initial_PLD);
 
 % Number of initial PLDs should be equal to number of ASL volumes
 if nPLD~=nVolumes
@@ -305,6 +306,7 @@ end
 nLD = length(x.Q.LabelingDuration);
 factorLD = nVolumes/nLD;
 x.Q.LabelingDuration = repmat(x.Q.LabelingDuration(:), [factorLD 1]);
+nLD = length(x.Q.LabelingDuration);
 
 % Number of initial PLDs should be equal to number of ASL volumes
 if nLD~=nVolumes
@@ -749,24 +751,19 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     % If BASIL quantification will be performed, only native space analysis is possible
     if isfield(x.Q, 'bUseBasilQuantification') && x.Q.bUseBasilQuantification
         % Quantification in native space only for BASIL
-		if xASL_exist(x.P.Path_PWI4D,'file')
-			% Quantify CBF using PWI4D by default
-			xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
-		else
-			% Use PWI if PWI4D does not exist
-            xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
-        end
+
+        xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
         % Transform the output volumes of BASIL to standard space (running
         % it in standard space takes too much time and the
         % noise-distributions may differ due to the B-spline interpolation
-        InputPaths = {x.P.Path_CBF, x.P.Path_ATT};
-        OutputPaths = {x.P.Pop_Path_qCBF, x.P.Pop_Path_ATT}; 
+        InputPaths = {x.P.Path_CBF, x.P.Path_ATT, x.P.Path_ABV};
+        OutputPaths = {x.P.Pop_Path_qCBF, x.P.Pop_Path_ATT, x.P.Pop_Path_ABV}; 
         xASL_spm_deformations(x, InputPaths, OutputPaths, 4, [], [], x.P.Path_y_ASL);
     else
         % Quantification in standard space:
         xASL_wrp_Quantify(x);
         % Quantification in native space:
-        xASL_wrp_Quantify(x, x.P.Path_PWI, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
+        xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
     end
     
 	% allow 4D quantification as well
