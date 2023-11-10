@@ -317,40 +317,6 @@ end
 PWI = xASL_im_ASLSubtractionAveraging(x, x.P.Path_despiked_ASL4D);
 xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, PWI, 16, false);
 
-%% REMOVE THIS AFTER TESTING SEVERAL CASES THAT PWI IS THE SAME
-% ASL_im = xASL_io_Nifti2Im(x.P.Path_despiked_ASL4D);
-% if (size(ASL_im, 4) == 1) || x.modules.asl.bContainsDeltaM
-% 	% Apparently, the subtraction was already done on the scanner/reconstruction
-% 
-% 	% Save the mean of deltaM without subtracting with using the right coordinates
-% 	xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, xASL_stat_MeanNan(ASL_im,4), 16, false);
-% elseif x.modules.asl.bTimeEncoded
-% 	% Decoding of TimeEncoded data (Nifti is saved inside the function)
-% 	ASL_im = xASL_quant_HadamardDecoding(x.P.Path_despiked_ASL4D, x.Q);
-% 
-% 	% Hadamard Block size is calculated as number of TEs and the HadamardMatrixSize-1
-% 	blockSize = x.Q.NumberEchoTimes * (x.Q.TimeEncodedMatrixSize-1);
-% 
-% 	PWI = zeros(size(ASL_im,1), size(ASL_im,2), size(ASL_im,3), blockSize); % preallocate PWI
-% 
-% 	for iBlock = 1:blockSize
-% 		PWI(:,:,:,iBlock) = xASL_stat_MeanNan(ASL_im(:,:,:,iBlock:blockSize:end), 4); % Averaged PWI4D across repetitions
-% 	end
-% 
-% 	% Create single PWI for further steps in ASL module
-% 	PWI = xASL_stat_MeanNan(PWI(:,:,:,1:x.Q.NumberEchoTimes:end),4); % Average across PLDs from each first TE
-% 
-% 	% Save single PWI
-% 	xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, PWI, 16, false);
-% else
-% 	xASL_io_PairwiseSubtraction(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, 0, 0);  % create PWI & mean_control
-% end
-% PWI = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
-
-
-
-% MultiPLD: we can keep the PairwiseSubtraction function->because we have controls and labels for each PLD and take average of all PLDs
-% (later on maybe we only need to use the later PLDs)
 
 if bRegistrationCBF
     % This clipped_ORI is not used in the rest of the pipeline
