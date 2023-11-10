@@ -309,29 +309,14 @@ if bENABLE || bSpikeRemoval
     spm_jobman('run',matlabbatch);
     
     
-    %% Create a mask from the mean PWI
-    %xASL_io_PairwiseSubtraction(rInputPath, x.P.Path_mean_PWI_Clipped, 0, 0); % create PWI & mean_control
-
-    PWI = xASL_im_ASLSubtractionAveraging(x, rInputPath);
+    % Create a mask from the mean PWI
+    [PWI, ~, PWI4D] = xASL_im_ASLSubtractionAveraging(x, rInputPath);
     xASL_io_SaveNifti(rInputPath, x.P.Path_mean_PWI_Clipped, PWI, 32, false);
-
-    %% PM: CREATE MEAN CONTROL & COMPARE MEAN CONTROL IMAGES
-    %% ALSO SAVE MEAN CONTROL HERE, which happened by xASL_io_PairwiseSubtraction as well
-
-    
     
     MaskIm = xASL_im_ClipExtremes(x.P.Path_mean_PWI_Clipped, 0.95, 0.7);
     MaskIm = MaskIm>min(MaskIm(:));
     xASL_delete(x.P.Path_mean_PWI_Clipped);
     
-    % Load ASL-image
-    IM = xASL_io_Nifti2Im(rInputPath);
-
-    if  bASL % if subtractive/pairwise data
-        [ControlIm, LabelIm] = xASL_quant_GetControlLabelOrder(IM);
-        
-        IM = ControlIm-LabelIm; % control-label order doesn't matter for one-sample ttest p-values
-    end    
 end
 
 
@@ -347,7 +332,7 @@ elseif bENABLE
     
     fprintf('Running ENABLE:   ');
     tValue(1,1) = 0;
-    SortIM = IM(:,:,:,MotionTimeSort(:,2)); % Sort ASL-pairs by motion
+    SortIM = PWI4D(:,:,:,MotionTimeSort(:,2)); % Sort ASL-pairs by motion
     for iVolume = 1:size(SortIM,4)
         TempIm = SortIM(:,:,:,iVolume);
         SortMask(:,iVolume) = TempIm(MaskIm); % create data columns
@@ -465,14 +450,14 @@ end
 %% 7. Save QC images before and after volume-spikes exclusion
 
 if bSpikeRemoval || bENABLE
-	Slice2Show = floor(size(IM,3)*0.67); % e.g. slice 11/17
+	Slice2Show = floor(size(PWI4D,3)*0.67); % e.g. slice 11/17
 end
 
 if bSpikeRemoval
     % display full timeseries without despiking
-    ExampleIm_Full = xASL_im_rotate(xASL_stat_MeanNan(IM(:,:,Slice2Show,:), 4), 90);
+    ExampleIm_Full = xASL_im_rotate(xASL_stat_MeanNan(PWI4D(:,:,Slice2Show,:), 4), 90);
     % display timeseries with removing spike volumes
-    ExampleIm_noSpikes = xASL_im_rotate(xASL_stat_MeanNan(IM(:,:,Slice2Show,~exclusionPairs), 4), 90);
+    ExampleIm_noSpikes = xASL_im_rotate(xASL_stat_MeanNan(PWI4D(:,:,Slice2Show,~exclusionPairs), 4), 90);
     TotalCheck = [ExampleIm_Full ExampleIm_noSpikes];
 
 elseif bENABLE
