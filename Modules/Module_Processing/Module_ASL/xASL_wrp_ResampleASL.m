@@ -129,9 +129,9 @@ end
 
 %% ------------------------------------------------------------------------------------------
 % 6. Create mean control image, if available, in native & standard space
-if  nVolumes>1    
+if  nVolumes>1
 	% Obtain the mean control image
-	imMeanControl = xASL_quant_GetMeanControl(x, xASL_io_Nifti2Im(x.P.Path_rdespiked_ASL4D));
+    [~, ~, ~, x, imMeanControl] = xASL_im_ASLSubtractionAveraging(x, x.P.Path_rdespiked_ASL4D);
 	xASL_io_SaveNifti(x.P.Path_rdespiked_ASL4D, x.P.Path_mean_control, imMeanControl, [], 0);
 	
     % Transform mean control to standard space
