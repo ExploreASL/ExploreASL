@@ -116,7 +116,21 @@ if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
 	xASL_adm_SaveX(x);
 end
 
-% Load the QC-JSON from disk 
+% Load QC.json and save it to x-struct
+QC_Path = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, ['QC_collection_' x.SUBJECTS{iSubject} '.json']);
+if xASL_exist(QC_Path, 'file')
+	oldOutput = xASL_io_ReadJson(QC_Path);
+
+	if isfield(oldOutput, 'ASL')
+		% Copy QC of other ASL sessions, but not the current one to the current QC
+		listFields = fieldnames(oldOutput.ASL);
+		for iField = 1:length(listFields)
+			if ~isempty(regexp(listFields{iField}, 'ASL_\d+', 'once')) && ~strcmp(listFields{iField}, x.SESSIONS{iSession})
+				x.Output.ASL.(listFields{iField}) = oldOutput.ASL.(listFields{iField});
+			end
+		end
+	end
+end
 
 % Check and remove all outdated QC fields that are not used anymore
 x = xASL_qc_RemoveOutdatedQC(x);

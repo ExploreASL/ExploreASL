@@ -110,28 +110,9 @@ x.Output = rmfield(x.Output,'SoftwareVersion');
 
 %% -----------------------------------------------------------------------------------------------
 %% Save QC output
-QC_Path = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, ['QC_collection_' x.SUBJECTS{iSubject} '.json']);
-
-% Load QC.json
-if xASL_exist(QC_Path, 'file')
-	oldOutput = xASL_io_ReadJson(QC_Path);
-
-	% Delete the old QC.json
-	xASL_delete(QC_Path);
-
-	if (strcmp(ScanType, 'ASL') && isfield(oldOutput, 'ASL')) || (strcmp(ScanType, 'func') && isfield(oldOutput, 'func'))
-		% Copy QC of other ASL/func sessions, but not the current one to the current QC
-		listFields = fieldnames(oldOutput.(ScanType));
-		for iField = 1:length(listFields)
-			if ~isempty(regexp(listFields{iField}, [ScanType '_\d+'], 'once')) && ~strcmp(listFields{iField}, x.SESSIONS{iSession})
-				x.Output.(ScanType).(listFields{iField}) = oldOutput.(ScanType).(listFields{iField});
-			end
-		end
-	end
-
-end
-
 % Save current QC
+QC_Path = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, ['QC_collection_' x.SUBJECTS{iSubject} '.json']);
+xASL_delete(QC_Path);
 xASL_io_WriteJson(QC_Path, x.Output);
 
 % Generate WAD-QC Descriptor 
