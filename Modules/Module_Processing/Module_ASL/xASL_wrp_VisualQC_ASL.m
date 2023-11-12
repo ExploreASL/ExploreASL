@@ -50,7 +50,7 @@ if ~isfield(x, 'vis')
     x.vis = struct;
 end
 
-x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
+%x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
 
 % Set the defaults
 if ~isfield(x.vis, 'bVisualQCCBFvsGMWMTemplate') || ~isempty(x.vis.bVisualQCCBFvsGMWMTemplate)

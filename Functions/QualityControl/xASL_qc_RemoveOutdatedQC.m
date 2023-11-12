@@ -21,20 +21,21 @@ function [x] = xxASL_qc_RemoveOutdatedQC(x)
 ScanTypeList = {'func', 'ASL'};
 for iScanType = 1:length(ScanTypeList)
 	ScanType = ScanTypeList{iScanType};
+	if isfield(x.Output, ScanType)
+		listFields = fields(x.Output.(ScanType));
 
-	listFields = fields(x.Output.(ScanType));
-
-	bIssuedWarningAboutExtraFields = false;
-	for iField = 1:length(listFields)
-		currentField = listFields{iField};
-		if isempty(regexp(currentField, [ScanType '_\d+'], 'once'))
-			x.Output.(ScanType) = rmfield(x.Output.(ScanType), currentField);
-			if ~bIssuedWarningAboutExtraFields
-				% Obsolete fields are present, report a warning once
-				warning(['QC parameters for ' ScanType ' are now provided inside field x.Output.' ScanType '.' ScanType '_n for run n (e.g. ' ScanType '_1 ' ScanType '_2 ' ScanType '_3) instead of x.Output.' ScanType ]);
-                fprintf('%s\n', ['The QC output of previous ExploreASL runs of the ASL module were deleted from x.Output.' ScanType ]);
-                fprintf('%s\n', '(and will be removed from the resulting QC_*.json file)');
-				bIssuedWarningAboutExtraFields = true;
+		bIssuedWarningAboutExtraFields = false;
+		for iField = 1:length(listFields)
+			currentField = listFields{iField};
+			if isempty(regexp(currentField, [ScanType '_\d+'], 'once'))
+				x.Output.(ScanType) = rmfield(x.Output.(ScanType), currentField);
+				if ~bIssuedWarningAboutExtraFields
+					% Obsolete fields are present, report a warning once
+					warning(['QC parameters for ' ScanType ' are now provided inside field x.Output.' ScanType '.' ScanType '_n for run n (e.g. ' ScanType '_1 ' ScanType '_2 ' ScanType '_3) instead of x.Output.' ScanType ]);
+					fprintf('%s\n', ['The QC output of previous ExploreASL runs of the ASL module were deleted from x.Output.' ScanType ]);
+					fprintf('%s\n', '(and will be removed from the resulting QC_*.json file)');
+					bIssuedWarningAboutExtraFields = true;
+				end
 			end
 		end
 	end

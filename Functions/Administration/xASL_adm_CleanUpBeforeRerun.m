@@ -353,9 +353,17 @@ try
                     % Optional: Remove Output and Output_im fields
                     for iMod=iModule
                         if iMod~=3 % if not a Population module
-                            if isfield(x,'Output')
+                            if isfield(x, 'Output')
                                 if isfield(x.Output, RemoveFields{iMod})
-                                    x.Output = rmfield(x.Output, RemoveFields{iMod});
+									if strcmpi(RemoveFields{iMod}, 'structural')
+										x.Output = rmfield(x.Output, RemoveFields{iMod});
+									else
+										 for iSession=1:nSessions
+											 if isfield(x.Output.(RemoveFields{iMod}), SessionID{iSession})
+												 x.Output.(RemoveFields{iMod}) = rmfield(x.Output.(RemoveFields{iMod}), SessionID{iSession});
+											 end
+										 end
+									end
                                 end
                             end
                             if isfield(x,'Output_im')
