@@ -116,6 +116,11 @@ if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
 	xASL_adm_SaveX(x);
 end
 
+% Load the QC-JSON from disk 
+
+% Check and remove all outdated QC fields that are not used anymore
+x = xASL_qc_RemoveOutdatedQC(x);
+
 %% D1. Load ASL parameters (inheritance principle)
 [~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bO);
 

@@ -130,27 +130,6 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject, iSession)
 		x.Output.func.(SessionID) = xASL_qc_FillFields(x.Output.func.(SessionID), func);
     end
 
-	% Keep only subfields in x.Output.func.func_X for func sessions
-	% In previous versions, we have parameters for session one only directly under x.Output.func - if these are detected
-	% they are removed as obsolete and a warning is issued.
-	listFields = fields(x.Output.func);
-
-	bIssuedWarningAboutExtraFields = false;
-	for iField = 1:length(listFields)
-		currentField = listFields{iField};
-		if isempty(regexp(currentField, 'func_\d+', 'once'))
-			x.Output.func = rmfield(x.Output.func, currentField);
-			if ~bIssuedWarningAboutExtraFields
-				% Obsolete fields are present, report a warning once
-				warning('QC parameters for func are now provided inside field x.Output.func.func_n for run n (e.g. func_1 func_2 func_3) instead of x.Output.func');
-                fprintf('%s\n', 'The QC output of previous ExploreASL runs of the ASL module were deleted from x.Output.func');
-                fprintf('%s\n', '(and will be removed from the resulting QC_*.json file)');
-				bIssuedWarningAboutExtraFields = true;
-			end
-		end
-	end
-
-
 end
 
 function [OutputFields] = xASL_qc_FillFields(OutputFields, InputFields)
