@@ -39,10 +39,8 @@ end
 % It is recommended to provide session number for ASL
 if nargin<4 || isempty(iSession)
 	iSession = 1;
-	if strcmp(ScanType, 'ASL')
-		warning('Missing iSession for ASL, setting to 1');
-	elseif strcmp(ScanType, 'func')
-		warning('Missing iSession for func, setting to 1');
+	if ~strcmpi(ScanType, 'structural')
+		warning(['Missing iSession for ' ScanType ', setting to 1']);
 	end
 end
 
