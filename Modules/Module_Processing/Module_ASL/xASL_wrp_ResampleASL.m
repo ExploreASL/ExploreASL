@@ -234,8 +234,8 @@ for iSpace=1:2
     % Here we reload this again, because we have different 
     ASL4D = xASL_io_Nifti2Im(PathASL4D{iSpace}); % Load time-series nifti
     
-    if numel(size(ASL4D))>4
-        warning('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions');
+    if ndims(ASL4D)>4
+        fprintf('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions\n');
         error(['ASL4D NIfTI has more than 4 dimensions: ' PathASL4D{iSpace}]);
     end
 
