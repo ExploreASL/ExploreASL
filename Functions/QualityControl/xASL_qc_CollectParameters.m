@@ -100,10 +100,8 @@ switch ScanType
         x.Output.(ScanType).Version_ExploreASL = x.Output.SoftwareVersion.ExploreASL;
         x.Output.(ScanType).Version_Matlab = x.Output.SoftwareVersion.Matlab;
         x.Output.(ScanType).Version_SPM12 = x.Output.SoftwareVersion.SPM12;        
-    case {'dwi', 'func'}
-        x.Output.(ScanType).Version_FSL = x.Output.SoftwareVersion.FSL;
-    case {'ASL'}
-        x.Output.ASL.(x.SESSIONS{iSession}).Version_FSL = x.Output.SoftwareVersion.FSL;
+    case {'dwi', 'func', 'ASL'}
+        x.Output.(ScanType).(x.SESSIONS{iSession}).Version_FSL = x.Output.SoftwareVersion.FSL;
 end
 % now remove the SoftwareVersion field to avoid redundancy
 x.Output = rmfield(x.Output,'SoftwareVersion');
