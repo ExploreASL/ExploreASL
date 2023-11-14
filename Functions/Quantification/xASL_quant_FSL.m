@@ -401,13 +401,58 @@ switch lower(x.Q.LabelingType)
 
 		% For Time-encoded, we skip the first volume per block
 		if x.modules.asl.bTimeEncoded
-			[PLDs, index] = unique(PLDs, 'stable');
-			LabDurs = LabDurs(index)';
+			% In case we are merging sessions, we have to read all JSONs again from files
+			if bMergingSessions
+				PLDs = [];
+				LabDurs = [];
+				nTE = [];
+				TEs = [];
+				for iSession = 1: numel(x.modules.asl.sessionsToMerge)
+					sessionsToMergeJSONdir = fullfile(x.dir.SUBJECTDIR, x.modules.asl.sessionsToMerge{iSession}, 'ASL4D.json');
 
-			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-			index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
-			PLDs = PLDs(index(:));
-			LabDurs = LabDurs(index(:));
+					sessionsToMergeJSON = xASL_io_ReadJson(sessionsToMergeJSONdir);
+					NewPLDs = sessionsToMergeJSON.PostLabelingDelay;
+					NewLabDurs = sessionsToMergeJSON.LabelingDuration;
+
+					NewEchoTimes = unique(sessionsToMergeJSON.EchoTime);
+					if length(NewEchoTimes) < length(NewPLDs)
+						NewEchoTimes = repmat(NewEchoTimes, [length(NewPLDs)/length(NewEchoTimes), 1]);
+					end
+
+					% For Time-encoded, we skip the first volume per block -> the same as above
+					if x.modules.asl.bTimeEncoded
+						NewTimeEncodedMatrixSize = sessionsToMergeJSON.TimeEncodedMatrixSize;
+						[NewPLDs, ~] = unique(NewPLDs, 'stable');
+
+						numberBlocks = numel(NewPLDs)/NewTimeEncodedMatrixSize;
+						index = (ones(numberBlocks,1)*(2:NewTimeEncodedMatrixSize) + (0:(numberBlocks-1))' * NewTimeEncodedMatrixSize * ones(1,NewTimeEncodedMatrixSize-1))';
+						NewPLDs = NewPLDs(index(:));
+						NewEchoTimes = NewEchoTimes((numberBlocks*length(unique(NewEchoTimes))+1):end);
+					else
+						% For normal multi-timepoint, we look for unique PLD+LabDur combinations
+						[~, indexNew, ~] = unique([NewPLDs(:), NewLabDurs(:)], 'stable', 'rows');
+
+						NewPLDs = NewPLDs(indexNew);
+					end
+					if length(NewLabDurs)==1
+						NewLabDurs = ones(size(NewPLDs))*NewLabDurs;
+					end
+					NewNTE = ones(size(NewPLDs))*length(unique(NewEchoTimes));
+
+					PLDs = [PLDs; NewPLDs];
+					LabDurs = [LabDurs; NewLabDurs];
+					nTE = [nTE; NewNTE];
+					TEs = [TEs; NewEchoTimes];
+				end
+			else
+				[PLDs, index] = unique(PLDs, 'stable');
+				LabDurs = LabDurs(index)';
+
+				numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
+				index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
+				PLDs = PLDs(index(:));
+				LabDurs = LabDurs(index(:));
+			end
 		else
 			% For normal multi-timepoint, we look for unique PLD+LabDur combinations
 			[~, indexNew, ~] = unique([PLDs(:), LabDurs(:)], 'stable', 'rows');
@@ -421,20 +466,24 @@ switch lower(x.Q.LabelingType)
 			nPLD = length(PLDs); % Number of PLDs in the PLD vector
 			nVolume = size(PWI,4); % Number of volumes in PWI
 
-			nTE = length(unique(x.EchoTime)); % Calculate the number of Echo Times
-			TEs = round(x.EchoTime'/1000,3); % Convert Echo Times to seconds and keep 4 decimal digits
-			
-			if (nPLD*nTE) ~= nVolume
-				error('The number of volumes %d does not match number of PLDs %d * number of TEs %d', nVolume, nPLD, nTE);
+			if ~bMergingSessions
+				TEs = round(x.EchoTime'/1000,3); % Convert Echo Times to seconds and keep 4 decimal digits
+				nTE = length(unique(x.EchoTime)); % Calculate the number of Echo Times
+				if (nPLD*nTE) ~= nVolume
+					error('The number of volumes %d does not match number of PLDs %d * number of TEs %d', nVolume, nPLD, nTE);
+				end
+				nTE = ones(size(PLDs))*nTE;
 			end
 
 			% Plotting the values into the doc (PLD=ti, LD=tau)
 			for iPLD = 1:length(PLDs)
 				fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD, PLDs(iPLD) + LabDurs(iPLD));
-				fprintf(FIDoptionFile, '--nte%d=%d\n', iPLD, nTE); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
+			end
+			for iNTE = 1:length(nTE)
+				fprintf(FIDoptionFile, '--nte%d=%d\n', iNTE, nTE(iNTE)); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
 			end
 
-			if nTE == 1
+			if length(nTE) == 1 && nTE == 1
 				% For a single-TE, we have to repeat it for each volume
 				for iTE = 1:nVolume %We need a TE for each volume
 					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE, TEs(1));
@@ -445,60 +494,6 @@ switch lower(x.Q.LabelingType)
 					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE, TEs(iTE));
 				end
 			end
-            
-            % So far e have all the info for the current scan.   Now we can
-            % add info of the scan concatenated
-
-            if bMergingSessions
-                CurrentASLJSONdir = fullfile(x.dir.SESSIONDIR,'/ASL4D.json');
-
-                for iSession = 1: numel(x.modules.asl.sessionsToMerge(2:end))
-                    sessionsToMergeJSONdir = replace (CurrentASLJSONdir, x.SESSION, x.modules.asl.sessionsToMerge{iSession});
-
-                    sessionsToMergeJSON = spm_jsonread(sessionsToMergeJSONdir);
-                    NewPLDs = sessionsToMergeJSON.PostLabelingDelay;
-                    NewLabDurs = sessionsToMergeJSON.LabelingDuration;
-                    NewTimeEncodedMatrixSize = sessionsToMergeJSON.TimeEncodedMatrixSize;
-                    NewEchoTimes = unique(sessionsToMergeJSON.EchoTime);
-
-                    % For Time-encoded, we skip the first volume per block -> the same as above
-            		if x.modules.asl.bTimeEncoded
-            			[NewPLDs, ~] = unique(NewPLDs, 'stable');
-
-            			numberBlocks = numel(NewPLDs)/NewTimeEncodedMatrixSize;
-            			index = (ones(numberBlocks,1)*(2:NewTimeEncodedMatrixSize) + (0:(numberBlocks-1))' * NewTimeEncodedMatrixSize * ones(1,NewTimeEncodedMatrixSize-1))';
-            			NewPLDs = NewPLDs(index(:));
-            		else
-            			% For normal multi-timepoint, we look for unique PLD+LabDur combinations
-            			[~, indexNew, ~] = unique([NewPLDs(:), NewLabDurs(:)], 'stable', 'rows');
-
-            			NewPLDs = NewPLDs(indexNew);
-            		end
-
-
-                    for iPLD_new = iPLD+1:(length(NewPLDs)+iPLD) % Uses the previous iPLD and continues from there
-                        fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD_new, NewPLDs(iPLD_new-iPLD) + NewLabDurs);
-                        fprintf(FIDoptionFile, '--nte%d=%d\n', iPLD_new, length(NewEchoTimes)); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
-                    end
-                        
-                    New_nVolume = length(NewEchoTimes) * length(NewPLDs);
-
-        			if length(NewEchoTimes) == 1
-        				% For a single-TE, we have to repeat it for each volume
-        				for iTE_new = iTE+1:(New_nVolume+nVolume) % starting from the last iTE
-        					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE_new, NewEchoTimes(1));
-        				end
-        			else
-                        % For multi-TE, we print all of them
-        				for iTE_new = iTE+1:(New_nVolume+nVolume) % starting from the last iTE
-                            NewEchoTimesVector = repmat (NewEchoTimes',1,length(NewPLDs));
-        					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE_new, NewEchoTimesVector(iTE_new-iTE));
-        				end
-        			end
-
-                end
-            end
-
 
 			% Right now, we assume that we have averaged over PLDs
 			%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
@@ -523,13 +518,6 @@ switch lower(x.Q.LabelingType)
             for iLabDurs = 1:length(LabDurs)
                 fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
             end
-            if bMergingSessions
-                for iNewLabDurs = iLabDurs+1:iLabDurs+length(NewPLDs) % LabDurs / tau we only need one per PLD
-                    fprintf(FIDoptionFile, '--tau%d=%.2f\n', iNewLabDurs, NewLabDurs);
-
-                end
-            end
-
         else
             fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs);
         end
