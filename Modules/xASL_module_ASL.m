@@ -220,6 +220,10 @@ end
 
 % Deal with too short vectors (e.g., repetitions in the case of single-PLD)
 nTE = length(x.Q.EchoTime);
+if mod(nVolumes, nTE)~=0
+    warning(['Number of echo times (n=' xASL_num2str(nTE) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+end
+
 factorTE = nVolumes/nTE;
 x.Q.EchoTime = repmat(x.Q.EchoTime(:), [factorTE 1]);
 nTE = length(x.Q.EchoTime);
@@ -263,6 +267,10 @@ end
 
 % Deal with too short vectors (e.g., repetitions in the case of single-PLD)
 nPLD = length(x.Q.Initial_PLD);
+if mod(nVolumes, nPLD)~=0
+    warning(['Number of PLDs (n=' xASL_num2str(nPLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+end
+
 factorPLD = nVolumes/nPLD;
 x.Q.Initial_PLD = repmat(x.Q.Initial_PLD(:), [factorPLD 1]);
 nPLD = length(x.Q.Initial_PLD);
@@ -304,6 +312,10 @@ end
 
 % Deal with too short vectors (e.g., repetitions in the case of single-PLD)
 nLD = length(x.Q.LabelingDuration);
+if mod(nVolumes, nLD)~=0
+    warning(['Number of labeling durations (n=' xASL_num2str(nLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+end
+
 factorLD = nVolumes/nLD;
 x.Q.LabelingDuration = repmat(x.Q.LabelingDuration(:), [factorLD 1]);
 nLD = length(x.Q.LabelingDuration);
