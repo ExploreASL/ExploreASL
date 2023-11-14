@@ -332,7 +332,7 @@ end
 % 11. Report spatial CoV as QC
 %% PM: here we also need PWI4D for the first TE and last PLD/labdur
 
-CoV0 = xASL_stat_ComputeSpatialCoV(PWI4D, MaskIM)*100;
+CoV0 = xASL_stat_ComputeSpatialCoV(PWI, MaskIM)*100;
 fprintf('%s\n',['Standard space spatial CoV pGM>0.7 = ' num2str(CoV0,3) '%']);
 
 
