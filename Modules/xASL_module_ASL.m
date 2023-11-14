@@ -101,47 +101,14 @@ if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
     % This function cleans all ASL sessions, so only run this (once) for the first session
     xASL_adm_CleanUpBeforeRerun(x.D.ROOT, 2, false, false, x.P.SubjectID, x.P.SessionID);
 	
-	% Also clean the QC output files
-	x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
-
-	% Clear any previous QC images
-	if isfield(x,'Output_im') && isfield(x.Output_im,'ASL')
-		x.Output_im = rmfield(x.Output_im,'ASL');
-	end
-
-	if isfield(x, 'Output') && isfield(x.Output, 'ASL') && isfield(x.Output.ASL, x.SESSION)
-		x.Output = rmfield(x.Output.ASL, x.SESSION);
-	end
-	
-	% And saved the cleaned up version
-	xASL_adm_SaveX(x);
-	
 	% If we rerun completely, then we do not the reload QC for that session, otherwise we load it from QC.json if present.
 	bCompleteRerun = true;
-else
-	x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
 end
 
-% Load QC.json and save it to x-struct
-QC_Path = fullfile(x.D.ROOT, x.SUBJECT, ['QC_collection_' x.SUBJECT '.json']);
-if xASL_exist(QC_Path, 'file')
-	oldOutput = xASL_io_ReadJson(QC_Path);
-
-	if isfield(oldOutput, 'ASL')
-		% Copy QC of other ASL sessions, but not the current one to the current QC
-		listFields = fieldnames(oldOutput.ASL);
-		for iField = 1:length(listFields)
-			if ~isempty(regexp(listFields{iField}, 'ASL_\d+', 'once')) 
-				if ~strcmp(listFields{iField}, x.SESSION) || ~bCompleteRerun
-					x.Output.ASL.(listFields{iField}) = oldOutput.ASL.(listFields{iField});
-				end
-			end
-		end
-	end
-end
+x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
 
 % Check and remove all outdated QC fields that are not used anymore
-x = xASL_qc_RemoveOutdatedQC(x);
+x = xASL_qc_CleanOldQC(x, 'ASL', bCompleteRerun);
 
 %% D1. Load ASL parameters (inheritance principle)
 [~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bO);
