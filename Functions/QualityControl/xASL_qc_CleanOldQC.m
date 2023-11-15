@@ -19,7 +19,7 @@ function [x] = xASL_qc_CleanOldQC(x, ScanType, bRemoveCurrentSession)
 % Copyright (C) 2015-2023 ExploreASL	
 
 if nargin < 2
-	error('Two parameters are requied');
+	error('Two parameters are required');
 end
 
 if nargin < 3 || isempty(bRemoveCurrentSession)
@@ -54,15 +54,20 @@ if xASL_exist(QC_Path, 'file')
 	end
 end
 
+% x.Output_im.ASL should not longer be a cell array, but should instead contain subfields.s
+if isfield(x,'Output_im') && isfield(x.Output_im, ScanType) && iscell(x.Output_im.(ScanType))
+	x.Output_im = rmfield(x.Output_im, ScanType);
+end
+
 % If doing a complete clean of the current session
 if bRemoveCurrentSession
 	% Clear any previous QC images
-	if isfield(x,'Output_im') && isfield(x.Output_im, ScanType)
-		x.Output_im = rmfield(x.Output_im, ScanType);
+	if isfield(x,'Output_im') && isfield(x.Output_im, ScanType) && isfield(x.Output_im.(ScanType), x.SESSION)
+		x.Output_im.(ScanType) = rmfield(x.Output_im.(ScanType), x.SESSION);
 	end
 
 	if isfield(x, 'Output') && isfield(x.Output, ScanType) && isfield(x.Output.(ScanType), x.SESSION)
-		x.Output = rmfield(x.Output.(ScanType), x.SESSION);
+		x.Output.(ScanType) = rmfield(x.Output.(ScanType), x.SESSION);
 	end
 end
 % In previous versions, we have parameters for session one only directly under x.Output.ASL (or similar for other modules) - if these are detected

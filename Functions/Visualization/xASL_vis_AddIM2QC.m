@@ -3,7 +3,13 @@ function [x] = xASL_vis_AddIM2QC(x,parms)
 %
 % FORMAT:       [x] = xASL_vis_AddIM2QC(x,parms);
 % 
-% INPUT:        ...
+% INPUT:        
+%       x        x-struct (REQUIRED)
+%       parms    A structure containing parameters 
+%                bCrop (DEFAULT true)
+%                FileName (DEFAULT n/a)
+%                IM (REQUIRED)
+%                ModuleName - 'ASL' or 'Structural' (REQUIRED)
 %
 % OUTPUT:       ...
 % 
@@ -13,11 +19,15 @@ function [x] = xASL_vis_AddIM2QC(x,parms)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      ...
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2023 ExploreASL
 
     %% Admin
-    parms = xASL_HandleInputPars(parms,'bCrop',true); % crop by default
-    parms = xASL_HandleInputPars(parms,'FileName','n/a');
+	if nargin < 2
+		error('Two parameters required');
+	end
+
+	parms = xASL_HandleInputPars(parms, 'bCrop', true); % crop by default
+    parms = xASL_HandleInputPars(parms, 'FileName', 'n/a');
     [parms, DidntContain] = xASL_HandleInputPars(parms,'IM',[]);
     
     if  DidntContain
@@ -47,16 +57,32 @@ function [x] = xASL_vis_AddIM2QC(x,parms)
     if ~isfield(x,'Output_im') || isempty(fields(x.Output_im))
         IndexIm = 1;
         x.Output_im = struct;
-    elseif ~isfield(x.Output_im,parms.ModuleName)
+	end
+    if ~isfield(x.Output_im, parms.ModuleName)
         IndexIm = 1;
-    elseif isfield(x.Output_im,parms.ModuleName) && ~iscell(x.Output_im.(parms.ModuleName)) && isempty(fields(x.Output_im.(parms.ModuleName)))
-        x.Output_im = rmfield(x.Output_im, parms.ModuleName);
-    else
-        IndexIm = length(x.Output_im.(parms.ModuleName)) + 1;
+	elseif strcmpi(parms.ModuleName, 'structural')
+		if ~iscell(x.Output_im.(parms.ModuleName))
+			x.Output_im = rmfield(x.Output_im, parms.ModuleName);
+			IndexIm = 1;
+		else
+			IndexIm = length(x.Output_im.(parms.ModuleName)) + 1;
+		end
+	else
+		if ~isfield(x.Output_im.(parms.ModuleName), x.SESSION)
+			IndexIm = 1;
+		elseif ~iscell(x.Output_im.(parms.ModuleName).(x.SESSION))
+			x.Output_im.(parms.ModuleName) = rmfield(x.Output_im.(parms.ModuleName), x.SESSION);
+		else
+			IndexIm = length(x.Output_im.(parms.ModuleName).(x.SESSION)) + 1;
+		end
     end
         
     %% Add the image to the field
-    x.Output_im.(parms.ModuleName){IndexIm} = IM;
+	if strcmpi(parms.ModuleName, 'structural')
+		x.Output_im.(parms.ModuleName){IndexIm} = IM;
+	else
+		x.Output_im.(parms.ModuleName).(x.SESSION){IndexIm} = IM;
+	end
 
 end
 

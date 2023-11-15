@@ -31,7 +31,7 @@ function xASL_qc_CreatePDF(x, DoSubject)
 % 
 % EXAMPLE: xASL_qc_CreatePDF(x);
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2023 ExploreASL
 
 
 if ~usejava('jvm') % only if JVM loaded
@@ -245,7 +245,14 @@ try
 
     % Print images
     for iField=1:length(ImFieldsOrder)
-        imsCurrField   = x.Output_im.(ImFieldNames{ImFieldsOrder(iField)});
+		imsCurrField = x.Output_im.(ImFieldNames{ImFieldsOrder(iField)});
+		if ~iscell(imsCurrField)
+			% We need to find out what is in the subfield
+			subFieldNames = fieldnames(imsCurrField);
+			if ~isempty(subFieldNames)
+				imsCurrField = imsCurrField.(subFieldNames{1});
+			end
+		end
         for iImage=1:min(length(imsCurrField),32) % iterate over images in this field, max 16 images allowed
             CurrentIm  = double(imsCurrField{iImage});
             % First treat the image

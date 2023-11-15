@@ -322,7 +322,7 @@ try
         ListXmat = xASL_adm_GetFileList(SubjectDir, '^x\.mat$', 'FPListRec', [0 Inf]);
         ListQCjson = xASL_adm_GetFileList(SubjectDir, ['(?i)^QC_collection_' SubjectID '\.json$'], 'FPListRec', [0 Inf]);
 
-        RemoveFields = {'Structural' 'ASL'};
+        RemoveFields = {};
         if ~isempty(find(iModule==1)) % if we remove the structural provenance
             RemoveFields{end+1} = 'Structural';
         end
@@ -368,7 +368,17 @@ try
                             end
                             if isfield(x,'Output_im')
                                 if isfield(x.Output_im, RemoveFields{iMod})
-                                    x.Output_im = rmfield(x.Output_im, RemoveFields{iMod});
+									% If the module is structural or if the subfield, e.g., x.Output_im.ASL is a cell, then it contains the outdated list of images and should be delete completely
+									if strcmpi(RemoveFields{iMod}, 'structural') || iscell(x.Output_im.(RemoveFields{iMod}))
+										x.Output_im = rmfield(x.Output_im, RemoveFields{iMod});
+									else
+										% Only in case we have non-structural subfields for sessions, then we remove the one for the current session
+										for iSession=1:nSessions
+											 if isfield(x.Output_im.(RemoveFields{iMod}), SessionID{iSession})
+												 x.Output_im.(RemoveFields{iMod}) = rmfield(x.Output_im.(RemoveFields{iMod}), SessionID{iSession});
+											 end
+										 end
+									end
                                 end
                             end
                         end
