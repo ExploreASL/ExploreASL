@@ -6,7 +6,7 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 % INPUT:
 %   x       - structure containing fields with all information required to run this function (REQUIRED)
 %             with the following information:
-%   x.modules.asl.bTimeEncoded - if we perform time encoding instead of
+%   x.modules.asl.bTimeEncoded - if we perform time decoding instead of
 %             pair-wise subtraction (boolean, REQUIRED)
 %             NB: see xASL_quant_HadamardDecoding for fields required by
 %             time encoding
@@ -34,22 +34,18 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 %   Control3D - same as PWI3D but then non-subtracted controls
 %   Control4D - same as PWI4D but then non-subtracted controls
 %
-%   x.Q.EchoTimeLabelingDuration_PWI4D
-%   x.Q.Initial_PLD_PWI4D
+%   x.Q.EchoTime_PWI4D
+%   x.Q.InitialPLD_PWI4D
 %   x.Q.LabelingDuration_PWI4D
 %
-%   x.Q.EchoTimeLabelingDuration_PWI3D
-%   x.Q.Initial_PLD_PWI3D
+%   x.Q.EchoTime_PWI3D
+%   x.Q.InitialPLD_PWI3D
 %   x.Q.LabelingDuration_PWI3D
 %
-%   x.Q.EchoTimeLabelingDuration_PWI
-%   x.Q.Initial_PLD_PWI
+%   x.Q.EchoTime_PWI
+%   x.Q.InitialPLD_PWI
 %   x.Q.LabelingDuration_PWI
 %
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DEVELOPER PM:
-% 
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function performs subtraction and averaging all across the ExploreASL ASL modules, such as xASL_wrp_Realign,
 %              and xASL_wrp_RegisterASL to compute temporary PWI images, xASL_wrp_ResampleASL for creating QC images and preparing
 %              quantification, and xASL_wrp_Quantify if PWI4D is not used by the quantification algorithm (such as BASIL).
@@ -83,21 +79,24 @@ bCreatePWI3D = true;
 bCreatePWI4D = true;
 
 
-if nargin==4
-    if isempty(PWI3D) || ~isnumeric(PWI3D)
+% By default, we calculate PWI3D, the calculation of PWI3D is only skipped if a relevant non-empty image is provided
+if nargin>=4 && ~isempty(PWI3D) % If PWI3D parameter is not provided or is missing, then we skip to its calculation
+    if ~isnumeric(PWI3D) % If PWI3D is provided, it has to be numeric
         error('Illegal PWI3D');
-    elseif numel(size(PWI3D))>4 || numel(size(PWI3D))<3
+    elseif ndims(PWI3D)>4 || ndims(PWI3D)<3 % And have the correct dimensions
         error('PWI3D has incorrect number of dimensions');
-    else
-        bCreatePWI3D = false;
+	else
+        bCreatePWI3D = false; % All is correct and we can use provided PWI3D
     end
 end
-if nargin==3
-    if isempty(PWI4D) || ~isnumeric(PWI4D)
+
+% Similar checks are done for PWI4D
+if nargin>=3 && ~isempty(PWI4D)
+    if ~isnumeric(PWI4D)
         error('Illegal PWI4D');
-    elseif numel(size(PWI4D))~=4
+    elseif ndims(PWI4D)>4 || ndims(PWI4D)<3 % In theory, PWI4D can be a 3D matrix when it contains a single deltaM
         error('PWI4D has incorrect number of dimensions');
-    else
+	else
         bCreatePWI4D = false;
     end
 end
@@ -113,13 +112,13 @@ if bCreatePWI4D
         
         
         % =====================================================================
-        if numel(size(ASL4D))>4
-            warning('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions');
+        if ndims(ASL4D)>4
+            fprintf('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions\n');
             error('ASL4D NIfTI has more than 4 dimensions');
             
         elseif nVolumes>1 && mod(nVolumes, 2) ~= 0
             warning('Odd (i.e., not even) number of control-label pairs, skipping');
-            % mod(nVolumes, 2) ~= 0 here means that round(nVolumes/2)~=nVolumes/2
+            % mod(nVolumes, 2) ~= 0 here means that nVolumes is not divisible by 2
             return;
         end
     end
