@@ -108,7 +108,7 @@ end
 x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
 
 % Check and remove all outdated QC fields that are not used anymore
-x = xASL_qc_CleanOldQC(x, 'ASL', bCompleteRerun);
+x = xASL_qc_CleanOldQC(x, bCompleteRerun);
 
 %% D1. Load ASL parameters (inheritance principle)
 [~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bO);
