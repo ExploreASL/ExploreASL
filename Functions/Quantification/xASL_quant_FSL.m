@@ -88,18 +88,22 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	xASL_delete(pathFSLOutput);
     %xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
     
+
     %% 3. Write the PWI4D as Nifti file for Basil/Fabber to read as input
-    PWI4D = xASL_io_Nifti2Im(path_PWI4D);
+    PWI4D_nii = xASL_io_ReadNifti(path_PWI4D);
+    PWI4D = PWI4D_nii.dat(:,:,:,:,:,:);
     
     % FIXME would be good to have a brain mask at this point -> PM: if this would be a brainmask as well, we can skip creating a dummy input image here
     
     % First, we extrapolate values to fill NaNs with a small kernel only, inside the brainmask
     % We don't have a brainmask here yet, so now we just run this small kernel once
-    PWI4D = xASL_im_ndnanfilter(PWI4D, 'gauss', double([4 4 4]), 2);
+    kernelSize = round([8 8 8]./PWI4D_nii.hdr.pixdim(2:4));
+    PWI4D = xASL_im_ndnanfilter(PWI4D, 'gauss', double(kernelSize), 2);
     xASL_io_SaveNifti(path_PWI4D, pathFSLInput, PWI4D);
 
     % Then, we extrapolate all outside the brain mask to ensure that there are no NaNs left
-    PWI4D = xASL_im_FillNaNs(pathFSLInput, 1, 1, VoxelSize)
+
+    PWI4D = xASL_im_FillNaNs(pathFSLInput, 1, 1, VoxelSize);
 
 
     % In the future, we may want to have less ugly masking with BASIL/FABBER
@@ -133,6 +137,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     %% #1543 TEMPORARY SOLUTION
 	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, x.modules.asl.bMergingSessions);
         
+
     %% 5. Run Basil and retrieve CBF output
     [~, resultFSL] = xASL_fsl_RunFSL([FSLfunctionName ' ' FSLOptions], x);
     
@@ -175,6 +180,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 		Tex_map = xASL_io_Nifti2Im(pathFabberTex{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
 	
+
     %% 6. Scaling to physiological units
     % Note different to xASL_quant_ASL since Fabber has T1 in seconds
     % and does not take into account labeling efficiency
@@ -184,6 +190,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     % & old Siemens sequence also didn't need the 1 gr->100 gr conversion
 
 	ABV_map = ABV_map ./ x.Q.LabelingEfficiency;
+    
     
     %% 7. Householding
 	% Basils Output is in the subfolder '/FSL_Output' which contains multiple steps if there are multiple iterations, and always contains

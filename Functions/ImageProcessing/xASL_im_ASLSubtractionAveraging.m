@@ -75,6 +75,7 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 % Copyright (C) 2015-2023 ExploreASL
 
 
+%% ========================================================================================
 %% 1. Admin & checks
 % Input image volumes should be correct
 % Creation of the PWI3D or PWI4D image volumes can be skipped if they are provided as input
@@ -104,6 +105,9 @@ if nargin>=3 && ~isempty(PWI4D)
     end
 end
 
+
+%% ========================================================================================
+%% 2. PWI4D
 if bCreatePWI4D
 
     if nargin<2 || isempty(path_ASL4D)
@@ -133,7 +137,7 @@ if bCreatePWI4D
 
 
 
-    %% 2. Apply motion correction if this is needed
+    %% 2A. Apply motion correction if needed
     % At the beginning of the ASL module we estimate motion, and optionally remove outliers/spikes
     % This can already be applied, but in some cases this is not yet applied and by just loading ASL4D.nii
     % this is then forgotten. So here, we check if a .mat (e.g., ASL4D.mat) sidecar exists, and then run
@@ -150,7 +154,6 @@ if bCreatePWI4D
             % If this file exists, we assume that the original ASL4D input file has not been
             % interpolated yet (and the motion estimation has not been applied yet)
     
-            %% ------------------------------------------------------------------------------------------
             % Apple motion correction & resample
             if nVolumes>1
                 for iS=1:nVolumes
@@ -177,146 +180,39 @@ if bCreatePWI4D
             end
         end
     end
-end
-    
-% =====================================================================
-% -> THIS WILL BE MOVED TO xASL_quant_HadamardDecoding
-%% 3. Time-Encoded subtraction
-% xASL_quant_HadamardDecoding should not only decode the image volumes but also the quantification parameters
-% that accompany the different volumes, i.e. EchoTime, PLD, and LabelingDuration.
-% When this is done appropriately, PWI derivative volumes are easily created based on these parameters
 
-if x.modules.asl.bTimeEncoded
-    
-    if bCreatePWI4D
-        %% 1) Create PWI4D
-        % Decoding of TimeEncoded data - it outputs a decoded image and it also saves as a NII
+
+    %% 2B. Apply time decoding if needed
+    if x.modules.asl.bTimeEncoded
+        %% #997 Check that the motion correction of Hadamard is correctly performed here,
+        % should we use path_rASL4D from here onwards, which defaults to path_ASL4D?
+
+        % Decoding of TimeEncoded data - it outputs the decoded image as well as the parameters
         [PWI4D, Control4D] = xASL_quant_HadamardDecoding(path_ASL4D, x.Q);
 	    nVolumes = size(PWI4D, 4);
-    end
 
-    if bCreatePWI3D
 
-    %% 2) Create PWI3D
-	% Calculate Hadamard block size (number of unique PLDs.*labeling durations.* echo times) = number of volumes per repetition
-    
-
-    %% 1) x.Q.EchoTime vectors (identical to below)
-    % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-    nTE = length(x.Q.EchoTime);
-    if nTE>nVolumes
-        x.Q.EchoTime_PWI4D = x.Q.EchoTime(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
+    %% 2C. Non-time encoded subtraction
     else
-        x.Q.EchoTime_PWI4D = x.Q.EchoTime;
-    end
-    nTE = length(x.Q.EchoTime_PWI4D); % Obtain the number of echo times
-
-    
-    nUniqueTE = length(uniqueTE); % Obtain the number of echo times
-    % instead of nUniqueTE which we don't use anymore
-
-
-    % % 
-    % % % We do this here now for each sequence, but we could also do this
-    % % % at the start of the ASL module
-    % % 
-    % % iUniqueTE = 1:nTEs;
-    % % iUniqueTE = repmat(iUniqueTE, [1 nVolumes/nTEs]);
-
-
-    
-    %% 2) PLD vectors
-    unique_InitialPLD = unique(x.Q.Initial_PLD);
-
-    % with time encoded, we always skip the latest PLD
-    % because that is a dummy PLD (it is in reality the control
-    % scan)
-    unique_InitialPLD = unique_InitialPLD(1:end-1);
-    nUnique_InitialPLD = length(unique_InitialPLD);
-
-    for iPLD=1:nUnique_InitialPLD
-        startIndex = (iPLD-1).*nUniqueTE+1;
-        endIndex = iPLD.*nUniqueTE;
-        iUnique_InitialPLD(startIndex:endIndex) = iPLD;
-    end
-    iUnique_InitialPLD = repmat(iUnique_InitialPLD, [1 nVolumes/length(iUnique_InitialPLD)]);
-    x.Q.InitialPLD_PWI4D = iUnique_InitialPLD;
-
-    % %% 2) PLD vectors (identical to below)
-    %% ->> THIS is what it should be
-    % % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-    % nPLD = length(x.Q.Initial_PLD);
-    % if nPLD>nVolumes
-    %     x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD(end-nVolumes+1:end); % can we do this based on the ASL4Dcontext.tsv ?
-    % else
-    %     x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD;
-    % end
-    % nPLD = length(x.Q.InitialPLD_PWI4D);
-    % 
-
-
-    
-
-    %% 3) Labeling duration (LD) vectors (identical to below)
-    % First we deal with a too long vector (e.g., cutting off control volumes for Hadamard)
-    nLabDur = length(x.Q.LabelingDuration);
-    if nLabDur>nVolumes
-        x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration(1:nVolumes); % can we do this based on the ASL4Dcontext.tsv ?
-    else
-        x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration;
-    end
-    nLabDur = length(x.Q.LabelingDuration_PWI4D);
-
-
+        if nVolumes>1 && ~x.modules.asl.bContainsDeltaM
+            % Paired subtraction
+            [Control4D, Label4D] = xASL_quant_GetControlLabelOrder(ASL4D);
+            PWI4D = Control4D - Label4D;
+            
+            % Skip every other value in the vectors as they were stored for both control and label images 
+            x.Q.EchoTime_PWI4D = x.Q.EchoTime(1:2:end);
+            x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD(1:2:end);
+            x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration(1:2:end);
+        else % the same but then without subtraction
+            PWI4D = ASL4D;
+            Control4D = NaN;
+        end
     end
 
 
-    %% TIME DECODING WARNING -> MOVE TO xASL_quant_HadamardDecoding (check the original code)
-    %%  BECAUSE TIME DECODING WILL ALSO ADAPT THE QUANTIFICATION PARAMETERS
-    %%  ORDER
-    % %% This part needs to be synced with the below part still
-    % %% That we give equal warnings for all ASL flavor, if the number of TE/PLD/labdurs 
-    % %% don't fit within the number of volumes
-    % %% unless we already give this in the import, then we can remove it here
-    % 
-    % % nVolumesPerRepetition = nTEs .* (nUnique_InitialPLD - (nUnique_InitialPLD./x.Q.TimeEncodedMatrixSize));
-    % nVolumesPerRepetition = nTEs .* nUnique_InitialPLD;
-    % 
-    % % nVolumesPerRepetition is also called blockSize by some
-	% nRepetitions = nVolumes ./ nVolumesPerRepetition;
-    % 
-    % % First check if the number of volumes fits with the number of
-    % % expected volumes per repetition (for the amount of x.Q.EchoTimes, PLDs, and labeling durations)
-    % if nRepetitions~=round(nRepetitions)
-    %     error(['nVolumes ' xASL_num2str(size(PWI4D,4)) ' cannot be composed of ' xASL_num2str(nVolumesPerRepetition) ' volumes per repetition']);
-    % end
-
-
-
-    
-    
-% =====================================================================
-% C) Single- and multi-PLD subtraction
-elseif bCreatePWI4D
-    %% 4. Create PWI4D
-    if nVolumes>1 && ~x.modules.asl.bContainsDeltaM
-        % Paired subtraction
-        [Control4D, Label4D] = xASL_quant_GetControlLabelOrder(ASL4D);
-        PWI4D = Control4D - Label4D;
-        
-        % Skip every other value in the vectors as they were stored for both control and label images 
-        x.Q.EchoTime_PWI4D = x.Q.EchoTime(1:2:end);
-        x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD(1:2:end);
-        x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration(1:2:end);
-    else % the same but then without subtraction
-        PWI4D = ASL4D;
-        Control4D = NaN;
-    end
-
-end
-   
+%% ========================================================================================
+%% 5. Create PWI3D
 if bCreatePWI3D
-    %% 5. Create PWI3D
     
     % After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
     % indexAverage_PLD_LabDur lists for each original position to where it should be averaged
@@ -333,6 +229,7 @@ if bCreatePWI3D
         x.Q.LabelingDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_PWI4D(indicesAre));
     end
 end
+
 
 %% 6. Create PWI
 % We create a dummy CBF image for registration purposes
