@@ -49,6 +49,9 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 % DESCRIPTION: This function performs subtraction and averaging all across the ExploreASL ASL modules, such as xASL_wrp_Realign,
 %              and xASL_wrp_RegisterASL to compute temporary PWI images, xASL_wrp_ResampleASL for creating QC images and preparing
 %              quantification, and xASL_wrp_Quantify if PWI4D is not used by the quantification algorithm (such as BASIL).
+%              It takes any PWI and control phase as input and will output any phase that it computed.
+%              The phases are: ASL4D->PWI4D    ->PWI3D    ->PWI
+%                         and: ASL4D->Control4D->Control3D->Control
 %
 % This function performs the following steps:
 % 1. Admin & checks
