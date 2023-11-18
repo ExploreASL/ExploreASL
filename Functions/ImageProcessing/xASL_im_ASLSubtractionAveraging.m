@@ -109,12 +109,14 @@ if bCreatePWI4D
     if nargin<2 || isempty(path_ASL4D)
         error('path_ASL4D input missing');
     else
+        % LOAD ASL4D.nii
         ASL4D = xASL_io_Nifti2Im(path_ASL4D); % Load time-series nifti from path if input was a path
         % (input can also be an image matrix)
+        
+        % here we perform several dimensional checks before we can continue
+
         nVolumes = size(ASL4D, 4);
         
-        
-        % =====================================================================
         if ndims(ASL4D)>4
             fprintf('\n\nIn BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/LD/etc] as 4 dimensions\n\n');
             error('ASL4D.nii contains more than 4 dimensions');
@@ -164,7 +166,12 @@ if bCreatePWI4D
                 spm_jobman('run',matlabbatch); % this applies the motion correction in native space
                 
                 path_rASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
-                % Reload motion corrected timeseries:
+                
+                % RELOAD ASL4D.nii
+                % Note that we only reload ASL4D.nii here if we have motion corrected timeseries.
+                % If path_ASL4D was not a path, or if sideCarMat didn't exist (motion estimation was not performed)
+                % or if nVolumes==1 (we did not have multiple ASL volumes) there is no reason to resample and we keep using
+                % the already above loaded ASL4D.nii
                 ASL4D = xASL_io_Nifti2Im(path_rASL4D);
                 xASL_delete(path_rASL4D);
             end
