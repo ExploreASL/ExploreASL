@@ -162,28 +162,38 @@ switch xQ.Vendor
 		warning(['Time encoded ASL data not yet tested for vendor ' xQ.vendor]);
 end
 
+
 %% 2. Load time-series nifti
 imEncoded = xASL_io_Nifti2Im(imPath); 
 
 % Calculate specific data sizes
 nDecodedTI = xQ.TimeEncodedMatrixSize-1;                   % Number of TIs is always MatrixSize -1
+
+%% #997 Here we need to use something different than xQ.NumberEchoTimes to determine the structure
+%  Time decoding should be oblivious about the readout parameters
 nDecodedVolumes = xQ.NumberEchoTimes * nDecodedTI;
 
 nEncodedVolumes = size(imEncoded, 4);
 
+% #997 Here we need to use something different than xQ.NumberEchoTimes to determine the structure
 nRepetitions = nEncodedVolumes / (xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes); % Calculating no. of acquisition repeats
 
 %% 3. Obtain control4D images
 % Here we select the 1st TE and the control images
 % We thus calculate the size of each Hadamard block as the number of Hadamard phases and TEs
 nVolumesPerRepetition = xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes;
-    
+% #997 Here we need to use something different than xQ.NumberEchoTimes to determine the structure
+
 % For example for 64 volumes and 2 repetitions with 8 PLDs and 4 TEs, it takes volume 1 and 33
 decodedControl4D = imEncoded(:,:,:,1:nVolumesPerRepetition:end);
 
+%% #997 Here, we need to create a 1D decoding vector, that for each element (original volume) has the new position of the volume
+%  Volumes that disappear will have a 0
+% e.g., 3 3 3 3 2 2 2 2 1 1 1 1 0 0 0 0
+% Then below, we apply this "transformation"/"decoding" vector to the image matrix and to the parameters TE/PLD/LD
 
 
-%% 4. Reorder multi-TE data
+%% 4. Reorder image matrix
 % At this point the data is organized like this (in terms of ASL4D.nii volumes):
 % PLD1/TE1,PLD1/TE2,PLD1/TE3,PLD1/TE4...PLD2/TE1,PLD2/TE2,PLD2/TE3... (TEs in first dimension, PLDs after)
 %
@@ -215,6 +225,7 @@ end
 %     Reorder the data
 % 	imEncoded = imEncoded(:,:,:,vectorOrder);
 % end
+
 
 %% 5. Decode the Hadamard data
 decodedPWI4D = zeros(size(imEncoded,1), size(imEncoded,2), size(imEncoded,3), nDecodedVolumes * nRepetitions);    
@@ -248,6 +259,7 @@ if isfield(xQ,'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
 	% Reorder the data
 	decodedPWI4D = decodedPWI4D(:,:,:,vectorOldOrder);
 end
+
 
 %% 7. Normalization of the decoded data
 % NormalizationFactor = 1/(m_INumSets/2);
