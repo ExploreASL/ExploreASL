@@ -144,7 +144,7 @@ end
 %% 1.   Load PWI
 fprintf('%s\n','Loading PWI & M0 images');
 
-%% #1543 This goes to 
+%% #1543 This goes to xASL_module_ASL
 % Either load a PWI image or merge several PWIs
 if x.modules.asl.bMergingSessions == 1
 	PWI = xASL_wrp_Quantify_MergeSessions(x); %% #1543 THIS WILL BE RENAMED TO xASL_im_MergePWI4D
