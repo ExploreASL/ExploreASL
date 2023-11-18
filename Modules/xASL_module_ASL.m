@@ -38,10 +38,14 @@ function [result, x] = xASL_module_ASL(x)
 % - D - ASL processing parameters
 % - D1. Load ASL parameters (inheritance principle)
 % - D2. Default ASL processing settings in the x.modules.asl field
-% - D3. Multi-PLD parsing
-% - D4. TimeEncoded parsing
-% - D5. Multi-TE parsing
-% - D6. Recognizing automatic quantification (e.g. DEBBIE sequence)
+%
+% #1543 THIS WILL BE THE FINAL ORDER
+% - D3. TE parsing
+% - D4. PLD parsing
+% - D5. Labeling Duration parsing
+% - D6. TimeEncoded parsing
+% - D7. Automatic session concatenation
+% #1543 NOT THE CURRENT ORDER
 %
 % - E - ASL quantification parameters
 % - E1. Default quantification parameters in the Q field
