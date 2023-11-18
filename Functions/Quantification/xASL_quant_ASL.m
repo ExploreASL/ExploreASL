@@ -322,7 +322,8 @@ if x.modules.asl.ApplyQuantification(3)
 	if isfield(x.Q, 'LabelingDuration') && isfield(x.Q, 'Initial_PLD')
 		% Prepare unique PLDs+LabDur combinations
 		
-        %% THIS PART CAN NOW BE SKIPPED, AND WE JUST PRINT
+        %% #1543 THIS PART CAN NOW BE SKIPPED, AND WE JUST PRINT
+        %% a lot of the printing is now at the start of xASL_module_ASL
         % x.Q.uniquePLD
         % x.Q.uniqueTE
         % x.Q.uniqueLabDur
