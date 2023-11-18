@@ -1,4 +1,4 @@
-function [decodedPWI4D, decodedControl4D] = xASL_quant_HadamardDecoding(imPath, xQ)
+function [decodedPWI4D, decodedControl4D, xQ] = xASL_quant_HadamardDecoding(imPath, xQ)
 %xASL_quant_HadamardDecoding Hadamard-4 & Hadamard-8 Decoding
 %
 % FORMAT:       [imDecoded] = xASL_quant_HadamardDecoding(imPath, xQ)
@@ -17,9 +17,26 @@ function [decodedPWI4D, decodedControl4D] = xASL_quant_HadamardDecoding(imPath, 
 %                             - '8' for Hadamard-8
 %                          - TimeEncodedMatrix (OPTIONAL)
 %                             - Matrix given by the user
-%                          - EchoTime - vector with EchoTimeNumberEchoTimes  - Number of different echos (REQUIRED)
+%
+%                           - EchoTime: TE vector after Hadamard-decoded subtraction
+%                           - Initial_PLD: PLD vector after Hadamard-decoded subtraction
+%                           - LabelingDuration: LD vector after Hadamard-decoded subtraction
+%                           - EchoTime: TE vector for all control images
+%                           - Initial_PLD: PLD vector for all control images
+%                           - LabelingDuration: : LD vector for all control images
+%
 % OUTPUT:       decodedPWI4D - Decoded ASL volumes
 %               decodedControl4D - Decoded control volumes
+%               xQ     - xQ field with several output parameters
+%                           - HadamardDecodingVector (REQUIRED)
+%                             vector with element-wise index where a volume should go
+%                           - EchoTime_PWI4D: TE vector after Hadamard-decoded subtraction
+%                           - InitialPLD_PWI4D: PLD vector after Hadamard-decoded subtraction
+%                           - LabelingDuration_PWI4D: LD vector after Hadamard-decoded subtraction
+%                           - EchoTime_Control4D: TE vector for all control images
+%                           - InitialPLD_Control4D: PLD vector for all control images
+%                           - LabelingDuration_Control4D: : LD vector for all control images
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Hadamard-4 & Hadamard-8 Decoding.
 %

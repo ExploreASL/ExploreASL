@@ -188,7 +188,7 @@ if bCreatePWI4D
         % should we use path_rASL4D from here onwards, which defaults to path_ASL4D?
 
         % Decoding of TimeEncoded data - it outputs the decoded image as well as the parameters
-        [PWI4D, Control4D] = xASL_quant_HadamardDecoding(path_ASL4D, x.Q);
+        [PWI4D, Control4D, x.Q] = xASL_quant_HadamardDecoding(path_ASL4D, x.Q);
 	    nVolumes = size(PWI4D, 4);
 
 
@@ -203,6 +203,11 @@ if bCreatePWI4D
             x.Q.EchoTime_PWI4D = x.Q.EchoTime(1:2:end);
             x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD(1:2:end);
             x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration(1:2:end);
+            % In this case, the vectors are equal for PWI4D and Control4D
+            x.Q.EchoTime_Control4D = x.Q.EchoTime_PWI4D;
+            x.Q.InitialPLD_Control4D = x.Q.InitialPLD_PWI4D;
+            x.Q.LabelingDuration_Control4D = x.Q.LabelingDuration_PWI4D;
+
         else % the same but then without subtraction
             PWI4D = ASL4D;
             Control4D = NaN;
@@ -216,18 +221,31 @@ if bCreatePWI3D
     
     % After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
     % indexAverage_PLD_LabDur lists for each original position to where it should be averaged
-    [~, ~, iUnique_TE_PLD_LabDur] = unique([x.Q.EchoTime_PWI4D(:), x.Q.InitialPLD_PWI4D(:), x.Q.LabelingDuration_PWI4D(:)], 'stable', 'rows');
+    [~, ~, iUnique_TE_PLD_LabDur_PWI4D] = unique([x.Q.EchoTime_PWI4D(:), x.Q.InitialPLD_PWI4D(:), x.Q.LabelingDuration_PWI4D(:)], 'stable', 'rows');
     
     % MultiPLD-multiLabDur PWI3D after averaging
-    for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur)
-        indicesAre = iUnique_TE_PLD_LabDur == iTE_PLD_LabDur;
+    for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur_PWI4D)
+        indicesAre = iUnique_TE_PLD_LabDur_PWI4D == iTE_PLD_LabDur;
         PWI3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, indicesAre), 4); % Averaged PWI4D
-        Control3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(Control4D(:, :, :, indicesAre), 4); % Averaged control4D (same indices are PWI4D)
 
         x.Q.EchoTime_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.EchoTime_PWI4D(indicesAre));
         x.Q.InitialPLD_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.InitialPLD_PWI4D(indicesAre));
         x.Q.LabelingDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_PWI4D(indicesAre));
     end
+
+    % Now we do the same for Control4D
+    [~, ~, iUnique_TE_PLD_LabDur_Control4D] = unique([x.Q.EchoTime_Control4D(:), x.Q.InitialPLD_Control4D(:), x.Q.LabelingDuration_Control4D(:)], 'stable', 'rows');
+    
+    % MultiPLD-multiLabDur PWI3D after averaging
+    for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur__Control4D)
+        indicesAre = iUnique_TE_PLD_LabDur__Control4D == iTE_PLD_LabDur;
+        PWI3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(Control4D(:, :, :, indicesAre), 4); % Averaged Control4D
+        Control3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(Control4D(:, :, :, indicesAre), 4); % Averaged control4D (same indices as PWI4D)
+
+        x.Q.EchoTime_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.EchoTime_Control3D(indicesAre));
+        x.Q.InitialPLD_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.InitialPLD_Control3D(indicesAre));
+        x.Q.LabelingDuration_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_Control3D(indicesAre));
+    end    
 end
 
 
@@ -284,13 +302,16 @@ end
 
 %% Current quick&dirty fix was the average of all volumes with the lowest echo time
 iMinTE = x.Q.EchoTime_PWI3D == min(x.Q.EchoTime_PWI3D(:));
-
 PWI = xASL_stat_MeanNan(PWI3D(:, :, :, iMinTE), 4);
-Control = xASL_stat_MeanNan(Control3D(:, :, :, iMinTE), 4);
-
 x.Q.EchoTime_PWI = min(x.Q.EchoTime_PWI3D(:));
 x.Q.initialPLD_PWI = mean(x.Q.InitialPLD_PWI3D(:)); %% Jan is this correct?
 x.Q.LabelingDuration_PWI = mean(x.Q.LabelingDuration_PWI3D(:)); %% Jan is this correct?
 
+% The same for Control
+iMinTE = x.Q.EchoTime_Control3D == min(x.Q.EchoTime_Control3D(:));
+Control = xASL_stat_MeanNan(Control3D(:, :, :, iMinTE), 4);
+x.Q.EchoTime_Control = min(x.Q.EchoTime_Control3D(:));
+x.Q.initialPLD_Control = mean(x.Q.InitialPLD_Control3D(:)); %% Jan is this correct?
+x.Q.LabelingDuration_Control = mean(x.Q.LabelingDuration_Control3D(:)); %% Jan is this correct?
 
 end
