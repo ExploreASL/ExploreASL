@@ -158,9 +158,10 @@ end
 %% 1.   Load PWI
 fprintf('%s\n','Loading PWI & M0 images');
 
+%% #1543 This goes to 
 % Either load a PWI image or merge several PWIs
 if x.modules.asl.bMergingSessions == 1
-	PWI = xASL_wrp_Quantify_MergeSessions(x);
+	PWI = xASL_wrp_Quantify_MergeSessions(x); %% #1543 THIS WILL BE RENAMED TO xASL_im_MergePWI4D
 else
 	% Load ASL single PWI
 	PWI = xASL_io_Nifti2Im(PWI_Path); % Load CBF nifti
@@ -596,28 +597,48 @@ end
 
 end
 
+%% #1543 This part goes to the new separate function xASL_im_MergePWI4D
+%% #1543 Which will have as input:
+%% PWI4D.nii
+%% PWI4D.json
+%% SessionMergingList
+%% (not x if we don't need it)
+
 function PWI = xASL_wrp_Quantify_MergeSessions(x)
 % Merge several PWIs based on the list in x.modules.asl.sessionsToMerge
-PWI = [];
-for iSession = 1:numel(x.modules.asl.sessionsToMerge)
-	pathCurrentPWI4D = replace(x.P.Path_PWI4D, x.modules.asl.sessionsToMerge{end}, x.modules.asl.sessionsToMerge{iSession});
+PWI = []; % this becomes the total concatenated image matrix
 
-	if xASL_exist (pathCurrentPWI4D, 'file')
+fprintf('Concatenating PWI4D for sessions/runs (nVolumes):');
+
+for iSession = 1:numel(x.modules.asl.sessionsToMerge)
+	% Here we get the path of the first session, by replacing the foldername ASL_X
+    pathCurrentPWI4D = replace(x.P.Path_PWI4D, x.modules.asl.sessionsToMerge{end}, x.modules.asl.sessionsToMerge{iSession});
+    
+	if xASL_exist(pathCurrentPWI4D, 'file')
 		imPWI4Dcurrent = xASL_io_Nifti2Im(pathCurrentPWI4D);
+        
+        dim4(iSession) = size(imPWI4Dcurrent, 4);
+
+        fprintf([' ' x.modules.asl.sessionsToMerge{iSession} ' (' xASL_num2str(dim4(iSession)) ')']);
+
 		if iSession == 1
 			% Take the first volume as it is
 			PWI = imPWI4Dcurrent;
 		else
 			% For the following ones, check dimensions
 			if isequal(size(imPWI4Dcurrent, 1:3), size(PWI, 1:3))
-				PWI = cat(4, PWI, imPWI4Dcurrent);
+				% Here we concatenate (cat) over the 4rd dimension (4), PWI (total concatenated image matrix) with the new current PWI
+                PWI = cat(4, PWI, imPWI4Dcurrent);
 			else
-				error(['Cannot merge sessions for subject ' x.SUBJECT ' as session '  x.modules.asl.sessionsToMerge{iSession} ' has a different matrix size from the previous sessions.']);
+				error(['Cannot concatenate sessions for subject ' x.SUBJECT ' as session '  x.modules.asl.sessionsToMerge{iSession} ' has a different matrix size from the previous sessions.']);
 			end
 		end
 	else
-		% If one of the sessions are missing, then we throw an error
-		error(['Cannot merge sessions for subject ' x.SUBJECT ' as session '  x.modules.asl.sessionsToMerge{iSession} ' is missing.']);
+		% If one of the sessions are missing, then we issue an error
+		error(['Cannot concatenate sessions for subject ' x.SUBJECT ': session '  x.modules.asl.sessionsToMerge{iSession} ' is missing.']);
 	end
 end
+
+fprintf('\n%s\n', ['Concatenated PWI4Ds into a new PWI4D with name XXXXX #1543 and ' xASL_num2str(sum(dim4)) ' volumes']);
+
 end
