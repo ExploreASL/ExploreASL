@@ -82,22 +82,22 @@ bCreatePWI4D = true;
 % By default, we calculate PWI3D, the calculation of PWI3D is only skipped if a relevant non-empty image is provided
 if nargin>=4 && ~isempty(PWI3D) % If PWI3D parameter is not provided or is missing, then we skip to its calculation
     if ~isnumeric(PWI3D) % If PWI3D is provided, it has to be numeric
-        error('Illegal PWI3D');
+        error('Illegal PWI3D, it should be numerical');
     elseif ndims(PWI3D)>4 || ndims(PWI3D)<3 % And have the correct dimensions
-        error('PWI3D has incorrect number of dimensions');
+        error('PWI3D has an incorrect number of dimensions');
 	else
-        bCreatePWI3D = false; % All is correct and we can use provided PWI3D
+        bCreatePWI3D = false; % All is correct and we can use the provided PWI3D
     end
 end
 
 % Similar checks are done for PWI4D
 if nargin>=3 && ~isempty(PWI4D)
     if ~isnumeric(PWI4D)
-        error('Illegal PWI4D');
+        error('Illegal PWI4D, it should be numerical');
     elseif ndims(PWI4D)>4 || ndims(PWI4D)<3 % In theory, PWI4D can be a 3D matrix when it contains a single deltaM
-        error('PWI4D has incorrect number of dimensions');
+        error('PWI4D has an incorrect number of dimensions');
 	else
-        bCreatePWI4D = false;
+        bCreatePWI4D = false; % All is correct and we can use the provided PWI4D
     end
 end
 
@@ -113,8 +113,8 @@ if bCreatePWI4D
         
         % =====================================================================
         if ndims(ASL4D)>4
-            fprintf('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions\n');
-            error('ASL4D NIfTI has more than 4 dimensions');
+            fprintf('\n\nIn BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/LD/etc] as 4 dimensions\n\n');
+            error('ASL4D.nii contains more than 4 dimensions');
             
         elseif nVolumes>1 && mod(nVolumes, 2) ~= 0
             warning('Odd (i.e., not even) number of control-label pairs, skipping');
