@@ -1,10 +1,11 @@
-function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI4D, x)
+function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(path_PWI4D, x)
 %xASL_quant_FSL Perform quantification using FSL BASIL/FABBER
 %
 % FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI4D, x)
 % 
 % INPUT:
-%   PWI4D           - image matrix of perfusion-weighted volumes (REQUIRED)
+%   path_PWI4D      - path to PWI4D (OPTIONAL, defaults to x.P.Path_PWI4D)
+%                     e.g., alternatives could be another space, or a concatenated PWI4D
 %   x               - struct containing pipeline environment parameters (REQUIRED)
 %
 % OUTPUT:
@@ -62,7 +63,10 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
         FSLfunctionName = 'basil';
 	end
     
-    %% 1. Define paths
+    %% 1. Define temporary paths for FSL
+    %% PM: @ Jan: shouldn't we want these in the FSL subdirectory as well?
+    %  This is created by FSL anyway, so it would be nice and clean to put all temporary files there
+
     % For input, output, and options
     pathFSLInput = fullfile(x.dir.SESSIONDIR, 'PWI4D_FSLInput.nii');
     pathFSLOptions = fullfile(x.dir.SESSIONDIR, 'FSL_ModelOptions.txt');
@@ -85,13 +89,20 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     %xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
     
     %% 3. Write the PWI4D as Nifti file for Basil/Fabber to read as input
+    PWI4D = xASL_io_Nifti2Im(path_PWI4D);
+    
     % FIXME would be good to have a brain mask at this point -> PM: if this would be a brainmask as well, we can skip creating a dummy input image here
     
-    PWI4D(isnan(PWI4D)) = 0;
+    % First, we extrapolate values to fill NaNs with a small kernel only, inside the brainmask
+    % We don't have a brainmask here yet, so now we just run this small kernel once
+    PWI4D = xASL_im_ndnanfilter(PWI4D, 'gauss', double([4 4 4]), 2);
+    xASL_io_SaveNifti(path_PWI4D, pathFSLInput, PWI4D);
 
-    %% THIS IS TRICKY: WE NEED TO CHECK HERE IF THIS DOESN'T CREATES ZEROS INSIDE THE BRAIN.
-    %% PROBABLY BETTER TO DO THE SMOOTHING EXTRAPOLATION INSTEAD OF SETTING NANS TO 0
+    % Then, we extrapolate all outside the brain mask to ensure that there are no NaNs left
+    PWI4D = xASL_im_FillNaNs(pathFSLInput, 1, 1, VoxelSize)
 
+
+    % In the future, we may want to have less ugly masking with BASIL/FABBER
 
 	% Here, we don't mask implicitly, but we will provide an explicit mask to BASIL/FABBER.
 	% This mask can be used: x.P.Path_BrainMaskProcessing
