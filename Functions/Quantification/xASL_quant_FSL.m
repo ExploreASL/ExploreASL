@@ -95,12 +95,20 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
     end
 
     %% 4. Create option_file that contains options which are passed to the FSL command
-	% To be removed later when we are properly checking for merged multi-TE images
+    % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
+    % FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput); %% #1543 PUT THIS BACK
+    
+    %% #1543 REMOVE THIS BECAUSE MERGING & FABBER ARE INDEPENDENT
+	%% #1543 THE NEW SEPARATE FUNCTION xASL_im_MergePWI4D will have as input:
+	%% PWI4D.nii
+	%% PWI4D.json
+	%% SessionMergingList
+	%% (not x if we don't need it)
 	if x.modules.asl.bMergingSessions == 1
 		bUseFabber = 1;
 	end
 
-    % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
+    %% #1543 TEMPORARY SOLUTION
 	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, x.modules.asl.bMergingSessions);
         
     %% 5. Run Basil and retrieve CBF output
@@ -202,6 +210,7 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, 
 %   bUseFabber      - Use FABBER, alternative BASIL (REQUIRED)
 %   pathFSLInput    - Path to the data input file (REQUIRED)
 %   pathFSLOutput   - Path to the output directory (REQUIRED)
+%% #1543 TEMPORARY SOLUTION, MERGING GOES OUT OF XASL_QUANT_FSL
 %   bMergingSessions - Merge FSLOptions.txt (DEBBIE - only 1 for the last session of MergingLists) (OPTIONAL, DEFAULT 0)
 %
 % OUTPUT:
@@ -232,11 +241,12 @@ if ~isfield(x.Q.BASIL,'bMasking') || isempty(x.Q.BASIL.bMasking)
 		x.Q.BASIL.bMasking = true;
 end
 
+%% #1543 TEMPORARY SOLUTION, MERGING GOES OUT OF XASL_QUANT_FSL
 if nargin<7 || isempty(bMergingSessions)
 	bMergingSessions = 0;
 end
 
-% If we need to merge sessions, we will use Fabber
+%% TEMPORARY SOLUTION, MERGING GOES OUT OF XASL_QUANT_FSL
 if bMergingSessions
     bUseFabber = 1;
 end
@@ -399,6 +409,8 @@ switch lower(x.Q.LabelingType)
 
 		PLDs = x.Q.Initial_PLD/1000;
 
+        %% #1543 TEMPORARY SOLUTION, MERGING GOES OUT & to xASL_im_MergePWI4D
+
 		% For Time-encoded, we skip the first volume per block
 		if x.modules.asl.bTimeEncoded
 			% In case we are merging sessions, we have to read all JSONs again from files
@@ -475,7 +487,7 @@ switch lower(x.Q.LabelingType)
 				nTE = ones(size(PLDs))*nTE;
 			end
 
-			% Plotting the values into the doc (PLD=ti, LD=tau)
+			% Printing the values in the FSL option file (PLD=ti, LD=tau)
 			for iPLD = 1:length(PLDs)
 				fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD, PLDs(iPLD) + LabDurs(iPLD));
 			end

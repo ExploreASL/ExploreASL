@@ -218,34 +218,54 @@ else
     x.modules.asl.bMultiTE = false;
 	x.Q.NumberEchoTimes = 1;
 end
+
 %% D6. Automatic session merging
-% Read the list of sessions to merge, defaulted to empty
+
+% SessionMergingList == total list of sessions that need concatenating (can be multiple lists for multiple concatenations)
+% Read the list of sessions to merge, defaulting to empty
 if ~isfield(x.modules.asl, 'SessionMergingList')
 	x.modules.asl.SessionMergingList = {};
 else
 	% The parameter should be a list of lists, but if a single list is provided, it converts it
 	if ~isempty(x.modules.asl.SessionMergingList) && iscell(x.modules.asl.SessionMergingList) && ~iscell(x.modules.asl.SessionMergingList{1})
 		x.modules.asl.SessionMergingList = {x.modules.asl.SessionMergingList};
-	end
+    end
+    nLists = numel(x.modules.asl.SessionMergingList);
+    fprintf('\n%s', ['-> Detected ' xASL_num2str(nLists) ' list(s) for concatenating sessions']);
 end
 
 x.modules.asl.bMergingSessions = 0; % By default, we do not merge any sessions
-x.modules.asl.sessionsToMerge = {}; % The active sublist of sessions to merge for this particular session. SessionMerginList is the general list of lists to be merged
-  
-% Check if there is a list of sessions to merge
-if ~isempty(x.modules.asl.SessionMergingList)
-	% Find the sublist containing the current session
-	for iSubList=1:numel(x.modules.asl.SessionMergingList)
-		if ~isempty(x.modules.asl.SessionMergingList{iSubList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iSubList}))
-			x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iSubList};
-		end
-	end
+% sessionsToMerge = session list that we will concatenate for this specific session & run of xASL_module_ASL
+% e.g., if we want to concatenate ASL_1 & ASL_2, this will only contain both sessions for the xASL_module_ASL iteration of ASL_2
+x.modules.asl.sessionsToMerge = {};
 
-	% If there are sessions to merge and the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
-	if ~isempty(x.modules.asl.sessionsToMerge) && strcmp(x.SESSION, x.modules.asl.sessionsToMerge{end})
-		x.modules.asl.bMergingSessions = 1;
+
+% Find the lists containing the current session
+% Note that these can be multiple lists
+for iList=1:nLists
+	if ~isempty(x.modules.asl.SessionMergingList{iList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iList}))
+		x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList};
+
+        if ~isempty(x.modules.asl.sessionsToMerge) && strcmp(x.SESSION, x.modules.asl.sessionsToMerge{end})
+            % If the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
+            x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList};
+            x.modules.asl.bMergingSessions = 1;
+            list2concatenate = iList;
+        end
 	end
 end
+
+if x.modules.asl.bMergingSessions
+    fprintf('%s', ' and will now concatenate the following sessions:')
+    nSessions = numel(x.modules.asl.SessionMergingList{list2concatenate});
+    for iSession=1:nSessions
+        fprintf([' ' x.modules.asl.SessionMergingList{list2concatenate}{iSession}]);
+    end
+    fprintf('\n');
+else
+    fprintf('%s\n\n', [' but will not concatenate them here (xASL_module_ASL: ' x.SESSION ')']);
+end
+
 
 %% E1. Default quantification parameters in the Q field
 if ~isfield(x.modules.asl,'ApplyQuantification') || isempty(x.modules.asl.ApplyQuantification)
@@ -565,6 +585,11 @@ end
 
 %% -----------------------------------------------------------------------------
 %% 8    Quantification
+
+%% #1543 Here we call xASL_im_MergePWI4D as first function before any quantification (so the user can move it somewhere else/it can be a separate step in a GUI)
+%% This is not part of the quantification, just as HadamardDecoding is also not part of the quantification, it is a resorting/reconcatenation of image & parameter matrices
+
+
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
 % Including PVC
 iState = 8;
