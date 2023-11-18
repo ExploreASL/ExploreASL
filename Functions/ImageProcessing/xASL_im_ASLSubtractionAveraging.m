@@ -291,8 +291,8 @@ elseif bCreatePWI4D
     %% 4. Create PWI4D
     if nVolumes>1 && ~x.modules.asl.bContainsDeltaM
         % Paired subtraction
-        [Control4D, LabelIm] = xASL_quant_GetControlLabelOrder(ASL4D);
-        PWI4D = Control4D - LabelIm;
+        [Control4D, Label4D] = xASL_quant_GetControlLabelOrder(ASL4D);
+        PWI4D = Control4D - Label4D;
         
         % Skip every other value in the vectors as they were stored for both control and label images 
         x.Q.EchoTime_PWI4D = x.Q.EchoTime(1:2:end);
