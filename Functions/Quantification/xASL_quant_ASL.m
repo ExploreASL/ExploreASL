@@ -178,6 +178,14 @@ else
         % First read the PWI4D parameters
         PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
 
+        % #997 Not sure if this is the best location for this checking
+        if ~x.modules.asl.bMultiTE && length(x.Q.uniqueEchoTimes)>1
+            warning('Multiple TE detected without explicitly analyzing this as multi-TE sequence, this (e.g., dual-echo ASL) is not implemented yet');
+            fprintf('%s\n', 'We will use the volumes with the shortest echo time');
+            % #997 SNR-wise this is worse then simply averaging them all, but I guess this is good enough for now
+            % #997 We still need to test here how the DEBBIE HAD4 sequence would perform with bMultiTE disabled
+        end
+
 
         %% 3    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'LabelingDuration')
