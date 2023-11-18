@@ -221,7 +221,8 @@ end
 % Deal with too short vectors (e.g., repetitions in the case of single-PLD)
 nTE = length(x.Q.EchoTime);
 if mod(nVolumes, nTE)~=0
-    warning(['Number of echo times (n=' xASL_num2str(nTE) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+    error(['Number of echo times (n=' xASL_num2str(nTE) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+    % If we don't issue an error here, the repmat will crash
 end
 
 factorTE = nVolumes/nTE;
@@ -268,7 +269,8 @@ end
 % Deal with too short vectors (e.g., repetitions in the case of single-PLD)
 nPLD = length(x.Q.Initial_PLD);
 if mod(nVolumes, nPLD)~=0
-    warning(['Number of PLDs (n=' xASL_num2str(nPLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+    error(['Number of PLDs (n=' xASL_num2str(nPLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+    % If we don't issue an error here, the repmat will crash
 end
 
 factorPLD = nVolumes/nPLD;
@@ -313,7 +315,8 @@ end
 % Deal with too short vectors (e.g., repetitions in the case of single-PLD)
 nLD = length(x.Q.LabelingDuration);
 if mod(nVolumes, nLD)~=0
-    warning(['Number of labeling durations (n=' xASL_num2str(nLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+    error(['Number of labeling durations (n=' xASL_num2str(nLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+    % If we don't issue an error here, the repmat will crash
 end
 
 factorLD = nVolumes/nLD;
