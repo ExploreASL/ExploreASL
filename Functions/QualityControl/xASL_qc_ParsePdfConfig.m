@@ -186,10 +186,10 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintImage(input, x, current
             ImagePath = x.P.(imageStruct.name);
         elseif isfield(imageStruct, 'absolutePath')
             ImagePath = imageStruct.absolutePath;
-            ImagePath = xASL_qc_ParsePdfConfig_sub_WildcardReplace(ImagePath, x);
+            ImagePath = xASL_qc_ParsePdfConfig_sub_WildcardReplace(ImagePath, x, settingsPDF);
         elseif isfield(imageStruct, 'popPath')
             ImagePath = fullfile(x.dir.xASLDerivatives, 'Population', imageStruct.popPath);
-            ImagePath = xASL_qc_ParsePdfConfig_sub_WildcardReplace(ImagePath, x);
+            ImagePath = xASL_qc_ParsePdfConfig_sub_WildcardReplace(ImagePath, x, settingsPDF);
         elseif isfield(imageStruct, 'subjPath')
             ImagePath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, imageStruct.subjPath);
         else
@@ -408,14 +408,17 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, 
 
 end
 
-function [strout] = xASL_qc_ParsePdfConfig_sub_WildcardReplace(strin, x)
+function [strout] = xASL_qc_ParsePdfConfig_sub_WildcardReplace(strin, x, settingsPDF)
 % This function replaces wildcards in the path to the image.
 % Wildcards are defineds as <wildcard> in the json file, and are replaced with the corresponding field in the x structure.
 % E.g., <SUBJECT> is replaced with the the value in the x.SUBJECT field
-% TODO: Add BIDS translations?
 
     strout = strin;
     substring = regexp(strin, '<\w*>', 'match');
+    if  settingsPDF.BIDS_Translation
+        substring = xASL_qc_ParsePdfConfig_sub_BIDS_Translation(substring);
+    end
+
     for substringIndex=1:length(substring)
         if ~isfield(x, substring{substringIndex}(2:end-1))
             warning(['Could not replace ', substring{substringIndex}, ' check if file exists in ExploreASL/Derivatives/Population']);
@@ -505,6 +508,12 @@ end
 
 % ===================================================================================================================================================
 
+function [string] = xASL_qc_ParsePdfConfig_sub_BIDS_Translation(string)
+    % This function replaces BIDS terminolgy into ExploreASL Legacy terminology.
+    string = strrep(string, 'RUN', 'SESSION');
+    string = strrep(string, 'SESSION', 'VISIT');       
+end
+
 function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings()
 % This function sets the default settings for the PDF report.
 
@@ -516,6 +525,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings()
     settingsPDF.lineSpacing = 0.005;
     settingsPDF.figureCount = 0;
     settingsPDF.canvas = [0 0 1 1];
+    settingsPDF.BIDS_Translation = 0;
 
     if ispc
         settingsPDF.fontSize = 10;
