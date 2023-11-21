@@ -55,8 +55,8 @@ catch ME
 	error('%s',ME.getReport()); % Display the error message
 end
 
-% In case we have a multi-context import and there is equivalent information in all contexts, it will decode each context as a struct instead of a cell
-% This needs to be fixed "semi-manually"
+% In case we have a multi-context studyPar.json which ExploreASL uses for import, and there is equivalent information in all studyPar.json studies (aka "contexts"), 
+% Matlab's jsonread function will decode each context as a struct instead of a cell. Here, we bugfix this to create a cell instead.
 if isfield(json, 'StudyPars') && isstruct(json.StudyPars)
 	% We need to convert StudyPars field to a cell
 	jsonOld = json; % Save the original JSON
