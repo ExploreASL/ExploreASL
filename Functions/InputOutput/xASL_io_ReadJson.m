@@ -55,5 +55,15 @@ catch ME
 	error('%s',ME.getReport()); % Display the error message
 end
 
+% In case we have a multi-context import and there is equivalent information in all contexts, it will decode each context as a struct instead of a cell
+% This needs to be fixed "semi-manually"
+if isfield(json, 'StudyPars') && isstruct(json.StudyPars)
+	% We need to convert StudyPars field to a cell
+	jsonOld = json; % Save the original JSON
+	json = rmfield(json, 'StudyPars'); % Keep all fields but StudyPars in the new version
+	for iField = 1:numel(jsonOld.StudyPars)
+		json.StudyPars{iField,1} = jsonOld.StudyPars(iField);
+	end
+end
 
 end
