@@ -249,6 +249,8 @@ else
 end
 
 %% D6. Automatic session merging
+% Initialization
+nLists = 0;
 
 % SessionMergingList == total list of sessions that need concatenating (can be multiple lists for multiple concatenations)
 % Read the list of sessions to merge, defaulting to empty
