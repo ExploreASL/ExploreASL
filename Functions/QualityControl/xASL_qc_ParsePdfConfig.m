@@ -96,7 +96,7 @@ function [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentFi
             xASL_qc_ParsePdfConfig_sub_printPage(currentField, x, settingsPDF);  
         case 'block'
             xASL_qc_ParsePdfConfig_sub_printBlock(currentField, x, currentFigure, settingsPDF);
-        case 'settings'
+        case 'textSettings'
             settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(currentField, settingsPDF);  
         case 'patients' 
             line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, settingsPDF);
@@ -304,8 +304,8 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintText(input, currentFigure, line,
             textStruct = input;
             String = textStruct.text;
             % It then checks if the textStruct contains a field "settings" which is used to change variables like the font.
-            if isfield(textStruct, 'settings')
-                settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(textStruct.settings, settingsPDF);
+            if isfield(textStruct, 'textSettings')
+                settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(textStruct.textSettings, settingsPDF);
             end
             % If the input cannot be parsed, it will throw an error.
         otherwise
@@ -444,8 +444,8 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
 
     % Use field specific settings if they exists, otherwise default to monospace for QC values. 
     settingsPDF.fontName = 'monospace';
-    if isfield(qcStruct, 'settings')
-        settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(qcStruct.settings, settingsPDF);
+    if isfield(qcStruct, 'textSettings')
+        settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(qcStruct.textSettings, settingsPDF);
     end
 
     TempValue = x.Output.(qcStruct.module).(qcStruct.parameter);

@@ -1,6 +1,6 @@
 {
     "globalSettings": {
-        "type": "settings",
+        "type": "textSettings",
         "fontSize": "8",
         "fontName": "default",
         "fontWeight": "normal",
@@ -99,7 +99,7 @@
                     "type": "patients"
                 },{
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "10",
                         "fontWeight": "bold"
                     },
@@ -130,7 +130,7 @@
                     "Unit": "mL"
                 },{
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "10",
                         "fontWeight": "bold"
                     },
@@ -157,7 +157,7 @@
                     "module": "Structural"
                 },{
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "10",
                         "fontWeight": "Bold"
                     },
@@ -196,7 +196,7 @@
                     "parameter":"VoxelSize_mm",
                     "module": "ASL",
                     "Unit": "mm",
-                    "settings": {
+                    "textSettings": {
                         "fontWeight": "bold"
                     }
                 },{
@@ -229,7 +229,7 @@
             "content": [
                 {
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "8"
                     },
                     "text": "You can define any amount of pages in your config file, this is a second page."
@@ -238,49 +238,49 @@
                     "text": "You can also define premade 'blocks' of content."
                 },{
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "10"
                     },
                     "text": "This is a line in font size 10"
                 },{
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "12"
                     },
                     "text": "This is a line in font size 12"
                 },{
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "14"
                     },
                     "text": "This is a line in font size 14"
                 },{
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "16"
                     },
                     "text": "This is a line in font size 16"
                 },{
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "18"
                     },
                     "text": "This is a line in font size 18"
                 },{
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "20"
                     },
                     "text": "This is a line in font size 20"
                 },{
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "22"
                     },
                     "text": "This is a line in font size 22"
                 },{
                     "type": "text",
-                    "settings": {
+                    "textSettings": {
                         "fontSize": "24"
                     },
                     "text": "This is a line in font size 24"
@@ -288,8 +288,8 @@
                     "type": "block",
                     "position": "[0.2 0.11]",
                     "size": "[0.8 0.33]",
-                    "settings": {
-                        "type": "settings",
+                    "textSettings": {
+                        "type": "textSettings",
                         "fontName": "default",
                         "fontWeight": "normal",
                         "color": "k",
@@ -316,7 +316,7 @@
                             "header" : "M0 Image Longer text just to see"
                         },{
                             "type": "text",
-                            "settings": {
+                            "textSettings": {
                                 "fontSize": "16"
                             },
                             "text": "This is a font 16 line test in a block"
@@ -324,8 +324,8 @@
                             "type": "block",
                             "position": "[0.0 0.0]",
                             "size": "[0.5 0.5]",
-                            "settings": {
-                                "type": "settings",
+                            "textSettings": {
+                                "type": "textSettings",
                                 "fontName": "default",
                                 "fontWeight": "normal",
                                 "color": "k",
