@@ -77,30 +77,36 @@ function [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentFi
         return;
     end
 
-    if ~isfield(currentField, 'type')
-        error([currentField, 'contains no field specifying the type of content, add field "type": "text" or "type": "image" to this json field for example']);
+    if ~isfield(currentField, 'type') || ~isfield(currentField, 'category')
+        error([currentField, 'contains no field specifying the category and type of content, add field "category": "content" or "type": "image2D" to this json field for example']);
     end
 
     % Depending on the type of content, it will call the appropriate function to print the content.
     % With exception of the type "settings", which is used to change variables like the font instead.
-    switch currentField.type
-        case 'text' 
-            line = xASL_qc_ParsePdfConfig_sub_PrintText(currentField, currentFigure, line, settingsPDF);
-        case 'qc'
-            line = xASL_qc_ParsePdfConfig_sub_PrintQC(currentField, x, currentFigure, line, settingsPDF);
-        case 'image'
-            settingsPDF = xASL_qc_ParsePdfConfig_sub_PrintImage(currentField, x, currentFigure, settingsPDF);  
-        case 'scan'
-            settingsPDF = xASL_qc_ParsePdfConfig_sub_PrintScan(currentField, x, currentFigure, settingsPDF);
-        case 'page'
-            xASL_qc_ParsePdfConfig_sub_printPage(currentField, x, settingsPDF);  
-        case 'block'
-            xASL_qc_ParsePdfConfig_sub_printBlock(currentField, x, currentFigure, settingsPDF);
-        case 'textSettings'
-            settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(currentField, settingsPDF);  
-        case 'patients' 
-            line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, settingsPDF);
-    end  
+    switch currentField.category
+        case 'content' 
+            switch currentField.type
+            case 'text' 
+                line = xASL_qc_ParsePdfConfig_sub_PrintText(currentField, currentFigure, line, settingsPDF);
+            case 'qc'
+                line = xASL_qc_ParsePdfConfig_sub_PrintQC(currentField, x, currentFigure, line, settingsPDF);
+            case 'image2D'
+                settingsPDF = xASL_qc_ParsePdfConfig_sub_PrintImage(currentField, x, currentFigure, settingsPDF);  
+            case 'image3D'
+                settingsPDF = xASL_qc_ParsePdfConfig_sub_PrintScan(currentField, x, currentFigure, settingsPDF);
+            case 'patients' 
+                line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, settingsPDF);
+        end  
+        case 'metadata'
+            switch currentField.type
+            case 'page'
+                xASL_qc_ParsePdfConfig_sub_printPage(currentField, x, settingsPDF);  
+            case 'block'
+                xASL_qc_ParsePdfConfig_sub_printBlock(currentField, x, currentFigure, settingsPDF);
+            case 'textSettings'
+                settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(currentField, settingsPDF);  
+        end  
+    end
 end
 
 % ====================================================================================================================================================
