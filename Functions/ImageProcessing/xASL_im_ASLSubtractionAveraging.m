@@ -259,10 +259,19 @@ if bCreatePWI4D || bCreateControl4D
 
             bCreatePWI3D = true; % because we can do this now
             bCreateControl3D = true; % because we can do this now
+        elseif ~x.modules.asl.bContainsDeltaM
+            warning('Single volume detected that was not subtracted, cannot create PWI images');
+            PWI4D = [];
+            Control4D = ASl4D;
+            bCreateControl3D = true; % because we can do this now
+            % but we cannot create PWI4D, PWI3D, PWI
 
         else % the same but then without subtraction
+            % either if we have only a single volume
+            % or if we have multiple volumes that are already subtracted (bContainsDeltaM)
+            % in both cases we can create PWI4D, PWI3D, PWI, but not Control4D, etc
             PWI4D = ASL4D;
-            Control4D = NaN;
+            Control4D = [];
 
             bCreatePWI3D = true; % because we can do this now
         end
