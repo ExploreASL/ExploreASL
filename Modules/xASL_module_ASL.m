@@ -250,21 +250,23 @@ x.modules.asl.sessionsToMerge = {};
 % Note that these can be multiple lists
 for iList=1:nLists
 	if ~isempty(x.modules.asl.SessionMergingList{iList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iList}))
-		x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList};
+		%% #1096: HERE WE POTENTIALLY ADD MULTIPLE LISTS, SO ONLY THE LAST LIST WILL 
+        %% BE USED, IN THE CASE THAT A SINGLE SESSION IS THE LAST IN MULTIPLE MERGING LISTS
+        %% WE NEED A CHECK, DEFAULTING, AND WARNING FOR THIS
+        x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList};
 
         if strcmp(x.SESSION, x.modules.asl.sessionsToMerge{end})
             % If the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
             x.modules.asl.bMergingSessions = 1;
-            list2concatenate = iList;
         end
 	end
 end
 
 if x.modules.asl.bMergingSessions
     fprintf('%s', ' and will now concatenate the following sessions:')
-    nSessions = numel(x.modules.asl.SessionMergingList{list2concatenate});
+    nSessions = numel(x.modules.asl.sessionsToMerge);
     for iSession=1:nSessions
-        fprintf([' ' x.modules.asl.SessionMergingList{list2concatenate}{iSession}]);
+        fprintf([' ' x.modules.asl.sessionsToMerge{iSession}]);
     end
     fprintf('\n');
 else
