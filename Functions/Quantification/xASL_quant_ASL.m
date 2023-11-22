@@ -162,8 +162,10 @@ else
     %% 2. Run BASIL quantification
     if bUseBasilQuantification
         % Here we perform FSL quantification
-		
-		[PWI, ATT, ABV, Tex] = xASL_quant_FSL(PWI4D, x);
+
+        % #1543 We may want to move the NaN extrapolation here
+
+		[PWI, ATT, ABV, Tex] = xASL_quant_FSL(x.P.Path_PWI4D, x); % #1543 Quick and dirty fix for the NaN extrapolation at the start of xASL_quant_FSL
 		
 		% If resultFSL is not 0, something went wrong
         % This will issue a warning inside xASL_quant_FSL
