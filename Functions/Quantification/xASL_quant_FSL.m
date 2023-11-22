@@ -1,7 +1,7 @@
 function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(path_PWI4D, x)
 %xASL_quant_FSL Perform quantification using FSL BASIL/FABBER
 %
-% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PWI4D, x)
+% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(path_PWI4D, x)
 % 
 % INPUT:
 %   path_PWI4D      - path to PWI4D (OPTIONAL, defaults to x.P.Path_PWI4D)
@@ -41,6 +41,11 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 
     %% 0. Admin
     fprintf('%s\n','Quantification CBF using FSL BASIL/FABBER:');   
+
+    % #1543: I know you won't like this, this is a temporary solution, we need to shift the order of the input parameters in #1543
+    if nargin<1 || isempty(path_PWI4D)
+        path_PWI4D = x.P.Path_PWI4D;
+    end
 
     % Define defaults
 	Tex_map = [];
@@ -97,13 +102,16 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     
     % First, we extrapolate values to fill NaNs with a small kernel only, inside the brainmask
     % We don't have a brainmask here yet, so now we just run this small kernel once
-    kernelSize = round([8 8 8]./PWI4D_nii.hdr.pixdim(2:4));
-    PWI4D = xASL_im_ndnanfilter(PWI4D, 'gauss', double(kernelSize), 2);
+    voxelSize = PWI4D_nii.hdr.pixdim(2:4);
+    kernelSize = round([8 8 8]./voxelSize);
+    for i4D = 1:size(PWI4D,4)
+        PWI4D(:,:,:,i4D) = xASL_im_ndnanfilter(PWI4D(:,:,:,i4D), 'gauss', double(kernelSize), 2);
+    end
     xASL_io_SaveNifti(path_PWI4D, pathFSLInput, PWI4D);
 
     % Then, we extrapolate all outside the brain mask to ensure that there are no NaNs left
 
-    PWI4D = xASL_im_FillNaNs(pathFSLInput, 1, 1, VoxelSize);
+    PWI4D = xASL_im_FillNaNs(pathFSLInput, 1, 1, voxelSize);
 
 
     % In the future, we may want to have less ugly masking with BASIL/FABBER
