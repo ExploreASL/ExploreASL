@@ -7,7 +7,8 @@
         "fontWeight": "normal",
         "color": "k",
         "axesVisible": "off",
-        "HorizontalAlignment": "left"
+        "HorizontalAlignment": "left",
+        "imageHeaders": "0"
     },
     "pages": [
         {
@@ -488,6 +489,205 @@
                     "type": "QCValues",
                     "parameter": "Version_FSL",
                     "module": "ASL"
+                },
+                {
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_rT1",
+                    "position": "[0.40 0.65]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    },
+                    "overlay": {
+                        "Pop_Path_qCBF": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                }
+                ,
+                {
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_rT1",
+                    "position": "[0.55 0.65]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    },
+                    "overlay": {
+                        "Pop_Path_PV_pWM": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                },{
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_rT1",
+                    "position": "[0.70 0.65]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    },
+                    "overlay": {
+                        "Pop_Path_PV_pGM": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                },{
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_rT1",
+                    "position": "[0.85 0.65]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    },
+                    "overlay": {
+                        "Pop_Path_rWMH_SEGM": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                },
+                {
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_rFLAIR",
+                    "position": "[0.40 0.40]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    },
+                    "overlay": {
+                        "Pop_Path_qCBF": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                }
+                ,
+                {
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_rFLAIR",
+                    "position": "[0.55 0.40]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    },
+                    "overlay": {
+                        "Pop_Path_PV_pWM": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                },{
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_rFLAIR",
+                    "position": "[0.70 0.40]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    },
+                    "overlay": {
+                        "Pop_Path_PV_pGM": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                },{
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_rFLAIR",
+                    "position": "[0.85 0.40]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    },
+                    "overlay": {
+                        "Pop_Path_rWMH_SEGM": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                },
+                {
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_qCBF",
+                    "position": "[0.40 0.15]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    }
+                }
+                ,
+                {
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_qCBF",
+                    "position": "[0.55 0.15]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    }
+                },{
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_SNR",
+                    "position": "[0.70 0.15]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    },
+                    "overlay": {
+                        "Pop_Path_PV_pWM": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
+                },{
+                    "category": "content",
+                    "type": "image3D",
+                    "name": "Pop_Path_SNR",
+                    "position": "[0.85 0.15]",
+                    "size": "[0.15 0.30]",
+                    "slice": {
+                        "TraSlice": "[50]",
+                        "CorSlice": "[50]"
+                    },
+                    "overlay": {
+                        "Pop_Path_PV_pWM": {
+                            "contour": "true",
+                            "opacity": "0.3",
+                            "color": "r"
+                        }
+                    }
                 }
             ]
         }

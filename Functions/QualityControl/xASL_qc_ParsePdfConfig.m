@@ -264,7 +264,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintScan(scanStruct, x, cur
         x.S.SagSlices = [25, 50, 90];
         x.S.CorSlices = [25, 50, 90];
     end
-
+    x.S.ConcatSliceDims = 0;
     % Create the image from the scans defined in the json file.
     imageToPrint = xASL_vis_CreateVisualFig(x, ImIn, [], [], [], [], [], [], [], [], [], 0); % no verbosity   
 
@@ -351,7 +351,7 @@ function [figureCount] = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentF
 % This function prints a header underneith the image to be printed.
 
     % If no header is specified, it will exit and not iterate the figure count.
-    if isempty(header)
+    if isempty(header) || ~settingsPDF.imageHeaders
         figureCount = settingsPDF.figureCount;
         return
     else
@@ -474,7 +474,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_loadSettings(json, settingsP
     fields = fieldnames(json);
     
     for iField = 1:length(fields)
-        if strcmp(fields{iField}, 'fontSize') || strcmp(fields{iField}, 'lineSpacing')
+        if strcmp(fields{iField}, 'fontSize') || strcmp(fields{iField}, 'lineSpacing') || strcmp(fields{iField}, 'imageHeaders')
             settingsPDF.(fields{iField}) = xASL_str2num(json.(fields{iField}));
         else
             settingsPDF.(fields{iField}) = json.(fields{iField});
@@ -567,6 +567,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings(x)
     settingsPDF.canvas = [0 0 1 1];
     settingsPDF.BIDS_Translation = 0;
     settingsPDF.QC_Value_alias = 1; %0 = no translation, 1=translation
+    settingsPDF.imageHeaders = 1;
 
     settingsPDF.QC_Translation = xASL_tsvRead(fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'qc_translation.tsv'));
 
