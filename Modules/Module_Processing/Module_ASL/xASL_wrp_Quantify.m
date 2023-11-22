@@ -135,12 +135,6 @@ end
 if ~xASL_exist(PWI4D_Path, 'file')
     warning('Skipped xASL_wrp_Quantify: files missing, please rerun step 4: xASL_wrp_ResampleASL');
 
-    %% CHANGE THIS??? BECAUSE THIS NEEDS TO BE DEPENDENT ON DELETETEMP OR PWI4D/CBF4D PARAMETERS
-    if x.Q.bUseBasilQuantification
-		fprintf('%s\n', 'Note the PWI4D.nii used in BASIL is deleted after quantification');
-    end
-
-    %% 
     fprintf('%s\n', ['Missing: ' PWI4D_Path]);
     return;
 end

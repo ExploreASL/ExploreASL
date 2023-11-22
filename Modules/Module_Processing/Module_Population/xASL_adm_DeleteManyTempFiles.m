@@ -15,7 +15,7 @@ function xASL_adm_DeleteManyTempFiles(x)
 % __________________________________
 % Copyright 2015-2023 ExploreASL
 
-Files2Del = {'ATT_BiasField.nii' 'Mask_Template.nii' 'Mean_CBF_Template.nii' 'PseudoCBF.nii' 'RawTemplate.nii' 'VascularArtifact_Template.nii' 'mean_PWI_Clipped.nii' 'SliceGradient_extrapolated.nii' 'FoV.nii'};
+Files2Del = {'ATT_BiasField.nii' 'Mask_Template.nii' 'Mean_CBF_Template.nii' 'PseudoCBF.nii' 'RawTemplate.nii' 'VascularArtifact_Template.nii' 'mean_PWI_Clipped.nii' 'SliceGradient_extrapolated.nii' 'FoV.nii' 'PWI4D'};
 
 if isfield(x,'D') && isfield(x.dir,'xASLDerivatives')
     fprintf('Deleting temporary files in native space subject folders:    ');
