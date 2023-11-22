@@ -509,7 +509,7 @@ function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, s
     end
 
     % Check if the QC has an alias, if so replaced the parameter with the alias in the printed text.
-    if ~isfield(qcStruct, 'alias') 
+    if ~isfield(qcStruct, 'alias') || isempty(qcStruct.alias)
         qcStruct.alias = qcStruct.parameter;
     end
 
@@ -546,7 +546,7 @@ end
 function [struct] = xASL_qc_ParsePdfConfig_sub_QC_Translation(struct, settingsPDF)
     % This function replaces QC values with long names with easier to read names with units.
     name = struct.parameter;
-    index = find(contains(settingsPDF.QC_Translation(:,1), name));
+    index = find(strcmp(settingsPDF.QC_Translation(:,1), name));
     if ~isempty(index)
         struct.alias = char(settingsPDF.QC_Translation(index, 2));
         struct.unit  = char(settingsPDF.QC_Translation(index, 3));
