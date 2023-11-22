@@ -21,7 +21,7 @@ function xASL_adm_DeleteManyTempFiles(x)
 
 Files2DelNativeStructural = {}; % (currently no files here)
 % If we add files here, we need to decomment the code below under section 1
-Files2DelNativeASL = {'ATT_BiasField.nii' 'Mask_Template.nii' 'Mean_CBF_Template.nii' 'PseudoCBF.nii' 'RawTemplate.nii' 'VascularArtifact_Template.nii' 'mean_PWI_Clipped.nii' 'SliceGradient_extrapolated.nii' 'FoV.nii'};
+Files2DelNativeASL = {'ATT_BiasField.nii' 'Mask_Template.nii' 'Mean_CBF_Template.nii' 'PseudoCBF.nii' 'RawTemplate.nii' 'VascularArtifact_Template.nii' 'mean_PWI_Clipped.nii' 'SliceGradient_extrapolated.nii' 'FoV.nii' 'PWI4D'};
 Files2DelStandardStructural = {'rT1_ORI_' 'rT1_' 'rFLAIR_' '(m|)rc\dT1_'};
 Files2DelStandardASL = {'noSmooth_M0_' 'mean_control_' 'PWI_' 'SliceGradient_' 'SNR'};
 
