@@ -279,7 +279,6 @@ for iList=1:nLists
 
         if strcmp(x.SESSION, x.modules.asl.sessionsToMerge{end})
             % If the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
-            x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList};
             x.modules.asl.bMergingSessions = 1;
             list2concatenate = iList;
         end
