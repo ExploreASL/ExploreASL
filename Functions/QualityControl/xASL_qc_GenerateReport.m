@@ -1,4 +1,4 @@
-function [x] = xASL_qc_GenerateReport(x, subject)
+function [x, settings] = xASL_qc_GenerateReport(x, subject)
 % xASL_qc_GenerateReport Generates a PDF report based on a predifined Json configuration file
 %
 % FORMAT: xASL_qc_GenerateReport(x)
@@ -106,7 +106,7 @@ config = xASL_adm_LoadPdfConfig(x);
 fprintf('Printing ExploreASL PDF report:   \n');
 
 % Parse the entire Json Stack automatically making all the pages.
-xASL_qc_ParsePdfConfig(config, x);
+settings = xASL_qc_ParsePdfConfig(config, x);
 
 % Householding
 if ~isempty(subjectOld)

@@ -150,7 +150,7 @@
                     "parameter": "T1w_GM_vol_mL",
                     "module": "Structural",
                     "range": "1000-1200",
-                    "Unit": "mL"
+                    "unit": "mL"
                 },
                 {
                     "category": "content",
@@ -158,7 +158,7 @@
                     "parameter": "T1w_WM_vol_mL",
                     "module": "Structural",
                     "range": "300-600",
-                    "Unit": "mL"
+                    "unit": "mL"
                 },
                 {
                     "category": "content",
@@ -166,7 +166,7 @@
                     "parameter": "T1w_CSF_vol_mL",
                     "module": "Structural",
                     "range": "150-300",
-                    "Unit": "mL"
+                    "unit": "mL"
                 },
                 {
                     "category": "content",
@@ -223,7 +223,7 @@
                     "module": "ASL",
                     "range": "50-120",
                     "alias": "Median CBF",
-                    "Unit": "mL/100g/min"
+                    "unit": "mL/100g/min"
                 },
                 {
                     "category": "content",
@@ -237,7 +237,7 @@
                     "parameter": "MotionMean_mm",
                     "module": "ASL",
                     "alias": "Mean Motion",
-                    "Unit": "mm"
+                    "unit": "mm"
                 },
                 {
                     "category": "content",
@@ -245,7 +245,7 @@
                     "parameter": "MotionSD_mm",
                     "module": "ASL",
                     "alias": "SD Motion",
-                    "Unit": "mm"
+                    "unit": "mm"
                 },
                 {
                     "category": "content",
@@ -253,14 +253,14 @@
                     "parameter": "MotionSD_mm",
                     "module": "ASL",
                     "alias": "Max Motion",
-                    "Unit": "mm"
+                    "unit": "mm"
                 },
                 {
                     "category": "content",
                     "type": "QCValues",
                     "parameter": "VoxelSize_mm",
                     "module": "ASL",
-                    "Unit": "mm",
+                    "unit": "mm",
                     "textSettings": {
                         "fontWeight": "bold"
                     }
@@ -270,7 +270,7 @@
                     "type": "QCValues",
                     "parameter": "LabelingDuration_ms",
                     "module": "ASL",
-                    "Unit": "ms"
+                    "unit": "ms"
                 },
                 {
                     "category": "content",

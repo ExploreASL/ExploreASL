@@ -39,7 +39,7 @@ if nargin < 4 || isempty(line)
 end
 
 if nargin < 5 || isempty(settingsPDF)
-    settingsPDF = xASL_qc_ParsePdfConfig_sub_defaultSettings();
+    settingsPDF = xASL_qc_ParsePdfConfig_sub_defaultSettings(x);
 end
 
 fields = fieldnames(layoutStructure);
@@ -88,7 +88,7 @@ function [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentFi
             switch currentField.type
             case 'text' 
                 line = xASL_qc_ParsePdfConfig_sub_PrintText(currentField, currentFigure, line, settingsPDF);
-            case 'qc'
+            case 'QCValues'
                 line = xASL_qc_ParsePdfConfig_sub_PrintQC(currentField, x, currentFigure, line, settingsPDF);
             case 'image2D'
                 settingsPDF = xASL_qc_ParsePdfConfig_sub_PrintImage(currentField, x, currentFigure, settingsPDF);  
@@ -444,7 +444,7 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
 % If the QC value is outside the range, it will be printed in red.
 
     % Stop if module and field don't exists in output
-    if ~isfield(x.Output, (qcStruct.module)) && ~isfield(x.Output.(qcStruct.module), qcStruct.parameter)
+    if ~isfield(x.Output, (qcStruct.module)) || ~isfield(x.Output.(qcStruct.module), qcStruct.parameter)
         return     
     end
 
@@ -454,41 +454,11 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
         settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(qcStruct.textSettings, settingsPDF);
     end
 
-    TempValue = x.Output.(qcStruct.module).(qcStruct.parameter);
-    
-    % Check if the QC has an alias, if so replaced the parameter with the alias in the printed text.
-    if ~isfield(qcStruct, 'alias') 
-        qcStruct.alias = qcStruct.parameter;
-    end
+    % Generate the string to be written in the pdf Report
+    string = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, settingsPDF);
 
-    % Check if the QC has a unit, if not set it to an empty string.
-    if ~isfield(qcStruct, 'unit') 
-        qcStruct.unit = '';
-    end
-
-    % Check if the QC has a range, if so check if the value is within the range, else print in red.
-    if isfield(qcStruct, 'range') 
-        [range] = strsplit(qcStruct.range, '-');
-        if (TempValue < xASL_str2num(range{1})) || (TempValue > xASL_str2num(range{2}))
-            settingsPDF.color = 'r';
-        end
-        qcStruct.range = ['(' qcStruct.range ')'];
-    else
-        qcStruct.range = '';
-    end
-
-    % Convert the value to a string, and print it to the PDF report.
-    if isnumeric(TempValue)
-        TempValue = xASL_num2str(TempValue);
-    end
-
-    % Combine name, value, unit and range into a single string for printing.
-    if size(TempValue, 1) == 1
-        TextString = sprintf([sprintf('%-20s', [qcStruct.alias, ':']), sprintf('%8s', TempValue), sprintf('%-12s', [qcStruct.unit, ' ' , qcStruct.range]), ' \n']);
-    end
-    
     % Print the string to the PDF report.
-    line = xASL_qc_ParsePdfConfig_sub_PrintText(TextString, currentFigure, line, settingsPDF);
+    line = xASL_qc_ParsePdfConfig_sub_PrintText(string, currentFigure, line, settingsPDF);
 
 end
 
@@ -520,7 +490,71 @@ function [string] = xASL_qc_ParsePdfConfig_sub_BIDS_Translation(string)
     string = strrep(string, 'SESSION', 'VISIT');       
 end
 
-function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings()
+function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, settingsPDF)
+    
+    if ~isfield(x.Output, (qcStruct.module)) 
+        fprintf (['QC Value ' x.Output.(qcStruct.module) ' not found, skipping. \n']);
+        return
+    end 
+
+    if ~isfield(x.Output.(qcStruct.module),( qcStruct.parameter)) 
+        fprintf (['QC Value ' x.Output.(qcStruct.module).(qcStruct.parameter) ' not found, skipping. \n']);
+        return
+    end
+
+    TempValue = x.Output.(qcStruct.module).(qcStruct.parameter);
+    
+    if settingsPDF.QC_Value_alias
+        qcStruct = xASL_qc_ParsePdfConfig_sub_QC_Translation(qcStruct, settingsPDF);
+    end
+
+    % Check if the QC has an alias, if so replaced the parameter with the alias in the printed text.
+    if ~isfield(qcStruct, 'alias') 
+        qcStruct.alias = qcStruct.parameter;
+    end
+
+    % Check if the QC has a unit, if not set it to an empty string.
+    if ~isfield(qcStruct, 'unit') 
+        qcStruct.unit = '';
+    end
+
+    % Check if the QC has a range, if so check if the value is within the range, else print in red.
+    if isfield(qcStruct, 'range') 
+        if ~isempty(qcStruct.range)
+            [range] = strsplit(qcStruct.range, '-');
+            if (TempValue < xASL_str2num(range{1})) || (TempValue > xASL_str2num(range{2}))
+                settingsPDF.color = 'r';
+            end
+            qcStruct.range = ['(' qcStruct.range ')'];
+        end
+    else
+        qcStruct.range = '';
+    end
+
+    % Convert the value to a string, and print it to the PDF report.
+    if isnumeric(TempValue)
+        TempValue = xASL_num2str(TempValue);
+    end
+
+    % Combine name, value, unit and range into a single string for printing.
+    if size(TempValue, 1) == 1
+        string = sprintf([sprintf('%-20s', [qcStruct.alias, ':']), sprintf('%8s', TempValue), sprintf('%-12s', [qcStruct.unit, ' ' , qcStruct.range]), ' \n']);
+    end
+
+end
+
+function [struct] = xASL_qc_ParsePdfConfig_sub_QC_Translation(struct, settingsPDF)
+    % This function replaces QC values with long names with easier to read names with units.
+    name = struct.parameter;
+    index = find(contains(settingsPDF.QC_Translation(:,1), name));
+    if ~isempty(index)
+        struct.alias = char(settingsPDF.QC_Translation(index, 2));
+        struct.unit  = char(settingsPDF.QC_Translation(index, 3));
+        struct.range = char(settingsPDF.QC_Translation(index, 4));
+    end
+end
+
+function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings(x)
 % This function sets the default settings for the PDF report.
 
     settingsPDF.color = 'k';
@@ -532,6 +566,10 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings()
     settingsPDF.figureCount = 0;
     settingsPDF.canvas = [0 0 1 1];
     settingsPDF.BIDS_Translation = 0;
+    settingsPDF.QC_Value_alias = 1; %0 = no translation, 1=translation
+
+    settingsPDF.QC_Translation = xASL_tsvRead(fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'qc_translation.tsv'));
+
 
     if ispc
         settingsPDF.fontSize = 10;

@@ -1,0 +1,49 @@
+parameter	Alias	Unit	Range
+CSF_vol_mL	CSF Volume	mL	
+GM_ICV_Ratio	Ratio of GM volume to ICV volume		
+GM_vol_mL	GM Volume	mL	
+WM_vol_mL	WM Volume	mL	
+ICV_vol_mL	ICV Volume	mL	
+LR_flip_YesNo	Left-right Orientation flipped during registation		
+WMH_n	Amount of non-connected segmented WMH	#	
+CNR_GM_WM_Ratio	(Mean GM – Mean WM) / (SD Wmref)^2		
+EFC_bits	Shannon entropy of voxel intesities proportional to maximum posible entropy for similar sized image	bits	
+FBER_Wmref_Ratio	(SD WholeBrain)^2 / (SD WMref)^2		
+Mean_AI_Perc	Mean of voxel-wise asymmetry index	%	
+SD_AI_Perc	SD of voxel-wise asymmertry index	%	
+SD_Wmref	SD in the WM reference region	ml/100g/min	
+SNR_GM_Ratio	Mean GM / SD_Wmref		
+WMref_vol_mL	Volume of the noise reference region in WM	mL	
+WMref_vol_per	Percentage of noise reference region of WM	%	
+CBF_GM_Median_mL100gmin	Median CBF within the pGM>0.5 ROI	ml/100g/min	
+CBF_GM_WM_Ratio	Median CBF of pGM>0.5 / Median CBF of pWM>0.5 		
+CBF_WM_Median_mL100gmin	Median CBF within the pWM>0.5 ROI	ml/100g/min	
+Matrix_X	Number of elements in X dimension	#	
+Matrix_Y	Number of elements in Y dimension	#	
+Matrix_Z	Number of elements in Z dimension	#	
+Matrix_N	Number of elements in N dimension	#	
+MotionExcl_Perc	Percentage of control-label pairs excluded	%	
+MotionMean_mm	Mean Motion	mm	
+RescaledSlope	Scale factor used by Philips		
+RigidBody2Anat_mm	Registration offset between ASL and 3D-T1W 	mm	
+ScaleSlope	Scale factor used by Philips		
+SpatialCoV_GM_Perc	Spatial CoV within the pGM>0.5 ROI	%	
+SpatialCoV_WM_Perc	Spatial CoV within the pWM>0.5 ROI	%	
+TE_ms	Echo Time	ms	
+TR_ms	Repetition Time	ms	
+VoxelSize_X_mm	Voxel size in x dimension	mm	
+VoxelSize_Y_mm	Voxel size in y dimension	mm	
+VoxelSize_Z_mm	Voxel size in z dimension	mm	
+tSNR_CSF_Ratio	Mean / Temporal SD within total CSF		
+tSNR_GM_Ratio	Mean / Temporal SD within total GM		
+tSNR_GMWM_Ratio	Mean / Temporal SD within the parenchyma		
+tSNR_GMWM_WMref_Ratio	Mean within the penrchyma / tSD within WMref		
+tSNR_Physio2Thermal_ratio	tSNR_GMWM/tSNR_GMWM_WMref		
+tSNR_Slope_Corr	Slope or temporal SNR as function of GM partial volume		
+tSNR_WM_Ratio	Mean / Temporal SD within total  WM		
+tSNR_WMref_ratio	Mean / Temporal SD within total WMref		
+AI_Perc	Mean voxelwise assymetry index (L-R)/(0.5*(L+R))	%	
+Mean_SSIM_Perc	Mean Voxel-wise Structural Simililarity Index	%	
+nRMSE_Perc	nRMSE(normalized Root Mean Square Error?) within ASL template	%	
+PeakSNR_Ratio	Assuming an indiviual ASL image can be interpreted as a noise version of an ASL template, this parameter is the dynamic range compared to the mean squared difference of the infividual and teamplate ASL images. Dynamic range is calculate here as MaxIntesity-MinIntensity (higher = better)		
+RMSE_Perc	RMSE(Root Mean Square Error) with ASL Template	%	
