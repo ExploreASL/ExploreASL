@@ -1,4 +1,4 @@
-function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubtractionAveraging(x, path_ASL4D, PWI4D, PWI3D)
+function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubtractionAveraging(x, path_ASL4D, PWI4D, PWI3D, Control4D, Control3D)
 %xASL_im_ASLSubtractionAveraging Central function for ASL subtraction and averaging, for both PWI & controls
 %
 % FORMAT: [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D [, PWI4D, PWI3D])
@@ -79,36 +79,82 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 %% 1. Admin & checks
 % Input image volumes should be correct
 % Creation of the PWI3D or PWI4D image volumes can be skipped if they are provided as input
-bCreatePWI3D = true;
+
+% By default, we create 4D stuff, unless they are provided as input
 bCreatePWI4D = true;
+bCreateControl4D = true;
 
+% The 3D stuff is not created by default, because we need PWI4D OR Control4D for this
+bCreatePWI3D = false;
+bCreateControl3D = false;
 
-% By default, we calculate PWI3D, the calculation of PWI3D is only skipped if a relevant non-empty image is provided
-if nargin>=4 && ~isempty(PWI3D) % If PWI3D parameter is not provided or is missing, then we skip to its calculation
-    if ~isnumeric(PWI3D) % If PWI3D is provided, it has to be numeric
-        error('Illegal PWI3D, it should be numerical');
-    elseif ndims(PWI3D)>4 || ndims(PWI3D)<3 % And have the correct dimensions
-        error('PWI3D has an incorrect number of dimensions');
-	else
-        bCreatePWI3D = false; % All is correct and we can use the provided PWI3D
-    end
-end
+% The PWI/Control are not created by default, because we need PWI3D OR Control3D for this
+bCreatePWI = false;
+bCreateControl = false;
 
-% Similar checks are done for PWI4D
+% We skip the computation of PWI4D if it is provided
 if nargin>=3 && ~isempty(PWI4D)
     if ~isnumeric(PWI4D)
         error('Illegal PWI4D, it should be numerical');
     elseif ndims(PWI4D)>4 || ndims(PWI4D)<3 % In theory, PWI4D can be a 3D matrix when it contains a single deltaM
         error('PWI4D has an incorrect number of dimensions');
 	else
-        bCreatePWI4D = false; % All is correct and we can use the provided PWI4D
+        bCreatePWI4D = false; % All is correct and we don't have to compute PWI4D
+        bCreatePWI3D = true; % if PWI4D is provided, we compute PWI3D
     end
+else
+    PWI4D = []; % dummy output
 end
+
+% We skip the computation of Control4D if it is provided
+if nargin>=5 && ~isempty(Control4D) % same as above
+    if ~isnumeric(Control4D)
+        error('Illegal Control4D, it should be numerical');
+    elseif ndims(Control4D)>4 || ndims(Control4D)<3
+        error('Control4D has an incorrect number of dimensions');
+	else
+        bCreateControl4D = false; % All is correct and we don't have to compute Control4D
+        bCreateControl3D = true; % if Control4D is provided, we compute Control3D
+    end
+    Control4D = []; % dummy output  
+end
+
+% We skip the computation of PWI3D if it is provided
+if nargin>=4 && ~isempty(PWI3D)
+    if ~isnumeric(PWI3D)
+        error('Illegal PWI3D, it should be numerical');
+    elseif ndims(PWI3D)>4 || ndims(PWI3D)<3
+        error('PWI3D has an incorrect number of dimensions');
+	else
+        bCreatePWI3D = false;
+        bCreatePWI = true; % If PWI3D is provided, we compute PWI
+    end
+else
+    PWI3D = []; % dummy output
+end
+
+% We skip the computation of Control3D if it is provided
+if nargin>=5 && ~isempty(Control3D)
+    if ~isnumeric(Control3D)
+        error('Illegal Control3D, it should be numerical');
+    elseif ndims(Control3D)>4 || ndims(Control3D)<3
+        error('Control3D has an incorrect number of dimensions');
+	else
+        bCreateControl3D = false;
+        bCreateControl = true; % If Control3D is provided, we compute PWI
+    end
+else
+    Control3D = []; % dummy output
+end
+
+PWI = []; % dummy output
+Control = []; % dummy output
+
 
 
 %% ========================================================================================
 %% 2. PWI4D
-if bCreatePWI4D
+if bCreatePWI4D || bCreateControl4D
 
     if nargin<2 || isempty(path_ASL4D)
         error('path_ASL4D input missing');
@@ -191,6 +237,9 @@ if bCreatePWI4D
         [PWI4D, Control4D, x.Q] = xASL_quant_HadamardDecoding(path_ASL4D, x.Q);
 	    nVolumes = size(PWI4D, 4);
 
+        bCreatePWI3D = true; % because we can do this now
+        bCreateControl3D = true; % because we can do this now        
+
 
     %% 2C. Non-time encoded subtraction
     else
@@ -208,15 +257,20 @@ if bCreatePWI4D
             x.Q.InitialPLD_Control4D = x.Q.InitialPLD_PWI4D;
             x.Q.LabelingDuration_Control4D = x.Q.LabelingDuration_PWI4D;
 
+            bCreatePWI3D = true; % because we can do this now
+            bCreateControl3D = true; % because we can do this now
+
         else % the same but then without subtraction
             PWI4D = ASL4D;
             Control4D = NaN;
+
+            bCreatePWI3D = true; % because we can do this now
         end
     end
-
+end
 
 %% ========================================================================================
-%% 5. Create PWI3D
+%% 5. Create PWI3D AND/OR Control3D
 if bCreatePWI3D
     
     % After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
@@ -233,6 +287,10 @@ if bCreatePWI3D
         x.Q.LabelingDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_PWI4D(indicesAre));
     end
 
+    bCreatePWI = true; % because we can do this now
+end
+
+if bCreateControl3D
     % Now we do the same for Control4D
     [~, ~, iUnique_TE_PLD_LabDur_Control4D] = unique([x.Q.EchoTime_Control4D(:), x.Q.InitialPLD_Control4D(:), x.Q.LabelingDuration_Control4D(:)], 'stable', 'rows');
     
@@ -245,11 +303,13 @@ if bCreatePWI3D
         x.Q.EchoTime_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.EchoTime_Control3D(indicesAre));
         x.Q.InitialPLD_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.InitialPLD_Control3D(indicesAre));
         x.Q.LabelingDuration_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_Control3D(indicesAre));
-    end    
+    end
+
+    bCreateControl = true; % because we can do this now
 end
 
 
-%% 6. Create PWI
+%% 6. Create PWI AND/OR Control
 % We create a dummy CBF image for registration purposes
 % The earliest echo, the latest PLD and the longest labeling duration
 % are the best for this, having most SNR, CBF-weighting, and SNR,
@@ -298,20 +358,22 @@ end
 	% % Find all dynamics with that PLD
 	% imMeanControl = imMeanControl(:,:,:,Initial_PLD==idealPLD);
 
+if bCreatePWI
+    %% Current quick&dirty fix was the average of all volumes with the lowest echo time
+    iMinTE = x.Q.EchoTime_PWI3D == min(x.Q.EchoTime_PWI3D(:));
+    PWI = xASL_stat_MeanNan(PWI3D(:, :, :, iMinTE), 4);
+    x.Q.EchoTime_PWI = min(x.Q.EchoTime_PWI3D(:));
+    x.Q.initialPLD_PWI = mean(x.Q.InitialPLD_PWI3D(:)); %% Jan is this correct?
+    x.Q.LabelingDuration_PWI = mean(x.Q.LabelingDuration_PWI3D(:)); %% Jan is this correct?
+end
 
-
-%% Current quick&dirty fix was the average of all volumes with the lowest echo time
-iMinTE = x.Q.EchoTime_PWI3D == min(x.Q.EchoTime_PWI3D(:));
-PWI = xASL_stat_MeanNan(PWI3D(:, :, :, iMinTE), 4);
-x.Q.EchoTime_PWI = min(x.Q.EchoTime_PWI3D(:));
-x.Q.initialPLD_PWI = mean(x.Q.InitialPLD_PWI3D(:)); %% Jan is this correct?
-x.Q.LabelingDuration_PWI = mean(x.Q.LabelingDuration_PWI3D(:)); %% Jan is this correct?
-
-% The same for Control
-iMinTE = x.Q.EchoTime_Control3D == min(x.Q.EchoTime_Control3D(:));
-Control = xASL_stat_MeanNan(Control3D(:, :, :, iMinTE), 4);
-x.Q.EchoTime_Control = min(x.Q.EchoTime_Control3D(:));
-x.Q.initialPLD_Control = mean(x.Q.InitialPLD_Control3D(:)); %% Jan is this correct?
-x.Q.LabelingDuration_Control = mean(x.Q.LabelingDuration_Control3D(:)); %% Jan is this correct?
+if bCreateControl
+    % The same for Control
+    iMinTE = x.Q.EchoTime_Control3D == min(x.Q.EchoTime_Control3D(:));
+    Control = xASL_stat_MeanNan(Control3D(:, :, :, iMinTE), 4);
+    x.Q.EchoTime_Control = min(x.Q.EchoTime_Control3D(:));
+    x.Q.initialPLD_Control = mean(x.Q.InitialPLD_Control3D(:)); %% Jan is this correct?
+    x.Q.LabelingDuration_Control = mean(x.Q.LabelingDuration_Control3D(:)); %% Jan is this correct?
+end
 
 end
