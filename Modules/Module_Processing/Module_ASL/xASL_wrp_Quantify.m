@@ -583,7 +583,7 @@ end
 %% #1543 Which will have as input:
 %% PWI4D.nii
 %% PWI4D.json
-%% SessionMergingList
+%% MergeSessionList
 %% (not x if we don't need it)
 
 function PWI = xASL_wrp_Quantify_MergeSessions(x)
