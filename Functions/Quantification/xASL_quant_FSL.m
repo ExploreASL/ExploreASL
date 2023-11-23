@@ -90,7 +90,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     % Remove residual BASIL-related files
     xASL_delete(pathFSLOptions);
     xASL_delete(pathFSLInput);
-	xASL_delete(pathFSLOutput);
+	xASL_delete(pathFSLOutput, 1);
     %xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
     
 
@@ -207,7 +207,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	if x.Q.BASIL.bCleanUp
 		xASL_delete(pathFSLInput);
 		xASL_delete(pathFSLOptions);
-		xASL_delete(pathFSLOutput);
+		xASL_delete(pathFSLOutput, 1);
 		%xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
 	end
     
