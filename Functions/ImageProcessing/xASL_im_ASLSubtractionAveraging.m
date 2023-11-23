@@ -119,6 +119,16 @@ if nargin>=5 && ~isempty(Control4D) % same as above
     Control4D = []; % dummy output  
 end
 
+% If PWI4D is provided but Control4D is not, we only want to compute PWI3D and PWI
+if bCreatePWI3D && ~bCreateControl3D
+    bCreateControl4D = false; % If only PWI4D is provided, we only want to compute PWI3D and PWI
+end
+% Same vice versa
+if bCreateControl3D && ~bCreatePWI3D
+    bCreatePWI4D = false; % If only Control4D is provided, we only want to compute Control3D and Control
+end
+
+
 % We skip the computation of PWI3D if it is provided
 if nargin>=4 && ~isempty(PWI3D)
     if ~isnumeric(PWI3D)
