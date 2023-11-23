@@ -757,26 +757,30 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
         xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
     end
     
-	% allow 4D quantification as well
-	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D==1 && ~x.Q.bUseBasilQuantification
-        nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
-        if nVolumes==1
-            warning('x.Q.SaveCBF4D was requested but only one volume exists, skipping');
-        else
-            fprintf('%s\n','Quantifying ASL timeseries in native space');
-            xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_qCBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);
-
-            fprintf('%s\n','Quantifying ASL timeseries in standard space');
-            xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D, x.P.Pop_Path_qCBF4D);
+	% allow 4D quantification as well, storing CBF4D. This is currently not implemented for multi-PLD/multi-TE (BASIL/FABBER)
+	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D
+        if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE
+            warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, skipping');
+        elseif isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D && ~(x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE)
+            nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
+            if nVolumes==1
+                warning('x.Q.SaveCBF4D was requested but only one volume exists, skipping');
+            else
+                fprintf('%s\n','Quantifying CBF4D in native space');
+                xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_qCBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);
+    
+                fprintf('%s\n','Quantifying CBF4D in standard space');
+                xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D, x.P.Pop_Path_qCBF4D);
+            end
         end
-	end
+    end
 	
 	if x.modules.asl.bPVCNativeSpace
 		fprintf('%s\n','Partial volume correcting ASL in native space:   ');
-		if xASL_exist(x.P.Path_PVgm,'file') && xASL_exist(x.P.Path_PVwm,'file')
+		if xASL_exist(x.P.Path_PVgm,'file') && xASL_exist(x.P.Path_PVwm,'file') && xASL_exist(x.P.Path_CBF,'file')
 			xASL_wrp_PVC(x);
 		else
-			warning(['Skipped PV: ' x.P.Path_PVgm ' or ' x.P.PathPVwm ' missing']);
+			warning(['Skipped PV: ' x.P.Path_PVgm ', ' x.P.PathPVwm ', or ' x.P.Path_CBF ' missing']);
 		end
 	end
 
