@@ -95,13 +95,10 @@ if ~x.modules.asl.ApplyQuantification(3)
 else
     
     % If we have multiple PLDs but requested a single PLD quantification, we use the highest PLD
-	if ~x.modules.asl.bMultiPLD
-		x.Q.Initial_PLD = unique(x.Q.Initial_PLD);
-		if numel(x.Q.Initial_PLD)>1
-			warning('Multiple PLDs detected, selecting maximal value');
-			fprintf('%s\n', 'A multi-PLD quantification may provide more accurate results');
-			x.Q.Initial_PLD = max(x.Q.Initial_PLD);
-		end
+    if ~x.modules.asl.bMultiPLD && numel(x.Q.uniqueInitial_PLD)>1
+		warning('Multiple PLDs detected, taking the highest PLD only');
+		fprintf('%s\n', 'A multi-PLD quantification may provide more accurate results');
+		x.Q.uniqueInitial_PLD = max(x.Q.uniqueInitial_PLD);
 	end
     
     % Calculate the vector of SliceReadoutTime
@@ -119,7 +116,7 @@ else
             if bUseBasilQuantification
                 x.Q.BasilSliceReadoutTime = 0;
             else
-                ScaleImage = ScaleImage.*x.Q.Initial_PLD;
+                ScaleImage = ScaleImage.*x.Q.uniqueInitial_PLD;
             end
 
         case '2d' % Load slice gradient
@@ -147,7 +144,7 @@ else
 					x.Q.BasilSliceReadoutTime = 0;
 				end
 			else
-				ScaleImage = ScaleImage.*(x.Q.Initial_PLD + SliceReadoutTime(imSliceNumber)); % effective/net PLD            
+				ScaleImage = ScaleImage.*(x.Q.uniqueInitial_PLD + SliceReadoutTime(imSliceNumber)); % effective/net PLD            
 			end
             
         otherwise
@@ -177,8 +174,13 @@ else
         % (later, when we have multi-PLD, multi-echo, or multi-labeling quantification here as well,
         % then we could use PWI3D here)
 
-        % First read the PWI4D parameters
-        PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
+        if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D
+            PWI = PWI4D;
+            fprintf('%s\n', 'Quantifying CBF in 4D');
+            % In this case, we want to save a quantified version of PWI4D
+        else
+            PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
+        end
 
         % #997 Not sure if this is the best location for this checking
         if ~x.modules.asl.bMultiTE && length(x.Q.uniqueEchoTimes)>1
@@ -190,7 +192,7 @@ else
 
 
         %% 3    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
-        if isfield(x.Q,'LabelingType') && isfield(x.Q,'LabelingDuration')
+        if isfield(x.Q,'LabelingType') && isfield(x.Q,'uniqueLabelingDuration')
             ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage);
         else
             warning('Please define both LabelingType and LabelingDuration of this dataset...');
@@ -320,65 +322,24 @@ else
     CBF = PWI;
 end
 
-CBF = xASL_stat_MeanNan(CBF, 4); 
-% If there are multiple volumes, this will average
-% Otherwise, it won't do anything
+% Here, we don't average. Averaging should have been happened above
+
 
 
 %% 6    Print parameters used
 fprintf('%s\n','with parameters:');
 
 if x.modules.asl.ApplyQuantification(3)
-	if isfield(x.Q, 'LabelingDuration') && isfield(x.Q, 'Initial_PLD')
-		% Prepare unique PLDs+LabDur combinations
-		
-        %% #1543 THIS PART CAN NOW BE SKIPPED, AND WE JUST PRINT
-        %% a lot of the printing is now at the start of xASL_module_ASL
-        % x.Q.uniquePLD
-        % x.Q.uniqueTE
-        % x.Q.uniqueLabDur
-
-
-		% First create a labeling duration vector of the same length
-		if length(x.Q.LabelingDuration)>1
-			LabDurs = x.Q.LabelingDuration;
-		else
-			LabDurs = ones(size(x.Q.Initial_PLD))*x.Q.LabelingDuration;
-		end
-
-		PLDs = x.Q.Initial_PLD;
-
-		% Skip the first PLD of the block for Time-Encoded
-		if x.modules.asl.bTimeEncoded
-			% For timeencoded - a simple unique PLDs is enough
-			[PLDs, index] = unique(PLDs, 'stable');
-			LabDurs = LabDurs(index)';
-
-			numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-			index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
-			PLDs = PLDs(index(:)');
-			LabDurs = LabDurs(index(:)');
-		else
-			% For normal multi-timepoint, we look for unique PLD+LabDur combinations
-			[~, indexNew, ~] = unique([PLDs(:), LabDurs(:)], 'stable', 'rows');
-			
-			PLDs = PLDs(indexNew);
-			LabDurs = LabDurs(indexNew);
-		end
-
-		% Print the prepared parameters
-		if ~isempty(LabDurs) && ~isempty(PLDs)
-			switch lower(x.Q.LabelingType)
-				case 'pasl'
-					fprintf('%s\n',['TI1 = ' xASL_num2str(LabDurs) ' ms,']);
-					fprintf('%s',['TI  = ' xASL_num2str(PLDs) ' ms']);
-				case 'casl'
-					fprintf('%s\n',['LabelingDuration = ' xASL_num2str(LabDurs) ' ms,']);
-					fprintf('%s',['PLD              = ' xASL_num2str(PLDs) ' ms']);
-			end
-		end
-	else
-		fprintf('Labeling duration and/or PLD undefined...');
+	% Print the prepared parameters
+	switch lower(x.Q.LabelingType)
+		case 'pasl'
+			fprintf('%s\n',['TI1 = ' xASL_num2str(x.Q.uniqueLabelingDuration) ' ms,']);
+			fprintf('%s\n',['TI  = ' xASL_num2str(x.Q.uniqueInitial_PLD) ' ms.']);
+		case 'casl'
+			fprintf('%s\n',['LabelingDuration = ' xASL_num2str(x.Q.uniqueLabelingDuration) ' ms,']);
+			fprintf('%s\n',['PLD              = ' xASL_num2str(x.Q.uniqueInitial_PLD) ' ms.']);
+		otherwise
+			fprintf('Labeling duration and/or PLD undefined...');
 	end
 
 	if max(SliceReadoutTime)>0 && strcmpi(x.Q.readoutDim,'2D')
@@ -407,14 +368,19 @@ end
 %% Determine Label Decay Scale Factor
 function ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage)
 
+    if numel(x.Q.uniqueLabelingDuration)>1
+        warning('Quantification with multiple Labeling Durations not implemented yet, taking the first');
+        x.Q.uniqueLabelingDuration = x.Q.uniqueLabelingDuration(1);
+    end
+
     switch x.Q.nCompartments
         case 1 % single-compartment model
             switch lower(x.Q.LabelingType)
                 case 'pasl'
-                    DivisionFactor = x.Q.LabelingDuration;
+                    DivisionFactor = x.Q.uniqueLabelingDuration;
                     fprintf('%s\n','Using a single-compartment PASL model');
                 case 'casl'
-                    DivisionFactor = x.Q.BloodT1 .* (1 - exp(-x.Q.LabelingDuration./x.Q.BloodT1));
+                    DivisionFactor = x.Q.BloodT1 .* (1 - exp(-x.Q.uniqueLabelingDuration./x.Q.BloodT1));
                     fprintf('%s\n','Using a single-compartment CASL model');
             end
 
@@ -423,11 +389,11 @@ function ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage)
         case 2 % dual-compartment model
             switch lower(x.Q.LabelingType)
                 case 'pasl'
-                    DivisionFactor = x.Q.LabelingDuration;
+                    DivisionFactor = x.Q.uniqueLabelingDuration;
                     ScaleImage = exp((x.Q.ATT./x.Q.BloodT1)).*exp(((ScaleImage-x.Q.ATT)./x.Q.TissueT1))./ (2.*x.Q.LabelingEfficiency.*DivisionFactor);
                     fprintf('%s\n','Using a dual-compartment PASL model');
                 case 'casl'
-                    DivisionFactor = x.Q.TissueT1 .* (exp((min(x.Q.ATT-ScaleImage,0))./x.Q.TissueT1) - exp((min(x.Q.ATT-x.Q.LabelingDuration-ScaleImage,0))./x.Q.TissueT1));
+                    DivisionFactor = x.Q.TissueT1 .* (exp((min(x.Q.ATT-ScaleImage,0))./x.Q.TissueT1) - exp((min(x.Q.ATT-x.Q.uniqueLabelingDuration-ScaleImage,0))./x.Q.TissueT1));
                     ScaleImage = exp((x.Q.ATT./x.Q.BloodT1))./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
                     fprintf('%s\n','Using a dual-compartment CASL model');
             end
