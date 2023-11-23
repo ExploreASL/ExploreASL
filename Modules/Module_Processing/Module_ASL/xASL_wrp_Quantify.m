@@ -196,7 +196,7 @@ if xASL_stat_SumNan(PWI4D(:))==0
     warning(['Empty PWI4D image:' PWI4D_Path]);
 end
 
-%% AT JAN: CAN WE REMOVE THIS???
+%% #1543 AT JAN: CAN WE REMOVE THIS???
 % % % Philips dcm2niiX scaling fix:
 % % % in the new dcm2niiX with the default Philips scaling,
 % % % there can be a discrepancy in the rescale slope that was stored as
