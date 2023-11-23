@@ -299,8 +299,7 @@ end
 
 if x.modules.asl.bMergingSessions
     fprintf('%s', ' and will now concatenate the following sessions:')
-    nSessions = numel(x.modules.asl.sessionsToMerge);
-    for iSession=1:nSessions
+    for iSession = 1:numel(x.modules.asl.sessionsToMerge)
         fprintf([' ' x.modules.asl.sessionsToMerge{iSession}]);
     end
     fprintf('\n');
