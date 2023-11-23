@@ -32,7 +32,7 @@ function xASL_quant_FEAST(x)
 %% 1. Provide feedback
 fprintf('%s\n', 'Running FEAST quantification, assuming single compartment CBF quantification');
 
-if x.Q.bUseBasilQuantification==0
+if x.Q.bUseBasilQuantification
     warning('BASIL quantification detected, FEAST ATT computation might be inaccurate');
 end
 if x.Q.nCompartments~=1
