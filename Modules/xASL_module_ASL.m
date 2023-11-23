@@ -61,7 +61,6 @@ function [result, x] = xASL_module_ASL(x)
 
 
 %% Admin
-result = false;
 [x] = xASL_init_SubStructs(x);
 x = xASL_init_InitializeMutex(x, 'ASL'); % starts mutex locking process to ensure that everything will run only once
 
@@ -235,7 +234,7 @@ else
 	% The parameter should be a list of lists, but if a single list is provided, it converts it
 	if ~isempty(x.modules.asl.SessionMergingList) && iscell(x.modules.asl.SessionMergingList) && ~iscell(x.modules.asl.SessionMergingList{1})
 		x.modules.asl.SessionMergingList = {x.modules.asl.SessionMergingList};
-    end
+	end
     nLists = numel(x.modules.asl.SessionMergingList);
     fprintf('\n%s', ['-> Detected ' xASL_num2str(nLists) ' list(s) for concatenating sessions']);
 end
@@ -248,16 +247,27 @@ x.modules.asl.sessionsToMerge = {};
 
 % Find the lists containing the current session
 % Note that these can be multiple lists
+bSessionListed = false; % It is possible that a single session is in multiple list. That is not illegal
 for iList=1:nLists
 	if ~isempty(x.modules.asl.SessionMergingList{iList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iList}))
-		%% #1096: HERE WE POTENTIALLY ADD MULTIPLE LISTS, SO ONLY THE LAST LIST WILL 
-        %% BE USED, IN THE CASE THAT A SINGLE SESSION IS THE LAST IN MULTIPLE MERGING LISTS
-        %% WE NEED A CHECK, DEFAULTING, AND WARNING FOR THIS
-        x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList};
+		if bSessionListed
+			warning(['Session ' x.SESSION ' appears in more than one list of sessions to merge.']);
+		else
+			x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList};
+			bSessionListed = true;
+		end
 
-        if strcmp(x.SESSION, x.modules.asl.sessionsToMerge{end})
+        if strcmp(x.SESSION, x.modules.asl.SessionMergingList{iList}{end})
             % If the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
-            x.modules.asl.bMergingSessions = 1;
+
+			% If merging is already set to true, it means that there was a previous list to be merged. We report this as a warning and we keep the first fitting list to be merged
+			if x.modules.asl.bMergingSessions
+				warning(['Session ' x.SESSION ' is at the end of more than one list of sessions to merge. We ignore all such lists but the first.'])
+			else
+				% We have to assign the list again, because it is possible that sessionsToMerge was already initialized to a list that contained the current session, but that was not ending it
+				x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList}; 				                                                            
+				x.modules.asl.bMergingSessions = 1;
+			end
         end
 	end
 end
