@@ -262,9 +262,9 @@ if bCreatePWI4D || bCreateControl4D
             PWI4D = Control4D - Label4D;
             
             % Skip every other value in the vectors as they were stored for both control and label images 
-            x.Q.EchoTime_PWI4D = x.Q.EchoTime(1:2:end);
-            x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD(1:2:end);
-            x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration(1:2:end);
+            x.Q.EchoTime_PWI4D = x.Q.EchoTime_PWI4D(1:2:end);
+            x.Q.InitialPLD_PWI4D = x.Q.InitialPLD_PWI4D(1:2:end);
+            x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration_PWI4D(1:2:end);
             % In this case, the vectors are equal for PWI4D and Control4D
             x.Q.EchoTime_Control4D = x.Q.EchoTime_PWI4D;
             x.Q.InitialPLD_Control4D = x.Q.InitialPLD_PWI4D;
@@ -275,7 +275,7 @@ if bCreatePWI4D || bCreateControl4D
         elseif ~x.modules.asl.bContainsDeltaM
             warning('Single volume detected that was not subtracted, cannot create PWI images');
             PWI4D = [];
-            Control4D = ASl4D;
+            Control4D = ASL4D;
             bCreateControl3D = true; % because we can do this now
             % but we cannot create PWI4D, PWI3D, PWI
 
@@ -285,6 +285,14 @@ if bCreatePWI4D || bCreateControl4D
             % in both cases we can create PWI4D, PWI3D, PWI, but not Control4D, etc
             PWI4D = ASL4D;
             Control4D = [];
+
+            % Now the vectors stay the same as for ASL4D (there is no subtraction)
+            x.Q.EchoTime_PWI4D = x.Q.EchoTime;
+            x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD;
+            x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration;
+            x.Q.EchoTime_Control4D = x.Q.EchoTime;
+            x.Q.InitialPLD_Control4D = x.Q.InitialPLD;
+            x.Q.LabelingDuration_Control4D = x.Q.LabelingDuration;
 
             bCreatePWI3D = true; % because we can do this now
         end
@@ -349,7 +357,7 @@ end
 % % We take the index that has all these        
 % i3D = iMinTE & iMaxPLD & iMaxLabelingDuration;
 % if isempty(i3D) || sum(i3D)~=1
-%     error('Illegal index for PWI image');
+%     error('Illegal index for PWI image'); % THIS ERROR SHOULD NOT BE GIVEN TO THE USER
 % end
 % PWI = PWI3D(:, :, :, i3D);
 % x.Q.EchoTime_PWI = min(x.Q.EchoTime_PWI3D(:));
