@@ -128,6 +128,7 @@ if nargin>=5 && ~isempty(Control4D) % same as above
         bCreateControl4D = false; % All is correct and we don't have to compute Control4D
         bCreateControl3D = true; % if Control4D is provided, we compute Control3D
     end
+else
     Control4D = []; % dummy output  
 end
 
@@ -156,7 +157,7 @@ else
 end
 
 % We skip the computation of Control3D if it is provided
-if nargin>=5 && ~isempty(Control3D)
+if nargin>=6 && ~isempty(Control3D)
     if ~isnumeric(Control3D)
         error('Illegal Control3D, it should be numerical');
     elseif ndims(Control3D)>4 || ndims(Control3D)<3
