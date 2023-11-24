@@ -270,45 +270,59 @@ MaskIM = MaskIM>(0.7*max(MaskIM(:)));
 if size(PWI4D, 4)>3
     %% PM: here we need to use the positions for the earliest echo, and the latest PLD-labdur
     
-    % Save SD & SNR maps
-    SD = xASL_stat_StdNan(PWI4D, 0, 4); 
-    SNR = PWI4D./SD;
-    SNR(SNR<0) = 0; % clip @ zero    
+    % PWI4D_statsIndices = x.Q.EchoTime_PWI4D==min(x.Q.uniqueEchoTimes) & x.Q.InitialPLD_PWI4D==max(x.Q.uniqueInitial_PLD);
+    PWI4D_statsIndices = x.Q.InitialPLD_PWI4D==max(x.Q.uniqueInitial_PLD);
+    %% #1543 For some reason this didn't work for the combination shortest TE & longest PLD
+    %% Better to repeat this for every TE-PLD-LD combination 
     
-    xASL_io_SaveNifti(x.P.Path_PWI, x.P.Pop_Path_SD, SD ,[], 0);
-    xASL_io_SaveNifti(x.P.Path_PWI, x.P.Pop_Path_SNR, SNR, [], 0);
-    fprintf('%s\n','Standard space SD & SNR saved, & part1 & part2 for reproducibility');
+    if sum(PWI4D_statsIndices)>3
+        PWI4D_stats = PWI4D(:,:,:, PWI4D_statsIndices);
 
+        % Save SD & SNR maps
+        PWI = xASL_stat_MeanNan(PWI4D_stats, 4);
+        SD = xASL_stat_StdNan(PWI4D_stats, 0, 4); 
+        SNR = PWI./SD;
+        SNR(SNR<0) = 0; % clip @ zero
     
-    % Calculate two halves, for reproducibility (wsCV) CBF & spatial CoV
-    HalfVol                         = round(size(PWI4D,4)/2);
-    Part1                           = xASL_stat_MeanNan(PWI4D(:,:,:,1:HalfVol),4);
-    Part2                           = xASL_stat_MeanNan(PWI4D(:,:,:,HalfVol+1:end),4);
+        xASL_io_SaveNifti(x.P.Path_PWI, x.P.Pop_Path_SD, SD ,[], 0);
+        xASL_io_SaveNifti(x.P.Path_PWI, x.P.Pop_Path_SNR, SNR, [], 0);
+        fprintf('%s\n','Standard space SD & SNR saved');
 
-    % Determine mask
-    if isequal(size(MaskIM),size(Part1),size(Part2))
-        MaskIM = MaskIM & isfinite(Part1) & isfinite(Part2);
-    else
-        error('Dimension mismatch between mask and part 1 & part 2...');
+        % Calculate two halves, for reproducibility (wsCV) CBF & spatial CoV
+        
+        % Now we need two halves, for which we need an equal amount of volumes
+        if mod(size(PWI4D_stats, 4), 2)>0
+            PWI4D_stats = PWI4D_stats(:,:,:, 1:end-1);
+        end
+
+        indexHalf = round(size(PWI4D_stats,4)/2);
+        Part1 = xASL_stat_MeanNan(PWI4D_stats(:,:,:,1:indexHalf),4);
+        Part2 = xASL_stat_MeanNan(PWI4D_stats(:,:,:,indexHalf+1:end),4);
+
+        % Determine mask
+        if isequal(size(MaskIM),size(Part1),size(Part2))
+            MaskIM = MaskIM & isfinite(Part1) & isfinite(Part2);
+        else
+            error('Dimension mismatch between mask and part 1 & part 2...');
+        end
+    
+        % Calculate mean, standard deviation and covariance
+        mean1 = mean(Part1(MaskIM));
+        std1 = std(Part1(MaskIM));
+        CoV1 = std1/mean1;
+        mean2 = mean(Part2(MaskIM));
+        std2 = std(Part2(MaskIM));
+        CoV2 = std2/mean2;
+    
+        wsCV_mean = 100*abs(mean1-mean2)/(0.5*(mean1+mean2));
+        wsCV_CoV = 100*abs(CoV1-CoV2)/(0.5*(CoV1+CoV2));
+    
+        fprintf('%s\n',['pGM>0.7: wsCV mean CBF = ' num2str(wsCV_mean,3) '%, wsCV spatial CoV = ' num2str(wsCV_CoV,3) '%'])
+    
+        xASL_io_SaveNifti(x.P.Path_PWI,fullfile(x.D.PopDir,['PWI_part1_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part1, 32);
+        xASL_io_SaveNifti(x.P.Path_PWI,fullfile(x.D.PopDir,['PWI_part2_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part2, 32);
+        fprintf('%s\n','Also saved part1 & part2 for reproducibility');
     end
-    
-    % Calculate mean, standard deviation and covariance
-    mean1                           = mean(Part1(MaskIM));
-    std1                            = std(Part1(MaskIM));
-    CoV1                            = std1/mean1;
-    mean2                           = mean(Part2(MaskIM));
-    std2                            = std(Part2(MaskIM));
-    CoV2                            = std2/mean2;
-
-    wsCV_mean                       = 100*abs(mean1-mean2)/(0.5*(mean1+mean2));
-    wsCV_CoV                        = 100*abs(CoV1-CoV2)/(0.5*(CoV1+CoV2));
-
-    fprintf('%s\n',['pGM>0.7: wsCV mean CBF = ' num2str(wsCV_mean,3) '%, wsCV spatial CoV = ' num2str(wsCV_CoV,3) '%'])
-
-    xASL_io_SaveNifti(x.P.Path_PWI,fullfile(x.D.PopDir,['PWI_part1_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part1, 32);
-    xASL_io_SaveNifti(x.P.Path_PWI,fullfile(x.D.PopDir,['PWI_part2_'  x.P.SubjectID '_' x.P.SessionID '.nii']), Part2, 32);
-    fprintf('%s\n','Also saved part1 & part2 for reproducibility');
-    
 else
     fprintf('%s\n',['Standard space SD, SNR & reproducibility part1 & part2 maps were skipped, had only ' num2str(size(PWI4D,4)) ' volumes(s)']);
 end
