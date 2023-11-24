@@ -786,9 +786,8 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D
         if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE
             warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, skipping');
-        elseif isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D && ~(x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE)
-            nVolumes = size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4);
-            if nVolumes==1
+		else
+            if size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4) == 1
                 warning('x.Q.SaveCBF4D was requested but only one volume exists, skipping');
             else
                 fprintf('%s\n','Quantifying CBF4D in native space');
@@ -798,7 +797,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
                 xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D, x.P.Pop_Path_qCBF4D);
             end
         end
-    end
+	end
 	
 	if x.modules.asl.bPVCNativeSpace
 		fprintf('%s\n','Partial volume correcting ASL in native space:   ');

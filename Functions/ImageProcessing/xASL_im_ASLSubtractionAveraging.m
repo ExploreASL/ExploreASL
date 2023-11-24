@@ -292,7 +292,7 @@ if bCreatePWI4D || bCreateControl4D
             x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD;
             x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration;
             x.Q.EchoTime_Control4D = x.Q.EchoTime;
-            x.Q.InitialPLD_Control4D = x.Q.InitialPLD;
+            x.Q.InitialPLD_Control4D = x.Q.Initial_PLD;
             x.Q.LabelingDuration_Control4D = x.Q.LabelingDuration;
 
             bCreatePWI3D = true; % because we can do this now
