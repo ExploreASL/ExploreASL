@@ -504,7 +504,8 @@ function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, s
 
     TempValue = x.Output.(qcStruct.module).(qcStruct.parameter);
     
-    if settingsPDF.QC_Value_alias
+    % Translate from the provided translation tsv if that's enabled
+    if settingsPDF.QC_TSV_Translations
         qcStruct = xASL_qc_ParsePdfConfig_sub_QC_Translation(qcStruct, settingsPDF);
     end
 
@@ -531,14 +532,20 @@ function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, s
         qcStruct.range = '';
     end
 
-    % Convert the value to a string, and print it to the PDF report.
-    if isnumeric(TempValue)
-        TempValue = xASL_num2str(TempValue);
+    % Convert the value to a string.
+    TempValue = xASL_num2str(TempValue);
+    if islogical(TempValue)
+        TempValue = num2str(TempValue);
     end
+
+
+    qcStruct.alias = xASL_qc_ParsePdfConfig_sub_PaddedString( qcStruct.alias, settingsPDF.QC_string_limit);
+    TempValue = xASL_qc_ParsePdfConfig_sub_PaddedString( TempValue, 12, 'right');
+    UnitRange = xASL_qc_ParsePdfConfig_sub_PaddedString( [qcStruct.unit, qcStruct.range], 12);
 
     % Combine name, value, unit and range into a single string for printing.
     if size(TempValue, 1) == 1
-        string = sprintf([sprintf('%-20s', [qcStruct.alias, ':']), sprintf('%8s', TempValue), sprintf('%-12s', [qcStruct.unit, ' ' , qcStruct.range]), ' \n']);
+        string = sprintf([qcStruct.alias ':', TempValue, ' ', UnitRange, ' \n']);
     end
 
 end
@@ -554,6 +561,41 @@ function [struct] = xASL_qc_ParsePdfConfig_sub_QC_Translation(struct, settingsPD
     end
 end
 
+function resultText = xASL_qc_ParsePdfConfig_sub_PaddedString(textToPrint, textWidth, align, SymbolToFill)
+    if nargin < 3 || isempty(align)
+        align = 'left';
+    end
+
+    if nargin < 4 || isempty(SymbolToFill)
+        SymbolToFill = ' ';
+    end
+
+    %% Create default string
+    resultText = repmat(SymbolToFill, 1, textWidth);
+    
+    % Pad spaces
+    if ~isempty(textToPrint)
+        textToPrint = [textToPrint ' '];
+    end
+
+    % Check length
+    if strcmp(align,'left')
+        if length(textToPrint) < textWidth
+            resultText(1:length(textToPrint)) = textToPrint;
+        else
+            resultText(1:textWidth-2) = textToPrint(1:textWidth-2);
+            resultText(textWidth-2:textWidth) = '...';
+        end
+    elseif strcmp(align,'right')
+        if length(textToPrint) < textWidth
+            resultText(end - length(textToPrint)+1:textWidth) = textToPrint;
+        else
+            resultText(1:textWidth-2) = textToPrint(1:textWidth-2);
+            resultText(textWidth-2:textWidth) = '...';
+        end
+    end
+end
+
 function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings(x)
 % This function sets the default settings for the PDF report.
 
@@ -566,8 +608,9 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings(x)
     settingsPDF.figureCount = 0;
     settingsPDF.canvas = [0 0 1 1];
     settingsPDF.BIDS_Translation = 0;
-    settingsPDF.QC_Value_alias = 1; %0 = no translation, 1=translation
+    settingsPDF.QC_TSV_Translations = 1; %0 = no translation, 1=translation
     settingsPDF.imageHeaders = 1;
+    settingsPDF.QC_string_limit  = 25;
 
     settingsPDF.QC_Translation = xASL_tsvRead(fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'qc_translation.tsv'));
 
