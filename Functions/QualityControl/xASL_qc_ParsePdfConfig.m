@@ -534,9 +534,6 @@ function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, s
 
     % Convert the value to a string.
     TempValue = xASL_num2str(TempValue);
-    if islogical(TempValue)
-        TempValue = num2str(TempValue);
-    end
 
 
     qcStruct.alias = xASL_qc_ParsePdfConfig_sub_PaddedString( qcStruct.alias, settingsPDF.QC_string_limit);
