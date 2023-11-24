@@ -80,6 +80,18 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 % Input image volumes should be correct
 % Creation of the PWI3D or PWI4D image volumes can be skipped if they are provided as input
 
+if nargin<1 || isempty(x)
+    error('x input missing');
+end
+
+if nargin<2 || isempty(path_ASL4D)
+    error('path_ASL4D input missing');
+elseif numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
+    % this is a path, not an image
+else
+    error('path_ASL4D cannot be an image matrix, needs to be a path');
+end
+
 % By default, we create 4D stuff, unless they are provided as input
 bCreatePWI4D = true;
 bCreateControl4D = true;
@@ -166,31 +178,22 @@ Control = []; % dummy output
 %% 2. PWI4D
 if bCreatePWI4D || bCreateControl4D
 
-    if nargin<2 || isempty(path_ASL4D)
-        error('path_ASL4D input missing');
-    else
-        % LOAD ASL4D.nii
-        ASL4D = xASL_io_Nifti2Im(path_ASL4D); % Load time-series nifti from path if input was a path
-        % (input can also be an image matrix)
+    % Load ASL4D.nii
+    ASL4Dnii = xASL_io_ReadNifti(path_ASL4D);
+    sizeASL4D = size(ASL4Dnii.dat);
+    nVolumes = sizeASL4D(4);
+    nDims = length(sizeASL4D);
+    
+    if nDims>4
+        fprintf('\n\nIn BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/LD/etc] as 4 dimensions\n\n');
+        error('ASL4D.nii contains more than 4 dimensions');
         
-        % here we perform several dimensional checks before we can continue
-
-        nVolumes = size(ASL4D, 4);
-        
-        if ndims(ASL4D)>4
-            fprintf('\n\nIn BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/LD/etc] as 4 dimensions\n\n');
-            error('ASL4D.nii contains more than 4 dimensions');
-            
-        elseif nVolumes>1 && mod(nVolumes, 2) ~= 0
-            warning('Odd (i.e., not even) number of control-label pairs, skipping');
-            % mod(nVolumes, 2) ~= 0 here means that nVolumes is not divisible by 2
-            return;
-        end
+    elseif nVolumes>1 && mod(nVolumes, 2) ~= 0 && ~x.modules.asl.bContainsDeltaM
+        warning('Odd (i.e., not even) number of control-label pairs, skipping');
+        % mod(nVolumes, 2) ~= 0 here means that nVolumes is not divisible by 2
+        % unsubtracted control-label pairs should result in an even number of volumes
+        return;
     end
-    if isempty(x)
-        error('x input missing');
-    end
-
 
 
     %% 2A. Apply motion correction if needed
@@ -200,40 +203,39 @@ if bCreatePWI4D || bCreateControl4D
     % resampling to apply motion correction. This creates a temporary r-prefixed file (e.g., rASL4D.nii)
     % which is deleted right after we reload its NIfTI as image volumes.
     
-    if numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
-        % here we detect a path
-        [Fpath, Ffile] = xASL_fileparts(path_ASL4D);
-        sideCarMat = fullfile(Fpath, [Ffile '.mat']);
-    
-        if exist(sideCarMat, 'file')
-            % we check if the mat-sidecar exists, with the motion estimation parameters
-            % If this file exists, we assume that the original ASL4D input file has not been
-            % interpolated yet (and the motion estimation has not been applied yet)
-    
-            % Apple motion correction & resample
-            if nVolumes>1
-                for iS=1:nVolumes
-                    matlabbatch{1}.spm.spatial.realign.write.data{iS,1} = [path_ASL4D ',' num2str(iS)];
-                end
-            
-                matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
-                matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 4;
-                matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
-                matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
-                matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
-            
-                spm_jobman('run',matlabbatch); % this applies the motion correction in native space
-                
-                path_rASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
-                
-                % RELOAD ASL4D.nii
-                % Note that we only reload ASL4D.nii here if we have motion corrected timeseries.
-                % If path_ASL4D was not a path, or if sideCarMat didn't exist (motion estimation was not performed)
-                % or if nVolumes==1 (we did not have multiple ASL volumes) there is no reason to resample and we keep using
-                % the already above loaded ASL4D.nii
-                ASL4D = xASL_io_Nifti2Im(path_rASL4D);
-                xASL_delete(path_rASL4D);
+    [Fpath, Ffile] = xASL_fileparts(path_ASL4D);
+    sideCarMat = fullfile(Fpath, [Ffile '.mat']);
+
+    if exist(sideCarMat, 'file')
+        % we check if the mat-sidecar exists, with the motion estimation parameters
+        % If this file exists, we assume that the original ASL4D input file has not been
+        % interpolated yet (and the motion estimation has not been applied yet)
+
+        % Apply motion correction & resample
+        if nVolumes>1
+            for iS=1:nVolumes
+                matlabbatch{1}.spm.spatial.realign.write.data{iS,1} = [path_ASL4D ',' num2str(iS)];
             end
+        
+            matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
+            matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 4;
+            matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
+            matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
+            matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
+        
+            spm_jobman('run',matlabbatch); % this applies the motion correction in native space
+            
+            path_rASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
+            
+            % RELOAD ASL4D.nii
+            % Note that we only reload ASL4D.nii here if we have motion corrected timeseries.
+            % If path_ASL4D was not a path, or if sideCarMat didn't exist (motion estimation was not performed)
+            % or if nVolumes==1 (we did not have multiple ASL volumes) there is no reason to resample and we keep using
+            % the already above loaded ASL4D.nii
+            ASL4D = xASL_io_Nifti2Im(path_rASL4D);
+            xASL_delete(path_rASL4D);
+        else
+            ASL4D = xASL_io_Nifti2Im(path_ASL4D);
         end
     end
 
@@ -244,7 +246,8 @@ if bCreatePWI4D || bCreateControl4D
         % should we use path_rASL4D from here onwards, which defaults to path_ASL4D?
 
         % Decoding of TimeEncoded data - it outputs the decoded image as well as the parameters
-        [PWI4D, Control4D, x.Q] = xASL_quant_HadamardDecoding(path_ASL4D, x.Q);
+        [PWI4D, Control4D, x.Q] = xASL_quant_HadamardDecoding(ASL4D, x.Q);
+        %% #997 JAN here we have to load ASL4D which is resampled for motion correction in 2A
 	    nVolumes = size(PWI4D, 4);
 
         bCreatePWI3D = true; % because we can do this now
