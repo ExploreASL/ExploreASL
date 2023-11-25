@@ -28,16 +28,16 @@ else
 end
 
 %% Rename the directory dartel to Population
-if exist(fullfile(x.D.ROOT, 'dartel'),'dir')
-	xASL_delete(fullfile(x.D.ROOT,'Population'));
-	xASL_Move(fullfile(x.D.ROOT, 'dartel'),fullfile(x.D.ROOT, 'Population'))
+if exist(fullfile(x.dir.xASLDerivatives, 'dartel'),'dir')
+	xASL_delete(fullfile(x.dir.xASLDerivatives,'Population'));
+	xASL_Move(fullfile(x.dir.xASLDerivatives, 'dartel'),fullfile(x.dir.xASLDerivatives, 'Population'))
 end
 
 %% Rename the structural lock directories
-if exist(fullfile(x.D.ROOT, 'lock', 'T1'),'dir')
-	xASL_Move(fullfile(x.D.ROOT, 'lock', 'T1'),fullfile(x.D.ROOT, 'lock', 'xASL_module_Structural'));
+if exist(fullfile(x.dir.xASLDerivatives, 'lock', 'T1'),'dir')
+	xASL_Move(fullfile(x.dir.xASLDerivatives, 'lock', 'T1'),fullfile(x.dir.xASLDerivatives, 'lock', 'xASL_module_Structural'));
 end
-pathStruct = fullfile(x.D.ROOT, 'lock', 'xASL_module_Structural');
+pathStruct = fullfile(x.dir.xASLDerivatives, 'lock', 'xASL_module_Structural');
 
 % List all the patients
 fList = xASL_adm_GetFileList(pathStruct,'^.+$',[],[],1);
@@ -80,10 +80,10 @@ end
 
 
 %% Rename the ASL lock directories
-if exist(fullfile(x.D.ROOT, 'lock', 'ASL'),'dir')
-	xASL_Move(fullfile(x.D.ROOT, 'lock', 'ASL'),fullfile(x.D.ROOT, 'lock', 'xASL_module_ASL'));
+if exist(fullfile(x.dir.xASLDerivatives, 'lock', 'ASL'),'dir')
+	xASL_Move(fullfile(x.dir.xASLDerivatives, 'lock', 'ASL'),fullfile(x.dir.xASLDerivatives, 'lock', 'xASL_module_ASL'));
 end
-pathASL = fullfile(x.D.ROOT, 'lock', 'xASL_module_ASL');
+pathASL = fullfile(x.dir.xASLDerivatives, 'lock', 'xASL_module_ASL');
 
 % List all the patients
 fList = xASL_adm_GetFileList(pathASL,'^.+$',[],[],1);
@@ -128,20 +128,20 @@ for iL=1:length(fList)
 end
 
 %% Rename the population lock directories
-if exist(fullfile(x.D.ROOT, 'lock', 'QC'),'dir')
-	xASL_Move(fullfile(x.D.ROOT, 'lock', 'QC'),fullfile(x.D.ROOT, 'lock', 'xASL_module_Population'));
-	xASL_Move(fullfile(x.D.ROOT, 'lock', 'xASL_module_Population','QC_module'),fullfile(x.D.ROOT, 'lock', 'xASL_module_Population', 'xASL_module_Population'));
+if exist(fullfile(x.dir.xASLDerivatives, 'lock', 'QC'),'dir')
+	xASL_Move(fullfile(x.dir.xASLDerivatives, 'lock', 'QC'),fullfile(x.dir.xASLDerivatives, 'lock', 'xASL_module_Population'));
+	xASL_Move(fullfile(x.dir.xASLDerivatives, 'lock', 'xASL_module_Population','QC_module'),fullfile(x.dir.xASLDerivatives, 'lock', 'xASL_module_Population', 'xASL_module_Population'));
 
-	pathLoc = fullfile(x.D.ROOT, 'lock', 'xASL_module_Population', 'xASL_module_Population');
+	pathLoc = fullfile(x.dir.xASLDerivatives, 'lock', 'xASL_module_Population', 'xASL_module_Population');
 
 	if exist(fullfile(pathLoc,'999_ready.status'),'file'), xASL_delete(fullfile(pathLoc,'999_ready.status'));end
 	if exist(fullfile(pathLoc,'001_QA_checkImreg.status'),'file'), xASL_delete(fullfile(pathLoc,'001_QA_checkImreg.status'));end
 
-	if exist(fullfile(x.D.ROOT,'lock','NORMALIZE','NORMALIZE_module','002_mean_warp_templates.status'),'file')
-		xASL_Move(fullfile(x.D.ROOT,'lock','NORMALIZE','NORMALIZE_module','002_mean_warp_templates.status'),fullfile(pathLoc,'010_mean_warp_templates.status'))
+	if exist(fullfile(x.dir.xASLDerivatives,'lock','NORMALIZE','NORMALIZE_module','002_mean_warp_templates.status'),'file')
+		xASL_Move(fullfile(x.dir.xASLDerivatives,'lock','NORMALIZE','NORMALIZE_module','002_mean_warp_templates.status'),fullfile(pathLoc,'010_mean_warp_templates.status'))
 
-		xASL_delete(fullfile(x.D.ROOT,'lock','NORMALIZE','NORMALIZE_module','999_ready.status'));
-		xASL_delete(fullfile(x.D.ROOT,'lock','NORMALIZE'));
+		xASL_delete(fullfile(x.dir.xASLDerivatives,'lock','NORMALIZE','NORMALIZE_module','999_ready.status'));
+		xASL_delete(fullfile(x.dir.xASLDerivatives,'lock','NORMALIZE'));
 	end
 
     % Rename the lock-files
@@ -162,7 +162,7 @@ if exist(fullfile(x.D.ROOT, 'lock', 'QC'),'dir')
 end
 
 %% Delete the population lock files
-pathLoc = fullfile(x.D.ROOT, 'lock', 'xASL_module_Population', 'xASL_module_Population');
+pathLoc = fullfile(x.dir.xASLDerivatives, 'lock', 'xASL_module_Population', 'xASL_module_Population');
 xASL_delete(fullfile(pathLoc,'010_mean_warp_templates.status'));
 xASL_delete(fullfile(pathLoc,'050_QA_checkDICOMvalues.status'));
 xASL_delete(fullfile(pathLoc,'060_QA_volume_stats.status'));
@@ -171,10 +171,10 @@ xASL_delete(fullfile(pathLoc,'080_ROI_analysis.status'));
 xASL_delete(fullfile(pathLoc,'999_ready.status'));
 
 %% Delete the .mat files
-xASL_delete(fullfile(x.D.ROOT,'x.mat'));
+xASL_delete(fullfile(x.dir.xASLDerivatives,'x.mat'));
 
 % And for each subject
-fList = xASL_adm_GetFileList(x.D.ROOT,'^.+$',[],[],1);
+fList = xASL_adm_GetFileList(x.dir.xASLDerivatives,'^.+$',[],[],1);
 for iL=1:length(fList)
 	xASL_delete(fullfile(fList{iL},'x.mat'));
 end

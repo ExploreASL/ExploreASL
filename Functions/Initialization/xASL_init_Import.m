@@ -30,6 +30,7 @@ function x = xASL_init_Import(x)
     end
     
     % For the xASL_Iterate support we need x.D.ROOT as well
+    % This x.D.ROOT represents x.dir.RawData
     x.D.ROOT = x.dir.DatasetRoot;
     
     % Currently fixed import settings

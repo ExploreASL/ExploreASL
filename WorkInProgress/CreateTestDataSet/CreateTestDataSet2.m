@@ -8,11 +8,11 @@ Counter = 0;
 
 for iSubject=1:x.dataset.nSubjects
     xASL_TrackProgress(iSubject, x.dataset.nSubjects);
-    Path_ASL4Dnii = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D.nii');
-    Path_ASL4DniiTemp2Delete = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete.nii');
-    Path_ASL4DniiTemp2Delete_StandardSpace = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete_StandardSpace.nii');
-    Path_ASL4Djson = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D.json');
-    PathY = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'y_ASL.nii');
+    Path_ASL4Dnii = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D.nii');
+    Path_ASL4DniiTemp2Delete = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete.nii');
+    Path_ASL4DniiTemp2Delete_StandardSpace = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete_StandardSpace.nii');
+    Path_ASL4Djson = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D.json');
+    PathY = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'ASL_1', 'y_ASL.nii');
     
     if ~exist(Path_ASL4Djson, 'file') || ~xASL_exist(Path_ASL4Dnii, 'file')
         fprintf(['iSubject ' x.SUBJECTS{iSubject} ' is missing JSON or ASL4D file(s)\n']); % here we had 040EPAD00014 00064 00066 00085 missing ASL scans
@@ -76,8 +76,8 @@ xASL_io_SaveNifti(InverseSpaceM0, InverseSpaceM0, M0./ 600, [], 0);
 
 % Delete temporary files
 for iSubject=1:x.dataset.nSubjects
-    Path_ASL4DniiTemp2Delete = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete.nii');
-    Path_ASL4DniiTemp2Delete_StandardSpace = fullfile(x.D.ROOT, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete_StandardSpace.nii');
+    Path_ASL4DniiTemp2Delete = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete.nii');
+    Path_ASL4DniiTemp2Delete_StandardSpace = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'ASL_1', 'ASL4D_Temp2Delete_StandardSpace.nii');
     xASL_delete(Path_ASL4DniiTemp2Delete);
     xASL_delete(Path_ASL4DniiTemp2Delete_StandardSpace);
 end
@@ -100,7 +100,7 @@ PathDataParNew = fullfile(NewAnalysisDir,'DataParameters_HiQ.json');
 x = ExploreASL_Initialize();
 x.settings.Quality = 1;
 xASL_adm_CreateDir(NewAnalysisDir);
-SubjectDir = fullfile(x.D.ROOT,'Sub-001');
+SubjectDir = fullfile(x.dir.xASLDerivatives,'Sub-001');
 NewSubjectDir = fullfile(NewAnalysisDir,'Sub-001');
 NewASLDir = fullfile(NewSubjectDir,'ASL_1');
 xASL_adm_CreateDir(NewSubjectDir);
