@@ -39,10 +39,9 @@ function x = xASL_imp_DetermineSubjectStructure(x)
         % Determine structure from temp data
         x = xASL_imp_DetermineStructureFromTempdata(x);
         
-    elseif (x.opts.bImport(3) || x.opts.bLoadData)
+    elseif x.opts.bImport(3)
         % Determine structure from rawdata
-        warning('Loading subject-list from rawdata, this may cause conflicts');
-        fprintf('%s\n','Hint, ensure that the subjects in sourcedata and rawdata are identical');        
+        warning('Loading subject-list from rawdata for defacing, this may differ from subjects in sourcedata');
         x = xASL_imp_DetermineStructureFromRawdata(x);
 
     end
@@ -86,26 +85,11 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
             end 
         end
 
-        % Check if data can be loaded
-        if isempty(x.SUBJECTS)
-            warning('Unable to find subjects in BIDS rawdata directory...');
-            x.opts.bLoadData = false;
-            x.opts.bLoadableData = false;
-        else
-            % We can probably load the data
-            x.opts.bLoadableData = true;
-        end
-        
     else
         % Maybe a user does not have a BIDS sourcedata or rawdata directory
         % and only runs the ExploreASL workflow on derivatives data.
         % Maybe BIDS2Legacy is turned on, but it actually shouldn't be.
-        fprintf(2,'There is no rawdata directory...\n');
-        x.opts.bSkipBIDS2Legacy = true;
-        % We need to try to load the data anyway right now, otherwise the
-        % workflow will skip the processing for datasets without rawdata
-        % completely.
-        x.opts.bLoadableData = true;
+        fprintf(2,'There is no rawdata directory, skipping defacing...\n');
     end
 
 

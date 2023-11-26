@@ -147,7 +147,7 @@ function [result, x] = xASL_module_Import(x)
     % Initialize x struct
     x = xASL_init_SubStructs(x);
     
-    %% 1. Run the DCM2NIIX
+    %% 1. Run DCM2NIIX
     iState = 1;
     if x.opts.bImport(1) && ~x.mutex.HasState(StateName{1})
         x = xASL_wrp_DCM2NII(x);
@@ -157,7 +157,7 @@ function [result, x] = xASL_module_Import(x)
     end
 
     
-    %% 2. Run the NIfTI to ASL-BIDS
+    %% 2. Run NIfTI to ASL-BIDS
     iState = 2;
     if x.opts.bImport(2) && ~x.mutex.HasState(StateName{2})
         x = xASL_wrp_NII2BIDS(x);
@@ -166,7 +166,7 @@ function [result, x] = xASL_module_Import(x)
         fprintf('NIIX to ASL-BIDS was run before...   \n');
 	end
     
-	%% 3. Run the DCM2NIIX
+	%% 3. Run DCM2NIIX
     iState = 3;
     if x.opts.bImport(3) && ~x.mutex.HasState(StateName{3})
         xASL_wrp_Deface(x);
