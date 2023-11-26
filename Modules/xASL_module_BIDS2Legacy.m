@@ -91,7 +91,16 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         
             % each index in x.modules.bids2legacy.BIDS.subjects has its unique subject-visit combination
             % which is identical to the order in ExploreASL legacy x.SUBJECTS
-            % which is defined in xASL_init_BIDS2Legacy
+            % which is defined in xASL_init_BIDS2Legacy, e.g.,
+            % x.modules.bids2legacy.BIDS.subjects(1) -> name = sub-10015124 session = ses-1, legacy sub-10015124_1
+            % x.modules.bids2legacy.BIDS.subjects(2) -> name = sub-10015124 session = ses-2, legacy sub-10015124_2
+            % x.modules.bids2legacy.BIDS.subjects(3) -> name = sub-10015125 session = ses-1, legacy sub-10015125_1
+            %
+            % Note that a subject-visit combination can have multiple runs, e.g.,
+            % x.modules.bids2legacy.BIDS.subjects(1).perf(1) -> filename: 'sub-10015124_ses-1_run-1_asl.nii.gz'
+            % x.modules.bids2legacy.BIDS.subjects(1).perf(2) -> filename: 'sub-10015124_ses-1_run-2_asl.nii.gz'
+            % x.modules.bids2legacy.BIDS.subjects(1).perf(3) -> filename: 'sub-10015124_ses-1_run-1_m0scan.nii.gz'
+            % x.modules.bids2legacy.BIDS.subjects(1).perf(4) -> filename: 'sub-10015124_ses-1_run-2_m0scan.nii.gz'            
 
             % Subject ID
             SubjectID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).name;
