@@ -126,6 +126,12 @@ function [x] = xASL_init_LoadMetadata(x)
     end
         
     if bCreateParticipantsTsv
+        if x.opts.nWorkers>1
+            warning('Cannot translate legacy .mat files to participants.tsv because we are running in parallel');
+            fprintf('%s\n', 'Consider first loading ExploreASL without parallelization to update your dataset');
+            return;
+        end
+
         for iSession=1:x.dataset.nSessions
             VarDataOri([iSession:x.dataset.nSessions:x.dataset.nSubjectsSessions-x.dataset.nSessions+iSession], 1) = x.SUBJECTS(:);
         end
@@ -175,7 +181,9 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
 
     % Backwards compatibility: rename to lowercase
     fileListParticipantsTSVold = xASL_adm_GetFileList(x.dir.xASLDerivatives,'^Participants.tsv$',false);
-    if ~isempty(fileListParticipantsTSVold) % We added the _temp copy step so that the code works on case insensitive systems like windows as well. Please don't remove that step for backwards compatibility (at least not until release 2.0.0).
+
+    % We skip this when running in parallel
+    if x.opts.nWorkers==1 && ~isempty(fileListParticipantsTSVold) % We added the _temp copy step so that the code works on case insensitive systems like windows as well. Please don't remove that step for backwards compatibility (at least not until release 2.0.0).
         pathParticipantsTSVold = fullfile(x.dir.xASLDerivatives, 'Participants.tsv');
         pathParticipantsTSVoldTemp = fullfile(x.dir.xASLDerivatives, 'Participants_temp.tsv');
         xASL_Move(pathParticipantsTSVold,pathParticipantsTSVoldTemp);
