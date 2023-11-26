@@ -19,7 +19,6 @@ function [x] = xASL_init_DataLoading(x)
 % This function is divided into the following (sub)functions:
 % 1. xASL_adm_CleanUpX (Clean up the x struct before we load any data)
 % 2. xASL_init_DefineDataDependentSettings (if we only want to load the data)
-% 3. xASL_init_LoadDataParameterFile (settings for running ExploreASL)
 % 4. xASL_init_DefineDataDependentSettings (if we also want to process the data)
 % 5. xASL_init_DefineStudyData (Subjects, sessions, visits, timepoints, which to include/exclude etc)
 %    (this is the only function here that is not a local subfunction, because it is rather large)
@@ -31,11 +30,8 @@ function [x] = xASL_init_DataLoading(x)
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
 
-    %% 1. xASL_adm_CleanUpX
-    % Clean up the x struct before we load any data
-    x = xASL_adm_CleanUpX(x);
-
-    %% Print the hyperlink
+    %% Initialization
+    % Print the hyperlink
 	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
         disp('<a href="https://exploreasl.github.io/Documentation/latest/Tutorials-Processing; ">Click here for the ExploreASL processing tutorial</a>');
         disp('<a href="https://exploreasl.github.io/Documentation/latest/ProcessingParameters; ">Click here for the ExploreASL processing settings overview</a>');
@@ -49,25 +45,16 @@ function [x] = xASL_init_DataLoading(x)
         x.dataset = struct;
 	end
     
-    %% 2. xASL_init_DefineDataDependentSettings (if we only want to load the data)
-    % Define several ExploreASL environment parameters that are dependent on the loaded data,
-    % such as the subfolders of the population folder, which maps and templates to use, which visualization settings, and which fields are deprecated.
-	if x.opts.bLoadableData
-		if ~isfield(x,'dir') || ~isfield(x.dir,'dataPar') || isempty(x.dir.dataPar)
-			warning('You are trying to load a dataset but no dataPar.json file was specified.');
-			x.opts.bLoadData = false;
-			x = xASL_init_DefineDataDependentSettings(x);
-			return
-		end
-	end
         
 	% Go to ExploreASL folder
     cd(x.opts.MyPath);
-	
-    %% 3. xASL_init_LoadDataParameterFile (settings for running ExploreASL)
-	x = xASL_init_LoadDataParameterFile(x);
-	
 
+
+    %% Load dataPar.json
+    [x] = xASL_init_LoadDataPar(x);
+
+
+    
     %% 4. xASL_init_DefineDataDependentSettings (if we also want to process the data)
     % Define several ExploreASL environment parameters that are dependent on the loaded data,
     % such as the subfolders of the population folder, which maps and templates to use, which visualization settings, and which fields are deprecated.
@@ -379,81 +366,6 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
 
 
 
-
-
-%% =======================================================================================================================
-%% =======================================================================================================================
-function [x] = xASL_init_LoadDataParameterFile(x)
-    %xASL_init_LoadDataParameterFile Load data parameter file
-    %
-    % FORMAT: [x] = xASL_init_LoadDataParameterFile(x)
-    %
-    % INPUT:
-    %   x       - ExploreASL x structure (STRUCT, REQUIRED)
-    %
-    % OUTPUT:
-    %   x       - ExploreASL x structure (STRUCT)
-    %
-    % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % DESCRIPTION: Load data parameter file (which contains settings for running the pipeline)
-    %
-    % EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
-    %
-    % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % REFERENCES:  n/a
-    % __________________________________
-    % Copyright (c) 2015-2022 ExploreASL
-    
-    
-        %% Get file extension and back up the x structure
-        [pathstr, ~, Dext] = fileparts(x.dir.dataPar);
-        xBackup = x;
-    
-        % Reading the .json file
-        if strcmp(Dext,'.json')
-            x = xASL_io_ReadDataPar(x.dir.dataPar, false);
-        elseif strcmp(Dext,'.m')
-            error('No .m file backwards compatibility starting v1.10.0...');
-        elseif strcmp(Dext,'.mat')
-            error('No .mat file backwards compatibility starting v1.10.0...');
-        end
-        
-        % Put x fields back from backup
-        x = xASL_adm_MergeStructs(x,xBackup);
-        
-        % Directories
-        if ~isfield(x,'D')
-            x.D = struct;
-        end
-        
-        % ROOT
-        if ~isfield(x.D,'ROOT')
-            if isfield(x,'ROOT')
-                x.dir.xASLDerivatives = x.ROOT;
-            else
-                % Default
-                x.dir.xASLDerivatives = pathstr;
-            end
-        end
-        
-        % Check if x.dir.xASLDerivatives does not exist
-        if ~exist(x.dir.xASLDerivatives, 'dir')
-            % Check if x.dir.xASLDerivatives was defined as a relative path
-            if exist(fullfile(pathstr,x.dir.xASLDerivatives), 'dir')
-                x.dir.xASLDerivatives = fullfile(pathstr,x.dir.xASLDerivatives);
-                x.ROOT = x.dir.xASLDerivatives;
-            else
-                warning([x.dir.xASLDerivatives ' didnt exist as folder, trying path of DataPar file']);
-                x.dir.xASLDerivatives = pathstr;
-                x.ROOT = pathstr;
-            end
-        end
-    
-    end
-            
-
-
-
 %% =======================================================================================================================
 %% =======================================================================================================================
 function [x] = xASL_init_RemoveLockDirs(x)
@@ -506,7 +418,7 @@ function [x] = xASL_init_RemoveLockDirs(x)
 %% =======================================================================================================================
 %% =======================================================================================================================
 function x = xASL_init_PrintCheckSettings(x)
-    %xASL_init_PrintCheckSettings Check whether pre-defined settings existed in dataPar.json
+    %xASL_init_PrintCheckSettings Check whether pre-defined settings existed
     %
     % FORMAT: x = xASL_init_PrintCheckSettings(x)
     %
@@ -517,7 +429,7 @@ function x = xASL_init_PrintCheckSettings(x)
     %   x       - ExploreASL x structure (STRUCT)
     %
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % DESCRIPTION: Check whether pre-defined settings existed in `dataPar.json`.
+    % DESCRIPTION: Check whether pre-defined settings existed
     %
     % Prints these on the screen as the start of the pipeline.
     % Runs following steps:
@@ -623,7 +535,7 @@ function x = xASL_init_PrintCheckSettings(x)
     
         for iField=1:length(field_symbol)
             if ~isfield(x.dataset,field_symbol{iField})
-                warning(['x.dataset' field_symbol{iField} ' was not defined in dataPar.json!'])
+                warning(['x.dataset' field_symbol{iField} ' was not defined!'])
             end
         end
     
@@ -633,7 +545,7 @@ function x = xASL_init_PrintCheckSettings(x)
             field_symbol = {'xASLDerivatives'};
             for iField=1:length(field_symbol)
                 if ~isfield(x.dir,field_symbol{iField})
-                    warning(['x.dir.' field_symbol{iField} ' was not defined in DATA_PAR.m!'])
+                    warning(['x.dir.' field_symbol{iField} ' was not defined!'])
                 end
             end
         end
