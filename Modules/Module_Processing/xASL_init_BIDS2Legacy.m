@@ -99,8 +99,28 @@ else
 end
 
 
-%% 4. Load the BIDS structure of all subjects
+%% 4. Load the BIDS structure of all subjects & translate to ExploreASL legacy
 x.modules.bids2legacy.BIDS = bids.layout(fullfile(x.dir.DatasetRoot,'rawdata'));
+
+% Remove any pre-existing fields
+x.SUBJECTS = {};
+x.dataset.TotalSubjects = {};
+
+% Now we translate the BIDS naming convention to ExploreASL's legacy name convention
+for iSubj=1:length(x.modules.bids2legacy.BIDS.subjects)
+    subjectName = x.modules.bids2legacy.BIDS.subjects(iSubj).name;
+    visitName = x.modules.bids2legacy.BIDS.subjects(iSubj).session;
+    if ~strcmp(visitName(1:4), 'ses-')
+        warning(['Illegal BIDS session definition for ' subjectName '_' visitName]);
+    else
+        visitName = visitName(5:end);
+    end
+    
+    x.dataset.TotalSubjects{iSubj} = [subjectName '_' visitName];
+end
+
+x.SUBJECTS = x.dataset.TotalSubjects;
+
 
 
 %% 5. Create the derivatives directory

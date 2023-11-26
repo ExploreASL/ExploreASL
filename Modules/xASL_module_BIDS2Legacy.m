@@ -87,53 +87,26 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         end
 
         %% 2. Define Subject
-        indicesCurrentSubject = find(cellfun( @(y) strcmp(y, x.SUBJECT), {x.modules.bids2legacy.BIDS.subjects.name}));
+        iSubjSess = find(strcmp(x.SUBJECTS, x.SUBJECT));
+        
+            % each index in x.modules.bids2legacy.BIDS.subjects has its unique subject-visit combination
+            % which is identical to the order in ExploreASL legacy x.SUBJECTS
+            % which is defined in xASL_init_BIDS2Legacy
 
-
-        for iSubjSess=indicesCurrentSubject
-            % Iterate over x.modules.bids2legacy.BIDS.subjects for the current subject
-            % (indices that include both subjects & sessions)
-            % so  1 subject 6 session/visits, will give numel(x.modules.bids2legacy.BIDS.subjects)=6
-            
             % Subject ID
             SubjectID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).name;
-            
-            % Subject-wise processing (because xASL_Iteration runs over subjects)
-            if ~isempty(regexpi(SubjectID, x.SUBJECT, 'once'))
-            
-                % Session ID (Currently, ExploreASL concatenates subject_visit/timepoint in the same folder layer, so we only use SubjectSession)
-                SessionID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).session;
+            SessionID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).session;
+            iVisit = str2num(SessionID(5:end));
+
+            SubjectVisit = [SubjectID '_' xASL_num2str(iVisit)]; % this is the legacy name
+
+            if ~strcmp(SubjectVisit, x.SUBJECT)
+                error(['xASL_init_BIDS2Legacy ' x.SUBJECT ' should match with xASL_module_BIDS2Legacy ' SubjectVisit]);
+            else
 
                 %% 3. Define Session
-                iVisit = find(strcmp(x.modules.bids2legacy.BIDS.sessionName, SessionID));
                 
-                if isempty(SessionID)
-                    SessionID = 'unknown'; % default to have at least some output
-                end
-                
-                % Remove iteration for iVisit = 1 -> iterate visit/session in this "x.modules.bids2legacy.BIDS.subjects" (always 1 session per x.modules.bids2legacy.BIDS.subjects)
-                % ExploreASL uses visit as a number (e.g. _1 _2 _3 etc)
-                if nVisits==1
-                    pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, SubjectID);
-                    VisitString = '';
-                else
-                    if isempty(iVisit)
-                        if bVerbose
-                            fprintf('\nEmpty session number, setting session number to 1...\n');
-                        end
-                        pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_1']);
-                    else
-                        % If Visit name is of a form ses-number then use this number otherwise the ID
-                        if regexpi(SessionID, 'ses-\d+')
-                            pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, [SubjectID '_' SessionID(5:end)]);
-                        else
-                            error(['Not yet supporting session names as strings, but only as numbers for session ', SessionID]);
-                        end
-                    end
-                    VisitString = [' visit ' SessionID];
-                end
-                
-                SubjectVisit = [SubjectID VisitString];
+                pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, SubjectVisit);
                 
                 % Create subject/session directory (to enable reruns for pre-imported or crashed datasets, we need a subject level here/above!)
                 xASL_adm_CreateDir(pathLegacy_SubjectVisit);
@@ -145,12 +118,10 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
                 xASL_bids_BIDS2Legacy_ParseModality(x.modules.bids2legacy.BIDS, x.modules.bids2legacy.bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);
 
             end
-        end
-
 
         % Get directories of current subject. The BIDS subject name can be prefixed
         % with sub- and suffixed with _1 _2 _3 etc for visits, in the legacy format
-        SubjectDirs = xASL_adm_GetFileList(fullfile(x.dir.xASLDerivatives), ['^(|sub-)' x.SUBJECT '(|_\d*)$'], [],[],true);
+        SubjectDirs = {pathLegacy_SubjectVisit};
 
 
         %% 5. Parse M0 of current subject

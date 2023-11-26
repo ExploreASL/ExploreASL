@@ -88,7 +88,7 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
             x.opts.bLoadableData = true;
         end
     
-
+        x = rmfield(x, 'SUBJECTS');
 
 
     end
