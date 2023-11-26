@@ -118,11 +118,5 @@ function x = xASL_wrp_NII2BIDS(x)
     if isempty(dirsInTemp) && isempty(filesInTemp)
         xASL_delete(x.modules.import.imPar.TempRoot, true);
     end
-    
-    % Update x.opts.DatasetRoot
-    x = xASL_imp_UpdateDatasetRoot(x);
 
 end
-
-
-

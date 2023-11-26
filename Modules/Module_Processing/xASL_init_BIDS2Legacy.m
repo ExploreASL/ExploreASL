@@ -30,9 +30,6 @@ if nargin < 1 || isempty(x)
 	error('x-struct is a required input');
 end
 
-% Update paths
-x = xASL_imp_UpdateDatasetRoot(x);
-
 
 %% 1. Check basic directories
 if ~isfield(x,'dir')
@@ -51,14 +48,25 @@ if isempty(x.dir.DatasetRoot)
 end
 
 % Verify that the rawdata subfolder exists
-if ~exist(fullfile(x.dir.DatasetRoot,'rawdata'),'dir')
-    warning('Invalid folder selected, not containing rawdata folder');
+if ~exist(fullfile(x.dir.DatasetRoot,'rawdata'), 'dir')
+    warning(['Rawdata folder missing: ' fullfile(x.dir.DatasetRoot,'rawdata')]);
     return;
 end
 
 % Check derivatives of ExploreASL
 if ~isfield(x.dir,'xASLDerivatives')
     error('Missing xASL derivatives field...');
+end
+
+% Search for dataset_description.json within the rawdata subfolder
+datadescriptionFile = fullfile(x.dir.RawData, 'dataset_description.json');
+
+% Check if valid dataset_description.json exists within the rawdata folder
+if ~exist(datadescriptionFile, 'file')
+    warning('No valid dataset_description.json found within the rawdata directory...');
+    fprintf('%s\n', 'Ensure that your data is BIDS compatible by running the BIDS validator');
+else
+    x.dir.dataset_description = datadescriptionFile;
 end
 
 
