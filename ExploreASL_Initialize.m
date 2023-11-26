@@ -342,14 +342,6 @@ function x = xASL_init_InputParsing(x, varargin)
             x.opts.bLoadData = false;
         end
         
-        % We need to check if import/defacing and processing were run separately
-        if x.opts.bImportData && ~x.opts.bProcessData
-            x.opts.bSkipBIDS2Legacy = true;
-            x.opts.bLoadData = false;
-        else
-            x.opts.bSkipBIDS2Legacy = false;
-        end
-    
         % Warn the user if processing data but not loading a dataset
         if x.opts.bProcessData && ~x.opts.bLoadData
             warning('Data loading was disabled or incorrect dataset provided!');
@@ -679,8 +671,7 @@ end
                 % dataPar.json
                 if strcmp(x.opts.dataParType,'dataParFile')
                     % It is a dataPar.json, so do not run the BIDS import workflow
-                    if x.opts.bProcessData==0
-                        x.opts.bProcessData = 0; % Initialize & load but do not process
+                    if ~x.opts.bProcessData
                         x.opts.bLoadData = true;
                     end
                 end
@@ -688,8 +679,7 @@ end
                 % sourceStructure.json
                 if strcmp(x.opts.dataParType,'sourceStructure') || strcmp(x.opts.dataParType,'dataset_description')
                     % It is a sourceStructure.json or dataset_description.json, so we run the import workflow
-                    if x.opts.bProcessData==0
-                        x.opts.bProcessData = 0; % Initialize & load but do not process
+                    if ~x.opts.bProcessData==0
                         x.opts.bLoadData = true;
                     end
                 end
