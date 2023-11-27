@@ -51,10 +51,15 @@ function [x] = xASL_init_DataLoading(x)
 
 
     %% Load dataPar.json
-    [x] = xASL_init_LoadDataPar(x);
+    x = xASL_init_LoadDataPar(x);
 
+    %% Load dataset_description.json
+    x = xASL_init_Loaddataset_description(x);
 
     
+
+
+
     %% 4. xASL_init_DefineDataDependentSettings (if we also want to process the data)
     % Define several ExploreASL environment parameters that are dependent on the loaded data,
     % such as the subfolders of the population folder, which maps and templates to use, which visualization settings, and which fields are deprecated.

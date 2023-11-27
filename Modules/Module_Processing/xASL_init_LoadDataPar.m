@@ -34,43 +34,45 @@ function [x] = xASL_init_LoadDataPar(x)
     %% Choose the dataPar location
 
     bUseRoot = false;
+    bUseRawdata = false;
     bUseDerivatives = false;
 
     % Check dataPar inside the root folder /
-    listDataparRoot = xASL_adm_GetFileList(x.dir.DatasetRoot, '(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
-    if ~isempty(listDataparRoot)
+    listRoot = xASL_adm_GetFileList(x.dir.DatasetRoot, '(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
+    if ~isempty(listRoot)
         bUseRoot = true;
     end   
 
-    % Check dataPar inside the rawdata folder /rawdata (this one we ignore, ExploreASL settings shouldn't belong to a raw BIDS dataset)
-    listDataparRawdata = xASL_adm_GetFileList(x.dir.RawData, '(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
-    if ~isempty(listDataparRawdata)
-        warning([xASL_num2str(length(listDataparRawdata)) ' dataPar.json (or similar) file(s) found in ' x.dir.RawData ', will try this but this is not the appropriate location']);
+    % Check dataPar inside the rawdata folder /rawdata
+    listRawdata = xASL_adm_GetFileList(x.dir.RawData, '(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
+    if ~isempty(listRawdata)
+        warning([xASL_num2str(length(listRawdata)) ' dataPar.json (or similar) file(s) found in ' x.dir.RawData ', will try this but this is not the appropriate location']);
         bUseRawdata = true;
     end
 
     % Check dataPar inside the processing folder /derivatives/ExploreASL
-    fListDataParLegacy = xASL_adm_GetFileList(x.dir.xASLDerivatives, '(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
-    if ~isempty(fListDataParLegacy)
+    fListLegacy = xASL_adm_GetFileList(x.dir.xASLDerivatives, '(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
+    if ~isempty(fListLegacy)
         bUseDerivatives = true;
     end
 
     % Choose folder & filelist
     if bUseDerivatives && bUseRoot
-        fprintf('%s\n', 'dataPar.json (or similar) file(s) both in /derivatives/ExploreASL and / root folder, ignoring the last');
+            % We prioritize existing dataPar.json in the derivatives folder
+        fprintf('%s\n', 'dataPar.json (or similar) file(s) both in /derivatives/ExploreASL and / root folder, ignoring root folder');
         bUseRoot = false;
     end
     if bUseDerivatives
         fFolder = x.dir.xASLDerivatives;
-        listDatapar = fListDataParLegacy;
+        listDatapar = fListLegacy;
         fprintf('%s\n', ['dataPar.json found in ' fFolder]);
     elseif bUseRoot
         fFolder = x.dir.DatasetRoot;
-        listDatapar = listDataparRoot;
+        listDatapar = listRoot;
         fprintf('%s\n', ['dataPar.json found in ' fFolder]);
     elseif bUseRawdata
         fFolder = x.dir.RawData;
-        listDatapar = listDataparRawdata;
+        listDatapar = listRawdata;
         fprintf('%s\n', ['dataPar.json found in ' fFolder]);
     else
         listDatapar = {};
@@ -84,10 +86,10 @@ function [x] = xASL_init_LoadDataPar(x)
         % Create default if no dataPar was provided
         fprintf('No dataPar.json provided, will create default version\n');
         dataPar = struct();
-    else
-        % dataPar was provided
-        dataPar.x = xASL_io_ReadDataPar(listDatapar{1});
     end
+    % dataPar was provided
+    dataPar.x = xASL_io_ReadDataPar(listDatapar{1});
+
 
 
     %% Populate dataPar with missing parameters
