@@ -11,6 +11,7 @@ function x = xASL_init_Process(x)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Initialization before ExploreASL_Process.
+% 1. 
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
@@ -20,8 +21,7 @@ function x = xASL_init_Process(x)
 
     %% Initialization
 
-    %% Initialization
-    % Print the hyperlink
+    %% 1. Print the hyperlink
 	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
         disp('<a href="https://exploreasl.github.io/Documentation/latest/Tutorials-Processing; ">Click here for the ExploreASL processing tutorial</a>');
         disp('<a href="https://exploreasl.github.io/Documentation/latest/ProcessingParameters; ">Click here for the ExploreASL processing settings overview</a>');
@@ -30,12 +30,9 @@ function x = xASL_init_Process(x)
         fprintf('A full explanation of processing parameters is @: https://exploreasl.github.io/Documentation/latest/ProcessingParameters\n');
 	end
     
+
     %% Data loading
-	if ~isfield(x,'dataset')
-        x.dataset = struct;
-	end
-    
-        
+
 	% Go to ExploreASL folder
     cd(x.opts.MyPath);
 
@@ -65,16 +62,9 @@ function x = xASL_init_Process(x)
     % Create logging directory if it does not exist already
     xASL_adm_CreateDir(fullfile(x.dir.xASLDerivatives, 'log'));
 
-    % Force x.D.ROOT to be derivatives
-    x.D.ROOT = x.dir.xASLDerivatives;
-    x.ROOT = x.dir.xASLDerivatives;
 
 
     %% 1. Check basic directories
-    if ~isfield(x,'dir')
-	    error('Missing directories field...');
-    end
-    
     if isempty(x.dir.DatasetRoot)
 	    error('x.dir.DatasetRoot is a required parameter.');
     end
@@ -107,17 +97,7 @@ function x = xASL_init_Process(x)
     % This is the line needed by xASL_init_Iteration for BIDS2Legacy
     x.D.ROOT = x.dir.DatasetRoot;
     
-    % SESSIONS DUMMY
-    x.SESSIONS = {''};
 
-    
-    %% dataset admin
-    if ~isfield(x,'dataset')
-        x.dataset = struct; 
-    end
-    if ~isfield(x.dataset,'name')
-        x.dataset.name = ''; 
-    end
 
 
 end

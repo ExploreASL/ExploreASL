@@ -42,8 +42,13 @@ function [x] = xASL_init_SubStructs(x)
     if ~isfield(x,'dataset'),               x.dataset = struct;             end
     if ~isfield(x,'settings'),              x.settings = struct;            end
     if ~isfield(x,'external'),              x.external = struct;            end
-    if ~isfield(x,'dir'),                   x.dir = struct;                 end     
-    if ~isfield(x,'opts'),                  x.opts = struct;                end     
+    if ~isfield(x,'dir'),                   x.dir = struct;                 end
+    if ~isfield(x,'opts'),                  x.opts = struct;                end
+
+    if ~isfield(x.dataset,'name'),          x.dataset.name = '';            end
+
+    % SESSIONS DUMMY
+    if ~isfield(x, 'SESSIONS'),             x.SESSIONS = {''};              end
+
 
 end
-

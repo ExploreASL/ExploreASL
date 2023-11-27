@@ -116,9 +116,6 @@ function [x] = xASL_init_DefineDataParDependentSettings(x)
     
     %% --------------------------------------------------------------------------
     %% Reproducibility testing
-    if ~isfield(x,'settings')
-        x.settings = struct;
-    end
     if ~isfield(x.settings,'bReproTesting')
         x.settings.bReproTesting = false;
     end
