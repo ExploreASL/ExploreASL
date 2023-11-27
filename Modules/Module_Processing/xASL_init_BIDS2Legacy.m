@@ -53,9 +53,7 @@ end
 
 
 
-
-
-%% 4. Load the BIDS structure of all subjects & translate to ExploreASL legacy
+%% 2. Load the BIDS structure of all subjects & translate to ExploreASL legacy
 x.modules.bids2legacy.BIDS = bids.layout(fullfile(x.dir.DatasetRoot,'rawdata'));
 
 % Remove any pre-existing fields
@@ -79,7 +77,7 @@ x.SUBJECTS = x.dataset.TotalSubjects;
 
 
 
-%% 5. Create the derivatives directory
+%% 3. Create the derivatives directory
 if exist(x.dir.xASLDerivatives, 'dir')
     fprintf('%s\n', [x.dir.xASLDerivatives ' already exists']);
     fprintf('%s\n', 'Note that all pre-existing derivative subject folders will be overwritten,');
