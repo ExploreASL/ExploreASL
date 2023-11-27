@@ -69,45 +69,48 @@ function [x] = ExploreASL_Process(x)
 % Copyright (c) 2015-2023 ExploreASL
 
 
-    %% Processing Workflow
-    
-    % -----------------------------------------------------------------------------
-    %% 0 Run BIDS to Legacy conversion.
-    % The rawdata (datasetRoot/rawdata/*) is in BIDS, where the ExploreASL derivatives 
-    % (datasetRoot/derivatives/ExploreASL/*) are in ExploreASL's own legacy format.
-    % In the future, we will probably move to BIDS derivatives, but for now we keep the legacy format.
-    % Therefore, here we copy all BIDS data to the legacy format, and then we run the processing.
+    %% Workflow for initialization of data loading and processing
+    x = xASL_init_Process(x); % this initializes all generic data loading and processing stuff
+	
 
-    x = xASL_init_Process(x); % this loads x.SUBJECTS from datasetRoot/rawdata
-    if ~x.opts.bSkipBIDS2Legacy
-		try 
-			x = xASL_init_BIDS2Legacy(x);
-		catch ME
-			fprintf('\nERROR:\n%s\n',ME.getReport());
-			x = xASL_qc_AddLoggingInfo(x, ME);
-		end
+    x = xASL_init_SubjectList(x); % create subject list for loading data from rawdata (BIDS2Legacy) or from derivatives (legacy)
+    x = xASL_init_Parallelization(x); % choose which subjects this worker processes
+    x = xASL_init_Session_TimePoint_Lists(x); % generate session & visit/time point lists
 
-		% Iterating across all subjects (can be parallelized)
-        [~, x] = xASL_init_Iteration(x,'xASL_module_BIDS2Legacy');
 
-		% Finalize BIDS 2 Legacy conversion
-		try 
-			x = xASL_bids_CompleteBIDS2Legacy(x);
-		catch ME
-			fprintf('\nERROR:\n%s\n',ME.getReport());
-			x = xASL_qc_AddLoggingInfo(x, ME);
-		end
+    if x.opts.bReadRawdata
+        % 0 Run BIDS to Legacy conversion.
+        % The rawdata (datasetRoot/rawdata/*) is in BIDS, where the ExploreASL derivatives 
+        % (datasetRoot/derivatives/ExploreASL/*) are in ExploreASL's own legacy format.
+        % In the future, we will probably move to BIDS derivatives, but for now we keep the legacy format.
+        % Therefore, here we copy all BIDS data to the legacy format, and then we run the processing.
+        [~, x] = xASL_init_Iteration(x, 'xASL_module_BIDS2Legacy');
+        x = xASL_init_CreateParticipantsTSV(x);
     end
-    
-    %% 0.1
-	if x.opts.bLoadData
+
+    if x.opts.bLoadData
+	
         % Here, we load all the ExploreASL derivatives data into the Matlab x structure, 
         % such that we can use it for processing.
         % i.e., datasetRoot/derivatives/ExploreASL/*
-		x = xASL_init_DataLoading(x);
+		
+        if ~x.opts.bLoadableData
+            % This warning is also printed if a user tries to "only load" a dataset with a descriptive JSON file. 
+            % Since this behavior will be discontinued (only directories from now on), I do not see a problem with this for now.
+            warning('Dataset can not be loaded, there is no derivatives directory, try to run the DICOM 2 BIDS (import) first...');
+            x.opts.bDataLoaded = true;
+        else
+            x = xASL_init_DataLoading(x);
+        end
 
 	end
+
+
+
+
     
+    
+
     %% 0.2
     xASL_init_PrintUserFeedback(x, 1, 0);
 

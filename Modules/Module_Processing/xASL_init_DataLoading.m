@@ -17,7 +17,6 @@ function [x] = xASL_init_DataLoading(x)
 % or (partly) already processed data.
 %
 % This function is divided into the following (sub)functions:
-% 1. xASL_adm_CleanUpX (Clean up the x struct before we load any data)
 % 2. xASL_init_DefineDataDependentSettings (if we only want to load the data)
 % 4. xASL_init_DefineDataDependentSettings (if we also want to process the data)
 % 5. xASL_init_DefineStudyData (Subjects, sessions, visits, timepoints, which to include/exclude etc)
@@ -30,24 +29,7 @@ function [x] = xASL_init_DataLoading(x)
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
 
-    %% Initialization
-    % Print the hyperlink
-	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
-        disp('<a href="https://exploreasl.github.io/Documentation/latest/Tutorials-Processing; ">Click here for the ExploreASL processing tutorial</a>');
-        disp('<a href="https://exploreasl.github.io/Documentation/latest/ProcessingParameters; ">Click here for the ExploreASL processing settings overview</a>');
-	else % text only
-        fprintf('Examples of processing-parameter settings are at: https://exploreasl.github.io/Documentation/latest/Tutorials-Processing\n');
-        fprintf('A full explanation of processing parameters is @: https://exploreasl.github.io/Documentation/latest/ProcessingParameters\n');
-	end
-    
-    %% Data loading
-	if ~isfield(x,'dataset')
-        x.dataset = struct;
-	end
-    
-        
-	% Go to ExploreASL folder
-    cd(x.opts.MyPath);
+
 
 
     %% Load dataPar.json
@@ -58,48 +40,31 @@ function [x] = xASL_init_DataLoading(x)
 
     
 
-
-
-    %% 4. xASL_init_DefineDataDependentSettings (if we also want to process the data)
+    %% 4. xASL_init_DefineDataParDependentSettings (if we also want to process the data)
     % Define several ExploreASL environment parameters that are dependent on the loaded data,
     % such as the subfolders of the population folder, which maps and templates to use, which visualization settings, and which fields are deprecated.
-    x = xASL_init_DefineDataDependentSettings(x);
+    x = xASL_init_DefineDataParDependentSettings(x);
     
-    % Check if data loading should be executed first
-    if x.opts.bLoadableData
-        % Check if a root directory was defined
-        if ~isfield(x.dir,'xASLDerivatives') || isempty(x.dir.xASLDerivatives)
-            error('No root folder defined...');
-        end
 
-        % Fix a relative path
-        if strcmp(x.dir.xASLDerivatives(1), '.')
-            cd(x.dir.xASLDerivatives);
-            x.dir.xASLDerivatives = pwd;
-        end
+    %% 5. xASL_init_DefineStudyStats
+    % Define study statistical parameters for this pipeline run
+    x = xASL_init_DefineStudyStats(x);
 
-        %% 5. xASL_init_DefineStudyData
-        % Define study subjects/parameters for this pipeline run
-        % Subjects, sessions, visits, timepoints, which to include/exclude etc)
-        % Also defines parallelization settings (iWorker, nWorkers)
-        x = xASL_init_DefineStudyData(x);
 
-        %% 6. xASL_init_RemoveLockDirs
-        % Remove lock dirs from previous runs that might still exist if the pipeline crashed.
-        % This is only performed if ExploreASL is not running in parallel
-        % Note that any lock dirs for individual modules/su
-        if x.opts.nWorkers==1
-            x = xASL_init_RemoveLockDirs(x);
-        end
 
-        %% 7. xASL_init_PrintCheckSettings
-        % Define & print settings (path, iWorker, nWorkers, Quality, DELETETEMP)
-        x = xASL_init_PrintCheckSettings(x);
-	else
-        % This warning is also printed if a user tries to "only load" a dataset with a descriptive JSON file. 
-        % Since this behavior will be discontinued (only directories from now on), I do not see a problem with this for now.
-        warning('Dataset can not be loaded, there is no derivatives directory, try to run the DICOM 2 BIDS (import) first...');
+    %% 6. xASL_init_RemoveLockDirs
+    % Remove lock dirs from previous runs that might still exist if the pipeline crashed.
+    % This is only performed if ExploreASL is not running in parallel
+    % Note that any lock dirs for individual modules/su
+    if x.opts.nWorkers==1
+        x = xASL_init_RemoveLockDirs(x);
     end
+
+    %% 7. xASL_init_PrintCheckSettings
+    % Define & print settings (path, iWorker, nWorkers, Quality, DELETETEMP)
+    x = xASL_init_PrintCheckSettings(x);
+
+
     
     % Set the field which shows that the data was loaded to true
     x.opts.bDataLoaded = true;
@@ -122,10 +87,10 @@ end
 
 %% =======================================================================================================================
 %% =======================================================================================================================
-function [x] = xASL_init_DefineDataDependentSettings(x)
-    %xASL_init_DefineDataDependentSettings Define ExploreASL environment parameters, dependent of loaded data
+function [x] = xASL_init_DefineDataParDependentSettings(x)
+    %xASL_init_DefineDataParDependentSettings Define ExploreASL environment parameters, dependent of loaded data
     %
-    % FORMAT: [x] = xASL_init_DefineDataDependentSettings(x)
+    % FORMAT: [x] = xASL_init_DefineDataParDependentSettings(x)
     %
     % INPUT:
     %   x       - ExploreASL x structure (STRUCT, REQUIRED)
@@ -158,7 +123,7 @@ function [x] = xASL_init_DefineDataDependentSettings(x)
         x.settings.bReproTesting = false;
     end
     
-    % If the reproducibility is on, then delete the old RMS file
+    % If the reproducibility is on, then delete any old RMS file
     if isfield(x.settings, 'bReproTesting')
         if x.settings.bReproTesting
             xASL_delete(fullfile(x.dir.xASLDerivatives, 'RMS_Reproducibility.mat'))
