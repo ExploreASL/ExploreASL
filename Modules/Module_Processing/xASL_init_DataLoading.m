@@ -17,12 +17,12 @@ function [x] = xASL_init_DataLoading(x)
 % or (partly) already processed data.
 %
 % This function is divided into the following (sub)functions:
-% 2. xASL_init_DefineDataDependentSettings (if we only want to load the data)
-% 4. xASL_init_DefineDataDependentSettings (if we also want to process the data)
-% 5. xASL_init_DefineStudyData (Subjects, sessions, visits, timepoints, which to include/exclude etc)
-%    (this is the only function here that is not a local subfunction, because it is rather large)
-% 6. xASL_init_RemoveLockDirs (Remove lock dirs from previous runs)
-% 7. xASL_init_PrintCheckSettings (e.g., path, iWorker, nWorkers, Quality, DELETETEMP)
+% 1. Load dataPar.json
+% 2. Load dataset_description.json
+% 3. Initialize environmental variables dependent on loaded data
+% 4. xASL_init_DefineStudyStats
+% 5. xASL_init_RemoveLockDirs
+% 6. xASL_init_PrintCheckSettings
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        [x] = xASL_init_DataLoading(x);
@@ -30,29 +30,26 @@ function [x] = xASL_init_DataLoading(x)
 % Copyright (c) 2015-2022 ExploreASL
 
 
-
-
-    %% Load dataPar.json
+    %% 1. Load dataPar.json
     x = xASL_init_LoadDataPar(x);
 
-    %% Load dataset_description.json
+
+    %% 2. Load dataset_description.json
     x = xASL_init_Loaddataset_description(x);
 
     
-
-    %% 4. xASL_init_DefineDataParDependentSettings (if we also want to process the data)
+    %% 3. Initialize environmental variables dependent on loaded data
     % Define several ExploreASL environment parameters that are dependent on the loaded data,
     % such as the subfolders of the population folder, which maps and templates to use, which visualization settings, and which fields are deprecated.
     x = xASL_init_DefineDataParDependentSettings(x);
     
 
-    %% 5. xASL_init_DefineStudyStats
+    %% 4. xASL_init_DefineStudyStats
     % Define study statistical parameters for this pipeline run
     x = xASL_init_DefineStudyStats(x);
 
 
-
-    %% 6. xASL_init_RemoveLockDirs
+    %% 5. xASL_init_RemoveLockDirs
     % Remove lock dirs from previous runs that might still exist if the pipeline crashed.
     % This is only performed if ExploreASL is not running in parallel
     % Note that any lock dirs for individual modules/su
@@ -60,15 +57,13 @@ function [x] = xASL_init_DataLoading(x)
         x = xASL_init_RemoveLockDirs(x);
     end
 
-    %% 7. xASL_init_PrintCheckSettings
+
+    %% 6. xASL_init_PrintCheckSettings
     % Define & print settings (path, iWorker, nWorkers, Quality, DELETETEMP)
     x = xASL_init_PrintCheckSettings(x);
-
-
     
     % Set the field which shows that the data was loaded to true
     x.opts.bDataLoaded = true;
-
 
 end
 

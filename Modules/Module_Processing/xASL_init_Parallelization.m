@@ -23,7 +23,7 @@ function [x] = xASL_init_Parallelization(x)
 % Copyright (c) 2015-2024 ExploreASL
 
 % ------------------------------------------------------------------------------------------------
-%% 2) Parallelization: If running parallel, select cases for this worker
+%% Parallelization: If running parallel, select cases for this worker
 if x.opts.nWorkers>1
     nSubjPerWorker = x.dataset.nTotalSubjects/x.opts.nWorkers; % ceil to make sure all subjects are processed
 

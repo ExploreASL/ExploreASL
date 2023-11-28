@@ -9,8 +9,11 @@ function [x] = xASL_init_SubjectList(x)
 % OUTPUT:
 %   x          - ExploreASL x structure
 %                         
-% 1. Manage included & excluded subjects
-% 3. Create dummy defaults (exclusion list, ASL sessions)
+% 1. Define folder to read subjects from
+% 2. Advanced parameter to enforce a subject list, without querying folder names
+% 3. Load the BIDS structure of all subjects & translate to ExploreASL legacy
+% 4. Create legacy subject list from folders
+% 5. Then load subjects
 % 6. Manage exclusions
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -19,7 +22,7 @@ function [x] = xASL_init_SubjectList(x)
 % Copyright (c) 2015-2024 ExploreASL
 
 
-%% Define folder to read subjects from
+%% 1. Define folder to read subjects from
 if isfield(x.opts, 'subjectFolder') && ~exist(x.opts.subjectFolder, 'dir')
     warning(['subjectFolder' x.opts.subjectFolder ' is no valid directory']);
     fprintf('Using default folder instead\n');
@@ -33,7 +36,7 @@ end
 
 
 % ------------------------------------------------------------------------------------------------
-%% 1. Advanced parameter to enforce a subject list, without querying folder names
+%% 2. Advanced parameter to enforce a subject list, without querying folder names
 if isfield(x.dataset,'ForceInclusionList')
     % This is an option if you want to select subjects yourself,
     % instead of using all the subjects that comply with the regular expression
@@ -42,7 +45,7 @@ if isfield(x.dataset,'ForceInclusionList')
 
 elseif x.opts.bReadRawdata
 
-    %% 2. Load the BIDS structure of all subjects & translate to ExploreASL legacy
+    %% 3. Load the BIDS structure of all subjects & translate to ExploreASL legacy
     x.modules.bids2legacy.BIDS = bids.layout(subjectFolder);
     
     % Now we translate the BIDS naming convention to ExploreASL's legacy name convention
@@ -59,7 +62,7 @@ elseif x.opts.bReadRawdata
     end
 
 else
-    %% Create legacy subject list from folders
+    %% 4. Create legacy subject list from folders
 
    % Manage subjectRegexp
    if ~isfield(x.dataset, 'subjectRegexp')
@@ -69,14 +72,14 @@ else
        subjectRegexp = x.dataset.subjectRegexp;
    end
     
-    %% Do escapes and fixes
+    % Do escapes and fixes
     % First escape double escapes
     subjectRegexp = strrep(subjectRegexp,'\\','\');
     % add the visit-postfix as option
     subjectRegexp = strrep(subjectRegexp,'$','');
     subjectRegexp = [subjectRegexp '(|_\d+)$'];
 
-    %% Then load subjects
+    %% 5. Then load subjects
     x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(subjectFolder, subjectRegexp, 'List', [0 Inf], true)); % find dirs
 
 end
@@ -84,9 +87,8 @@ end
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
 
 
-
 % ------------------------------------------------------------------------------------------------
-%% 6) Manage exclusions
+%% 6. Manage exclusions
 
 if ~isfield(x,'SUBJECTS')
     x.SUBJECTS = '';
@@ -167,7 +169,6 @@ end
 x.dataset.nSubjects = length(x.SUBJECTS);
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
 x.dataset.nExcluded = x.dataset.nTotalSubjects - x.dataset.nSubjects;
-
 
 
 end

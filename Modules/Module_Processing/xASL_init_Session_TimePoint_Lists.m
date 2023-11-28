@@ -21,11 +21,10 @@ function [x] = xASL_init_Session_TimePoint_Lists(x)
 %               visits in the population module, or running SPM's longitudinal within-subject
 %               registration.
 %
-% 5. Create TimePoint data-lists
-% 7. Add sessions as statistical variable, if they exist
-% 8. Add Longitudinal TimePoints (different T1 volumes) as covariate/set, after excluding
-% 12. Check for time points sets
-% 13. Create list of baseline & follow-up subjects (i.e. after exclusion)
+% 1. Manage sessions
+% 2. Manage TimePoint lists
+% 3. Create list of baseline & follow-up subjects (i.e. after exclusion)
+% 4. Check what excluded from which TimePoints
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        [x] = xASL_init_Session_TimePoint_Lists(x);
@@ -33,7 +32,7 @@ function [x] = xASL_init_Session_TimePoint_Lists(x)
 % Copyright (c) 2015-2024 ExploreASL
 
 % ------------------------------------------------------------------------------------------------
-%% 1) Manage sessions
+%% 1. Manage sessions
 fprintf('Automatically defining sessions...\n');
 
 if isfield(x,'SESSIONS') && isstruct(x.SESSIONS)
@@ -61,7 +60,7 @@ x.dataset.nSessions = length(x.SESSIONS);
 x.dataset.nSubjectsSessions = x.dataset.nSubjects .* x.dataset.nSessions;
 
 % ------------------------------------------------------------------------------------------------
-%% 2) Manage TimePoint lists
+%% 2. Manage TimePoint lists
 [~, TimePoint] = xASL_init_LongitudinalRegistration(x);
 
 for iT=unique(TimePoint)'
@@ -81,7 +80,7 @@ end
 
 
 % ------------------------------------------------------------------------------------------------
-%% 3) Create list of baseline & follow-up subjects (i.e. after exclusion)
+%% 3. Create list of baseline & follow-up subjects (i.e. after exclusion)
 for iCell=1:length(x.dataset.TimePointTotalSubjects)
     x.dataset.TimePointSubjects{iCell} = '';
 end
@@ -109,7 +108,7 @@ for iT=1:x.dataset.nTimePoints
 end
 
 % ------------------------------------------------------------------------------------------------
-%% 4) Check what excluded from which TimePoints
+%% 4. Check what excluded from which TimePoints
 for iT=1:x.dataset.nTimePoints
     x.dataset.TimePointExcluded{iT} = '';
 end

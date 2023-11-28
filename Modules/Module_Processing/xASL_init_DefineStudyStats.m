@@ -5,7 +5,7 @@ function [x] = xASL_init_DefineStudyStats(x)
 % FORMAT: [x] = xASL_init_DefineStudyStats(x)
 %
 % INPUT:
-%   x             - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%   x   - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %
 % OUTPUT:
 %   x   - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
@@ -14,10 +14,12 @@ function [x] = xASL_init_DefineStudyStats(x)
 % DESCRIPTION:  This initialization wrapper initializes the statistical parameters for
 %               this pipeline run. This function exists from the following parts:
 %
-% 9. Load & add statistical variables
-% 10. Make x.S.SetsOptions horizontal if vertical by transposing
-% 11. Create single site dummy, if there were no sites specified
-% 14. Check what excluded from which TimePoints
+% 1. Add sessions as statistical variable
+% 2. Add Longitudinal TimePoints (different T1 volumes) as covariate/set
+% 3. Load & add main statistical variables
+% 4. Make x.S.SetsOptions horizontal if vertical by transposing
+% 5. Create single site dummy, if there were no sites specified
+% 6. Check for time points sets
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
@@ -27,11 +29,7 @@ function [x] = xASL_init_DefineStudyStats(x)
 
 
 % ------------------------------------------------------------------------------------------------
-
-
-
-% ------------------------------------------------------------------------------------------------
-%% 7) Add sessions as statistical variable
+%% 1. Add sessions as statistical variable
 
 % Predefine SETS to avoid empty SETS & import predefined session settings as set settings
 x.S.SetsName{1} = 'session';
@@ -64,7 +62,7 @@ for iSubj=1:x.dataset.nSubjects
 end
 
 % ------------------------------------------------------------------------------------------------
-%% 8) Add Longitudinal TimePoints (different T1 volumes) as covariate/set
+%% 2. Add Longitudinal TimePoints (different T1 volumes) as covariate/set
 % TimePoints should be indicated as different subjects, with a _1 _2 _3 _n suffix
 
 [SubjectNList, TimePoint] = xASL_init_LongitudinalRegistration(x);
@@ -89,27 +87,20 @@ x.S.Sets1_2Sample(iSetLong_TP:iSetLong_TP+1) = 1; % Longitudinal TimePoints are 
 x.S.iSetLong_TP = iSetLong_TP;
 
 
-
-
-
-
-
-
-
-
-% ================================================================================================
-%% 9) Load & add statistical variables
+%% ================================================================================================
+%% ================================================================================================
+%% 3. Load & add main statistical variables
 % Keep some space here, to easily find this for debugging
 x = xASL_init_LoadMetadata(x);
 
-
-
+%% ================================================================================================
+%% ================================================================================================
 
 
 
 
 % ================================================================================================
-%% 10) Make x.S.SetsOptions horizontal if vertical by transposing
+%% 4. Make x.S.SetsOptions horizontal if vertical by transposing
 if isfield(x.S,'SetsOptions')
     for iCell=1:length(x.S.SetsOptions)
         if size(x.S.SetsOptions{iCell},1)>size(x.S.SetsOptions{iCell},2)
@@ -122,7 +113,7 @@ end
 
 
 % ------------------------------------------------------------------------------------------------
-%% 11) Create single site dummy, if there were no sites specified
+%% 5. Create single site dummy, if there were no sites specified
 if isfield(x.S, 'SetsName')
     % Search for a Site variable
     for iS=1:length(x.S.SetsName)
@@ -141,7 +132,7 @@ end
 
 
 % ------------------------------------------------------------------------------------------------
-%% 12) Check for time points sets
+%% 6. Check for time points sets
 % Search for a variable specifying longitudinal time points
 if isfield(x.S, 'SetsName')
     % Search for a variable specifying age at scanning
@@ -150,8 +141,6 @@ if isfield(x.S, 'SetsName')
         x.S.iSetAge=iS;
     end
 end
-
-
 
 
 end

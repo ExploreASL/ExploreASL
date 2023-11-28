@@ -11,7 +11,14 @@ function x = xASL_init_Process(x)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:    Initialization before ExploreASL_Process.
-% 1. 
+%
+% 1. Print the hyperlink
+% 2. Go to ExploreASL folder
+% 3. Initialize x struct
+% 4. Which data to read
+% 5. Check basic directories
+% 6. Create the derivatives directory
+% 7. Load BIDS configuration for file renaming
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
@@ -31,17 +38,16 @@ function x = xASL_init_Process(x)
 	end
     
 
-    %% Data loading
-
-	% Go to ExploreASL folder
+    %% 2. Go to ExploreASL folder
     cd(x.opts.MyPath);
 
 
-    %% Initialize x struct
+    %% 3. Initialize x struct
     x = xASL_init_SubStructs(x);
 
     
-    % by default we read rawdata, if this folder doesn't exist, we read the derivatives
+    %% 4. Which data to read
+    %  by default we read rawdata, if this folder doesn't exist, we read the derivatives
     x.opts.bReadRawdata = true;
     if ~xASL_exist(x.dir.RawData, 'dir')
         x.opts.bReadRawdata = false;
@@ -64,7 +70,7 @@ function x = xASL_init_Process(x)
 
 
 
-    %% 1. Check basic directories
+    %% 5. Check basic directories
     if isempty(x.dir.DatasetRoot)
 	    error('x.dir.DatasetRoot is a required parameter.');
     end
@@ -80,7 +86,7 @@ function x = xASL_init_Process(x)
         error('Missing xASL derivatives field...');
     end
 
-    %% 2. Create the derivatives directory
+    %% 6. Create the derivatives directory
     if exist(x.dir.xASLDerivatives, 'dir')
         fprintf('%s\n', [x.dir.xASLDerivatives ' already exists']);
         fprintf('%s\n', 'Note that all pre-existing derivative subject folders will be overwritten,');
@@ -90,14 +96,12 @@ function x = xASL_init_Process(x)
     end
     
     
-    %% 3. Load BIDS configuration for file renaming
+    %% 7. Load BIDS configuration for file renaming
     x.modules.bids2legacy.bidsPar = xASL_bids_Config;
     
         
     % This is the line needed by xASL_init_Iteration for BIDS2Legacy
     x.D.ROOT = x.dir.DatasetRoot;
     
-
-
 
 end
