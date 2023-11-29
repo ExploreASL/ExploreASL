@@ -71,10 +71,12 @@ elseif isempty(x) || ~isstruct(x)
     error('Illegal x structure');
 end
 
-if  xASL_stat_SumNan(M0_im(:))==0 && x.modules.asl.ApplyQuantification(5)
-    error('Empty M0 image, something went wrong in M0 processing');
-elseif xASL_stat_SumNan(M0_im(:))==0
-    warning('Empty M0 image detected');
+if  xASL_stat_SumNan(M0_im(:))==0 
+	if x.modules.asl.ApplyQuantification(5)
+		error('Empty M0 image, something went wrong in M0 processing');
+	else
+		warning('Empty M0 image detected');
+	end
 end
 
 if x.modules.asl.bMultiPLD && ~bUseBasilQuantification

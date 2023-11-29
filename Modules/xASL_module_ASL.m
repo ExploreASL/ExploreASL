@@ -539,12 +539,12 @@ if xASL_exist(x.P.Path_ASL4Dcontext, 'file')
 	aslContext = xASL_tsvRead(x.P.Path_ASL4Dcontext);
 	bidsPar = xASL_bids_Config;
 	% Check for presence of deltaM subtraction volumes
-	if ~isempty(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM), 'once')
+	if ~isempty(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM, 'once'))
 		x.modules.asl.bContainsPWI = true;
 	end
 
 	% Check for presence of CBF volumes
-	if ~isempty(regexpi(strjoin(aslContext(2:end)),bidsPar.stringCbf), 'once')
+	if ~isempty(regexpi(strjoin(aslContext(2:end)),bidsPar.stringCbf, 'once'))
 		x.modules.asl.bContainsPWI = true;
 	end
 else
