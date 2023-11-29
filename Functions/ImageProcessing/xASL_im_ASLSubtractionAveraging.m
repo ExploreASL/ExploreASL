@@ -182,8 +182,13 @@ if bCreatePWI4D || bCreateControl4D
     % Load ASL4D.nii
     ASL4Dnii = xASL_io_ReadNifti(path_ASL4D);
     sizeASL4D = size(ASL4Dnii.dat);
-    nVolumes = sizeASL4D(4);
-    nDims = length(sizeASL4D);
+	nDims = length(sizeASL4D);
+	if nDims > 3
+		nVolumes = sizeASL4D(4);
+	else
+		nVolumes = 1;
+	end
+    
     
     if nDims>4
         fprintf('\n\nIn BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/LD/etc] as 4 dimensions\n\n');
@@ -207,38 +212,37 @@ if bCreatePWI4D || bCreateControl4D
     [Fpath, Ffile] = xASL_fileparts(path_ASL4D);
     sideCarMat = fullfile(Fpath, [Ffile '.mat']);
 
-    if exist(sideCarMat, 'file')
+	if exist(sideCarMat, 'file') && nVolumes>1
         % we check if the mat-sidecar exists, with the motion estimation parameters
         % If this file exists, we assume that the original ASL4D input file has not been
         % interpolated yet (and the motion estimation has not been applied yet)
 
         % Apply motion correction & resample
-        if nVolumes>1
-            for iS=1:nVolumes
-                matlabbatch{1}.spm.spatial.realign.write.data{iS,1} = [path_ASL4D ',' num2str(iS)];
-            end
-        
-            matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
-            matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 4;
-            matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
-            matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
-            matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
-        
-            spm_jobman('run',matlabbatch); % this applies the motion correction in native space
-            
-            path_rASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
-            
-            % RELOAD ASL4D.nii
-            % Note that we only reload ASL4D.nii here if we have motion corrected timeseries.
-            % If path_ASL4D was not a path, or if sideCarMat didn't exist (motion estimation was not performed)
-            % or if nVolumes==1 (we did not have multiple ASL volumes) there is no reason to resample and we keep using
-            % the already above loaded ASL4D.nii
-            ASL4D = xASL_io_Nifti2Im(path_rASL4D);
-            xASL_delete(path_rASL4D);
-        else
-            ASL4D = xASL_io_Nifti2Im(path_ASL4D);
-        end
-    end
+
+		for iS=1:nVolumes
+			matlabbatch{1}.spm.spatial.realign.write.data{iS,1} = [path_ASL4D ',' num2str(iS)];
+		end
+
+		matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
+		matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 4;
+		matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
+		matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
+		matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
+
+		spm_jobman('run',matlabbatch); % this applies the motion correction in native space
+
+		path_rASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
+
+		% RELOAD ASL4D.nii
+		% Note that we only reload ASL4D.nii here if we have motion corrected timeseries.
+		% If path_ASL4D was not a path, or if sideCarMat didn't exist (motion estimation was not performed)
+		% or if nVolumes==1 (we did not have multiple ASL volumes) there is no reason to resample and we keep using
+		% the already above loaded ASL4D.nii
+		ASL4D = xASL_io_Nifti2Im(path_rASL4D);
+		xASL_delete(path_rASL4D);
+	else
+		ASL4D = xASL_io_Nifti2Im(path_ASL4D);
+	end
 
 
     %% 2B. Apply time decoding if needed
@@ -257,7 +261,7 @@ if bCreatePWI4D || bCreateControl4D
 
     %% 2C. Non-time encoded subtraction
     else
-        if nVolumes>1 && ~x.modules.asl.bContainsDeltaM
+        if nVolumes>1 && ~x.modules.asl.bContainsDeltaM && ~x.modules.asl.bContainsCBF 
             % Paired subtraction
             [Control4D, Label4D] = xASL_quant_GetControlLabelOrder(ASL4D);
             PWI4D = Control4D - Label4D;
@@ -273,7 +277,7 @@ if bCreatePWI4D || bCreateControl4D
 
             bCreatePWI3D = true; % because we can do this now
             bCreateControl3D = true; % because we can do this now
-        elseif ~x.modules.asl.bContainsDeltaM
+        elseif ~x.modules.asl.bContainsDeltaM && ~x.modules.asl.bContainsCBF
             warning('Single volume detected that was not subtracted, cannot create PWI images');
             PWI4D = [];
             Control4D = ASL4D;

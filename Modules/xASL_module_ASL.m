@@ -531,10 +531,11 @@ if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mute
 end
 
 
-%% G2. DeltaM parsing - check if all/some volumes are deltams
+%% G2. DeltaM and CBF parsing - check if all/some volumes are deltams or CBFs
 % If TSV file exist
 % We don't have a subtraction image by default
 x.modules.asl.bContainsDeltaM = false;
+x.modules.asl.bContainsCBF    = false;
 % Load TSV file
 if xASL_exist(x.P.Path_ASL4Dcontext, 'file')
 	aslContext = xASL_tsvRead(x.P.Path_ASL4Dcontext);
@@ -542,6 +543,11 @@ if xASL_exist(x.P.Path_ASL4Dcontext, 'file')
 	% Check for presence of deltaM subtraction volumes
 	if numel(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM)) > 0
 		x.modules.asl.bContainsDeltaM = true;
+	end
+
+	% Check for presence of CBF volumes
+	if numel(regexpi(strjoin(aslContext(2:end)),bidsPar.stringCbf)) > 0
+		x.modules.asl.bContainsCBF = true;
 	end
 else
 	% In case the ASL-context file is missing we set containsDeltaM to true for all NIfTIs with a single volume only
