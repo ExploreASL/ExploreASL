@@ -87,7 +87,7 @@ end
 
 if nargin<2
     error('path_ASL4D input missing');
-elseif isempty(path_ASL4D) && ( (nargin>=3 && isempty(PWI4D)) || (nargin>=3 && isempty(PWI3D)) )
+elseif isempty(path_ASL4D) && ( (nargin>=3 && isempty(PWI4D)) || (nargin>=4 && isempty(PWI3D)) )
 	% If the path is empty and neither PWI4D or PWI3D are assigned
 	error('Empty Path_ASL4D, PWI4D, and PWI3D');
 elseif (numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000)
