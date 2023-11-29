@@ -505,24 +505,22 @@ if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mute
 	end
 end
 
-
 %% G2. DeltaM and CBF parsing - check if all/some volumes are deltams or CBFs
 % If TSV file exist
 % We don't have a subtraction image by default
-x.modules.asl.bContainsDeltaM = false;
-x.modules.asl.bContainsCBF    = false;
+x.modules.asl.bContainsPWI = false;
 % Load TSV file
 if xASL_exist(x.P.Path_ASL4Dcontext, 'file')
 	aslContext = xASL_tsvRead(x.P.Path_ASL4Dcontext);
 	bidsPar = xASL_bids_Config;
 	% Check for presence of deltaM subtraction volumes
-	if numel(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM)) > 0
-		x.modules.asl.bContainsDeltaM = true;
+	if ~isempty(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM), 'once')
+		x.modules.asl.bContainsPWI = true;
 	end
 
 	% Check for presence of CBF volumes
-	if numel(regexpi(strjoin(aslContext(2:end)),bidsPar.stringCbf)) > 0
-		x.modules.asl.bContainsCBF = true;
+	if ~isempty(regexpi(strjoin(aslContext(2:end)),bidsPar.stringCbf), 'once')
+		x.modules.asl.bContainsPWI = true;
 	end
 else
 	% In case the ASL-context file is missing we set containsDeltaM to true for all NIfTIs with a single volume only
@@ -530,14 +528,10 @@ else
 		niftiASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
 		if size(niftiASL.dat,4) == 1
 			warning('ASL4Dcontext.tsv is missing, but a single deltaM volume is expected');
-			x.modules.asl.bContainsDeltaM = true;
+			x.modules.asl.bContainsPWI = true;
 		end
 	end
 end
-
-
-
-
 
 %% -----------------------------------------------------------------------------
 %% 1 TopUp (WIP, only supported if FSL installed)
@@ -580,7 +574,7 @@ elseif ~x.mutex.HasState(StateName{iState})
         
         % Then, check matrix size: throw error if 2D data with 3 dimensions only
 
-        if nVolumes>1 && ~x.modules.asl.bContainsDeltaM && (nVolumes/2~=round(nVolumes/2))
+        if nVolumes>1 && ~x.modules.asl.bContainsPWI && mod(nVolumes, 2) ~= 0
             error('Uneven number of control-label frames, either incomplete pairs or M0 image in time-series!');
         end
 

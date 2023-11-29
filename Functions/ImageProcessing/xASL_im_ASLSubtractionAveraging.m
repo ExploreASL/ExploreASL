@@ -181,20 +181,14 @@ if bCreatePWI4D || bCreateControl4D
 
     % Load ASL4D.nii
     ASL4Dnii = xASL_io_ReadNifti(path_ASL4D);
-    sizeASL4D = size(ASL4Dnii.dat);
-	nDims = length(sizeASL4D);
-	if nDims > 3
-		nVolumes = sizeASL4D(4);
-	else
-		nVolumes = 1;
-	end
-    
-    
+	nDims = length(size(ASL4Dnii.dat));
+	nVolumes = size(ASL4Dnii.dat, 4);
+	    
     if nDims>4
         fprintf('\n\nIn BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/LD/etc] as 4 dimensions\n\n');
         error('ASL4D.nii contains more than 4 dimensions');
         
-    elseif nVolumes>1 && mod(nVolumes, 2) ~= 0 && ~x.modules.asl.bContainsDeltaM
+    elseif nVolumes>1 && mod(nVolumes, 2) ~= 0 && ~x.modules.asl.bContainsPWI
         warning('Odd (i.e., not even) number of control-label pairs, skipping');
         % mod(nVolumes, 2) ~= 0 here means that nVolumes is not divisible by 2
         % unsubtracted control-label pairs should result in an even number of volumes
@@ -261,7 +255,7 @@ if bCreatePWI4D || bCreateControl4D
 
     %% 2C. Non-time encoded subtraction
     else
-        if nVolumes>1 && ~x.modules.asl.bContainsDeltaM && ~x.modules.asl.bContainsCBF 
+        if nVolumes>1 && ~x.modules.asl.bContainsPWI
             % Paired subtraction
             [Control4D, Label4D] = xASL_quant_GetControlLabelOrder(ASL4D);
             PWI4D = Control4D - Label4D;
@@ -277,7 +271,7 @@ if bCreatePWI4D || bCreateControl4D
 
             bCreatePWI3D = true; % because we can do this now
             bCreateControl3D = true; % because we can do this now
-        elseif ~x.modules.asl.bContainsDeltaM && ~x.modules.asl.bContainsCBF
+        elseif ~x.modules.asl.bContainsPWI
             warning('Single volume detected that was not subtracted, cannot create PWI images');
             PWI4D = [];
             Control4D = ASL4D;
@@ -286,7 +280,7 @@ if bCreatePWI4D || bCreateControl4D
 
         else % the same but then without subtraction
             % either if we have only a single volume
-            % or if we have multiple volumes that are already subtracted (bContainsDeltaM)
+            % or if we have multiple volumes that are already subtracted (bContainsPWI)
             % in both cases we can create PWI4D, PWI3D, PWI, but not Control4D, etc
             PWI4D = ASL4D;
             Control4D = [];
@@ -382,7 +376,7 @@ end
 	% % Pick up the ideal PLD as the one closest to 2000 ms
 	% idealPLD = idealPLD(iPLD(1));
     % 
-	% if (isfield(x.Q,'LookLocker') && x.Q.LookLocker) || x.modules.asl.bContainsDeltaM
+	% if (isfield(x.Q,'LookLocker') && x.Q.LookLocker) || x.modules.asl.bContainsPWI
 	% 	% For Look-Locker, get the middle one
 	% 	idealPLD = idealPLD(round(numel(idealPLD)/2));
 	% else
