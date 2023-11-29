@@ -250,7 +250,7 @@ for iSpace=1:2
     spm_jsonwrite(PathPWI4Djson{iSpace}, x.Q);
 
     % Save PWI3D (averaged volume for each TE-PLD-labdur combination)
-    fprintf('%s\n', PathPWI{iSpace});
+    fprintf('%s\n', PathPWI3D{iSpace});
     xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI3D{iSpace}, PWI3D, 32, false);
     spm_jsonwrite(PathPWI3Djson{iSpace}, x.Q);
 
