@@ -45,7 +45,7 @@ function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, imSlice
 %              multi-PLD or multi-TE quantifications are performed with BASIL or FABBER here, respectively.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI, M0_im, imSliceNumber, x, bUseBasilQuantification);
+% EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, imSliceNumber, x, bUseBasilQuantification);
 % __________________________________
 % Copyright (c) 2015-2023 ExploreASL
 
@@ -94,6 +94,8 @@ M0_im = double(M0_im);
 
 if ~x.modules.asl.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
+	% In case we don't run quantification, we still need to average the PWI image
+	PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
 else
     
     % If we have multiple PLDs but requested a single PLD quantification, we use the highest PLD
@@ -204,7 +206,6 @@ else
         % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
         % (& old Siemens sequence also didn't need the 1 gr->100 gr conversion)
         ScaleImage = ScaleImage.*60000.*100.*x.Q.Lambda;
-        
     end
 end
 
@@ -323,10 +324,6 @@ if x.modules.asl.ApplyQuantification(6)
 else
     CBF = PWI;
 end
-
-% Here, we don't average. Averaging should have been happened above
-
-
 
 %% 6    Print parameters used
 fprintf('%s\n',' model with parameters:');
