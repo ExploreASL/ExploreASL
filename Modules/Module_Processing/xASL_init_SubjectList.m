@@ -29,11 +29,12 @@ if isfield(x.opts, 'subjectFolder') && ~exist(x.opts.subjectFolder, 'dir')
 elseif isfield(x.opts, 'subjectFolder')
     subjectFolder = x.opts.subjectFolder;
 elseif x.opts.bReadRawdata
-    subjectFolder = x.dir.Rawdata;
+    subjectFolder = x.dir.RawData;
 else
     subjectFolder = x.dir.xASLDerivatives;
 end
 
+x.ROOT = subjectFolder;
 
 % ------------------------------------------------------------------------------------------------
 %% 2. Advanced parameter to enforce a subject list, without querying folder names
@@ -42,6 +43,12 @@ if isfield(x.dataset,'ForceInclusionList')
     % instead of using all the subjects that comply with the regular expression
     x.dataset.TotalSubjects = x.dataset.ForceInclusionList(:);
     warning('Using custom list of subjects, on your own risk');
+
+    if ~isfield(x.dataset, 'subjectRegexp')
+        x.dataset.subjectRegexp = '^sub-.*$';
+        warning('Ensure that the ForceInclusionList is in accordance with the BIDS subjectRegexp');
+        fprintf('%s\n', 'Otherwise, this will go wrong further down the road');
+    end
 
 elseif x.opts.bReadRawdata
 
@@ -59,7 +66,9 @@ elseif x.opts.bReadRawdata
         end
         
         x.dataset.TotalSubjects{iSubj} = [subjectName '_' visitName];
+        x.dataset.subjectRegexp = '^sub-.*$'; % defaulting to BIDS subject regexp
     end
+
 
 else
     %% 4. Create legacy subject list from folders
@@ -67,25 +76,23 @@ else
    % Manage subjectRegexp
    if ~isfield(x.dataset, 'subjectRegexp')
        warning('Please define the subjectRegexp of your dataset, defaulting to BIDS definition');
-       subjectRegexp = '^sub-.*$';
-   else
-       subjectRegexp = x.dataset.subjectRegexp;
+       x.dataset.subjectRegexp = '^sub-.*$';
+   else    
+        % Do escapes and fixes
+        % First escape double escapes
+        x.dataset.subjectRegexp = strrep(x.dataset.subjectRegexp,'\\','\');
+        % add the visit-postfix as option
+        x.dataset.subjectRegexp = strrep(x.dataset.subjectRegexp,'$','');
+        x.dataset.subjectRegexp = [x.dataset.subjectRegexp '(|_\d+)$'];
    end
-    
-    % Do escapes and fixes
-    % First escape double escapes
-    subjectRegexp = strrep(subjectRegexp,'\\','\');
-    % add the visit-postfix as option
-    subjectRegexp = strrep(subjectRegexp,'$','');
-    subjectRegexp = [subjectRegexp '(|_\d+)$'];
 
     %% 5. Then load subjects
-    x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(subjectFolder, subjectRegexp, 'List', [0 Inf], true)); % find dirs
+    x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(subjectFolder, x.dataset.subjectRegexp, 'List', [0 Inf], true)); % find dirs
 
 end
 
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
-
+x.SUBJECTS = x.dataset.TotalSubjects;
 
 % ------------------------------------------------------------------------------------------------
 %% 6. Manage exclusions
@@ -134,17 +141,15 @@ for iSubject=1:x.dataset.nTotalSubjects
         end
     end
     
-    if ~isempty(regexp(x.dataset.TotalSubjects{iSubject},'^(log|dartel|lock|Population)$'))
+    if ~isempty(regexpi(x.dataset.TotalSubjects{iSubject},'^(log|dartel|lock|Population)$'))
          % This is not a subject but a pipeline folder
          ListNoPipelineDir(iSubject) = 0;
     elseif ~excl
          % include subject if not to be excluded, and if it doesn't have
          % same name as pipeline directories     
          x.SUBJECTS{end+1}  = x.dataset.TotalSubjects{iSubject};
-         x.dataset.TotalInclusionList( (iSubject-1)*x.dataset.nSessions+1:iSubject*x.dataset.nSessions,1) = 1;
          ListNoPipelineDir(iSubject) = 1;
     else
-        x.dataset.TotalInclusionList( (iSubject-1)*x.dataset.nSessions+1:iSubject*x.dataset.nSessions,1) = 0;
         ListNoPipelineDir(iSubject) = 1;
     end
 end
