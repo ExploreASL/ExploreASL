@@ -299,7 +299,7 @@ end
 
 
 %% G. Manage registration contrasts that we will use
-if x.modules.asl.bContainsPWI
+if x.modules.asl.bContainsSubtracted
 	bRegistrationControl = false;
     bRegistrationCBF = true;
 elseif x.modules.asl.bRegistrationContrast==0
@@ -415,7 +415,7 @@ end
 if bRegistrationCBF
 
     spatCoVit = xASL_im_GetSpatialCovNativePWI(x);
-    if x.modules.asl.bRegistrationContrast==3 || x.modules.asl.bContainsPWI
+    if x.modules.asl.bRegistrationContrast==3 || x.modules.asl.bContainsSubtracted
         nIT = 2; % force CBF-pGM
         fprintf('\n%s\n\n','x.modules.asl.bRegistrationContrast==3, forcing CBF-based registration irrespective of sCoV');
     elseif spatCoVit>0.667

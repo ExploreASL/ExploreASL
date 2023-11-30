@@ -199,7 +199,7 @@ if bCreatePWI4D || bCreateControl4D
         fprintf('\n\nIn BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/LD/etc] as 4 dimensions\n\n');
         error('ASL4D.nii contains more than 4 dimensions');
         
-    elseif nVolumes>1 && mod(nVolumes, 2) ~= 0 && ~x.modules.asl.bContainsPWI
+    elseif nVolumes>1 && mod(nVolumes, 2) ~= 0 && ~x.modules.asl.bContainsSubtracted
         warning('Odd (i.e., not even) number of control-label pairs, skipping');
         % mod(nVolumes, 2) ~= 0 here means that nVolumes is not divisible by 2
         % unsubtracted control-label pairs should result in an even number of volumes
@@ -267,7 +267,7 @@ if bCreatePWI4D || bCreateControl4D
 
     %% 2C. Non-time encoded subtraction
     else
-        if nVolumes>1 && ~x.modules.asl.bContainsPWI
+        if nVolumes>1 && ~x.modules.asl.bContainsSubtracted
             % Paired subtraction
             [Control4D, Label4D] = xASL_quant_GetControlLabelOrder(ASL4D);
             PWI4D = Control4D - Label4D;
@@ -283,7 +283,7 @@ if bCreatePWI4D || bCreateControl4D
 
             bCreatePWI3D = true; % because we can do this now
             bCreateControl3D = true; % because we can do this now
-        elseif ~x.modules.asl.bContainsPWI
+        elseif ~x.modules.asl.bContainsSubtracted
             warning('Single volume detected that was not subtracted, cannot create PWI images');
             PWI4D = [];
             Control4D = ASL4D;
@@ -292,7 +292,7 @@ if bCreatePWI4D || bCreateControl4D
 
         else % the same but then without subtraction
             % either if we have only a single volume
-            % or if we have multiple volumes that are already subtracted (bContainsPWI)
+            % or if we have multiple volumes that are already subtracted (bContainsSubtracted)
             % in both cases we can create PWI4D, PWI3D, PWI, but not Control4D, etc
             PWI4D = ASL4D;
             Control4D = [];
@@ -351,29 +351,9 @@ end
 
 
 %% 6. Create PWI AND/OR Control
-% We create a dummy CBF image for registration purposes
-% The earliest echo, the latest PLD and the longest labeling duration
-% are the best for this, having most SNR, CBF-weighting, and SNR,
-% respectively. 
-% But from a single volume, we have little signal.
+% We create a dummy CBF image for registration purposes. % The earliest echo, the latest PLD and the longest labeling duration
+% are the best for this, having most SNR, CBF-weighting, and SNR, respectively. But from a single volume, we have little signal.
 % So we take a weighted average accordingly
-
-%% This would be taking a single volume only
-% % The earliest echo has the most SNR for perfusion-weighting
-% iMinTE = x.Q.EchoTime_PWI3D == min(x.Q.EchoTime_PWI3D(:));
-% % The latest PLD has the most perfusion-weighting
-% iMaxPLD = x.Q.InitialPLD_PWI3D == max(x.Q.InitialPLD_PWI3D(:));
-% % The longest labeling duration has the most SNR and most perfusion-weighting
-% iMaxLabelingDuration = x.Q.LabelingDuration_PWI3D == max(x.Q.LabelingDuration_PWI3D(:));
-% % We take the index that has all these        
-% i3D = iMinTE & iMaxPLD & iMaxLabelingDuration;
-% if isempty(i3D) || sum(i3D)~=1
-%     error('Illegal index for PWI image'); % THIS ERROR SHOULD NOT BE GIVEN TO THE USER
-% end
-% PWI = PWI3D(:, :, :, i3D);
-% x.Q.EchoTime_PWI = min(x.Q.EchoTime_PWI3D(:));
-% x.Q.initialPLD_PWI = max(x.Q.InitialPLD_PWI3D(:));
-% x.Q.LabelingDuration_PWI = max(x.Q.LabelingDuration_PWI3D(:));
 
 %% PM: do a weighted average here?
 %
@@ -388,7 +368,7 @@ end
 	% % Pick up the ideal PLD as the one closest to 2000 ms
 	% idealPLD = idealPLD(iPLD(1));
     % 
-	% if (isfield(x.Q,'LookLocker') && x.Q.LookLocker) || x.modules.asl.bContainsPWI
+	% if (isfield(x.Q,'LookLocker') && x.Q.LookLocker) || x.modules.asl.bContainsSubtracted
 	% 	% For Look-Locker, get the middle one
 	% 	idealPLD = idealPLD(round(numel(idealPLD)/2));
 	% else

@@ -508,19 +508,19 @@ end
 %% G2. DeltaM and CBF parsing - check if all/some volumes are deltams or CBFs
 % If TSV file exist
 % We don't have a subtraction image by default
-x.modules.asl.bContainsPWI = false;
+x.modules.asl.bContainsSubtracted = false;
 % Load TSV file
 if xASL_exist(x.P.Path_ASL4Dcontext, 'file')
 	aslContext = xASL_tsvRead(x.P.Path_ASL4Dcontext);
 	bidsPar = xASL_bids_Config;
 	% Check for presence of deltaM subtraction volumes
 	if ~isempty(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM, 'once'))
-		x.modules.asl.bContainsPWI = true;
+		x.modules.asl.bContainsSubtracted = true;
 	end
 
 	% Check for presence of CBF volumes
 	if ~isempty(regexpi(strjoin(aslContext(2:end)),bidsPar.stringCbf, 'once'))
-		x.modules.asl.bContainsPWI = true;
+		x.modules.asl.bContainsSubtracted = true;
 	end
 else
 	% In case the ASL-context file is missing we set containsDeltaM to true for all NIfTIs with a single volume only
@@ -528,7 +528,7 @@ else
 		niftiASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
 		if size(niftiASL.dat,4) == 1
 			warning('ASL4Dcontext.tsv is missing, but a single deltaM volume is expected');
-			x.modules.asl.bContainsPWI = true;
+			x.modules.asl.bContainsSubtracted = true;
 		end
 	end
 end
@@ -574,7 +574,7 @@ elseif ~x.mutex.HasState(StateName{iState})
         
         % Then, check matrix size: throw error if 2D data with 3 dimensions only
 
-        if nVolumes>1 && ~x.modules.asl.bContainsPWI && mod(nVolumes, 2) ~= 0
+        if nVolumes>1 && ~x.modules.asl.bContainsSubtracted && mod(nVolumes, 2) ~= 0
             error('Uneven number of control-label frames, either incomplete pairs or M0 image in time-series!');
         end
 

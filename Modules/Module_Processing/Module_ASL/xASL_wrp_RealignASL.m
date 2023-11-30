@@ -72,7 +72,7 @@ minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
 %% Define motion correction options
 % bMoCoPossible boolean states if it is possible to perform motion correction with the given data 
 % x.asl.module.motionCorrection states if the motion correction is wanted by the user
-if x.modules.asl.bContainsPWI
+if x.modules.asl.bContainsSubtracted
 	% Motion correction is disabled, potentially insufficient contrast
 	bMoCoPossible = false;
 	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it only has DeltaM volumes, which may contain insufficient contrast']);
