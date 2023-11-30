@@ -754,12 +754,7 @@ end
                 
                 % First try the derivatives folder
                 fileListDataPar = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL'), '(?i)^datapar.*\.json$');
-                
-                % Check for x.D.ROOT
-                if exist(fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL'),'dir')
-                    x.D.ROOT = fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL');
-                    x.dir.xASLDerivatives = fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL');
-                end
+
                 if isempty(fileListDataPar)
                     % Derivatives maybe does not exist already, we'll try study root
                     fileListDataPar = xASL_adm_GetFileList(x.dir.DatasetRoot, '(?i)^datapar.*\.json$');

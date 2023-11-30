@@ -33,13 +33,8 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
     dbSettings.x.settings.RERUN      = false;
     dbSettings.x.settings.MUTEXID    = moduleName;
 
-    
-    % Lock dir specifics for Import
-    if strcmp(moduleName,'xASL_module_Import')
-        dbSettings.x.dir.LockDir = fullfile('<ROOT>', 'derivatives', 'ExploreASL', 'lock', moduleName);
-    else
-        dbSettings.x.dir.LockDir = fullfile('<ROOT>', 'lock', moduleName);
-    end
+    % Lock dir
+    dbSettings.x.dir.LockDir = fullfile(x.dir.xASLDerivatives, 'lock', moduleName);
     
 	% Set the dryRun field
 	if nargin < 3 || isempty(dryRun)
@@ -105,17 +100,27 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
     end
     
     % SUBJECT, SUBJECTDIR & LockDir
-    if ~isempty(regexpi(ModName,'(Import|BIDS2Legacy|Structural|ASL|func|LongReg|dwi)', 'once'))
+    if ~isempty(regexpi(ModName,'Import', 'once'))
         dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
         dbSettings.x.dir.SUBJECTDIR = fullfile('<ROOT>', '<SUBJECT>');
         dbSettings.x.dir.LockDir = fullfile(dbSettings.x.dir.LockDir, '<SUBJECT>');
+    elseif ~isempty(regexpi(ModName,'BIDS2Legacy', 'once'))
+        dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
+        dbSettings.x.dir.SUBJECTDIR = fullfile('<ROOT>', '<SUBJECT>');
+        dbSettings.x.dir.LockDir = fullfile(dbSettings.x.dir.LockDir, '<SUBJECT>');
+    else
+        dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
+        dbSettings.x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives, '<SUBJECT>');
+        dbSettings.x.dir.LockDir = fullfile(dbSettings.x.dir.LockDir, '<SUBJECT>');
     end
+
+
     
     % SESSION, MUTEXID & SESSIONDIR
     if ~isempty(regexpi(ModName,'(ASL|func|dwi)', 'once'))
         dbSettings.sets.SESSION = x.SESSIONS;
         dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID '_<SESSION>'];
-        dbSettings.x.dir.SESSIONDIR = fullfile('<ROOT>', '<SUBJECT>', '<SESSION>');
+        dbSettings.x.dir.SESSIONDIR = fullfile(x.dir.xASLDerivatives, '<SUBJECT>', '<SESSION>');
     elseif ~isempty(regexpi(ModName,'(Import)', 'once'))
         dbSettings.sets.SESSION = x.SESSIONS;
         dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID]; % Currently we can not support session-wise import
@@ -124,17 +129,17 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
     
     %% Diary file
     if ~isempty(regexpi(ModName, '(DARTEL|Population|Analyze)', 'once'))
-        dbSettings.diaryFile = fullfile('<ROOT>', 'log', [moduleName '.log']);
+        dbSettings.diaryFile = fullfile(x.dir.xASLDerivatives, 'log', [moduleName '.log']);
     elseif ~isempty(regexpi(ModName,'Import', 'once'))
-        dbSettings.diaryFile = fullfile('<ROOT>', 'derivatives', 'ExploreASL' ,'log', [moduleName '_sub-<SUBJECT>.log']);
+        dbSettings.diaryFile = fullfile(x.dir.xASLDerivatives ,'log', [moduleName '_sub-<SUBJECT>.log']);
     elseif ~isempty(regexpi(ModName,'(BIDS2Legacy|Structural|LongReg)', 'once'))
-        dbSettings.diaryFile = fullfile('<ROOT>', 'log', [moduleName '_<SUBJECT>.log']);
+        dbSettings.diaryFile = fullfile(x.dir.xASLDerivatives, 'log', [moduleName '_<SUBJECT>.log']);
     elseif ~isempty(regexpi(ModName,'(ASL|func|dwi)', 'once'))        
-        dbSettings.diaryFile = fullfile('<ROOT>', 'log', [moduleName '_<SUBJECT>_<SESSION>.log']);
+        dbSettings.diaryFile = fullfile(x.dir.xASLDerivatives, 'log', [moduleName '_<SUBJECT>_<SESSION>.log']);
     else
         warning(['Unknown module name: ' moduleName]);
         % default
-        dbSettings.diaryFile = fullfile('<ROOT>', 'log', [moduleName '_<SUBJECT>_<SESSION>.log']);
+        dbSettings.diaryFile = fullfile(x.dir.xASLDerivatives, 'log', [moduleName '_<SUBJECT>_<SESSION>.log']);
     end
     
     %% Actually run the iteration

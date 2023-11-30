@@ -98,10 +98,6 @@ function x = xASL_init_Process(x)
     
     %% 7. Load BIDS configuration for file renaming
     x.modules.bids2legacy.bidsPar = xASL_bids_Config;
-    
-        
-    % This is the line needed by xASL_init_Iteration for BIDS2Legacy
-    x.D.ROOT = x.dir.DatasetRoot;
-    
 
+    
 end
