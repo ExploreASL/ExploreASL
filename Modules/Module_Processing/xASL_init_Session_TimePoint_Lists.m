@@ -88,7 +88,7 @@ end
 for iS=1:x.dataset.nSubjects
     iSession = 1; % append to accommodate sessions in SetsID
     iSubjSess = ((iS-1)*x.dataset.nSessions)+iSession;
-    CurrentTimePoint = x.S.SetsID(iSubjSess,x.S.iSetLong_TP);
+    CurrentTimePoint = TimePoint(iS);
     if length(x.dataset.TimePointSubjects)<CurrentTimePoint % if this cell didn't exist yet
         x.dataset.TimePointSubjects{CurrentTimePoint} = ''; 
     end    
