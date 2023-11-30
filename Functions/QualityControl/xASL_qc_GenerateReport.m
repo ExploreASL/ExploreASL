@@ -103,7 +103,8 @@ end
 config = xASL_adm_LoadPdfConfig(x);
 
 % Print the title
-fprintf('Printing ExploreASL PDF report:   \n');
+fprintf('Printing ExploreASL PDF report in:   \n');
+fprintf([PrintDir '\n']);
 
 % Parse the entire Json Stack automatically making all the pages.
 settings = xASL_qc_ParsePdfConfig(config, x);

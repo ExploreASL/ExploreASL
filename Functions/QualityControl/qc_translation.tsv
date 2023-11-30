@@ -16,7 +16,7 @@ CBF_GM_PVC2_mL100gmin
 CBF_GM_WM_Ratio	Median CBF of pGM>0.5 / Median CBF of pWM>0.5 		
 CBF_WM_Median_mL100gmin	Median CBF within the pWM>0.5 ROI	ml/100g/min	
 CBF_WM_PVC2_mL100gmin			
-CNR_GM_WM_Ratio	(Mean GM – Mean WM) / (SD Wmref)^2		
+CNR_GM_WM_Ratio	(Mean GM - Mean WM) / (SD Wmref)^2		
 CSF_vol_mL	CSF Volume	mL	
 EFC_bits	Shannon entropy of voxel intesities proportional to maximum posible entropy for similar sized image	bits	
 FBER_Wmref_Ratio	(SD WholeBrain)^2 / (SD WMref)^2		
