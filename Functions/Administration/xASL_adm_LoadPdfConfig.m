@@ -45,8 +45,8 @@ if (exist(configPath, 'file') == 2)
     config = xASL_io_ReadJson(configPath);
 else
     fprintf([configPath ' does not exists, using default configuration for PDF generation.\n']);
-    standardPath = fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'templateConfigReportPDF.json');
-    config = xASL_io_ReadJson(standardPath);
+    xASL_adm_GeneratePdfConfig(x, x.SUBJECT, false);
+    config = xASL_io_ReadJson(configPath);
 end
 
 %% ------------------------------------------------------------------------
