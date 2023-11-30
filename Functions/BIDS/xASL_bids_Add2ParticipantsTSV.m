@@ -189,9 +189,15 @@ for iIndex=1:size(DataIn,1)
 end
 
 
-%% 6) Fill empty cells
+%% 6) Fill empty cells & convert NaN to 'n/a'
 IsEmpty = cellfun(@(y) isempty(y), CellArray);
 CellArray(IsEmpty) = {'n/a'};
+
+IsNumeric = cellfun(@(y) isnumeric(y), CellArray);
+NumericArray = CellArray(IsNumeric);
+IsNaN = cellfun(@(y) isnan(y), NumericArray);
+NumericArray(IsNaN) = {'n/a'};
+CellArray(IsNumeric) = NumericArray;
 
 
 %% -------------------------------------------------------------------------------------------
