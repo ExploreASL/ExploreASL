@@ -200,29 +200,36 @@ if length(xQ.Initial_PLD)>1 && length(xQ.Initial_PLD) ~= nEncodedVolumes
 	error('Length of Initial_PLD vector does not match the number of volumes.');
 end
 
+% Currently, we only implement the option that TE times are together
+% In case a different ordering is used, an error is reported
+if isfield(xQ, 'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
+	% The first two EchoTimes are equal
+	if length(uniquetol(xQ.EchoTime(1:2), 0.001)) == 1
+		error('Processing of multi-TE sequence is only implemented for the case of TEs being together in ASL4D.')
+	end
+end
+
 %% 3. Obtain control4D images
 % Here we select all TEs and the control images
 % We thus calculate the size of each Hadamard block as the number of Hadamard phases and TEs
 nVolumesPerRepetition = xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes;
-indexControl = [];
-for iRepetition = 1:nRepetitions
-	indexControl = [indexControl, ((1:xQ.NumberEchoTimes) + (iRepetition-1)*nVolumesPerRepetition)];
-end
 
 % For example for 64 volumes and 2 repetitions with 8 PLDs and 4 TEs, it takes volume 1,2,3,4 and 33,34,35,36 to get all TEs of the control
+indexControl = ((1:xQ.NumberEchoTimes)'*ones(1,nRepetitions) + ones(xQ.NumberEchoTimes,1)*(0:nRepetitions-1)*nVolumesPerRepetition);
+indexControl = indexControl(:)';
+
 decodedControl4D = imEncoded(:,:,:, indexControl);
 xQ.EchoTime_Control4D = xQ.EchoTime(indexControl);
 xQ.InitialPLD_Control4D = xQ.Initial_PLD(indexControl);
 xQ.LabelingDuration_Control4D = xQ.LabelingDuration(indexControl);
 
 %% 4. Reorder image matrix
-% #997 We have to check if the order has indeed first TEs and then PLDs - in that case, we do the re-ordering. Otherwise not.
-
 % At this point the data is organized like this (in terms of ASL4D.nii volumes):
 % PLD1/TE1,PLD1/TE2,PLD1/TE3,PLD1/TE4...PLD2/TE1,PLD2/TE2,PLD2/TE3... (TEs in first dimension, PLDs after)
 %
 % And for decoding we want
 % TE1/PLD1,TE1/PLD2,TE1/PLD3,TE1/PLD4...TE2/PLD1,TE2/PLD2,TE2/PLD3,TE2/PLD4 (PLDs in the first dimension, TEs after)
+% Then below, we apply this "transformation"/"decoding" vector to the image matrix and to the parameters TE/PLD/LD
 if isfield(xQ, 'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
 	% This is the original order
 	vectorOldOrder = 1:nEncodedVolumes;
@@ -250,7 +257,6 @@ end
 % 	imEncoded = imEncoded(:,:,:,vectorOrder);
 % end
 
-
 %% 5. Decode the Hadamard data
 decodedPWI4D = zeros(size(imEncoded,1), size(imEncoded,2), size(imEncoded,3), nDecodedVolumes * nRepetitions);    
 idx=0;
@@ -266,9 +272,7 @@ for iRepetition = 1:nRepetitions
 end
 
 %% 6. Reorder multi-TE back to the initial order of PLD/TE
-%#997 Reorder back only if needed
-% For model fitting, we want the PLDs-first-TEs-second order (just like the
-% beginning) so we need to reorder it again
+% For model fitting, we want the PLDs-first-TEs-second order (just like at the beginning) so we need to reorder it again
 if isfield(xQ,'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
 	% This is the original order
 	vectorOldOrder = 1:size(decodedPWI4D, 4);
@@ -283,14 +287,12 @@ if isfield(xQ,'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
 	decodedPWI4D = decodedPWI4D(:,:,:,vectorOldOrder);
 end
 
-%% #997 Here, we need to create a 1D decoding vector, that for each element (original volume) has the new position of the volume
-% #997 - make sure we do the correct reordering if needed - if data come in the wrong order, we do it differently
-%  Volumes that disappear will have a 0
-% e.g., 3 3 3 3 2 2 2 2 1 1 1 1 0 0 0 0
-% Then below, we apply this "transformation"/"decoding" vector to the image matrix and to the parameters TE/PLD/LD
-% x.Q.EchoTime_PWI4D = x.Q.EchoTime_PWI4D(1:2:end);
-% x.Q.InitialPLD_PWI4D = x.Q.InitialPLD_PWI4D(1:2:end);
-% x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration_PWI4D(1:2:end);
+% Calculate the correct parameters
+indexPWI = ((xQ.NumberEchoTimes+1):nVolumesPerRepetition)'*ones(1,nRepetitions) + ones(nVolumesPerRepetition-xQ.NumberEchoTimes,1)*(0:nRepetitions-1)*nVolumesPerRepetition;
+indexPWI = indexPWI(:)';
+xQ.EchoTime_PWI4D = xQ.EchoTime(indexPWI);
+xQ.InitialPLD_PWI4D = xQ.Initial_PLD(indexPWI);
+xQ.LabelingDuration_PWI4D = xQ.LabelingDuration(indexPWI);
 
 %% 7. Normalization of the decoded data
 % NormalizationFactor = 1/(m_INumSets/2);
