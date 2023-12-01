@@ -178,22 +178,13 @@ else
         % (later, when we have multi-PLD, multi-echo, or multi-labeling quantification here as well,
         % then we could use PWI3D here)
 
-        if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D
+		if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D
             PWI = PWI4D;
             fprintf('%s\n', 'Quantifying CBF in 4D');
             % In this case, we want to save a quantified version of PWI4D
-        else
+		else
             PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
-        end
-
-        % #997 Not sure if this is the best location for this checking
-        if ~x.modules.asl.bMultiTE && length(x.Q.uniqueEchoTimes)>1
-            warning('Multiple TE detected without explicitly analyzing this as multi-TE sequence, this (e.g., dual-echo ASL) is not implemented yet');
-            fprintf('%s\n', 'We will use the volumes with the shortest echo time');
-            % #997 SNR-wise this is worse then simply averaging them all, but I guess this is good enough for now
-            % #997 We still need to test here how the DEBBIE HAD4 sequence would perform with bMultiTE disabled
-        end
-
+		end
 
         %% 3    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'uniqueLabelingDuration')
