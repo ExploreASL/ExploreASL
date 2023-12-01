@@ -266,17 +266,8 @@ if bCreatePWI4D || bCreateControl4D
     else
         if nVolumes>1 && ~x.modules.asl.bContainsSubtracted
             % Paired subtraction
-            [Control4D, Label4D] = xASL_quant_GetControlLabelOrder(ASL4D);
+            [Control4D, Label4D, x.Q] = xASL_quant_GetControlLabelOrder(ASL4D, x.Q);
             PWI4D = Control4D - Label4D;
-            
-            % Skip every other value in the vectors as they were stored for both control and label images 
-            x.Q.EchoTime_PWI4D = x.Q.EchoTime_PWI4D(1:2:end);
-            x.Q.InitialPLD_PWI4D = x.Q.InitialPLD_PWI4D(1:2:end);
-            x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration_PWI4D(1:2:end);
-            % In this case, the vectors are equal for PWI4D and Control4D
-            x.Q.EchoTime_Control4D = x.Q.EchoTime_PWI4D;
-            x.Q.InitialPLD_Control4D = x.Q.InitialPLD_PWI4D;
-            x.Q.LabelingDuration_Control4D = x.Q.LabelingDuration_PWI4D;
 
             bCreatePWI3D = true; % because we can do this now
             bCreateControl3D = true; % because we can do this now
@@ -284,6 +275,14 @@ if bCreatePWI4D || bCreateControl4D
             warning('Single volume detected that was not subtracted, cannot create PWI images');
             PWI4D = [];
             Control4D = ASL4D;
+
+			x.Q.EchoTime_PWI4D = [];
+            x.Q.InitialPLD_PWI4D = [];
+            x.Q.LabelingDuration_PWI4D = [];
+			x.Q.EchoTime_Control4D = x.Q.EchoTime;
+            x.Q.InitialPLD_Control4D = x.Q.Initial_PLD;
+            x.Q.LabelingDuration_Control4D = x.Q.LabelingDuration;
+
             bCreateControl3D = true; % because we can do this now
             % but we cannot create PWI4D, PWI3D, PWI
 
@@ -298,9 +297,9 @@ if bCreatePWI4D || bCreateControl4D
             x.Q.EchoTime_PWI4D = x.Q.EchoTime;
             x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD;
             x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration;
-            x.Q.EchoTime_Control4D = x.Q.EchoTime;
-            x.Q.InitialPLD_Control4D = x.Q.Initial_PLD;
-            x.Q.LabelingDuration_Control4D = x.Q.LabelingDuration;
+            x.Q.EchoTime_Control4D = [];
+            x.Q.InitialPLD_Control4D = [];
+            x.Q.LabelingDuration_Control4D = [];
 
             bCreatePWI3D = true; % because we can do this now
         end
