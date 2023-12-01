@@ -227,6 +227,8 @@ end
 %% ConvertNumericalFields (Convert strings which contain numbers to numbers, remove invalid fields)
 function [StructOut] = xASL_io_ReadDataPar_ConvertNumericalFields(StructIn)   
 
+StructOut = struct; % initialize output
+
 % Get fields
 listFields = fields(StructIn);
 
@@ -277,6 +279,8 @@ function StructOut = xASL_io_ReadDataPar_ConvertCellArrays(StructIn)
 % {'text','text2','text3'} and breaks it down to cell array of characters. 
 % Note that the Matlab notation '{'text','text2','text3'}' shouldn't be used in JSON and the correct JSON notation
 % ["text","text2","text3"] should be used in JSON instead. 
+
+StructOut = struct; % initialize output
 
 % Get fields
 listFields = fields(StructIn);
