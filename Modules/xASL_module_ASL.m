@@ -251,16 +251,16 @@ end
 % Initialization
 nLists = 0;
 
-% MergeSessionList == total list of sessions that need concatenating (can be multiple lists for multiple concatenations)
+% SessionMergingList == total list of sessions that need concatenating (can be multiple lists for multiple concatenations)
 % Read the list of sessions to merge, defaulting to empty
-if ~isfield(x.modules.asl, 'MergeSessionList')
-	x.modules.asl.MergeSessionList = {};
+if ~isfield(x.modules.asl, 'SessionMergingList')
+	x.modules.asl.SessionMergingList = {};
 else
 	% The parameter should be a list of lists, but if a single list is provided, it converts it
-	if ~isempty(x.modules.asl.MergeSessionList) && iscell(x.modules.asl.MergeSessionList) && ~iscell(x.modules.asl.MergeSessionList{1})
-		x.modules.asl.MergeSessionList = {x.modules.asl.MergeSessionList};
+	if ~isempty(x.modules.asl.SessionMergingList) && iscell(x.modules.asl.SessionMergingList) && ~iscell(x.modules.asl.SessionMergingList{1})
+		x.modules.asl.SessionMergingList = {x.modules.asl.SessionMergingList};
 	end
-    nLists = numel(x.modules.asl.MergeSessionList);
+    nLists = numel(x.modules.asl.SessionMergingList);
     fprintf('\n%s', ['-> Detected ' xASL_num2str(nLists) ' list(s) for concatenating sessions']);
 end
 
@@ -274,15 +274,15 @@ x.modules.asl.sessionsToMerge = {};
 % Note that these can be multiple lists
 bSessionListed = false; % It is possible that a single session is in multiple list. That is not illegal
 for iList=1:nLists
-	if ~isempty(x.modules.asl.MergeSessionList{iList}) && sum(ismember(x.SESSION, x.modules.asl.MergeSessionList{iList}))
+	if ~isempty(x.modules.asl.SessionMergingList{iList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iList}))
 		if bSessionListed
 			fprintf(['Session ' x.SESSION ' appears in more than one list of sessions to merge.\n']);
 		else
-			x.modules.asl.sessionsToMerge = x.modules.asl.MergeSessionList{iList};
+			x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList};
 			bSessionListed = true;
 		end
 
-        if strcmp(x.SESSION, x.modules.asl.MergeSessionList{iList}{end})
+        if strcmp(x.SESSION, x.modules.asl.SessionMergingList{iList}{end})
             % If the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
 
 			% If merging is already set to true, it means that there was a previous list to be merged. We report this as a warning and we keep the first fitting list to be merged
@@ -290,7 +290,7 @@ for iList=1:nLists
 				warning(['Session ' x.SESSION ' is at the end of more than one list of sessions to merge. We ignore all such lists but the first.'])
 			else
 				% We have to assign the list again, because it is possible that sessionsToMerge was already initialized to a list that contained the current session, but that was not ending it
-				x.modules.asl.sessionsToMerge = x.modules.asl.MergeSessionList{iList}; 				                                                            
+				x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList}; 				                                                            
 				x.modules.asl.bMergingSessions = 1;
 			end
         end
