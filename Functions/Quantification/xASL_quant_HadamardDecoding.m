@@ -177,27 +177,23 @@ end
 %% 2. Load time-series nifti
 imEncoded = xASL_io_Nifti2Im(imPath); 
 
-% Calculate specific data sizes
-nDecodedTI = xQ.TimeEncodedMatrixSize-1;                   % Number of TIs is always MatrixSize -1
+% Prepare the general sequence parameters
+nEncodedVolumes = size(imEncoded, 4);     % Size of the raw data
 
-%  Time decoding should be oblivious about the readout parameters
-nDecodedVolumes = xQ.NumberEchoTimes * nDecodedTI;
-
-nEncodedVolumes = size(imEncoded, 4);
-
-nRepetitions = nEncodedVolumes / (xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes); % Calculating no. of acquisition repeats
-
-% Check that quantification parameters are vectors with an equal length to the number of volumes
-if length(xQ.EchoTime)>1 && length(xQ.EchoTime) ~= nEncodedVolumes
-	error('Length of EchoTime vector does not match the number of volumes.');
-end
-
+% Check that input quantification parameters are vectors with an equal length to the number of volumes
 if length(xQ.LabelingDuration)>1 && length(xQ.LabelingDuration) ~= nEncodedVolumes
 	error('Length of LabelingDuration vector does not match the number of volumes.');
 end
 
 if length(xQ.Initial_PLD)>1 && length(xQ.Initial_PLD) ~= nEncodedVolumes
 	error('Length of Initial_PLD vector does not match the number of volumes.');
+end
+
+% Prepare the parameters also for interleaved reordering
+nRepetitions = nEncodedVolumes / (xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes); % Calculating no. of acquisition repeats accounting for multipleTE
+
+if length(xQ.EchoTime)>1 && length(xQ.EchoTime) ~= nEncodedVolumes
+	error('Length of EchoTime vector does not match the number of volumes.');
 end
 
 % Currently, we only implement the option that TE times are together
@@ -258,17 +254,23 @@ end
 % end
 
 %% 5. Decode the Hadamard data
-decodedPWI4D = zeros(size(imEncoded,1), size(imEncoded,2), size(imEncoded,3), nDecodedVolumes * nRepetitions);    
-idx=0;
-for iRepetition = 1:nRepetitions
-    for iTE = 1:xQ.NumberEchoTimes
-        for iTI = 1:nDecodedTI
-            indexPositive = find(xQ.TimeEncodedMatrix(iTI+1,:)==1);
-            indexNegative = find(xQ.TimeEncodedMatrix(iTI+1,:)==-1);
-			decodedPWI4D(:,:,:,((iTE-1)*nDecodedTI+iTI)+(iRepetition-1)*nDecodedVolumes) = sum(imEncoded(:,:,:,(indexPositive+idx)),4) - sum(imEncoded(:,:,:,(indexNegative+idx)),4);
-        end
-        idx = idx+xQ.TimeEncodedMatrixSize;
-    end
+% We assume that the entire encoded volume is reorder into several repetitions of basic Hadamard blocks (repetitions or TE are counted the same)
+decodedPWI4D = zeros(size(imEncoded,1), size(imEncoded,2), size(imEncoded,3), nEncodedVolumes / xQ.TimeEncodedMatrixSize * (xQ.TimeEncodedMatrixSize-1)); 
+decodedBlock = zeros(size(imEncoded,1), size(imEncoded,2), size(imEncoded,3), xQ.TimeEncodedMatrixSize-1); % Temporary single decoded Hadamard block
+
+% Go through all repetitions of the Hadamard blocks
+for iRepetition = 1:(nEncodedVolumes / xQ.TimeEncodedMatrixSize)
+	offsetEncoded = xQ.TimeEncodedMatrixSize * (iRepetition-1); % Index offset for the given repetition to search in the encoded data
+	encodedBlock = imEncoded(:,:,:,(1:xQ.TimeEncodedMatrixSize) + offsetEncoded); % Obtain the single encoded block
+	
+	% Decoded the single block
+	for iTI = 1:(xQ.TimeEncodedMatrixSize-1) %Number of decoded PLDs is number of Hadamard matrix size - 1
+		indexPositive = find(xQ.TimeEncodedMatrix(iTI+1,:)==1);
+		indexNegative = find(xQ.TimeEncodedMatrix(iTI+1,:)==-1);
+		decodedBlock(:,:,:,iTI) = sum(encodedBlock(:,:,:,(indexPositive)),4) - sum(encodedBlock(:,:,:,(indexNegative)),4);
+	end
+	offsetDecoded = (iRepetition-1)*(xQ.TimeEncodedMatrixSize-1); % Index offset for the given repetition in the decoded data
+	decodedPWI4D(:,:,:,offsetDecoded + (1:(xQ.TimeEncodedMatrixSize-1))) = decodedBlock; % Save the decoded block
 end
 
 %% 6. Reorder multi-TE back to the initial order of PLD/TE
