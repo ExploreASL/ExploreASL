@@ -288,11 +288,11 @@ if isfield(xQ,'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
 end
 
 % Calculate the correct parameters
-indexPWI = ((xQ.NumberEchoTimes+1):nVolumesPerRepetition)'*ones(1,nRepetitions) + ones(nVolumesPerRepetition-xQ.NumberEchoTimes,1)*(0:nRepetitions-1)*nVolumesPerRepetition;
-indexPWI = indexPWI(:)';
-xQ.EchoTime_PWI4D = xQ.EchoTime(indexPWI);
-xQ.InitialPLD_PWI4D = xQ.Initial_PLD(indexPWI);
-xQ.LabelingDuration_PWI4D = xQ.LabelingDuration(indexPWI);
+indexDecoding = ((xQ.NumberEchoTimes+1):nVolumesPerRepetition)'*ones(1,nRepetitions) + ones(nVolumesPerRepetition-xQ.NumberEchoTimes,1)*(0:nRepetitions-1)*nVolumesPerRepetition;
+indexDecoding = indexDecoding(:)';
+xQ.EchoTime_PWI4D = xQ.EchoTime(indexDecoding);
+xQ.InitialPLD_PWI4D = xQ.Initial_PLD(indexDecoding);
+xQ.LabelingDuration_PWI4D = xQ.LabelingDuration(indexDecoding);
 
 %% 7. Normalization of the decoded data
 % NormalizationFactor = 1/(m_INumSets/2);

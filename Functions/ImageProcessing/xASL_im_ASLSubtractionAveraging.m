@@ -253,13 +253,10 @@ if bCreatePWI4D || bCreateControl4D
 
     %% 2B. Apply time decoding if needed
     if x.modules.asl.bTimeEncoded
-        %% #997 Check that the motion correction of Hadamard is correctly performed here,
-        % should we use path_rASL4D from here onwards, which defaults to path_ASL4D?
-
         % Decoding of TimeEncoded data - it outputs the decoded image as well as the parameters
         [PWI4D, Control4D, x.Q] = xASL_quant_HadamardDecoding(ASL4D, x.Q);
-        %% #997 JAN here we have to load ASL4D which is resampled for motion correction in 2A
-	    nVolumes = size(PWI4D, 4);
+
+		nVolumes = size(PWI4D, 4);
 
         bCreatePWI3D = true; % because we can do this now
         bCreateControl3D = true; % because we can do this now        
