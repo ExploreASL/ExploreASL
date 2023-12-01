@@ -94,7 +94,9 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
         xASL_io_SaveNifti(x.P.Path_PWI4D, pathFSLInput, PWI, [], 0); % use PWI4D path
     else
         % MultiPLD Look-Locker
-        xASL_im_LookLockerIntensityCorrection(x.P.Path_PWI4D, pathFSLInput, PWI, x); % correct Look-Locker PWI for steady state magnetisation effects
+        PWI = xASL_im_LookLockerIntensityCorrection(PWI, x); % correct Look-Locker PWI for steady state magnetisation effects
+        xASL_io_SaveNifti(x.P.Path_PWI4D, pathFSLInput, PWI, [], 0); % use PWI4D path
+
     end
 
     %% 4. Create FIDoptionFile that contains options which are passed to the FSL command

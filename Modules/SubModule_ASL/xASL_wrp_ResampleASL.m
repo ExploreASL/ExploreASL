@@ -157,7 +157,7 @@ end
 
 % If x.Q.M0 is set as UseControlAsM0, this mean control NIfTI will be
 % cloned to an M0 NIfTI (and processed in the M0 submodule)
-if strcmpi(x.Q.M0, 'UseControlAsM0') && ~isfield(x.Q,'LookLocker')
+if strcmpi(x.Q.M0, 'UseControlAsM0') 
     if nVolumes==1
         warning('Cant clone mean control NIfTI as M0.nii, timeseries missing');
         % we assume that a single ASL image is already subtracted, so does not
@@ -199,8 +199,6 @@ if strcmpi(x.Q.M0, 'UseControlAsM0') && ~isfield(x.Q,'LookLocker')
             xASL_Copy(x.P.Path_ASL4D_parms_mat, x.P.Path_M0_parms_mat, true);
         end
     end
-elseif strcmpi(x.Q.M0, 'UseControlAsM0') && isfield(x.Q,'LookLocker')
-    fprintf('%s\n','Skipping cloning mean control image for use as M0, as Look-Locker M0 creation will be performed later');
 end
 
 

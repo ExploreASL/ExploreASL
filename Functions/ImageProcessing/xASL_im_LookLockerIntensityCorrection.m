@@ -1,4 +1,4 @@
-function [CorrectedImage, x] = xASL_im_LookLockerIntensityCorrection(pathOrigNifti, ImageSavePath, image, x)
+function [CorrectedImage, x] = xASL_im_LookLockerIntensityCorrection(image, x)
 %xASL_im_LookLockerIntensityCorrection Correct Look-Locker 4D image for steady state magnetisation effects
 %
 % FORMAT: x = xASL_im_LookLockerIntensityCorrection(x)
@@ -30,5 +30,4 @@ else % 4D PWI images
         CorrectedImage(:,:,:,iPLD) = image(:,:,:,iPLD)/((cos(2*pi/360*x.Q.FlipAngle))^(iPLD-1)); % correct PWI for Look-Locker readout per PLD number, see Günther, M., Bock, M. and Schad, L.R. (2001), Arterial spin labeling in combination with a look-locker sampling strategy: Inflow turbo-sampling EPI-FAIR (ITS-FAIR). Magn. Reson. Med., 46: 974-984. https://doi.org/10.1002/mrm.1284
     end
 end
-xASL_io_SaveNifti(pathOrigNifti, ImageSavePath, CorrectedImage, [], 0); % use PWI4D path
 end
