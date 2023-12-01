@@ -17,19 +17,13 @@ function [decodedPWI4D, decodedControl4D, xQ] = xASL_quant_HadamardDecoding(imPa
 %                             - '8' for Hadamard-8
 %                          - TimeEncodedMatrix (OPTIONAL)
 %                             - Matrix given by the user
-%
-%                           - EchoTime: TE vector after Hadamard-decoded subtraction
-%                           - Initial_PLD: PLD vector after Hadamard-decoded subtraction
-%                           - LabelingDuration: LD vector after Hadamard-decoded subtraction
-%                           - EchoTime: TE vector for all control images
-%                           - Initial_PLD: PLD vector for all control images
-%                           - LabelingDuration: : LD vector for all control images
+%                           - EchoTime: TE vector for encoded images
+%                           - Initial_PLD: PLD vector for encoded images
+%                           - LabelingDuration: : LD vector for encoded images
 %
 % OUTPUT:       decodedPWI4D - Decoded ASL volumes
 %               decodedControl4D - Decoded control volumes
 %               xQ     - xQ field with several output parameters
-%                           - HadamardDecodingVector (REQUIRED)
-%                             vector with element-wise index where a volume should go
 %                           - EchoTime_PWI4D: TE vector after Hadamard-decoded subtraction
 %                           - InitialPLD_PWI4D: PLD vector after Hadamard-decoded subtraction
 %                           - LabelingDuration_PWI4D: LD vector after Hadamard-decoded subtraction
