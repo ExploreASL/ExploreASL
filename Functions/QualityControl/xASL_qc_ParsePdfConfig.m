@@ -228,6 +228,50 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintImage(input, x, current
     settingsPDF.figureCount = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, settingsPDF, canvas);
 end
 
+function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, currentFigure, settingsPDF)
+% This function prints images using the layout defined in the json file.
+    if ~isfield(x, 'Output_im') || ~isfield(x.Output_im, qcStruct.module)
+        return
+    end
+
+    if ~isfield(qcStruct, 'position') ||~isfield(qcStruct, 'size')
+        return
+    end
+    
+    % First it calculates the size of the canvas for the image to be printed in.
+    position = [xASL_str2num(qcStruct.position) xASL_str2num(qcStruct.size)];
+    [canvas] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), settingsPDF.canvas);
+    
+    % Dimensions, at most 16 images will be printed
+    nImages  = min(size(x.Output_im.(qcStruct.module), 2), 16);
+    imPerRow = ceil(sqrt(nImages));
+    imSize   = 1/imPerRow;
+
+    allImages = x.Output_im.(qcStruct.module);
+    % Print images
+    for iImage = 1:nImages
+        CurrentIm  = double(allImages{iImage});
+
+        % Convert grayscale images to color
+        if  size(CurrentIm,3) == 1 
+            CurrentIm = repmat(CurrentIm,[1 1 3]);     
+        end
+
+        % Rescale image to fit between 0-1
+        CurrentIm = CurrentIm ./ max(CurrentIm(:)); %
+
+        % Determine the position and size of the image
+        xPos = mod(iImage - 1, imPerRow) * imSize;
+        yPos = (imPerRow - ceil(iImage / imPerRow)) * imSize;
+        [position] = xASL_qc_ParsePdfConfig_sub_createNewCanvas([xPos, yPos], [imSize, imSize], canvas);
+
+        % Finally it prints the image to the current figure, and updates the figure count.
+        ax = axes('Position', position , 'Visible', settingsPDF.axesVisible, 'Parent', currentFigure);
+        fg = imshow(CurrentIm);
+    end
+
+end
+
 % ====================================================================================================================================================
 
 function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintScan(scanStruct, x, currentFigure, settingsPDF)
@@ -443,8 +487,16 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
 % Certain settings can be applied to the QC values, for example a range can be specified.
 % If the QC value is outside the range, it will be printed in red.
 
+    if ~isfield(qcStruct, 'parameter') || ~isfield(qcStruct, 'module')
+        fprintf (['QC content field not properly defined in JSON, skipping printing of QC parameter. \n']);
+        return
+    elseif strcmp(qcStruct.parameter, 'qc_images')
+        xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, currentFigure, settingsPDF);
+        return
+    end
+
     % Stop if module and field don't exists in output
-    if ~isfield(x.Output, (qcStruct.module)) || ~isfield(x.Output.(qcStruct.module), qcStruct.parameter)
+    if ~isfield(x.Output, (qcStruct.module)) || ~isfield(x.Output.(qcStruct.module), qcStruct.parameter) 
         return     
     end
 

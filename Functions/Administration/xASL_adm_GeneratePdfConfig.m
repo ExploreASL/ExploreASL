@@ -96,6 +96,10 @@ function [config] = xASL_sub_createDefaultJson(x)
         warning('x.Output didnt exist, skipping xASL_qc_GenerateJsonTemplate');
         return;
     end
+    if ~isfield(x, 'Output_im') || isempty(x.Output_im) || isempty(fields(x.Output_im))
+        warning('x.Output_im didnt exist, skipping xASL_qc_GenerateJsonTemplate');
+        return;
+    end
 
     config.pages = struct();
     modules = fieldnames(x.Output);
@@ -103,13 +107,13 @@ function [config] = xASL_sub_createDefaultJson(x)
         config.pages(module).category = 'metadata';
         config.pages(module).type = 'page';
         config.pages(module).pageIdentifier = modules{module};
-        config.pages(module).content = xASL_sub_createModuleContent(x.Output.(modules{module}), modules{module});
+        config.pages(module).content = xASL_sub_createModuleContent(x, modules{module});
     end
 
 end
 
-function content = xASL_sub_createModuleContent(module_struct, module)
-    qc_parameters = fieldnames(module_struct);
+function content = xASL_sub_createModuleContent(x, module)
+    qc_parameters = fieldnames(x.Output.(module));
     content = cell(size(qc_parameters,1),1);
 
     for field = 1:size(qc_parameters)
@@ -120,5 +124,17 @@ function content = xASL_sub_createModuleContent(module_struct, module)
         qc_content.module = module;
         content{field} = qc_content;
     end
+
+    % Add the qc_images
+    qc_content = struct();
+    qc_content.category = 'content';
+    qc_content.type = 'QCValues';
+    qc_content.parameter = 'qc_images';
+    qc_content.position = '[0.4 0.25]';
+    qc_content.size = '[0.6 0.6]';
+    qc_content.module = module;
+    content{end+1} = qc_content;
+
+
 
 end
