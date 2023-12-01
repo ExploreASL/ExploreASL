@@ -102,7 +102,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(PW
 	%% #1543 THE NEW SEPARATE FUNCTION xASL_im_MergePWI4D will have as input:
 	%% PWI4D.nii
 	%% PWI4D.json
-	%% MergeSessionList
+	%% SessionMergingList
 	%% (not x if we don't need it)
 	if x.modules.asl.bMergingSessions == 1
 		bUseFabber = 1;
