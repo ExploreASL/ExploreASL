@@ -36,10 +36,12 @@ function [decodedPWI4D, decodedControl4D, xQ] = xASL_quant_HadamardDecoding(imPa
 %
 % 0. Admin: Check inputs, load data
 % 1. Specify the decoding matrix
-% 2. Reorder multi-TE data
-% 3. Decode the Hadamard data
-% 4. Reorder multi-TE back to the initial order of PLD/TE
-% 5. Normalization of the decoded data
+% 2. Load time-series nifti
+% 3. Obtain control4D images
+% 4. Reorder multi-TE data
+% 5. Decode the Hadamard data
+% 6. Reorder multi-TE back to the initial order of PLD/TE
+% 7. Normalization of the decoded data
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      n/a
@@ -57,7 +59,7 @@ if nargin<2 || isempty(xQ)
     error('xQ input is empty');
 end
 
-%% 1. Specify the Encoding matrix
+%% 1. Specify the decoding matrix
 
 % Specify the TimeEncodedMatrix
 if ~isempty(xQ.TimeEncodedMatrix)
@@ -184,7 +186,9 @@ if length(xQ.Initial_PLD)>1 && length(xQ.Initial_PLD) ~= nEncodedVolumes
 end
 
 % Prepare the parameters also for interleaved reordering
-nRepetitions = nEncodedVolumes / (xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes); % Calculating no. of acquisition repeats accounting for multipleTE
+% We thus calculate the size of each Hadamard block as the number of Hadamard phases and TEs
+nVolumesPerRepetition = xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes;
+nRepetitions = nEncodedVolumes / nVolumesPerRepetition; % Calculating no. of acquisition repeats accounting for multipleTE
 
 if length(xQ.EchoTime)>1 && length(xQ.EchoTime) ~= nEncodedVolumes
 	error('Length of EchoTime vector does not match the number of volumes.');
@@ -200,9 +204,7 @@ if isfield(xQ, 'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
 end
 
 %% 3. Obtain control4D images
-% Here we select all TEs and the control images
-% We thus calculate the size of each Hadamard block as the number of Hadamard phases and TEs
-nVolumesPerRepetition = xQ.TimeEncodedMatrixSize * xQ.NumberEchoTimes;
+% Here we select all TEs for the control images
 
 % For example for 64 volumes and 2 repetitions with 8 PLDs and 4 TEs, it takes volume 1,2,3,4 and 33,34,35,36 to get all TEs of the control
 indexControl = ((1:xQ.NumberEchoTimes)'*ones(1,nRepetitions) + ones(xQ.NumberEchoTimes,1)*(0:nRepetitions-1)*nVolumesPerRepetition);
@@ -222,35 +224,25 @@ xQ.LabelingDuration_Control4D = xQ.LabelingDuration(indexControl);
 % Then below, we apply this "transformation"/"decoding" vector to the image matrix and to the parameters TE/PLD/LD
 if isfield(xQ, 'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
 	% This is the original order
-	vectorOldOrder = 1:nEncodedVolumes;
+	vectorReorderEncoded = 1:nEncodedVolumes;
 	
 	% Shape to a matrix with TEs first and all the rest later
-	vectorOldOrder = reshape(vectorOldOrder, xQ.NumberEchoTimes, nEncodedVolumes/xQ.NumberEchoTimes);
+	vectorReorderEncoded = reshape(vectorReorderEncoded, xQ.NumberEchoTimes, nEncodedVolumes/xQ.NumberEchoTimes);
 	
 	% Flip the two dimensions and make a row vector again
-	vectorOldOrder = reshape(vectorOldOrder', 1, nEncodedVolumes);
+	vectorReorderEncoded = reshape(vectorReorderEncoded', 1, nEncodedVolumes);
 
 	% Reorder the data
-	imEncoded = imEncoded(:,:,:,vectorOldOrder);
+	imEncodedReordered = imEncoded(:,:,:,vectorReorderEncoded);
 end
 
 % Sometimes HAD8 is PLD1(rep1), PLD1(rep2), PLD2(rep1), PLD2(rep2). We
 % want: PLD1(rep1), PLD2(rep1)... PLD1(rep2),PLD2(rep2)
-% UniquePLDs = unique(xQ.Initial_PLD);
-% 
-% if (length(UniquePLDs) == nEncodedVolumes) && (UniquePLDs(2)-UniquePLDs(1))< 250
-%     This is the original order
-% 	vectorOldOrder = 1:nEncodedVolumes;
-%     Shape
-%     vectorOrder = [ vectorOldOrder(1:2:end) vectorOldOrder(2:2:end)];
-%     Reorder the data
-% 	imEncoded = imEncoded(:,:,:,vectorOrder);
-% end
 
 %% 5. Decode the Hadamard data
 % We assume that the entire encoded volume is reorder into several repetitions of basic Hadamard blocks (repetitions or TE are counted the same)
-decodedPWI4D = zeros(size(imEncoded,1), size(imEncoded,2), size(imEncoded,3), nEncodedVolumes / xQ.TimeEncodedMatrixSize * (xQ.TimeEncodedMatrixSize-1)); 
-decodedBlock = zeros(size(imEncoded,1), size(imEncoded,2), size(imEncoded,3), xQ.TimeEncodedMatrixSize-1); % Temporary single decoded Hadamard block
+decodedPWI4D = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), nEncodedVolumes / xQ.TimeEncodedMatrixSize * (xQ.TimeEncodedMatrixSize-1)); 
+decodedBlock = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), xQ.TimeEncodedMatrixSize-1); % Temporary single decoded Hadamard block
 
 % Go through all repetitions of the Hadamard blocks
 for iRepetition = 1:(nEncodedVolumes / xQ.TimeEncodedMatrixSize)
@@ -271,16 +263,16 @@ end
 % For model fitting, we want the PLDs-first-TEs-second order (just like at the beginning) so we need to reorder it again
 if isfield(xQ,'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
 	% This is the original order
-	vectorOldOrder = 1:size(decodedPWI4D, 4);
+	vectorReorderDecoded = 1:size(decodedPWI4D, 4);
 	
 	% Shape to a matrix with TEs second and all the rest first
-	vectorOldOrder = reshape(vectorOldOrder, size(decodedPWI4D, 4)/xQ.NumberEchoTimes, xQ.NumberEchoTimes);
+	vectorReorderDecoded = reshape(vectorReorderDecoded, size(decodedPWI4D, 4)/xQ.NumberEchoTimes, xQ.NumberEchoTimes);
 	
 	% Flip the two dimensions and make a row vector again
-	vectorOldOrder = reshape(vectorOldOrder', 1, size(decodedPWI4D, 4));
+	vectorReorderDecoded = reshape(vectorReorderDecoded', 1, size(decodedPWI4D, 4));
 
 	% Reorder the data
-	decodedPWI4D = decodedPWI4D(:,:,:,vectorOldOrder);
+	decodedPWI4D = decodedPWI4D(:,:,:,vectorReorderDecoded);
 end
 
 % Calculate the correct parameters
