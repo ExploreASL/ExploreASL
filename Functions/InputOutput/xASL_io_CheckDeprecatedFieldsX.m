@@ -36,8 +36,6 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
 
-    % Add default substructs
-    [x] = xASL_init_SubStructs(x);
 
     if nargin<2 || isempty(bVerbose)
         bVerbose = false;
