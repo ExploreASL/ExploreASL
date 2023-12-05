@@ -75,12 +75,6 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
             error('Something wrong with x.SUBJECTS: loading subjects went wrong, verify that ExploreASL was correctly initialized: \n%s',ME.message);
         end
     end
-    % same for x.SESSIONS
-    if ~isfield(x,'SESSIONS')
-        error('x.SESSIONS field missing: loading sessions went wrong, verify that ExploreASL was correctly initialized');
-    elseif isempty(x.SESSIONS)
-        error('x.SESSIONS was empty: loading sessions went wrong, verify that ExploreASL was correctly initialized');
-    end
 
     
     %% Print module name
@@ -114,6 +108,16 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         dbSettings.x.dir.LockDir = fullfile(dbSettings.x.dir.LockDir, '<SUBJECT>');
     end
 
+    
+    % Checking SESSIONS
+    if isempty(regexpi(ModName,'BIDS2Legacy', 'once'))
+        % We don't use this for BIDS2Legacy
+        if ~isfield(x,'SESSIONS')
+            error('x.SESSIONS field missing: loading sessions went wrong, verify that ExploreASL was correctly initialized');
+        elseif isempty(x.SESSIONS)
+            error('x.SESSIONS was empty: loading sessions went wrong, verify that ExploreASL was correctly initialized');
+        end
+    end    
 
     
     % SESSION, MUTEXID & SESSIONDIR

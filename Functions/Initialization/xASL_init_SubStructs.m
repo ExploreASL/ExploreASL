@@ -48,7 +48,7 @@ function [x] = xASL_init_SubStructs(x)
     if ~isfield(x.dataset,'name'),          x.dataset.name = '';            end
 
     % SESSIONS DUMMY
-    if ~isfield(x, 'SESSIONS'),             x.SESSIONS = {''};              end
+    if ~isfield(x, 'SESSIONS'),             x.SESSIONS = [];              end
 
 
 end

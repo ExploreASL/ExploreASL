@@ -41,13 +41,15 @@ if isfield(x,'SESSIONS') && isstruct(x.SESSIONS)
     x = rmfield(x,'SESSIONS');
 end
 
-if ~isfield(x,'SESSIONS')
-    x.SESSIONS = '';
-    SessionPathList = xASL_adm_GetFileList(x.opts.subjectFolder, '^(ASL|func)_\d+$', 'FPListRec', [0 Inf],1);
+if isfield(x,'SESSIONS') && ~isempty(x.SESSIONS)
+    warning('Using predefined x.SESSIONS');
+else
+    x.SESSIONS = [];
+    SessionPathList = xASL_adm_GetFileList(x.dir.xASLDerivatives, '^(ASL|func)_\d+$', 'FPListRec', [0 Inf],1);
     for iSess=1:length(SessionPathList)
         [~, x.SESSIONS{end+1}]  = fileparts(SessionPathList{iSess});
     end
-    
+
     if isempty(x.SESSIONS)
         fprintf('%s\n', 'No sessions found, defaulting to a single ASL_1 session');
         x.SESSIONS{1} = 'ASL_1'; % default session

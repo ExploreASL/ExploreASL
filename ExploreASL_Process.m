@@ -74,7 +74,6 @@ function [x] = ExploreASL_Process(x)
     x = xASL_init_Process(x); % this initializes all generic data loading and processing stuff
     x = xASL_init_SubjectList(x); % create subject list for loading data from rawdata (BIDS2Legacy) or from derivatives (legacy)
     x = xASL_init_Parallelization(x); % choose which subjects this worker processes
-    x = xASL_init_Session_TimePoint_Lists(x); % generate session & visit/time point lists
 
 
     if x.opts.bReadRawdata
@@ -99,6 +98,9 @@ function [x] = ExploreASL_Process(x)
             warning('Dataset can not be loaded, there is no derivatives directory, try to run the DICOM 2 BIDS (import) first...');
             x.opts.bDataLoaded = true;
         else
+            x = xASL_init_Session_TimePoint_Lists(x);
+            % generate session & visit/time point lists
+            % this is based on the legacy structure
             x = xASL_init_DataLoading(x);
         end
 
