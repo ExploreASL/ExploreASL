@@ -14,6 +14,11 @@ function [x] = xASL_init_Loaddataset_description(x)
 %
 % EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
 %
+% This function performs the following parts:
+% 1. Admin checks
+% 2. Find the dataset_description.json location
+% 3. Load pre-existing dataset_descriptives.json
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:  n/a
 % __________________________________
@@ -86,7 +91,7 @@ if ~xASL_exist(destinationFile)
 end
 
 
-%% Load pre-existing dataset_descriptives.json
+%% 3. Load pre-existing dataset_descriptives.json
 if length(listDataSetDescript)>1
     fprintf('Warning: multiple dataset_descriptives.json files found\n');
 elseif isempty(listDataSetDescript)

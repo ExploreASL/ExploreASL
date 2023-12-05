@@ -69,10 +69,9 @@ function [x] = ExploreASL_Process(x)
 % Copyright (c) 2015-2023 ExploreASL
 
 
-    %% Workflow for initialization of data loading and processing
+    %% 0. Workflow for initialization of data loading and processing
+    
     x = xASL_init_Process(x); % this initializes all generic data loading and processing stuff
-	
-
     x = xASL_init_SubjectList(x); % create subject list for loading data from rawdata (BIDS2Legacy) or from derivatives (legacy)
     x = xASL_init_Parallelization(x); % choose which subjects this worker processes
     x = xASL_init_Session_TimePoint_Lists(x); % generate session & visit/time point lists
@@ -105,13 +104,6 @@ function [x] = ExploreASL_Process(x)
 
 	end
 
-
-
-
-    
-    
-
-    %% 0.2
     xASL_init_PrintUserFeedback(x, 1, 0);
 
     % -----------------------------------------------------------------------------

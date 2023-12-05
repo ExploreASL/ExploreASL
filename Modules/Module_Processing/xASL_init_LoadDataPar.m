@@ -15,6 +15,12 @@ function [x] = xASL_init_LoadDataPar(x)
 %
 % EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
 %
+% This function performs the following parts:
+% 1. Generate warning for incompatibility with old dataPar.m
+% 2. Choose the dataPar location
+% 3. Load pre-existing dataPar
+% 4. Populate dataPar with missing parameters
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:  n/a
 % __________________________________
@@ -22,7 +28,7 @@ function [x] = xASL_init_LoadDataPar(x)
     
     
 
-    %% Generate warning for incompatibility with old dataPar.m
+    %% 1. Generate warning for incompatibility with old dataPar.m
     [~, ~, Dext] = fileparts(x.dir.dataPar);
     if strcmp(Dext,'.m')
         warning('No .m file backwards compatibility starting v1.10.0...');
@@ -31,7 +37,7 @@ function [x] = xASL_init_LoadDataPar(x)
     end
 
 
-    %% Choose the dataPar location
+    %% 2. Choose the dataPar location
 
     bUseRoot = false;
     bUseRawdata = false;
@@ -79,7 +85,7 @@ function [x] = xASL_init_LoadDataPar(x)
     end
 
 
-    %% Load pre-existing dataPar
+    %% 3. Load pre-existing dataPar
     if length(listDatapar)>1
         fprintf('Warning: multiple dataPar.json files found, using the first\n');
     elseif isempty(listDatapar)
@@ -92,7 +98,7 @@ function [x] = xASL_init_LoadDataPar(x)
 
 
 
-    %% Populate dataPar with missing parameters
+    %% 4. Populate dataPar with missing parameters
 
     % Fills in important information in the dataPar if missing
     if ~isfield(dataPar, 'x')
