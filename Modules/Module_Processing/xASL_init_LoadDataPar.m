@@ -127,4 +127,7 @@ function [x] = xASL_init_LoadDataPar(x)
     xASL_io_WriteJson(x.dir.dataPar, dataPar);
 
     
+    %% Load dataPar
+    x = xASL_adm_MergeStructs(dataPar.x, x);
+    
 end
