@@ -98,7 +98,11 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         % Subject ID
         SubjectID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).name;
         SessionID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).session;
-        iVisit = str2num(SessionID(5:end));
+        if isempty(SessionID)
+            iVisit = 1; % we default to a single visit
+        else
+            iVisit = str2num(SessionID(5:end));
+        end
 
         SubjectVisit = [SubjectID '_' xASL_num2str(iVisit)]; % this is the legacy name
 

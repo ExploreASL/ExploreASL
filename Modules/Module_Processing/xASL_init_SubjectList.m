@@ -59,10 +59,12 @@ elseif x.opts.bReadRawdata
     for iSubj=1:length(x.modules.bids2legacy.BIDS.subjects)
         subjectName = x.modules.bids2legacy.BIDS.subjects(iSubj).name;
         visitName = x.modules.bids2legacy.BIDS.subjects(iSubj).session;
-        if ~strcmp(visitName(1:4), 'ses-')
+        if isempty(visitName)
+            visitName = '1'; % we default to visit _1
+        elseif ~strcmp(visitName(1:4), 'ses-')
             warning(['Illegal BIDS session definition for ' subjectName '_' visitName]);
         else
-            visitName = visitName(5:end);
+            visitName = visitName(5:end); % if we find a BIDS session, we add it as _n visit suffix in ExploreASL legacy format
         end
         
         x.dataset.TotalSubjects{iSubj} = [subjectName '_' visitName];
