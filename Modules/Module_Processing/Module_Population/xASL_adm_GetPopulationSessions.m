@@ -1,9 +1,10 @@
-function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSessions(x)
+function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSessions(x, bVerbose)
 % xASL_adm_GetPopulationSessions(x) obtain number of Sessions by determining amount of input files present in the Population folder
 % FORMAT: [nSessions, bSessionsMissing] = xASL_adm_GetPopulationSessions(x)
 %
 % INPUT:
 %   x                   - struct containing statistical pipeline environment parameters (REQUIRED)
+%   bVerbose            - boolean for verbosity (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:
 %   nSessions           - Maximum amount of sessions present in Population folder
@@ -24,6 +25,10 @@ function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSession
 % Copyright (C) 2015-2023 ExploreASL
 
 %% 1. Administration
+if nargin<2 || isempty(bVerbose)
+    bVerbose = true;
+end
+
 currentSubjectRegExp = x.dataset.subjectRegexp;
 if strcmp(currentSubjectRegExp(1), '^')
     currentSubjectRegExp = currentSubjectRegExp(2:end);
@@ -38,7 +43,7 @@ if ~isfield(x.S, 'InputDataStr')
 end
 
 %% 2. Look for processed files from which to determine the amount of sessions present
-SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '_' currentSubjectRegExp '_ASL_\d+\.nii$'], 'FPList', [0 Inf]);
+SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '_' currentSubjectRegExp '.*_ASL_\d+\.nii$'], 'FPList', [0 Inf]);
 
 %% 3. Obtain nSessions
 if isempty(SessionList) % If no files found, search for subject files instead of session files
@@ -46,7 +51,9 @@ if isempty(SessionList) % If no files found, search for subject files instead of
 	nSessions = 1;
 	bSessionsMissing = 1;
 	SESSIONS = {'ASL_1'};
-	warning('%s\n','No session or subject files found, defaulting to ASL_1 as single session');
+	if bVerbose
+        warning('No session or subject files found, defaulting to ASL_1 as single session');
+    end
     return;    
 else % If files found, continue with defining sessions from SessionList
     
@@ -68,7 +75,7 @@ else % If files found, continue with defining sessions from SessionList
     
     % 5. Check and provide warning of number of sessions differs per subject
     CompareSessions = ones(1,size(CountSessionNumbers,2)) .* x.dataset.nSubjects; % create an array to check differences in sessions per subject with maximum amount of sessions
-    if ~isequal(CountSessionNumbers,CompareSessions) % Check if amount of sessions is similar for each subject and provide warning if not
+    if ~isequal(CountSessionNumbers,CompareSessions) && bVerbose % Check if amount of sessions is similar for each subject and provide warning if not
         warning('Amount of Sessions differs between Subjects');
     end
 end

@@ -297,7 +297,7 @@ for iScanType=1:length(PreFixList)
 	if SessionsExist(iScanType)
 		% We are looking for all ASL_X sessions
 		x.S.InputDataStr = PreFixList{iScanType};
-		[nSessions, ~, listSessions] = xASL_adm_GetPopulationSessions(x);
+		[nSessions, ~, listSessions] = xASL_adm_GetPopulationSessions(x, false); % run this without verbosity
 	else
 		% For this scantype, there are not ASL_X sessions, so we set a dummy single session
 		listSessions = {'ASL_1'};
