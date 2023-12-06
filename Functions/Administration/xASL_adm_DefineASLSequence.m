@@ -67,15 +67,15 @@ if ~isfield(x.Q, 'Sequence') && isfield(x.Q, 'readoutDim')
 			fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of multi-slice 2D acquisitions');
 			fprintf('%s\n', 'and heavy geometric distortion and minimal smoothness');
 		else
-			fprintf('%\s', '2D readout detected, assuming 2D EPI');
+			fprintf('%s\n', '2D readout detected, assuming 2D EPI');
 		end
 	elseif isfield(x.Q, 'Vendor') && strcmpi(x.Q.readoutDim,'3D')
 		if  ~isempty(regexpi(x.Q.Vendor, 'Philips')) || ~isempty(regexpi(x.Q.Vendor, 'Siemens'))
 			x.Q.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
-			fprintf('%\s', '3D readout detected with vendor Philips or Siemens, assuming 3D GRASE');
+			fprintf('%s\n', '3D readout detected with vendor Philips or Siemens, assuming 3D GRASE');
 		elseif ~isempty(regexpi(x.Q.Vendor, 'GE'))
 			x.Q.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
-			fprintf('%\s', '3D readout detected with vendor GE, assuming 3D spiral');
+			fprintf('%s\n', '3D readout detected with vendor GE, assuming 3D spiral');
 		elseif ~isempty(regexpi(x.Q.Vendor, 'Gold Standard Phantoms'))
 			x.Q.Sequence = '3D_GRASE'; % assume that this is simulated 3D GRASE by the DRO
 			fprintf('%s\n', 'Processing as if this is a 3D GRASE sequence');

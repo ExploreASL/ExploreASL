@@ -6,7 +6,7 @@ function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale,
 %
 % INPUT:
 %   x            - structure containing fields with information when this function is called from ExploreASL toolbox (OPTIONAL)
-%   ImIn         - input image, can be a path to a NIfTI file or an image matrix. Can be a single image, or multiple images,
+%   ImIn         - cell(s) containing input image(s), can be a path to a NIfTI file or an image matrix. Can be a single image, or multiple images,
 %                  in the latter case the other images are overlaid over the first (e.g. to visualize segmentation).
 %                  Input images should be in [1.5 1.5 1.5] mm MNI space
 %                  The same number of inputs should be provided to IntScale and ColorMap (REQUIRED)
@@ -130,17 +130,15 @@ end
 
 if isempty(ImIn)
     fprintf('%s\n', 'xASL_vis_CreateVisualFig:No image data, skipping image creation');
-    FigureOut{1} = NaN;
     return;
 end
 
 
 % First check file existence (only for input images provided as FilePath)
 for iC=1:length(ImIn)
-    if  numel(ImIn{iC})<512 % assume this is a FilePath
+    if numel(ImIn{iC})<512 % assume this is a FilePath
         if ~xASL_exist(ImIn{iC}, 'file')
             fprintf('%s\n','xASL_vis_CreateVisualFig: No image data, skipping image creation');
-            FigureOut{1} = NaN;
             return;
         else
             [~, Ffile{iC}] = xASL_fileparts(ImIn{iC});
@@ -186,7 +184,6 @@ for iIm=1:numel(ImIn)
     if max(size(IM{iIm})~=[121 145 121])
         % resample first
         warning('Input image didnt have correct dims, resample first to standard space for visualization, skipping...');
-        FigureOut{1} = NaN;
         return;
     end
 
@@ -387,10 +384,6 @@ if numel(DirOut)>1 && numel(ImOut)>1 % when DirOut or ImOut==NaN, skip this
     end
     OutputFile = fullfile(DirOut,[FileName '.jpg']);
     xASL_vis_Imwrite(ImOut, OutputFile);
-end
-
-if ~exist('FigureOut', 'var')
-    FigureOut{1} = NaN;
 end
 
 
