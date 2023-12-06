@@ -44,13 +44,14 @@ else % when running for all scans
     [iSubject(1), iSession(1)] = xASL_adm_ConvertSubjSess2Subj_Sess(x.dataset.nSessions, iSubjectSession);
 end
 
-TemplateIM(~x.S.masks.skull) = NaN;
-TemplateColumnAll = xASL_im_IM2Column(TemplateIM,x.S.masks.skull);
+TemplateColumn = xASL_im_IM2Column(TemplateIM,x.S.masks.skull);
 % PM: we can add different Manufacturers templates, or use the 4D template from spatial CoV
 
 
 %% ---------------------------------------------------------
 %  Start iteration
+
+fprintf('%s', 'ASL QC: Compute RMS between CBF image and template   ');
 
 for iImage=1:length(iSubjectSession)
     if iImage>1 % only verbose when iterating
@@ -75,25 +76,31 @@ for iImage=1:length(iSubjectSession)
         ASLcolumn               = xASL_im_IM2Column(ASLim,x.S.masks.skull);
 
         % Mask out non-finite values
-        FiniteMask              = isfinite(ASLcolumn) & isfinite(TemplateColumnAll);
+        FiniteMask              = isfinite(ASLcolumn) & isfinite(TemplateColumn);
         ASLcolumn               = ASLcolumn(FiniteMask);
-        TemplateColumn          = TemplateColumnAll(FiniteMask);
+        TemplateColumn          = TemplateColumn(FiniteMask);
 
-        %% Calculate linear normalization to minimize RMS
-        X = ASLcolumn(:);
-        X = [ones(length(X),1), X];
-        Solution = pinv(X)*TemplateColumn(:);
-        ASLcolumnNorm = ASLcolumn*Solution(2)+Solution(1);
-        TemplateColumnNorm = TemplateColumn;
 
-        DiffColumn = ASLcolumn-TemplateColumn;
-        DiffColumnNorm = ASLcolumnNorm-TemplateColumnNorm;
+        %% Calculate normalized RMS
+        % This pinv takes much too long
+        % X = ASLcolumn(:);
+        % X = [ones(length(X),1), X];
+        % Solution = pinv(X)*TemplateColumn(:);
+        % ASLcolumnNorm = ASLcolumn*Solution(2)+Solution(1);
 
-        MeanASL = xASL_stat_MeanNan(ASLcolumn) + xASL_stat_MeanNan(TemplateColumn) /2;
-        MeanASLNorm = xASL_stat_MeanNan(ASLcolumnNorm) + xASL_stat_MeanNan(TemplateColumnNorm) /2;
+        ASLcolumnNorm = ASLcolumn;
+        ASLcolumnNorm(ASLcolumnNorm<0) = 0;
+        ASLcolumnNorm = max(TemplateColumn).*ASLcolumnNorm./max(ASLcolumnNorm);
 
-        QC.RMSE_Perc = xASL_round(100 * xASL_stat_MeanNan(DiffColumn.^2).^0.5 / MeanASL,4); % RootMeanSquare (%)
+        DiffColumnNorm = ASLcolumnNorm-TemplateColumn;
+        MeanASLNorm = xASL_stat_MeanNan(ASLcolumnNorm) + xASL_stat_MeanNan(TemplateColumn) /2;
         QC.nRMSE_Perc = xASL_round(100 * xASL_stat_MeanNan(DiffColumnNorm.^2).^0.5 / MeanASLNorm,4); % normalized RootMeanSquare (%)
+
+
+        DiffColumn = ASLcolumn-TemplateColumn;        
+        MeanASL = xASL_stat_MeanNan(ASLcolumn) + xASL_stat_MeanNan(TemplateColumn) /2;
+        QC.RMSE_Perc = xASL_round(100 * xASL_stat_MeanNan(DiffColumn.^2).^0.5 / MeanASL,4); % RootMeanSquare (%)
+        
 
         QC.Mean_SSIM_Perc = xASL_round(xASL_stat_MeanSSIM(TemplateIM,ASLim),3);
         QC.PeakSNR_Ratio = xASL_round(100*xASL_stat_PSNR(TemplateIM,ASLim),3);

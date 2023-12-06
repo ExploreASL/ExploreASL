@@ -117,6 +117,8 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
     WMmasked = pWM(imMask);
 
     % Including vascular signal
+    fprintf('%s\n', 'ASL QC: computing CBF...');
+
     ASL.SpatialCoV_GM_Perc = 100*xASL_stat_ComputeSpatialCoV(CBFmasked, [], [], 0, 1);
 
     if xASL_exist(x.P.Path_MaskVascular, 'file')
