@@ -72,6 +72,12 @@ for iTemplate=1:length(pathsTemplates)
     if isempty(pathTemplate)
         warning(['Skipping because of missing template: ' nameTemplate]);
         bSkipStandard = true;
+    elseif numel(pathTemplate)>1
+        warning(['Multiple templates found for ' nameTemplate x.S.TemplateNumberName '_bs-mean.nii']);
+        % This situation should not be able to occur
+        eval([nameTemplate ' = ' nameTemplate '{1};']);
+    else
+        eval([nameTemplate ' = ' nameTemplate '{1};']);
     end
 end
 
