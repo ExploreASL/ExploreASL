@@ -184,7 +184,6 @@ else
     elseif x.Q.NumberEchoTimes>2
         x.modules.asl.bMultiTE = true;
         fprintf('%s\n', 'Multiple echo times detected, processing this as multi-echo ASL');
-        fprintf('%s\n', 'Note that this feature is still under development');
     end
     
     fprintf('%s\n', 'Detected the following unique echo times (ms):')
@@ -192,6 +191,16 @@ else
         fprintf('%.2f, ', round(x.Q.uniqueEchoTimes(iTE),4));
     end
     fprintf('%.2f\n', round(x.Q.uniqueEchoTimes(end),4));
+end
+
+% If multi-TE data is detected, we switch on multi-TE quantification by default. Unless this has been deactived in dataPar.json
+if x.modules.asl.bMultiTE
+	if ~isfield(x.modules.asl, 'bMultiTEQuantification') || isempty(x.modules.asl.bMultiTEQuantification)
+		% By default, initialize as Multi-TE quantification as true
+		x.modules.asl.bMultiTEQuantification = true;
+	end
+else
+	x.modules.asl.bMultiTEQuantification = false;
 end
 
 % Deal with too short vectors (e.g., repetitions in the case of single-PLD)
@@ -434,7 +443,7 @@ end
 if ~isfield(x.Q, 'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
 	x.Q.bUseBasilQuantification = false;
     
-    if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE
+    if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTEQuantification
         x.Q.bUseBasilQuantification = true;
     end
 end
@@ -759,7 +768,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     
 	% allow 4D quantification as well, storing CBF4D. This is currently not implemented for multi-PLD/multi-TE (BASIL/FABBER)
 	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D
-        if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTE
+        if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTEQuantification
             warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, skipping');
 		else
             if size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4) == 1
