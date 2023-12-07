@@ -317,6 +317,9 @@ function x = xASL_init_InputParsing(x, varargin)
         
         % Field to check if the data was loaded or not
         x.opts.bDataLoaded = false;
+
+        % On default, we do not load the data
+        x.opts.bLoadData = false;
     
         % Check if data is being imported
         if sum(x.opts.bImport)>0
@@ -338,8 +341,6 @@ function x = xASL_init_InputParsing(x, varargin)
             if (~x.opts.bImportData && ~x.opts.bProcessData) || x.opts.bProcessData
                 x.opts.bLoadData = true;
             end
-        else
-            x.opts.bLoadData = false;
         end
         
         % Warn the user if processing data but not loading a dataset
