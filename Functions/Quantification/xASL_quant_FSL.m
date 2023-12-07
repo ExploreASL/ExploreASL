@@ -60,7 +60,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     end
 
 	% Define if BASIL or FABBER is used - multiTE needs FABBER 
-	if isfield(x.modules.asl, 'bMultiTE') && x.modules.asl.bMultiTE == 1
+	if isfield(x.modules.asl, 'bMultiTEQuantification') && x.modules.asl.bMultiTEQuantification
 		bUseFabber = 1;
         FSLfunctionName = 'fabber_asl';
 	else
