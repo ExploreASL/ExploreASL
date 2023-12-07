@@ -178,6 +178,11 @@ else
         % (later, when we have multi-PLD, multi-echo, or multi-labeling quantification here as well,
         % then we could use PWI3D here)
 
+		if x.modules.asl.bMultiTE && ~x.modules.asl.bMultiTEQuantification
+            warning('Multiple TE detected, but multi-TE quantification is turned off.');
+            fprintf('%s\n', 'We will use the volumes with the shortest echo time');
+		end
+
 		if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D
             PWI = PWI4D;
             fprintf('%s\n', 'Quantifying CBF in 4D');
