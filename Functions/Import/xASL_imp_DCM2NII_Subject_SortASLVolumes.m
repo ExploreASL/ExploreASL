@@ -115,21 +115,31 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     end
     
     %% 4. Only try shuffling if you dont know the ASL context already
+    % Checks for time encoded sequences (Hadamard etc.)
+    bTimeEncoded = false;
+    bTimeEncodedFME = false;
     
+    % Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
+    [bTimeEncoded, timeEncodedMatrixSize, vectorPLD] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession);
+    
+    % Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
+    [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfFME(nii_files, bTimeEncoded, bTimeEncodedFME);
+
+
     % Check if it was not possible to determine the ASL context before
     if isempty(ASLContext)
         [~,~,scanExtension] = xASL_fileparts(scanpath);
-        if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL'))
-            % For a PAR/REC files that produces a single ASL4D NIFTI
-            imASL = xASL_io_Nifti2Im(nii_files{1});
-            % If multiple dynamics
-            if size(imASL,4) > 1
-                % Then reshuffle them
-                imASLreordered = zeros(size(imASL));
-                imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL,4)/2));
-                imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL,4)/2)+1:end);
-                xASL_io_SaveNifti(nii_files{1}, nii_files{1}, imASLreordered);
-            end
+        if ~isempty(regexpi(scanExtension, '^\.(par|rec)$')) && length(nii_files)==1 && ~isempty(regexpi(scan_name, 'ASL')) && ~bTimeEncoded
+			% For a PAR/REC files that produces a single ASL4D NIFTI
+			imASL = xASL_io_Nifti2Im(nii_files{1});
+			% If multiple dynamics
+			if size(imASL,4) > 1
+				% Then reshuffle them
+				imASLreordered = zeros(size(imASL));
+				imASLreordered(:,:,:,1:2:end) = imASL(:,:,:,1:ceil(size(imASL,4)/2));
+				imASLreordered(:,:,:,2:2:end) = imASL(:,:,:,ceil(size(imASL,4)/2)+1:end);
+				xASL_io_SaveNifti(nii_files{1}, nii_files{1}, imASLreordered);
+			end
         end
     end
     
@@ -140,26 +150,14 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
         elseif  ~isempty(strfind(scan_name,'M0'))
             [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'M0', niiTable);
         end
-    end
-    
-    %% Checks for time encoded sequences (Hadamard etc.)
-    bTimeEncoded = false;
-    bTimeEncodedFME = false;
-    
-    % Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
-    [bTimeEncoded, timeEncodedMatrixSize, vectorPLD] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession);
-    
-    % Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
-    [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfFME(nii_files, bTimeEncoded, bTimeEncodedFME);
+	end
     
     % Reorder TEs and PLDs accordingly for time encoded sequences
     xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncodedFME, timeEncodedMatrixSize, vectorPLD, resultJSON);
-     
     
     %% 6. Extract relevant parameters from nifti header and append to summary file
     summary_line = xASL_imp_AppendNiftiParameters(nii_files);
     globalCounts.converted_scans(iSubject, iVisit, iSession, iScan) = 1;
-    
 
 end
 

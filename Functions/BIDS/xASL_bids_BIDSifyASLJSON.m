@@ -112,7 +112,7 @@ for fn = fieldnames(jsonInMerged)'
 					') & studyPar (' xASL_num2str(jsonOut.(fn{1})) '). '];
 
 				% Define the DICOM or studyPar priority
-				if strcmp(fn{1},'TotalAcquiredPairs') || strcmp(fn{1},'ArterialSpinLabelingType')
+				if strcmp(fn{1}, 'TotalAcquiredPairs') || strcmp(fn{1}, 'ArterialSpinLabelingType') || strcmp(fn{1}, 'EchoTime')
 					jsonInMerged.(fn{1}) = jsonOut.(fn{1});
 					warningMessage = [warningMessage 'Using the studyPar value.'];
 				else
@@ -158,7 +158,10 @@ end
 % Check echo time, for vectors
 if isfield(jsonOut,'EchoTime') && length(jsonOut.EchoTime)>1
 	% Remove zero entries
-	jsonOut.EchoTime = jsonOut.EchoTime(jsonOut.EchoTime ~= 0);
+	% But skip this step when reading the values from studyPar
+	if ~isfield(studyPar, 'EchoTime') || ~isequal(studyPar.EchoTime, jsonOut.EchoTime)
+		jsonOut.EchoTime = jsonOut.EchoTime(jsonOut.EchoTime ~= 0);
+	end
 end
 
 % Convert the field name of the old LabelingType

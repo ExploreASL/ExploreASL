@@ -47,11 +47,14 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
 		if length(jsonOut.EchoTime) > 1 && nVolumes>length(jsonOut.EchoTime)
 			if mod(nVolumes,length(jsonOut.EchoTime)) == 0
 				switch(jsonOut.Manufacturer)
-					case {'Siemens', 'Philips'}
+					case {'Siemens'}
 						jsonOut.EchoTime = repmat(jsonOut.EchoTime(:), 1, nVolumes/length(jsonOut.EchoTime))';
 						jsonOut.EchoTime = jsonOut.EchoTime(:);
+					case {'Philips'}
+						jsonOut.EchoTime = repmat(jsonOut.EchoTime(:), nVolumes/length(jsonOut.EchoTime),1)';
+						jsonOut.EchoTime = jsonOut.EchoTime(:);
 					otherwise
-						warning(['Cannot resots multi-TE for ' jsouOut.Manufacturer]);
+						warning(['Cannot resort multi-TE for ' jsouOut.Manufacturer]);
 				end
 			else
 				warning('Number of EchoTimes %d does not match the number of volumes %d\n',length(jsonOut.EchoTime),nVolumes);
