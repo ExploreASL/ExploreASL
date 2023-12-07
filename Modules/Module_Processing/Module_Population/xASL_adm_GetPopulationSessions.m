@@ -1,6 +1,6 @@
 function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSessions(x, bVerbose)
 % xASL_adm_GetPopulationSessions(x) obtain number of Sessions by determining amount of input files present in the Population folder
-% FORMAT: [nSessions, bSessionsMissing] = xASL_adm_GetPopulationSessions(x)
+% FORMAT: [nSessions, bSessionsMissing] = xASL_adm_GetPopulationSessions(x[,bVerbose])
 %
 % INPUT:
 %   x                   - struct containing statistical pipeline environment parameters (REQUIRED)
