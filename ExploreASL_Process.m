@@ -90,18 +90,12 @@ function [x] = ExploreASL_Process(x)
     % such that we can use it for processing.
     % i.e., datasetRoot/derivatives/ExploreASL/*
 	
-    if ~x.opts.bLoadableData
-        % This warning is also printed if a user tries to "only load" a dataset with a descriptive JSON file. 
-        % Since this behavior will be discontinued (only directories from now on), I do not see a problem with this for now.
-        warning('Dataset can not be loaded, there is no derivatives directory, try to run the DICOM 2 BIDS (import) first...');
-        x.opts.bDataLoaded = true;
-    else
-        x = xASL_init_Session_TimePoint_Lists(x);
-        % generate session & visit/time point lists
-        % this is based on the legacy structure
-        x = xASL_init_DataLoading(x);
-    end
+    x = xASL_init_Session_TimePoint_Lists(x);
+    % generate session & visit/time point lists
+    % this is based on the legacy structure
+    x = xASL_init_DataLoading(x);
 
+    
     xASL_init_PrintUserFeedback(x, 1, 0);
 
     % -----------------------------------------------------------------------------

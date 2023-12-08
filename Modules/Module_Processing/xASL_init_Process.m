@@ -47,23 +47,18 @@ function x = xASL_init_Process(x)
 
     
     %% 4. Which data to read
-    %  by default we read rawdata, if this folder doesn't exist, we read the derivatives
-    x.opts.bReadRawdata = true;
-    if ~xASL_exist(x.dir.RawData, 'dir')
-        x.opts.bReadRawdata = false;
-        fprintf('%s\n', ['rawdata folder missing: ' x.dir.RawData]);
-        
-        if ~xASL_exist(x.dir.xASLDerivatives)
-            fprintf('%s\n', ['derivatives ExploreASL folder missing: ' x.dir.xASLDerivatives]);
-
-            error('Both rawdata and derivatives folders missing, cannot continue processing');
-
-            x.opts.bLoadData = false;
-            x.opts.bLoadableData = false;
-        end
+    if ~isfield(x.opts, 'bReadRawdata')
+        x.opts.bReadRawdata = true;
+        %  by default we read rawdata
     end
     
-    x.opts.bLoadableData = true;
+    if x.opts.bReadRawdata && ~xASL_exist(x.dir.RawData, 'dir')
+        warning(['Rawdata folder missing: ' x.dir.RawData]);
+        error('rawdata did not exist, if you want to only process /derivatives/ExploreASL, set x.opts.bReadRawdata to false in dataPar.json');
+    elseif ~x.opts.bReadRawdata && ~xASL_exist(x.dir.xASLDerivatives, 'dir')
+        warning(['ExploreASL derivatives folder missing: ' x.dir.xASLDerivatives]);
+        error('/derivatives/ExploreASL did not exist, if you want to load BIDS data from /rawdata, set x.opts.bReadRawdata to true in dataPar.json');
+    end
 
     % Create logging directory if it does not exist already
     xASL_adm_CreateDir(fullfile(x.dir.xASLDerivatives, 'log'));
@@ -72,13 +67,7 @@ function x = xASL_init_Process(x)
 
     %% 5. Check basic directories
     if isempty(x.dir.DatasetRoot)
-	    error('x.dir.DatasetRoot is a required parameter.');
-    end
-    
-    % Verify that the rawdata subfolder exists
-    if ~exist(fullfile(x.dir.DatasetRoot,'rawdata'), 'dir')
-        warning(['Rawdata folder missing: ' fullfile(x.dir.DatasetRoot,'rawdata')]);
-        return;
+	    error('x.dir.DatasetRoot is a required parameter');
     end
     
     % Check derivatives of ExploreASL

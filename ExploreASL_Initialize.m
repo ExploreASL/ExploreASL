@@ -311,9 +311,6 @@ function x = xASL_init_InputParsing(x, varargin)
     % xASL_init_GetBooleansImportProcess Check which ExploreASL modules should be run, 
     % as per the user-provided booleans (e.g., bImport, bProcess)
     
-    
-        % On default we assume that we cannot load the data
-        x.opts.bLoadableData = false;
         
         % Field to check if the data was loaded or not
         x.opts.bDataLoaded = false;
