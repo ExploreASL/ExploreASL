@@ -74,7 +74,7 @@ if size(stringDelimiter,1) > 1
 end
 
 % Do the conversion if DataIn is numeric
-if isnumeric(DataIn)
+if isnumeric(DataIn) || islogical(DataIn)
 	if isnan(DataIn)
 		DataOut = 'n/a';
 	elseif isempty(stringFormat)

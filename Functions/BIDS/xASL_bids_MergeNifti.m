@@ -82,7 +82,7 @@ if length(NiftiPaths)>1
 			pathOut = xASL_bids_MergeNifti_SeriesNumber(NiftiPaths, niiTable);
 		end
 		
-		% 4. Merges Siemens ASL file if they have the known pattern of filenames
+		% 4. Merges Philips ASL file if they have the known pattern of filenames
 		if isempty(pathOut)
 			pathOut = xASL_bids_MergeNifti_PhilipsMultiTE(NiftiPaths);
 		end
