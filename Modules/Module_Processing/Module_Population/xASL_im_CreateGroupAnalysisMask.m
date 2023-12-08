@@ -45,9 +45,6 @@ if nargin<2 || isempty(Threshold)
 end
 
 
-
-bSkipStandard = false;
-
 if x.dataset.nSubjectsSessions<16
     % With too small datasets, created templated are not reliable
     fprintf('\n\n%s\n\n', ['Only n=' num2str(x.dataset.nSubjectsSessions) ' subject*runs, population-based analysis mask may not be useful']);
@@ -55,31 +52,18 @@ if x.dataset.nSubjectsSessions<16
     % x.S.VBAmask = x.S.MaskSusceptibility;
 end
 
-PathTemplateSusceptibilityMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskSusceptibility' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList');
-PathFoV = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^FoV' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
-PathVascularMask = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^MaskVascular' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
+% Here, we run a subfunction to avoid redundant code repetition
+bSkipStandard = false;
 
-PathT1 = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^T1' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
-PathpGM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pGM' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
-PathpWM = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pWM' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
-PathpCSF = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^pCSF' x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
+[PathTemplateSusceptibilityMask, bSkipStandard] = xASL_sub_CheckTemplatePath('^MaskSusceptibility', x, bSkipStandard);
+[PathFoV, bSkipStandard] = xASL_sub_CheckTemplatePath('^FoV', x, bSkipStandard);
+[PathVascularMask, bSkipStandard] = xASL_sub_CheckTemplatePath('^MaskVascular', x, bSkipStandard);
 
-pathsTemplates = {'PathTemplateSusceptibilityMask' 'PathFoV' 'PathVascularMask' 'PathpGM' 'PathpWM' 'PathpCSF' 'PathT1'};
+[PathT1, bSkipStandard] = xASL_sub_CheckTemplatePath('^T1', x, bSkipStandard);
+[PathpGM, bSkipStandard] = xASL_sub_CheckTemplatePath('^pGM', x, bSkipStandard);
+[PathpWM, bSkipStandard] = xASL_sub_CheckTemplatePath('^pWM', x, bSkipStandard);
+[PathpCSF, bSkipStandard] = xASL_sub_CheckTemplatePath('^pCSF', x, bSkipStandard);
 
-for iTemplate=1:length(pathsTemplates)
-    nameTemplate = pathsTemplates{iTemplate};
-    pathTemplate = eval(nameTemplate);
-    if isempty(pathTemplate)
-        warning(['Skipping because of missing template: ' nameTemplate]);
-        bSkipStandard = true;
-    elseif numel(pathTemplate)>1
-        warning(['Multiple templates found for ' nameTemplate x.S.TemplateNumberName '_bs-mean.nii']);
-        % This situation should not be able to occur
-        eval([nameTemplate ' = ' nameTemplate '{1};']);
-    else
-        eval([nameTemplate ' = ' nameTemplate '{1};']);
-    end
-end
 
 % Not sure if this is the same for the NativeSpaceAnalysis, this still has to be fixed by Jan.
 if bSkipStandard && ~x.modules.population.bNativeSpaceAnalysis
@@ -290,5 +274,26 @@ x.S.SagSlices = [];
 %     Thr = SortInt(round(0.5*length(SortInt)));
 %     T1mask = T1mask>Thr;
 
+
+end
+
+%% =================================================================
+%% =================================================================
+
+function [outputPath, bSkipStandard] = xASL_sub_CheckTemplatePath(preFix, x, bSkipStandard)
+%xASL_sub_CheckTemplatePath subfunction for checking & initializing the template path
+
+    outputPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, [preFix x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
+    
+    if isempty(outputPath)
+        warning(['Skipping because of missing template: ' preFix]);
+        bSkipStandard = true;
+    elseif numel(outputPath)>1
+        warning(['Multiple templates found for ' preFix x.S.TemplateNumberName '_bs-mean.nii']);
+        % This situation should not occur
+        outputPath = outputPath{1};
+    else
+        outputPath = outputPath{1};
+    end
 
 end
