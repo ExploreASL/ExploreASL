@@ -53,9 +53,9 @@ else
     if isempty(x.SESSIONS)
         fprintf('%s\n', 'No sessions found, defaulting to a single ASL_1 session');
         x.SESSIONS{1} = 'ASL_1'; % default session
-	else
-		x.SESSIONS = xASL_adm_SortStringNumbers(unique(x.SESSIONS));
-	end
+    else
+        x.SESSIONS = xASL_adm_SortStringNumbers(unique(x.SESSIONS));
+    end
 end
 
 x.dataset.nSessions = length(x.SESSIONS);
@@ -65,8 +65,13 @@ x.dataset.nSubjectsSessions = x.dataset.nSubjects .* x.dataset.nSessions;
 %% 2. Manage TimePoint lists
 [~, TimePoint] = xASL_init_LongitudinalRegistration(x);
 
+% TimePointTotalSubjects sorts subjects in different time point cells, for reporting purposes
+% Note: 
+% *TotalSubjects == all subjects found by the BIDS-matlab or subjectRegexp
+% *Subjects      == all subjects after removing those defined in x.dataset.exclusion
+
 for iT=unique(TimePoint)'
-    x.dataset.TimePointTotalSubjects{iT} = '';
+    x.dataset.TimePointTotalSubjects{iT} = cell(0);
 end
 
 for iSubj=1:x.dataset.nTotalSubjects
@@ -83,8 +88,13 @@ end
 
 % ------------------------------------------------------------------------------------------------
 %% 3. Create list of baseline & follow-up subjects (i.e. after exclusion)
+
+% Now we here create the same cells list of subjects per time point, but then after exclusion
+% Note: 
+% *TotalSubjects == all subjects found by the BIDS-matlab or subjectRegexp
+% *Subjects      == all subjects after removing those defined in x.dataset.exclusion
 for iCell=1:length(x.dataset.TimePointTotalSubjects)
-    x.dataset.TimePointSubjects{iCell} = '';
+    x.dataset.TimePointSubjects{iCell} = cell(0);
 end
     
 for iS=1:x.dataset.nSubjects

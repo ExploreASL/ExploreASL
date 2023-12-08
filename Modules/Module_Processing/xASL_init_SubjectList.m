@@ -38,6 +38,8 @@ x.ROOT = subjectFolder;
 
 % ------------------------------------------------------------------------------------------------
 %% 2. Advanced parameter to enforce a subject list, without querying folder names
+x.dataset.TotalSubjects = cell(0);
+
 if isfield(x.dataset,'ForceInclusionList')
     % This is an option if you want to select subjects yourself,
     % instead of using all the subjects that comply with the regular expression
@@ -48,6 +50,10 @@ if isfield(x.dataset,'ForceInclusionList')
         x.dataset.subjectRegexp = '^sub-.*$';
         warning('Ensure that the ForceInclusionList is in accordance with the BIDS subjectRegexp');
         fprintf('%s\n', 'Otherwise, this will go wrong further down the road');
+    end
+
+    if isempty(x.dataset.TotalSubjects)
+        error('No subjects found, check x.dataset.ForceInclusionList in dataPar.json');
     end
 
 elseif x.opts.bReadRawdata
@@ -71,6 +77,9 @@ elseif x.opts.bReadRawdata
         x.dataset.subjectRegexp = '^sub-.*$'; % defaulting to BIDS subject regexp
     end
 
+    if isempty(x.dataset.TotalSubjects)
+        error('No subjects found, check your rawdata folder for BIDS compatibility');
+    end
 
 else
     %% 4. Create legacy subject list from folders
@@ -88,40 +97,50 @@ else
         x.dataset.subjectRegexp = [x.dataset.subjectRegexp '(|_\d+)$'];
    end
 
-    %% 5. Then load subjects
+    % Then load subjects
     x.dataset.TotalSubjects = sort(xASL_adm_GetFileList(subjectFolder, x.dataset.subjectRegexp, 'List', [0 Inf], true)); % find dirs
+
+    if isempty(x.dataset.TotalSubjects)
+        fprintf('%s\n', 'No subjects found, subjectRegexp in dataPar.json should match with subjectFolder');
+        fprintf(2,'This was %s ...\n\n', x.opts.subjectFolder);
+        error('No subjects defined...');
+    end
+
+    % And check that this doesn't accidentally contain pipeline directories
+    ListPipelineDir = logical([]);
+    for iSubject=1:x.dataset.nTotalSubjects
+        % This is not a subject but a pipeline folder
+        ListPipelineDir(iSubject) = ~isempty(regexpi(x.dataset.TotalSubjects{iSubject},'^(log|dartel|lock|Population)$'));
+    end
+
+    % Remove pipeline dirs from list
+    x.dataset.TotalSubjects = x.dataset.TotalSubjects(~ListPipelineDir);
+
+    if sum(ListPipelineDir)>0
+        warning('Somehow your subjectRegexp was too lax, try making your subjectRegexp as specific as possible');
+    end
 
 end
 
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
 x.SUBJECTS = x.dataset.TotalSubjects;
+x.dataset.nSubjects = length(x.SUBJECTS);
 
 % ------------------------------------------------------------------------------------------------
 %% 6. Manage exclusions
 
-if ~isfield(x,'SUBJECTS')
-    x.SUBJECTS = '';
-end
-x.dataset.nSubjects = length(x.SUBJECTS);
-
-if isempty(x.SUBJECTS)
-    fprintf(2,'No subjects found...\n');
-    fprintf(2,'Please check the sub_regexp in your Data Parameter File.\n');
-    fprintf(2,'This should match with the subject folders inside the provided subjectFolder\n');
-    fprintf(2,'This was %s ...\n\n', x.opts.subjectFolder);
-    error('No subjects defined, x.SUBJECTS was empty...');
-elseif isfield(x.dataset, 'exclusion')
+if isfield(x.dataset, 'exclusion')
     warning('Exclusion list may not work with longitudinal registration');
 end
 
-if     ~isfield(x.dataset,'exclusion')
-        x.dataset.exclusion = {''};
-        nExclusion = 0;
-elseif  isempty(x.dataset.exclusion)
-        x.dataset.exclusion = {''};    
-        nExclusion = 0;
+if ~isfield(x.dataset,'exclusion')
+    x.dataset.exclusion = {''};
+    nExclusion = 0;
+elseif isempty(x.dataset.exclusion)
+    x.dataset.exclusion = {''};    
+    nExclusion = 0;
 else
-        nExclusion = length(x.dataset.exclusion);
+    nExclusion = length(x.dataset.exclusion);
 end
 
 if ~iscell(x.dataset.exclusion)
@@ -132,45 +151,24 @@ if  nExclusion==1 && isempty(x.dataset.exclusion{1})
     nExclusion = 0;
 end
 
-x.dataset.ExcludedSubjects = '';
-x.SUBJECTS = '';
+x.dataset.ExcludedSubjects = cell(0);
+x.SUBJECTS = cell(0);
 for iSubject=1:x.dataset.nTotalSubjects
-    excl=0;
+    excludeThisSubject = false;
     for j=1:nExclusion % Check if subject should be excluded
-        if  strcmp(x.dataset.TotalSubjects{iSubject},x.dataset.exclusion{j})
-            excl=1;
+        if strcmp(x.dataset.TotalSubjects{iSubject},x.dataset.exclusion{j})
+            excludeThisSubject = true;
             x.dataset.ExcludedSubjects{end+1} = x.dataset.TotalSubjects{iSubject};
         end
     end
     
-    if ~isempty(regexpi(x.dataset.TotalSubjects{iSubject},'^(log|dartel|lock|Population)$'))
-         % This is not a subject but a pipeline folder
-         ListNoPipelineDir(iSubject) = 0;
-    elseif ~excl
-         % include subject if not to be excluded, and if it doesn't have
-         % same name as pipeline directories     
+    if ~excludeThisSubject
          x.SUBJECTS{end+1}  = x.dataset.TotalSubjects{iSubject};
-         ListNoPipelineDir(iSubject) = 1;
-    else
-        ListNoPipelineDir(iSubject) = 1;
     end
 end
 
-% Default definition of ListNoPipelineDir
-if ~exist('ListNoPipelineDir','var')
-    ListNoPipelineDir = [];
-end
-
-% Remove pipeline dirs from list
-if sum(ListNoPipelineDir)>0 % if there are any subjects
-    x.dataset.TotalSubjects = x.dataset.TotalSubjects(logical(ListNoPipelineDir));
-end
-
-if ~isfield(x,'SUBJECTS')
-    fprintf('%s\n','No subjects found');
-    x.SUBJECTS = [];
-elseif isempty(x.SUBJECTS)
-    fprintf('%s\n','No subjects found');
+if isempty(x.SUBJECTS)
+    fprintf('%s\n','No subjects found (after exclusion)');
 end
 
 x.dataset.nSubjects = length(x.SUBJECTS);
