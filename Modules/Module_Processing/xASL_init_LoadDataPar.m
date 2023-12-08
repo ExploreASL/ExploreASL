@@ -88,14 +88,15 @@ function [x] = xASL_init_LoadDataPar(x)
     %% 3. Load pre-existing dataPar
     if length(listDatapar)>1
         fprintf('Warning: multiple dataPar.json files found, using the first\n');
+        fprintf('%s\n', [': ' listDatapar{1}]);
+        dataPar.x = xASL_io_ReadDataPar(listDatapar{1});
     elseif isempty(listDatapar)
         % Create default if no dataPar was provided
         fprintf('No dataPar.json provided, will create default version\n');
         dataPar = struct();
+    else
+        dataPar.x = xASL_io_ReadDataPar(listDatapar{1});
     end
-    % dataPar was provided
-    dataPar.x = xASL_io_ReadDataPar(listDatapar{1});
-
 
 
     %% 4. Populate dataPar with missing parameters
