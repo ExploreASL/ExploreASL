@@ -122,10 +122,6 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     % Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
     [bTimeEncoded, timeEncodedMatrixSize, vectorPLD] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession);
     
-    % Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
-    [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfFME(nii_files, bTimeEncoded, bTimeEncodedFME);
-
-
     % Check if it was not possible to determine the ASL context before
     if isempty(ASLContext)
         [~,~,scanExtension] = xASL_fileparts(scanpath);
@@ -152,6 +148,9 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
         end
 	end
     
+    % Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
+    [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfFME(nii_files, bTimeEncoded, bTimeEncodedFME);
+
     % Reorder TEs and PLDs accordingly for time encoded sequences
     xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncodedFME, timeEncodedMatrixSize, vectorPLD, resultJSON);
     
