@@ -151,16 +151,45 @@ end
 
 %% D4. TimeEncoded parsing
 % Check if TimeEncoded is defined
-if isfield(x.Q,'TimeEncodedMatrixType') || isfield(x.Q,'TimeEncodedMatrixSize')
+if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize') || isfield(x.Q, 'TimeEncodedMatrix')
     fprintf(2,'Time encoded data detected, we will process this but this is a new feature that is still under development\n');
     x.modules.asl.bTimeEncoded = true;
 	x.modules.asl.bMultiPLD = true;
 	
-	if isempty(x.Q.TimeEncodedMatrixType)
-		fprintf(2,'TimeEncodedMatrixType field missing (should be a Hadamard or Walsh)...\n');
-	elseif ~isfield(x.Q,'TimeEncodedMatrixSize') || isempty(x.Q.TimeEncodedMatrixSize) || (x.Q.TimeEncodedMatrixSize < 2)
-		fprintf(2,'TimeEncodedMatrixSize field missing (should be a multiple of 4)...\n');
-    end
+	% Initialize as empty if missing
+	if ~isfield(x.Q, 'TimeEncodedMatrixType')
+		x.Q.TimeEncodedMatrixType = [];
+	end
+
+	if ~isfield(x.Q, 'TimeEncodedMatrixSize')
+		x.Q.TimeEncodedMatrixSize = [];
+	end
+
+	if ~isfield(x.Q, 'TimeEncodedMatrix')
+		x.Q.TimeEncodedMatrix = [];
+	end
+
+	% Check for duplicate definitions
+	if ~isempty(x.Q.TimeEncodedMatrixType) && ~isempty(x.Q.TimeEncodedMatrix)
+		error('Both TimeEncodedMatrixType defined and TimeENcodedMatrix is provided. Please provide only one parameter.')
+	elseif isempty(x.Q.TimeEncodedMatrixType) && isempty(x.Q.TimeEncodedMatrix)
+		error('Neither TimeEncodedMatrixType defined and TimeENcodedMatrix are provided.')
+	end
+	
+	if isempty(x.Q.TimeEncodedMatrixSize)
+		if isempty(x.Q.TimeEncodedMatrix)
+			error('TimeEncodedMatrixSize not defined and TimeEncodedMatrix not provided.')
+		else
+			x.Q.TimeEncodedMatrixSize = size(x.Q.TimeEncodedMatrix,1);
+		end
+	else
+		if (x.Q.TimeEncodedMatrixSize < 2)
+			fprintf(2,'TimeEncodedMatrixSize field missing (should be a multiple of 4)...\n');
+		end
+		if (x.Q.TimeEncodedMatrixSize ~= size(x.Q.TimeEncodedMatrix, 1))
+			error('Mismatch between TimeEncodedMatrix size and TimeEncodedMatrixSize parameters.');
+		end
+	end
 else
 	x.modules.asl.bTimeEncoded = false;
 end

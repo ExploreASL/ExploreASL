@@ -29,7 +29,7 @@ function [imDecoded] = xASL_quant_HadamardDecoding(imPath, xQ)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      n/a
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 %% 0. Admin
 % Check if all inputs are present
@@ -46,8 +46,8 @@ end
 
 % Specify the TimeEncodedMatrix
 if isfield(xQ,'TimeEncodedMatrix') && ~isempty(xQ.TimeEncodedMatrix)
-	if (size(xQ.TimeEncodedMatrix,1)+1) ~= size(xQ.TimeEncodedMatrix,2)
-		error('TimeEncodedMatrix must be square (N-1)xN ');
+	if (size(xQ.TimeEncodedMatrix,1)) ~= size(xQ.TimeEncodedMatrix,2)
+		error('TimeEncodedMatrix must be square NxN ');
 	end
 	
     % TimeEncodedMatrix exists, we verify the size
@@ -76,44 +76,49 @@ else
 	% (that would generate a mean control) is skipped and then we use the decoding along columns, goind across
 	% rows generates different decoded volumes.
 	% #### For Walsh Decoding Matrix ####
-	if strcmp(xQ.TimeEncodedMatrixType,'Walsh')
+	if strcmpi(xQ.TimeEncodedMatrixType,'Walsh')
 		
 		if xQ.TimeEncodedMatrixSize == 4
 			xQ.TimeEncodedMatrix =...
-				[1 -1  1 -1;
+				[1  1  1  1; 
+				 1 -1  1 -1;
 				 1 -1 -1  1;
 				 1  1 -1 -1];
 		elseif xQ.TimeEncodedMatrixSize == 8
-            xQ.TimeEncodedMatrix = [1 -1  1 -1  1 -1  1 -1;
-                                 1 -1  1 -1 -1  1 -1  1;
-                                 1 -1 -1  1 -1  1  1 -1;
-                                 1 -1 -1  1  1 -1 -1  1;
-                                 1  1 -1 -1  1  1 -1 -1;
-                                 1  1 -1 -1 -1 -1  1  1;
-                                 1  1  1  1 -1 -1 -1 -1];
+            xQ.TimeEncodedMatrix = [1  1  1  1  1  1  1  1;
+				                    1 -1  1 -1  1 -1  1 -1;
+                                    1 -1  1 -1 -1  1 -1  1;
+                                    1 -1 -1  1 -1  1  1 -1;
+                                    1 -1 -1  1  1 -1 -1  1;
+                                    1  1 -1 -1  1  1 -1 -1;
+                                    1  1 -1 -1 -1 -1  1  1;
+                                    1  1  1  1 -1 -1 -1 -1];
 		end
 		
 		% #### For Hadamard Decoding Matrix ####
-	elseif strcmp(xQ.TimeEncodedMatrixType,'Hadamard')
+	elseif strcmpi(xQ.TimeEncodedMatrixType,'Hadamard')
+		% An alternative Philips version xQ.TimeEncodedMatrix = [1,1,1,1;1,1,-1,-1;1,-1,1,-1;1,-1,-1,1];
+		%    [1,1,1,1,1,1,1,1;1,-1,1,-1,1,-1,1,-1;1,1,-1,-1,1,1,-1,-1;1,-1,-1,1,1,-1,-1,1;1,1,1,1,-1,-1,-1,-1;1,-1,1,-1,-1,1,-1,1;1,1,-1,-1,-1,-1,1,1;1,-1,-1,1,-1,1,1,-1];
 		if xQ.TimeEncodedMatrixSize == 4
-            xQ.TimeEncodedMatrix = [1 -1  1 -1;
-                                 1  1 -1 -1;
-                                 1 -1 -1  1];
+            xQ.TimeEncodedMatrix = [1  1  1  1;
+				                    1 -1  1 -1;
+                                    1  1 -1 -1;
+                                    1 -1 -1  1];
 		elseif xQ.TimeEncodedMatrixSize == 8
-            xQ.TimeEncodedMatrix = [1 -1 -1  1 -1  1  1 -1;
-                                 1  1 -1 -1 -1 -1  1  1;
-                                 1 -1  1 -1 -1  1 -1  1;
-                                 1  1  1  1 -1 -1 -1 -1;
-                                 1 -1 -1  1  1 -1 -1  1;
-                                 1  1 -1 -1  1  1 -1 -1;
-                                 1 -1  1 -1  1 -1  1 -1];
+            xQ.TimeEncodedMatrix = [1  1  1  1  1  1  1  1;
+				                    1 -1 -1  1 -1  1  1 -1;
+                                    1  1 -1 -1 -1 -1  1  1;
+                                    1 -1  1 -1 -1  1 -1  1;
+                                    1  1  1  1 -1 -1 -1 -1;
+                                    1 -1 -1  1  1 -1 -1  1;
+                                    1  1 -1 -1  1  1 -1 -1;
+                                    1 -1  1 -1  1 -1  1 -1];
 		end    
     end
-    
-    if strcmp(xQ.Vendor,'Philips')
-        xQ.TimeEncodedMatrix = xQ.TimeEncodedMatrix * -1;
-    end
-    
+end
+
+if strcmp(xQ.Vendor,'Philips')
+	xQ.TimeEncodedMatrix = xQ.TimeEncodedMatrix * -1;
 end
 
 % Load time-series nifti
@@ -167,8 +172,8 @@ for iRepetition = 1:nRepetitions
     for iTE = 1:xQ.NumberEchoTimes
         for iTI = 1:nDecodedTI
             
-            indexPositive = find(xQ.TimeEncodedMatrix(iTI,:)==1);
-            indexNegative = find(xQ.TimeEncodedMatrix(iTI,:)==-1);
+            indexPositive = find(xQ.TimeEncodedMatrix(iTI+1,:)==1);
+            indexNegative = find(xQ.TimeEncodedMatrix(iTI+1,:)==-1);
             imDecoded(:,:,:,((iTE-1)*nDecodedTI+iTI)+(iRepetition-1)*nDecodedVolumes) = sum(imEncoded(:,:,:,(indexPositive+idx)),4) - sum(imEncoded(:,:,:,(indexNegative+idx)),4);
             
         end
