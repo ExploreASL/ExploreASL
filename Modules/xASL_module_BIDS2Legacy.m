@@ -22,19 +22,9 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
 %
 % This function performs the following steps:
 %
-% 0. Initialization
-%
-% 1. Parse a folder using bids-matlab output
-% 2. Define SubjectSession
-% 3. Define Session
-% 4. Parse modality
-%    - Parse scantype
-%    - Compile paths for copying
-%    - Manage sidecars to copy
-%    - Copy files
-% 5. Parse M0
-%
-% 6. Finalize and unlock mutex for this module
+% 1. Get subjectID & sessionID from x.modules.bids2legacy.BIDS
+% 2. Parse modality
+% 3. Parse M0s
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        x = xASL_module_BIDS2Legacy(x);
@@ -72,14 +62,11 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
 
     if ~x.mutex.HasState('010_BIDS2LEGACY')
 
+        %% 1. Get subjectID & sessionID from x.modules.bids2legacy.BIDS
+
+        %   !!!!! NOTE THAT SESSION (BIDS) IS A VISIT (LEGACY) HERE, NOT A RUN (BIDS) !!!!!
 
 
-
-
-        %% 1. Parse a folder using the output of bids-matlab (was run before this point)
-
-
-        %% 2. Define Subject
         iSubjSess = find(strcmp(x.SUBJECTS, x.SUBJECT));
         
         % each index in x.modules.bids2legacy.BIDS.subjects has its unique subject-visit combination
@@ -110,24 +97,21 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
             error(['xASL_init_BIDS2Legacy ' x.SUBJECT ' should match with xASL_module_BIDS2Legacy ' SubjectVisit]);
         else
 
-            %% 3. Define Session
+            %% 2. Parse modality
             
             pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, SubjectVisit);
             
             % Create subject/session directory (to enable reruns for pre-imported or crashed datasets, we need a subject level here/above!)
             xASL_adm_CreateDir(pathLegacy_SubjectVisit);
 
-            %% 4. Parse modality
             % Modalities - the BIDS scantypes
             ModalitiesUnique = unique(x.modules.bids2legacy.bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
             nModalities = length(ModalitiesUnique);
             xASL_bids_BIDS2Legacy_ParseModality(x.modules.bids2legacy.BIDS, x.modules.bids2legacy.bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);
-
         end
 
 
-
-        %% 5. Parse M0s
+        %% 3. Parse M0s
         ListASL4D = xASL_adm_GetFileList(pathLegacy_SubjectVisit, '^ASL4D\.nii$', 'FPListRec');
         if bVerbose && isempty(ListASL4D)
             warning(['When parsing M0: no ASL4D.nii found for ' SubjectID 'in ' x.dir.xASLDerivatives '...']);
@@ -150,7 +134,7 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
     end
 
     
-    %% 6. Finalize and unlock mutex for this module
+    %% Finalize and unlock mutex for this module
     x.mutex.AddState('999_ready'); % Add ready state
     x.mutex.Unlock(); % Unlock mutex
         
