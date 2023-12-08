@@ -33,7 +33,7 @@ function [x] = xASL_init_DefineStudyStats(x)
 
 % Predefine SETS to avoid empty SETS & import predefined session settings as set settings
 x.S.SetsName{1} = 'session';
-x.S.SetsOptions = '';
+x.S.SetsOptions = cell(0);
 x.S.SetsID = 0;
 x.S.Sets1_2Sample(1) = 1; % sessions are always paired observations (e.g. belonging to same individual, looking at intra-individual changes)
 
