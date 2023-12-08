@@ -62,8 +62,7 @@ function [x] = xASL_init_DataLoading(x)
     % Define & print settings (path, iWorker, nWorkers, Quality, DELETETEMP)
     x = xASL_init_PrintCheckSettings(x);
     
-    % Set the field which shows that the data was loaded to true
-    x.opts.bDataLoaded = true;
+
 
 end
 

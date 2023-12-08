@@ -13,8 +13,8 @@ function [x] = xASL_init_SubjectList(x)
 % 2. Advanced parameter to enforce a subject list, without querying folder names
 % 3. Load the BIDS structure of all subjects & translate to ExploreASL legacy
 % 4. Create legacy subject list from folders
-% 5. Then load subjects
-% 6. Manage exclusions
+% 5. Manage exclusions
+% 6. Set the field which shows that the data was loaded to true
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        [x] = xASL_init_SubjectList(x);
@@ -127,7 +127,7 @@ x.SUBJECTS = x.dataset.TotalSubjects;
 x.dataset.nSubjects = length(x.SUBJECTS);
 
 % ------------------------------------------------------------------------------------------------
-%% 6. Manage exclusions
+%% 5. Manage exclusions
 
 if isfield(x.dataset, 'exclusion')
     warning('Exclusion list may not work with longitudinal registration');
@@ -174,6 +174,10 @@ end
 x.dataset.nSubjects = length(x.SUBJECTS);
 x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
 x.dataset.nExcluded = x.dataset.nTotalSubjects - x.dataset.nSubjects;
+
+
+%% 6. Set the field which shows that the data was loaded to true
+x.opts.bDataLoaded = true;
 
 
 end
