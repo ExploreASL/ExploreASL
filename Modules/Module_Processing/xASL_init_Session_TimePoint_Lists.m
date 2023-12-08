@@ -122,20 +122,26 @@ end
 % ------------------------------------------------------------------------------------------------
 %% 4. Check what excluded from which TimePoints
 for iT=1:x.dataset.nTimePoints
-    x.dataset.TimePointExcluded{iT} = '';
+    x.dataset.TimePointExcluded{iT} = cell(0);
 end
 
-for iE=1:x.dataset.nExcluded
-    FoundE = 0;
-    iT = 0;
-    while ~FoundE % excluded subject not found in previous TimePoint
-        iT=iT+1;  % go to next TimePoint
-        
-        iS  = find(strcmp(x.dataset.TimePointTotalSubjects{iT}, x.dataset.ExcludedSubjects{iE}));
-        if ~isempty(iS)
-            x.dataset.TimePointExcluded{iT}{end+1} = x.dataset.TimePointTotalSubjects{iT}{iS};
-            FoundE = 1;
+if x.dataset.nExcluded>0
+    for iExcluded=1:x.dataset.nExcluded
+        FoundE = false;
+        iT = 0;
+        while iT<x.dataset.nTimePoints && ~FoundE % excluded subject not found in previous TimePoint
+            iT = iT+1;  % go to next TimePoint
+            
+            iS = find(strcmp(x.dataset.TimePointTotalSubjects{iT}, x.dataset.ExcludedSubjects{iExcluded}));
+            if ~isempty(iS)
+                x.dataset.TimePointExcluded{iT}{end+1} = x.dataset.TimePointTotalSubjects{iT}{iS};
+                FoundE = true;
+            end
         end
+    end
+
+    if ~FoundE
+        warning('Did not find excluded subjects in any of the time points');
     end
 end
 
