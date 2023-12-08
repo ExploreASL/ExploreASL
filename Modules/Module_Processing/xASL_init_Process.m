@@ -1,16 +1,17 @@
-function x = xASL_init_Process(x)
-%xASL_init_Process Initialization before ExploreASL_Process
+function [x] = xASL_init_DataLoading(x)
+%xASL_init_DataLoading Load dataset by adding relevant fields to xASL x struct
 %
-% FORMAT: x = xASL_init_Process(x)
-%
+% FORMAT: [x] = xASL_init_DataLoading(x)
+% 
 % INPUT:
-%   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%   x          - ExploreASL x structure (STRUCT, REQUIRED)
 %
 % OUTPUT:
-%   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
-%
+%   x          - ExploreASL x structure
+%                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:    Initialization before ExploreASL_Process.
+% DESCRIPTION: Here, we load all the ExploreASL derivatives data into the Matlab x structure, 
+% such that we can use it for loading the data/subjects.
 %
 % 1. Print the hyperlink
 % 2. Go to ExploreASL folder
@@ -23,7 +24,7 @@ function x = xASL_init_Process(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
     %% Initialization

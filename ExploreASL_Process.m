@@ -71,10 +71,20 @@ function [x] = ExploreASL_Process(x)
 
     %% 0. Workflow for initialization of data loading and processing
     
-    x = xASL_init_Process(x); % this initializes all generic data loading and processing stuff
+    x = xASL_init_DataLoading(x); % this initializes all generic data loading parameters
     x = xASL_init_SubjectList(x); % create subject list for loading data from rawdata (BIDS2Legacy) or from derivatives (legacy)
     x = xASL_init_Parallelization(x); % choose which subjects this worker processes
 
+    x = xASL_init_LoadDataPar(x); % Load/create dataPar.json & its settings
+
+    if x.opts.nWorkers==1
+        % Remove lock dirs from previous runs that might still exist if the pipeline crashed.
+        % This is only performed if ExploreASL is not running in parallel
+        % Note that any lock dirs for individual modules/su
+        x = xASL_init_RemoveLockDirs(x);
+    end
+
+    xASL_init_PrintUserFeedback(x, 1, 0);
 
     if x.opts.bReadRawdata
         % 0 Run BIDS to Legacy conversion.
@@ -93,11 +103,9 @@ function [x] = ExploreASL_Process(x)
     x = xASL_init_Session_TimePoint_Lists(x);
     % generate session & visit/time point lists
     % this is based on the legacy structure
-    x = xASL_init_DataLoading(x);
+    x = xASL_init_Process(x); % this initializes all generic processing settings
 
     
-    xASL_init_PrintUserFeedback(x, 1, 0);
-
     % -----------------------------------------------------------------------------
     %% 1  xASL_module_Structural
     if x.opts.bProcess(1)==1

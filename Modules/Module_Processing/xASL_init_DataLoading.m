@@ -1,64 +1,49 @@
-function [x] = xASL_init_DataLoading(x)
-%xASL_init_DataLoading Load dataset by adding relevant fields to xASL x struct
+function x = xASL_init_Process(x)
+%xASL_init_Process Initialization for ExploreASL Processing
 %
-% FORMAT: [x] = xASL_init_DataLoading(x)
-% 
+% FORMAT: x = xASL_init_Process(x)
+%
 % INPUT:
-%   x          - ExploreASL x structure (STRUCT, REQUIRED)
+%   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %
 % OUTPUT:
-%   x          - ExploreASL x structure
-%                         
+%   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Here, we load all the ExploreASL derivatives data into the Matlab x structure, 
-% such that we can use it for processing.
+% DESCRIPTION:    Initialization fore ExploreASL processing
 % i.e., datasetRoot/derivatives/ExploreASL/*
 % This could contain data that was just copied from rawdata (converted to ExploreASL legacy format)
 % or (partly) already processed data.
 %
 % This function is divided into the following (sub)functions:
-% 1. Load dataPar.json
-% 2. Load dataset_description.json
-% 3. Initialize environmental variables dependent on loaded data
-% 4. xASL_init_DefineStudyStats
-% 5. xASL_init_RemoveLockDirs
-% 6. xASL_init_PrintCheckSettings
+% 1. Load dataset_description.json
+% 2. Initialize environmental variables dependent on loaded data
+% 3. xASL_init_DefineStudyStats
+% 4. xASL_init_PrintCheckSettings
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:        [x] = xASL_init_DataLoading(x);
+% EXAMPLE:        n/a
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2023 ExploreASL
 
 
-    %% 1. Load dataPar.json
-    x = xASL_init_LoadDataPar(x);
 
-
-    %% 2. Load dataset_description.json
+    %% 1. Load dataset_description.json
     x = xASL_init_Loaddataset_description(x);
 
     
-    %% 3. Initialize environmental variables dependent on loaded data
+    %% 2. Initialize environmental variables dependent on loaded data
     % Define several ExploreASL environment parameters that are dependent on the loaded data,
     % such as the subfolders of the population folder, which maps and templates to use, which visualization settings, and which fields are deprecated.
     x = xASL_init_DefineDataParDependentSettings(x);
     
 
-    %% 4. xASL_init_DefineStudyStats
+    %% 3. xASL_init_DefineStudyStats
     % Define study statistical parameters for this pipeline run
     x = xASL_init_DefineStudyStats(x);
 
 
-    %% 5. xASL_init_RemoveLockDirs
-    % Remove lock dirs from previous runs that might still exist if the pipeline crashed.
-    % This is only performed if ExploreASL is not running in parallel
-    % Note that any lock dirs for individual modules/su
-    if x.opts.nWorkers==1
-        x = xASL_init_RemoveLockDirs(x);
-    end
-
-
-    %% 6. xASL_init_PrintCheckSettings
+    %% 4. xASL_init_PrintCheckSettings
     % Define & print settings (path, iWorker, nWorkers, Quality, DELETETEMP)
     x = xASL_init_PrintCheckSettings(x);
     
