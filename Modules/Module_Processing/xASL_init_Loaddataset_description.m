@@ -15,9 +15,10 @@ function [x] = xASL_init_Loaddataset_description(x)
 % EXAMPLE:     This is part of the initialization workflow. Check out the usage there.
 %
 % This function performs the following parts:
-% 1. Admin checks
-% 2. Find the dataset_description.json location
-% 3. Load pre-existing dataset_descriptives.json
+% 1. Find the dataset_description.json location
+% 2. Select dataset_description location
+% 3. Issue warnings if we have multiple dataset_descriptives.json files at the selected location
+% 2. Move dataset_description.json to derivatives
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:  n/a
@@ -25,29 +26,21 @@ function [x] = xASL_init_Loaddataset_description(x)
 % Copyright (c) 2015-2024 ExploreASL
 
 
-%% 1. Admin checks
-if ~isfield(x.dir,'dataset_description')
-	error('Missing dataset_description field...');
-end
-if isempty(x.dir.dataset_description)
-	error('Empty dataset_description path...');
-end
-
-
-%% 2. Find the dataset_description.json location
+%% 1. Find the dataset_description.json location
+% Any of these bUse booleans becomes true if we find a dataset_description.json file on the respective location
 
 bUseRoot = false;
 bUseRawdata = false;
 bUseDerivatives = false;
 
-% Check dataPar inside the root folder
+% Check dataset_description inside the root folder
 listRoot = xASL_adm_GetFileList(x.dir.DatasetRoot, '(?i)(^dataset_description.*\.json$)', 'FPList', [], 0);
 if ~isempty(listRoot)
     warning([xASL_num2str(length(listRoot)) ' dataset_description.json (or similar) file(s) found in ' x.dir.DatasetRoot ', will try this but this is not the appropriate location']);
     bUseRoot = true;
 end   
 
-% Check dataPar inside the rawdata folder /rawdata
+% Check dataset_description inside the rawdata folder /rawdata
 listRawdata = xASL_adm_GetFileList(x.dir.RawData, '(?i)(^dataset_description.*\.json$)', 'FPList', [], 0);
 if ~isempty(listRawdata)
     bUseRawdata = true;
@@ -56,19 +49,31 @@ else
     fprintf('%s\n', 'Ensure that your data is BIDS compatible by running the BIDS validator');
 end
 
-% Check dataPar inside the processing folder /derivatives/ExploreASL
+% Check dataset_description inside the processing folder /derivatives/ExploreASL
 fListLegacy = xASL_adm_GetFileList(x.dir.xASLDerivatives, '(?i)(^dataset_description.*\.json$)', 'FPList', [], 0);
 if ~isempty(fListLegacy)
     bUseDerivatives = true;
 end
 
-% Choose folder & filelist
+
+%% 2. Select dataset_description location
+% Here we check which locations to use based on the bUse booleans
+% We prioritize according to:
+% 1) /derivatives/ExploreASL (not replacing existing derivatives/ExploreASL files)
+% 2) /rawdata (this is where the file should be according to BIDS)
+% 3) /root
+
+% Prioritization
 if bUseDerivatives && bUseRawdata
-    % We prioritize existing dataset_description.json in the derivatives folder
     fprintf('%s\n', 'dataset_description.json (or similar) file(s) both in /derivatives/ExploreASL and /rawdata folder, ignoring the last');
     bUseRawdata = false;
 end
+if bUseRawdata && bUseRoot
+    fprintf('%s\n', 'dataset_description.json (or similar) file(s) both in /rawdata and / root folder, ignoring the last');
+    bUseRoot = false;
+end
 
+% Select the folder
 if bUseDerivatives
     fFolder = x.dir.xASLDerivatives;
     listDataSetDescript = fListLegacy;
@@ -82,20 +87,23 @@ elseif bUseRoot
     listDataSetDescript = listRoot;
     fprintf('%s\n', ['dataset_descriptives.json found in ' fFolder]);
 else
-    listDataSetDescript = {};
+    % Issue a warning if no files are found, and abort this function
+    warning('No dataset_descriptives.json found! Check if you data are BIDS compatible using the BIDS validator');
+    return;
 end
 
+
+%% 3. Issue warnings if we have multiple dataset_descriptives.json files at the selected location
+if length(listDataSetDescript)>1
+    fprintf('Warning: multiple dataset_descriptives.json files found, using the first\n');
+end
+
+
+%% 4. Move dataset_description.json to derivatives
 destinationFile = fullfile(x.dir.xASLDerivatives, 'dataset_description.json');
 if ~xASL_exist(destinationFile)
+    % We prioritize pre-existing files in /derivatives/ExploreASL
     xASL_Copy(listDataSetDescript{1}, destinationFile);
-end
-
-
-%% 3. Load pre-existing dataset_descriptives.json
-if length(listDataSetDescript)>1
-    fprintf('Warning: multiple dataset_descriptives.json files found\n');
-elseif isempty(listDataSetDescript)
-    warning('No dataset_descriptives.json provided');
 end
 
 
