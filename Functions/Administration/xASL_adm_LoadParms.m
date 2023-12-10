@@ -113,7 +113,7 @@ end
 %% ------------------------------------------------------------------------
 %% 3. Deal with warnings
 if isempty(fields(Parms))
-    warning('parms seem missing, something wrong with parmsfile?');
+    warning(['JSON sidecar missing: ' JSONPath]);
 end
 
 

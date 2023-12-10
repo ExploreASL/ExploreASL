@@ -101,7 +101,8 @@ if isfield(x.P,'SubjectID')
     end
 
     if ~isfield(x.P,'SessionID')
-        fprintf('%s\n', 'No sessions found, defaulting to a single ASL_1 session');
+        % No sessions found, defaulting to a single ASL_1 session
+        % This is the case for non-ASL modules
         x.P.SessionID = 'ASL_1';
     end
 
