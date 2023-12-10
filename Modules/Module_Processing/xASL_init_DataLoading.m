@@ -18,8 +18,8 @@ function [x] = xASL_init_DataLoading(x)
 % 3. Initialize x struct
 % 4. Which data to read
 % 5. Check basic directories
-% 6. Create the derivatives directory
-% 7. Load BIDS configuration for file renaming
+% 5. Create directories
+% 6. Load BIDS configuration for file renaming
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
@@ -27,7 +27,6 @@ function [x] = xASL_init_DataLoading(x)
 % Copyright (c) 2015-2023 ExploreASL
 
 
-    %% Initialization
 
     %% 1. Print the hyperlink
 	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
@@ -48,45 +47,35 @@ function [x] = xASL_init_DataLoading(x)
 
     
     %% 4. Which data to read
-    if ~isfield(x.opts, 'bReadRawdata')
-        x.opts.bReadRawdata = true;
-        %  by default we read rawdata
-    end
-    
-    if x.opts.bReadRawdata && ~xASL_exist(x.dir.RawData, 'dir')
-        warning(['Rawdata folder missing: ' x.dir.RawData]);
-        error('rawdata did not exist, if you want to only process /derivatives/ExploreASL, set x.opts.bReadRawdata to false in dataPar.json');
+    if ~isfield(x.opts, 'bReadRawdata') || isempty(x.opts.bReadRawdata) || ~islogical(x.opts.bReadRawdata)
+        % If the developer has not set this parameter, we try to detect whether we should read from /rawdata or /derivatives/ExploreASL 
+        % Usually, this parameter will not exist
+        if xASL_exist(x.dir.RawData, 'dir')
+            x.opts.bReadRawdata = true; %  by default we read rawdata
+            fprintf('%s\n', '/rawdata folder detected, trying to load subjects from BIDS');
+        elseif xASL_exist(x.dir.xASLDerivatives, 'dir')
+            x.opts.bReadRawdata = false;
+            fprintf('%s\n', '/derivatives/ExploreASL folder detected, trying to load subjects from previous ExploreASL processing');
+        else
+            error('No rawdata or derivatives found to load subjects from, first convert dicoms 2 BIDS');
+        end
+    elseif x.opts.bReadRawdata && ~xASL_exist(x.dir.RawData, 'dir')
+        % Optionally, developers have set this parameter to force reading subjects from /rawdata
+        warning(['rawdata folder missing: ' x.dir.RawData]);
+        error('rawdata did not exist, if you want to read subjects from /derivatives/ExploreASL, set x.opts.bReadRawdata to false in dataPar.json');
     elseif ~x.opts.bReadRawdata && ~xASL_exist(x.dir.xASLDerivatives, 'dir')
+        % Optionally, developers have set this parameter to force reading subjects from /derivatives/ExploreASL
         warning(['ExploreASL derivatives folder missing: ' x.dir.xASLDerivatives]);
-        error('/derivatives/ExploreASL did not exist, if you want to load BIDS data from /rawdata, set x.opts.bReadRawdata to true in dataPar.json');
+        error('/derivatives/ExploreASL did not exist, if you want to load BIDS subjects from /rawdata, set x.opts.bReadRawdata to true in dataPar.json');
     end
 
-    % Create logging directory if it does not exist already
-    xASL_adm_CreateDir(fullfile(x.dir.xASLDerivatives, 'log'));
 
-
-
-    %% 5. Check basic directories
-    if isempty(x.dir.DatasetRoot)
-	    error('x.dir.DatasetRoot is a required parameter');
-    end
-    
-    % Check derivatives of ExploreASL
-    if ~isfield(x.dir,'xASLDerivatives')
-        error('Missing xASL derivatives field...');
-    end
-
-    %% 6. Create the derivatives directory
-    if exist(x.dir.xASLDerivatives, 'dir')
-        fprintf('%s\n', [x.dir.xASLDerivatives ' already exists']);
-        fprintf('%s\n', 'Note that all pre-existing derivative subject folders will be overwritten,');
-        fprintf('%s\n', 'unless BIDS2Legacy lock files already exist for a subject');
-    else
-        xASL_adm_CreateDir(x.dir.xASLDerivatives);
-    end
+    %% 5. Create directories
+    xASL_adm_CreateDir(fullfile(x.dir.xASLDerivatives, 'log')); % Create logging directory if it does not exist
+    xASL_adm_CreateDir(x.dir.xASLDerivatives); % Create ExploreASL derivatives directory if it does not exist
     
     
-    %% 7. Load BIDS configuration for file renaming
+    %% 6. Load BIDS configuration for file renaming
     x.modules.bids2legacy.bidsPar = xASL_bids_Config;
 
     
