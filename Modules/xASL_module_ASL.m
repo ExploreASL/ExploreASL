@@ -259,7 +259,7 @@ end
 
 
 %% E2. Define sequence (educated guess based on the Q field)
-x = xASL_adm_DefineASLSequence(x);
+x = xASL_adm_DefineASLSequence(x, bO);
 
 
 %% F. Backward and forward compatibility of filenames

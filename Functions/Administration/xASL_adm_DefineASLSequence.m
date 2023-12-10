@@ -1,4 +1,4 @@
-function [x] = xASL_adm_DefineASLSequence(x)
+function [x] = xASL_adm_DefineASLSequence(x, bVerbose)
 %xASL_adm_DefineASLSequence Obtain ASL sequence type for sequence-specific
 %image processing
 %
@@ -62,25 +62,29 @@ end
 if ~isfield(x.Q, 'Sequence') && isfield(x.Q, 'readoutDim') 
 	if strcmpi(x.Q.readoutDim,'2D')
 		x.Q.Sequence = '2D_EPI';
-		if ~isempty(regexpi(x.Q.Vendor,'Gold Standard Phantoms'))
-			fprintf('%s\n', 'Processing as if this is a 2D EPI sequence');
-			fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of multi-slice 2D acquisitions');
-			fprintf('%s\n', 'and heavy geometric distortion and minimal smoothness');
-		else
-			fprintf('%s\n', '2D readout detected, assuming 2D EPI');
-		end
+		if bVerbose
+            if ~isempty(regexpi(x.Q.Vendor,'Gold Standard Phantoms'))
+			    fprintf('%s\n', 'Processing as if this is a 2D EPI sequence');
+			    fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of multi-slice 2D acquisitions');
+			    fprintf('%s\n', 'and heavy geometric distortion and minimal smoothness');
+		    else
+			    fprintf('%s\n', '2D readout detected, assuming 2D EPI');
+            end
+        end
 	elseif isfield(x.Q, 'Vendor') && strcmpi(x.Q.readoutDim,'3D')
 		if  ~isempty(regexpi(x.Q.Vendor, 'Philips')) || ~isempty(regexpi(x.Q.Vendor, 'Siemens'))
 			x.Q.Sequence = '3D_GRASE'; % assume that 3D Philips or Siemens is 3D GRASE
-			fprintf('%s\n', '3D readout detected with vendor Philips or Siemens, assuming 3D GRASE');
+			if bVerbose; fprintf('%s\n', '3D readout detected with vendor Philips or Siemens, assuming 3D GRASE'); end
 		elseif ~isempty(regexpi(x.Q.Vendor, 'GE'))
 			x.Q.Sequence = '3D_spiral'; % assume that 3D GE is 3D spiral
-			fprintf('%s\n', '3D readout detected with vendor GE, assuming 3D spiral');
+			if bVerbose; fprintf('%s\n', '3D readout detected with vendor GE, assuming 3D spiral'); end
 		elseif ~isempty(regexpi(x.Q.Vendor, 'Gold Standard Phantoms'))
 			x.Q.Sequence = '3D_GRASE'; % assume that this is simulated 3D GRASE by the DRO
-			fprintf('%s\n', 'Processing as if this is a 3D GRASE sequence');
-			fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of a single 3D volume');
-			fprintf('%s\n', 'and intermediate amount of geometric distortion and smoothness');
+			if bVerbose
+                fprintf('%s\n', 'Processing as if this is a 3D GRASE sequence');
+			    fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of a single 3D volume');
+			    fprintf('%s\n', 'and intermediate amount of geometric distortion and smoothness');
+            end
 		end
 	end
 end
@@ -99,7 +103,7 @@ if ~isfield(x.Q,'Sequence') || isempty(x.Q.Sequence)
     x.Q.Sequence = '3D_spiral';
     x.Q.readoutDim = '3D';
 else
-    fprintf('%s\n', [x.Q.Sequence ' sequence detected']);
+    if bVerbose; fprintf('%s\n', [x.Q.Sequence ' sequence detected']); end
 end
 
 
