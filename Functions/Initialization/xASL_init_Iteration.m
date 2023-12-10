@@ -239,7 +239,7 @@ function [bAborted, x] = runIteration(db)
         N(iSet) = length(db.sets.(setName));
     end
     
-    % Then loop through all permutations
+    %% Then loop through all permutations
     bAborted = false;
     iIter = 0; % just count the number of iterations
     CountErrors = 0;
@@ -318,7 +318,7 @@ function [bAborted, x] = runIteration(db)
         end
         
         
-        % Optional diary logfile of command window
+        %% Optional diary logfile of command window
         if ~isempty(diaryFile)
             % NB. Don't overwrite diaryFile itself because it might be expanded
             % with different values in the next iteration.
@@ -336,23 +336,8 @@ function [bAborted, x] = runIteration(db)
             end
         end
         
-        % Some feedback about this iteration (after opening diary log)
-        if ~AlreadyProcessed
-            % Print the ExploreASL separator line
-            fprintf('\n[\b==============================================================================================]\b\n');
-            [StartIndex, EndIndex] = regexp(diaryFileEx, '(?i)\/ASL_\d+\/'); %to find the name of the session inside diaryFileEx: ASL_with any digit after
-             if ~isempty(StartIndex) %writes the session only for ASL module
-                session = diaryFileEx(StartIndex(end)+1:EndIndex(end)-1); %isolate "ASL_1 or ASL_2 etc
-                fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Session: ' session ', Module: ' x.settings.MUTEXID ',  ' datestr(now) ' ===']);
-             else % Structural or Population module
-                 if isfield(x,'SUBJECT') 
-                     fprintf('%s\n',['=== Subject: ' x.SUBJECT ', Module: ' x.settings.MUTEXID ',  ' datestr(now) ' ===']);
-                 else
-                     fprintf('%s\n',['=== Module: ' x.settings.MUTEXID ',  ' datestr(now) ' ===']); %some datasets don't have any field that specifies the current subject
-                 end
-             end
-            fprintf('\n');
-         end
+
+        %% Replace symbols
         if ischar(job)
             job_ex = xASL_adm_ReplaceSymbols(job,x);
                 % NB. Don't overwrite job itself because it might be expanded
@@ -371,7 +356,7 @@ function [bAborted, x] = runIteration(db)
 				x.(symbol_name) = xASL_adm_ReplaceSymbols(symbol_value_org, x);
 			end
         end
-        % Also check the symbols that are now in x.dir
+        % x.dir
         symbol_names_xdir = fieldnames(x.dir);
         symbol_count_xdir = length(symbol_names_xdir);
         for iSymbol=1:symbol_count_xdir
@@ -383,7 +368,7 @@ function [bAborted, x] = runIteration(db)
             % Make sure all paths have a correct format
             x.dir.(symbol_name) = fullfile(x.dir.(symbol_name));
         end
-        % Also check the MUTEXID within x.settings
+        % x.settings.MUTEXID
         symbol_names_xsettings = fieldnames(x.settings);
         symbol_count_xsettings = length(symbol_names_xsettings);
         for iSymbol=1:symbol_count_xsettings
@@ -394,7 +379,28 @@ function [bAborted, x] = runIteration(db)
             end
         end
         
-        % Start the job with all expanded x
+        %% Some feedback about this iteration (after opening diary log)
+        if ~AlreadyProcessed
+            % Print the ExploreASL separator line
+            fprintf('\n[\b==============================================================================================]\b\n');
+            printModule = ['Module: ' x.settings.MUTEXID ', ' datestr(now)];
+            
+            [StartIndex, EndIndex] = regexp(diaryFileEx, '(?i)\/ASL_\d+\/'); %to find the name of the session inside diaryFileEx: ASL_with any digit after
+             if ~isempty(StartIndex) %writes the session only for ASL module
+                session = diaryFileEx(StartIndex(end)+1:EndIndex(end)-1); %isolate "ASL_1 or ASL_2 etc
+                fprintf('%s\n',['Subject: ' x.SUBJECT ', Session: ' session ', ' printModule]);
+             else % Structural or Population module
+                 if isfield(x,'SUBJECT') 
+                     fprintf('%s\n',['Subject: ' x.SUBJECT ', ' printModule]);
+                 else
+                     fprintf('%s\n', printModule); %some datasets don't have any field that specifies the current subject
+                 end
+             end
+            fprintf('\n');
+        end        
+
+
+        %% Start the job with all expanded x
         pwd_org = pwd; % remember the current working dir, so it can be restored if job fails
         try
             if  db.settings.dryRun
@@ -445,13 +451,13 @@ function [bAborted, x] = runIteration(db)
         end
         cd(pwd_org); % always go back to where we came from
         
-        % Print CPU time
+        %% Print CPU time
         if ~AlreadyProcessed
             fprintf('\nJob-iteration %i stopped at %s and took %u seconds\n',iIter,datestr(now),ceil(toc(tocID)));
             fprintf('[\b==============================================================================================]\b\n');
         end
         
-        % Close logfile
+        %% Close logfile
         if ~isempty(diaryFile)
             diary off
         end
