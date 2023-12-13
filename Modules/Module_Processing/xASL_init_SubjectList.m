@@ -106,6 +106,8 @@ else
         error('No subjects defined...');
     end
 
+    x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
+
     % And check that this doesn't accidentally contain pipeline directories
     ListPipelineDir = logical([]);
     for iSubject=1:x.dataset.nTotalSubjects

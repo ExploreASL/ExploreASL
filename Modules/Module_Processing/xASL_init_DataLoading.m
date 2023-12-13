@@ -47,7 +47,7 @@ function [x] = xASL_init_DataLoading(x)
 
     
     %% 4. Which data to read
-    if ~isfield(x.opts, 'bReadRawdata') || isempty(x.opts.bReadRawdata) || ~islogical(x.opts.bReadRawdata)
+    if ~isfield(x.opts, 'bReadRawdata') || isempty(x.opts.bReadRawdata)
         % If the developer has not set this parameter, we try to detect whether we should read from /rawdata or /derivatives/ExploreASL 
         % Usually, this parameter will not exist
         if xASL_exist(x.dir.RawData, 'dir')
@@ -57,7 +57,7 @@ function [x] = xASL_init_DataLoading(x)
             x.opts.bReadRawdata = false;
             fprintf('%s\n', '/derivatives/ExploreASL folder detected, trying to load subjects from previous ExploreASL processing');
         else
-            error('No rawdata or derivatives found to load subjects from, first convert dicoms 2 BIDS');
+            error('No rawdata or derivatives found to load subjects from, first convert DICOMs 2 BIDS');
         end
     elseif x.opts.bReadRawdata && ~xASL_exist(x.dir.RawData, 'dir')
         % Optionally, developers have set this parameter to force reading subjects from /rawdata

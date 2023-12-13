@@ -2,7 +2,7 @@ function [x] = xASL_adm_DefineASLSequence(x, bVerbose)
 %xASL_adm_DefineASLSequence Obtain ASL sequence type for sequence-specific
 %image processing
 %
-% FORMAT: [x] = xASL_adm_DefineASLSequence(x)
+% FORMAT: [x] = xASL_adm_DefineASLSequence(x, bVerbose)
 %
 % INPUT:
 %   x                - x structure containing all input parameters (REQUIRED)
@@ -23,6 +23,10 @@ function [x] = xASL_adm_DefineASLSequence(x, bVerbose)
 
 
 %% Check quantification fields readoutDim & x.Q.Sequence
+if nargin<2 || isempty(bVerbose)
+    bVerbose = true;
+end
+
 if ~isfield(x.Q, 'readoutDim') || isempty(x.Q.readoutDim)
     warning('x.Q.readoutDim parameter missing');
 end
