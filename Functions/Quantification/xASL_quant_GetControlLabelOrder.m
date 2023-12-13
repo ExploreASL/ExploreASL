@@ -83,9 +83,9 @@ end
 if nargin >= 2 && ~isempty(xQ)
 	% xQ is provided, calculate the output parameters
 	% Skip every other value in the vectors as they were stored for both control and label images
-	xQ.EchoTime_PWI4D = xQ.EchoTime_PWI4D(1:2:end);
-	xQ.InitialPLD_PWI4D = xQ.InitialPLD_PWI4D(1:2:end);
-	xQ.LabelingDuration_PWI4D = xQ.LabelingDuration_PWI4D(1:2:end);
+	xQ.EchoTime_PWI4D = xQ.EchoTime(1:2:end);
+	xQ.InitialPLD_PWI4D = xQ.Initial_PLD(1:2:end);
+	xQ.LabelingDuration_PWI4D = xQ.LabelingDuration(1:2:end);
 	% In this case, the vectors are equal for PWI4D and Control4D
 	xQ.EchoTime_Control4D = xQ.EchoTime_PWI4D;
 	xQ.InitialPLD_Control4D = xQ.InitialPLD_PWI4D;
