@@ -266,7 +266,7 @@ if bCreatePWI4D || bCreateControl4D
     else
         if nVolumes>1 && ~x.modules.asl.bContainsSubtracted
             % Paired subtraction
-            [Control4D, Label4D, x.Q] = xASL_quant_GetControlLabelOrder(ASL4D, x.Q);
+            [Control4D, Label4D, ~, x.Q] = xASL_quant_GetControlLabelOrder(ASL4D, x.Q);
             PWI4D = Control4D - Label4D;
 
             bCreatePWI3D = true; % because we can do this now
