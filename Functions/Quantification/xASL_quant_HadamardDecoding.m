@@ -177,12 +177,20 @@ imEncoded = xASL_io_Nifti2Im(imPath);
 nEncodedVolumes = size(imEncoded, 4);     % Size of the raw data
 
 % Check that input quantification parameters are vectors with an equal length to the number of volumes
-if length(xQ.LabelingDuration)>1 && length(xQ.LabelingDuration) ~= nEncodedVolumes
-	error('Length of LabelingDuration vector does not match the number of volumes.');
+if length(xQ.LabelingDuration) ~= nEncodedVolumes
+	if length(xQ.LabelingDuration) == 1
+		xQ.LabelingDuration = ones(1, length(nEncodedVolumes)) * xQ.LabelingDuration;
+	else
+		error('Length of LabelingDuration vector does not match the number of volumes.');
+	end
 end
 
-if length(xQ.Initial_PLD)>1 && length(xQ.Initial_PLD) ~= nEncodedVolumes
-	error('Length of Initial_PLD vector does not match the number of volumes.');
+if length(xQ.Initial_PLD) ~= nEncodedVolumes
+	if length(xQ.Initial_PLD) == 1
+		xQ.Initial_PLD = ones(1, length(nEncodedVolumes)) * xQ.Initial_PLD;
+	else
+		error('Length of Initial_PLD vector does not match the number of volumes.');
+	end
 end
 
 % Prepare the parameters also for interleaved reordering
@@ -240,23 +248,26 @@ end
 % want: PLD1(rep1), PLD2(rep1)... PLD1(rep2),PLD2(rep2)
 
 %% 5. Decode the Hadamard data
-% We assume that the entire encoded volume is reorder into several repetitions of basic Hadamard blocks (repetitions or TE are counted the same)
-decodedPWI4D = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), nEncodedVolumes / xQ.TimeEncodedMatrixSize * (xQ.TimeEncodedMatrixSize-1)); 
-decodedBlock = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), xQ.TimeEncodedMatrixSize-1); % Temporary single decoded Hadamard block
+% We assume that the entire encoded volume is reorder into several repetitions of basic Hadamard blocks
+% This is not a true repetition in the sense of repeating the entire acquisition as it counts repeats also for different TEs.
+% So we call it nRepeatedHadamardMatrices
+nRepeatedHadamardMatrices = nEncodedVolumes / xQ.TimeEncodedMatrixSize;
+decodedPWI4D = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), nRepeatedHadamardMatrices * (xQ.TimeEncodedMatrixSize-1)); 
 
-% Go through all repetitions of the Hadamard blocks
-for iRepetition = 1:(nEncodedVolumes / xQ.TimeEncodedMatrixSize)
+% Go through all repetitions of the full Hadamard blocks
+for iRepetition = 1:nRepeatedHadamardMatrices
 	offsetEncoded = xQ.TimeEncodedMatrixSize * (iRepetition-1); % Index offset for the given repetition to search in the encoded data
-	encodedBlock = imEncoded(:,:,:,(1:xQ.TimeEncodedMatrixSize) + offsetEncoded); % Obtain the single encoded block
+	encodedBlocks = imEncoded(:,:,:,(1:xQ.TimeEncodedMatrixSize) + offsetEncoded); % Obtain the single encoded block
+	decodedBlocks = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), xQ.TimeEncodedMatrixSize-1); % Temporary single decoded Hadamard block
 	
 	% Decoded the single block
-	for iTI = 1:(xQ.TimeEncodedMatrixSize-1) %Number of decoded PLDs is number of Hadamard matrix size - 1
-		indexPositive = find(xQ.TimeEncodedMatrix(iTI+1,:)==1);
-		indexNegative = find(xQ.TimeEncodedMatrix(iTI+1,:)==-1);
-		decodedBlock(:,:,:,iTI) = sum(encodedBlock(:,:,:,(indexPositive)),4) - sum(encodedBlock(:,:,:,(indexNegative)),4);
+	for iBlock = 1:(xQ.TimeEncodedMatrixSize-1) %Number of decoded PLDs is number of Hadamard matrix size - 1
+		indexPositive = find(xQ.TimeEncodedMatrix(iBlock+1,:)==1);
+		indexNegative = find(xQ.TimeEncodedMatrix(iBlock+1,:)==-1);
+		decodedBlocks(:,:,:,iBlock) = sum(encodedBlocks(:,:,:,(indexPositive)),4) - sum(encodedBlocks(:,:,:,(indexNegative)),4);
 	end
 	offsetDecoded = (iRepetition-1)*(xQ.TimeEncodedMatrixSize-1); % Index offset for the given repetition in the decoded data
-	decodedPWI4D(:,:,:,offsetDecoded + (1:(xQ.TimeEncodedMatrixSize-1))) = decodedBlock; % Save the decoded block
+	decodedPWI4D(:,:,:,offsetDecoded + (1:(xQ.TimeEncodedMatrixSize-1))) = decodedBlocks; % Save the decoded block
 end
 
 %% 6. Reorder multi-TE back to the initial order of PLD/TE
