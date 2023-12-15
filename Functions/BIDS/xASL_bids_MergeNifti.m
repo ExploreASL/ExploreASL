@@ -84,7 +84,7 @@ if length(NiftiPaths)>1
 		
 		% 4. Merges Philips ASL file if they have the known pattern of filenames
 		if isempty(pathOut)
-			pathOut = xASL_bids_MergeNifti_PhilipsMultiTE(NiftiPaths);
+			pathOut = xASL_bids_MergeNifti_Philips(NiftiPaths);
 		end
 
         % 5. Merges Siemens ASL file if they have the known pattern of filenames
@@ -349,11 +349,10 @@ end
 
 %% ===========================================================================================================
 %% ===========================================================================================================
-function pathOut = xASL_bids_MergeNifti_PhilipsMultiTE(NiftiPaths)
-% 4. xASL_bids_MergeNifti_PhilipsMultiTE Take a list of NIfTI files and
-%concatenates 3D/4D files into a 4D sequence if possible (Philips Multi-TE)
-%
-% FORMAT: pathOut = xASL_bids_MergeNifti_PhilipsMultiTE(NiftiPaths)
+function pathOut = xASL_bids_MergeNifti_Philips(NiftiPaths)
+% xASL_bids_MergeNifti_Philips Take a list of NIfTI files and concatenates 3D/4D files into a 4D sequence if possible
+% %
+% FORMAT: pathOut = xASL_bids_MergeNifti_Philips(NiftiPaths)
 % 
 % INPUT:
 %   NiftiPaths - cell containing list of strings with full paths of the files (REQUIRED)
@@ -362,9 +361,10 @@ function pathOut = xASL_bids_MergeNifti_PhilipsMultiTE(NiftiPaths)
 %   pathOut    - output paths
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Take a list of NIfTI files and concatenates 3D/4D files into a 4D sequence if possible (Philips multi-TE).
+% DESCRIPTION: Take a list of NIfTI files and concatenates 3D/4D files into a 4D sequence if possible. Specific re-ordering is necessary for multi-TE 
+% which appears to be incorrectly reordered by dcm2nii. For single-TE Philips multi-file data, we don't do anything as the general merging function can deal with this.
 %
-% EXAMPLE:     pathOut = xASL_bids_MergeNifti_PhilipsMultiTE(NiftiPaths);
+% EXAMPLE:     pathOut = xASL_bids_MergeNifti_Philips(NiftiPaths);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
