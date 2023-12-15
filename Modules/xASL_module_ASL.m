@@ -171,7 +171,7 @@ if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize'
 
 	% Check for duplicate definitions
 	if isempty(x.Q.TimeEncodedMatrixType) && isempty(x.Q.TimeEncodedMatrix)
-		error('Neither TimeEncodedMatrixType defined and TimeEncodedMatrix are provided for a TimeEncoded acquisition.')
+		error('Neither TimeEncodedMatrixType nor TimeEncodedMatrix were provided for a TimeEncoded acquisition.')
 	end
 	
 	if isempty(x.Q.TimeEncodedMatrixSize)

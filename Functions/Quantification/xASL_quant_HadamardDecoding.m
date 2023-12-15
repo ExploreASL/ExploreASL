@@ -72,22 +72,22 @@ if ~isempty(x.Q.TimeEncodedMatrixType)
 	if strcmpi(xQ.TimeEncodedMatrixType,'Walsh')
 		
 		if xQ.TimeEncodedMatrixSize == 4
-			tmpTimeEncodedMatrix =...
+			tempTimeEncodedMatrix =...
 				[1  1  1  1; 
 				 1 -1  1 -1;
 				 1 -1 -1  1;
 				 1  1 -1 -1];
 		elseif xQ.TimeEncodedMatrixSize == 8
-            tmpTimeEncodedMatrix = [1  1  1  1  1  1  1  1;
-				                    1 -1  1 -1  1 -1  1 -1;
-                                    1 -1  1 -1 -1  1 -1  1;
-                                    1 -1 -1  1 -1  1  1 -1;
-                                    1 -1 -1  1  1 -1 -1  1;
-                                    1  1 -1 -1  1  1 -1 -1;
-                                    1  1 -1 -1 -1 -1  1  1;
-                                    1  1  1  1 -1 -1 -1 -1];
+            tempTimeEncodedMatrix = [1  1  1  1  1  1  1  1;
+				                     1 -1  1 -1  1 -1  1 -1;
+                                     1 -1  1 -1 -1  1 -1  1;
+                                     1 -1 -1  1 -1  1  1 -1;
+                                     1 -1 -1  1  1 -1 -1  1;
+                                     1  1 -1 -1  1  1 -1 -1;
+                                     1  1 -1 -1 -1 -1  1  1;
+                                     1  1  1  1 -1 -1 -1 -1];
 		else
-			tmpTimeEncodedMatrix = [];
+			tempTimeEncodedMatrix = [];
 		end
 		
 		% #### For Hadamard Decoding Matrix ####
@@ -106,33 +106,33 @@ if ~isempty(x.Q.TimeEncodedMatrixType)
 		%       1, 1,-1,-1,-1,-1, 1, 1;
 		%       1,-1,-1, 1,-1, 1, 1,-1];
 		if xQ.TimeEncodedMatrixSize == 4
-            tmpTimeEncodedMatrix = [1  1  1  1;
-				                    1 -1  1 -1;
-                                    1  1 -1 -1;
-                                    1 -1 -1  1];
+            tempTimeEncodedMatrix = [1  1  1  1;
+				                     1 -1  1 -1;
+                                     1  1 -1 -1;
+                                     1 -1 -1  1];
 		elseif xQ.TimeEncodedMatrixSize == 8
-            tmpTimeEncodedMatrix = [1  1  1  1  1  1  1  1;
-				                    1 -1 -1  1 -1  1  1 -1;
-                                    1  1 -1 -1 -1 -1  1  1;
-                                    1 -1  1 -1 -1  1 -1  1;
-                                    1  1  1  1 -1 -1 -1 -1;
-                                    1 -1 -1  1  1 -1 -1  1;
-                                    1  1 -1 -1  1  1 -1 -1;
-                                    1 -1  1 -1  1 -1  1 -1];
+            tempTimeEncodedMatrix = [1  1  1  1  1  1  1  1;
+				                     1 -1 -1  1 -1  1  1 -1;
+                                     1  1 -1 -1 -1 -1  1  1;
+                                     1 -1  1 -1 -1  1 -1  1;
+                                     1  1  1  1 -1 -1 -1 -1;
+                                     1 -1 -1  1  1 -1 -1  1;
+                                     1  1 -1 -1  1  1 -1 -1;
+                                     1 -1  1 -1  1 -1  1 -1];
 		else
-			tmpTimeEncodedMatrix = [];
+			tempTimeEncodedMatrix = [];
 		end    
 	end
-	if isempty(tmpTimeEncodedMatrix)
+	if isempty(tempTimeEncodedMatrix)
 		warning(['Cannot create a ' xQ.TimeEncodedMatrixType ' matrix of size ' xASL_num2str(xQ.TimeEncodedMatrixSize)]);
 	end
 
 	if isempty(xQ.TimeEncodedMatrix)
 		% If the matrix is not yet initialize, then save it
-		xQ.TimeEncodedMatrix = tmpTimeEncodedMatrix;
+		xQ.TimeEncodedMatrix = tempTimeEncodedMatrix;
 	else
 		% If the created and initialized matrices are equal
-		if ~isequal(tmpTimeEncodedMatrix, xQ.TimeEncodedMatrix)
+		if ~isequal(tempTimeEncodedMatrix, xQ.TimeEncodedMatrix)
 			% If the created and initialized matrices differ, then issue a warning and use the user matrix
 			warning('Created matrix based on provided Type and size differs from the provided Matrix. Using the provided matrix');
 		end
