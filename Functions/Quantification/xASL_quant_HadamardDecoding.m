@@ -45,29 +45,22 @@ end
 %% 1. Specify the Encoding matrix
 
 % Specify the TimeEncodedMatrix
-if isfield(xQ,'TimeEncodedMatrix') && ~isempty(xQ.TimeEncodedMatrix)
-	if (size(xQ.TimeEncodedMatrix,1)) ~= size(xQ.TimeEncodedMatrix,2)
+if ~isempty(xQ.TimeEncodedMatrix)
+	if size(xQ.TimeEncodedMatrix,1) ~= size(xQ.TimeEncodedMatrix,2)
 		error('TimeEncodedMatrix must be square NxN ');
 	end
 	
     % TimeEncodedMatrix exists, we verify the size
-	if ~isfield(xQ,'TimeEncodedMatrixSize') || isempty(xQ.TimeEncodedMatrixSize)
+	if isempty(xQ.TimeEncodedMatrixSize)
 		xQ.TimeEncodedMatrixSize = size(xQ.TimeEncodedMatrix,2);
 	else
 		if size(xQ.TimeEncodedMatrix,2) ~= xQ.TimeEncodedMatrixSize
 			error('Mismatch between TimeEncodedMatrix and TimeEncodedMatrixSize');
 		end
 	end
-else
-    % TimeEncodedMatrix not provided, we must create it
-	if ~isfield(xQ,'TimeEncodedMatrixType') || isempty(xQ.TimeEncodedMatrixType)
-		error('Neither TimeEncodedMatrix and TimeEncodedMatrixType provided');
-	end
-	
-	if ~isfield(xQ,'TimeEncodedMatrixSize') || isempty(xQ.TimeEncodedMatrixSize)
-		error('Neither TimeEncodedMatrix and TimeEncodedMatrixSize provided');
-	end
-	
+end
+
+if ~isempty(x.Q.TimeEncodedMatrixType)
 	% See an example of decoding/encoding matrices in 
 	% Samson-Himmelstjerna, MRM 2015 https://doi.org/10.1002/mrm.26078
 	% Note that the encoding/decoding matrices are symmetric
@@ -79,13 +72,13 @@ else
 	if strcmpi(xQ.TimeEncodedMatrixType,'Walsh')
 		
 		if xQ.TimeEncodedMatrixSize == 4
-			xQ.TimeEncodedMatrix =...
+			tmpTimeEncodedMatrix =...
 				[1  1  1  1; 
 				 1 -1  1 -1;
 				 1 -1 -1  1;
 				 1  1 -1 -1];
 		elseif xQ.TimeEncodedMatrixSize == 8
-            xQ.TimeEncodedMatrix = [1  1  1  1  1  1  1  1;
+            tmpTimeEncodedMatrix = [1  1  1  1  1  1  1  1;
 				                    1 -1  1 -1  1 -1  1 -1;
                                     1 -1  1 -1 -1  1 -1  1;
                                     1 -1 -1  1 -1  1  1 -1;
@@ -93,19 +86,32 @@ else
                                     1  1 -1 -1  1  1 -1 -1;
                                     1  1 -1 -1 -1 -1  1  1;
                                     1  1  1  1 -1 -1 -1 -1];
+		else
+			tmpTimeEncodedMatrix = [];
 		end
 		
 		% #### For Hadamard Decoding Matrix ####
 	elseif strcmpi(xQ.TimeEncodedMatrixType,'Hadamard')
-		% An alternative Philips version xQ.TimeEncodedMatrix = [1,1,1,1;1,1,-1,-1;1,-1,1,-1;1,-1,-1,1];
-		%    [1,1,1,1,1,1,1,1;1,-1,1,-1,1,-1,1,-1;1,1,-1,-1,1,1,-1,-1;1,-1,-1,1,1,-1,-1,1;1,1,1,1,-1,-1,-1,-1;1,-1,1,-1,-1,1,-1,1;1,1,-1,-1,-1,-1,1,1;1,-1,-1,1,-1,1,1,-1];
+		% An alternative Philips version xQ.TimeEncodedMatrix 
+		% HAD4 [1, 1, 1, 1;
+		%       1, 1,-1,-1;
+		%       1,-1, 1,-1;
+		%       1,-1,-1,1];
+		% HAD8 [1, 1, 1, 1, 1, 1, 1, 1;
+		%       1,-1, 1,-1, 1,-1, 1,-1;
+		%       1, 1,-1,-1, 1, 1,-1,-1;
+		%       1,-1,-1, 1, 1,-1,-1, 1;
+		%       1, 1, 1, 1,-1,-1,-1,-1;
+		%       1,-1, 1,-1,-1, 1,-1, 1;
+		%       1, 1,-1,-1,-1,-1, 1, 1;
+		%       1,-1,-1, 1,-1, 1, 1,-1];
 		if xQ.TimeEncodedMatrixSize == 4
-            xQ.TimeEncodedMatrix = [1  1  1  1;
+            tmpTimeEncodedMatrix = [1  1  1  1;
 				                    1 -1  1 -1;
                                     1  1 -1 -1;
                                     1 -1 -1  1];
 		elseif xQ.TimeEncodedMatrixSize == 8
-            xQ.TimeEncodedMatrix = [1  1  1  1  1  1  1  1;
+            tmpTimeEncodedMatrix = [1  1  1  1  1  1  1  1;
 				                    1 -1 -1  1 -1  1  1 -1;
                                     1  1 -1 -1 -1 -1  1  1;
                                     1 -1  1 -1 -1  1 -1  1;
@@ -113,8 +119,24 @@ else
                                     1 -1 -1  1  1 -1 -1  1;
                                     1  1 -1 -1  1  1 -1 -1;
                                     1 -1  1 -1  1 -1  1 -1];
+		else
+			tmpTimeEncodedMatrix = [];
 		end    
-    end
+	end
+	if isempty(tmpTimeEncodedMatrix)
+		warning(['Cannot create a ' xQ.TimeEncodedMatrixType ' matrix of size ' xASL_num2str(xQ.TimeEncodedMatrixSize)]);
+	end
+
+	if isempty(xQ.TimeEncodedMatrix)
+		% If the matrix is not yet initialize, then save it
+		xQ.TimeEncodedMatrix = tmpTimeEncodedMatrix;
+	else
+		% If the created and initialized matrices are equal
+		if ~isequal(tmpTimeEncodedMatrix, xQ.TimeEncodedMatrix)
+			% If the created and initialized matrices differ, then issue a warning and use the user matrix
+			warning('Created matrix based on provided Type and size differs from the provided Matrix. Using the provided matrix');
+		end
+	end
 end
 
 if strcmp(xQ.Vendor,'Philips')
