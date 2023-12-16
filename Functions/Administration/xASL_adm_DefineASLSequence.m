@@ -8,6 +8,8 @@ function [x] = xASL_adm_DefineASLSequence(x, bVerbose)
 %   x                - x structure containing all input parameters (REQUIRED)
 %   x.Q.readoutDim   - dimensionality of readout (2D or 3D) (OPTIONAL)
 %   x.Q.Vendor       - Either 'GE', 'Philips', 'Siemens' (OPTIONAL)
+%   bVerbose         - verbose output (OPTIONAL, DEFAULT=true)
+%
 % OUTPUT:
 %   x               - x structure containing all output parameters
 %   x.Q.Sequence    - sequence type (readout)
@@ -66,7 +68,7 @@ end
 if ~isfield(x.Q, 'Sequence') && isfield(x.Q, 'readoutDim') 
 	if strcmpi(x.Q.readoutDim,'2D')
 		x.Q.Sequence = '2D_EPI';
-		if bVerbose
+        if bVerbose
             if ~isempty(regexpi(x.Q.Vendor,'Gold Standard Phantoms'))
 			    fprintf('%s\n', 'Processing as if this is a 2D EPI sequence');
 			    fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of multi-slice 2D acquisitions');
@@ -84,7 +86,7 @@ if ~isfield(x.Q, 'Sequence') && isfield(x.Q, 'readoutDim')
 			if bVerbose; fprintf('%s\n', '3D readout detected with vendor GE, assuming 3D spiral'); end
 		elseif ~isempty(regexpi(x.Q.Vendor, 'Gold Standard Phantoms'))
 			x.Q.Sequence = '3D_GRASE'; % assume that this is simulated 3D GRASE by the DRO
-			if bVerbose
+            if bVerbose
                 fprintf('%s\n', 'Processing as if this is a 3D GRASE sequence');
 			    fprintf('%s\n', 'Though the acquisition is not simulated, this will assume acquisition of a single 3D volume');
 			    fprintf('%s\n', 'and intermediate amount of geometric distortion and smoothness');
