@@ -316,7 +316,7 @@ decodedPWI4D = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), siz
 % Go through all repetitions of the full Hadamard blocks
 for iRepetition = 1:nAcquisitionRepetitions
 	offsetEncoded = nBlocks * (iRepetition-1); % Index offset for the given repetition to search in the encoded data
-	encodedBlocks = imEncoded(:,:,:,(1:nBlocks) + offsetEncoded); % Obtain the single encoded block
+	encodedBlocks = imEncodedReordered(:,:,:,(1:nBlocks) + offsetEncoded); % Obtain the single encoded block
 	decodedBlocks = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), nPLDs); % Temporary single decoded Hadamard block
 
 	for iBlock = 1:nPLDs
