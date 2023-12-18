@@ -433,59 +433,32 @@ function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession,thisRe
     
     % Add list of IDs
     if ~isempty(thisRegExp)
-        x = xASL_imp_AddSessionIDList(x,sFieldName,vFieldName,vSessionName,thisRegExp);
-    else
-        x.importOverview.(sFieldName).(vFieldName).(vSessionName).ids = {thisSession};
+		x = xASL_imp_AddSessionIDListAndScansOfRun(x, sFieldName, vFieldName, vSessionName, thisRegExp);
+	else
+		x = xASL_imp_AddSessionIDListAndScansOfRun(x, sFieldName, vFieldName, vSessionName, thisSession);
     end
-    
-    % Get the scans of this run
-    x = xASL_imp_GetScansOfRun(x,sFieldName,vFieldName,vSessionName);
+
 
 end
 
-
-% Determine the scans of this run
-function x = xASL_imp_GetScansOfRun(x,sFieldName,vFieldName,vSessionName)
-
-    % Iterate over scan IDs
-    x.importOverview.(sFieldName).(vFieldName).(vSessionName).scanIDs = {};
-    scanSessionTable = x.importOverview.(sFieldName).(vFieldName).scanSessionTable;
-    for iID=1:size(scanSessionTable,1)
-        thisToken = scanSessionTable{iID,1};
-        thisScanID = scanSessionTable{iID,2};
-        % Iterate over the sessions of this run
-        sessions = x.importOverview.(sFieldName).(vFieldName).(vSessionName).ids;
-        for iSession=1:numel(sessions)
-            if strcmp(sessions{iSession},thisToken)
-                x.importOverview.(sFieldName).(vFieldName).(vSessionName).scanIDs = ...
-                    vertcat(x.importOverview.(sFieldName).(vFieldName).(vSessionName).scanIDs,thisScanID);
-                continue
-            end
-        end
-    end
-    
-
+function x = xASL_imp_AddSessionIDListAndScansOfRun(x, sFieldName, vFieldName, vSessionName, thisRegExp)
+% Iterate over scan IDs
+x.importOverview.(sFieldName).(vFieldName).(vSessionName).scanIDs = {};
+scanSessionTable = x.importOverview.(sFieldName).(vFieldName).scanSessionTable;
+iSessionNew = 1;
+for iID=1:size(scanSessionTable,1)
+	thisToken = scanSessionTable{iID,1};
+	thisScanID = scanSessionTable{iID,2};
+	% Iterate over the sessions of this run
+	for iSession=1:numel(x.importOverview.(sFieldName).(vFieldName).sessions)
+		currentID = x.importOverview.(sFieldName).(vFieldName).sessions{iSession};
+		if ~isempty(regexpi(currentID, thisRegExp)) && strcmp(currentID, thisToken)
+			x.importOverview.(sFieldName).(vFieldName).(vSessionName).scanIDs{iSessionNew} = thisScanID;
+			x.importOverview.(sFieldName).(vFieldName).(vSessionName).ids{iSessionNew} = currentID;
+			iSessionNew = iSessionNew + 1;
+			continue;
+		end
+	end
 end
 
-
-function x = xASL_imp_AddSessionIDList(x,sFieldName,vFieldName,vSessionName,thisRegExp)
-
-    % Iterate over session names
-    for iSession=1:numel(x.importOverview.(sFieldName).(vFieldName).sessions)
-        currentID = x.importOverview.(sFieldName).(vFieldName).sessions{iSession};
-        if ~isempty(regexpi(currentID,thisRegExp))
-            if ~isfield(x.importOverview.(sFieldName).(vFieldName).(vSessionName),'ids')
-                x.importOverview.(sFieldName).(vFieldName).(vSessionName).ids = {currentID};
-            else
-                x.importOverview.(sFieldName).(vFieldName).(vSessionName).ids = ...
-                    vertcat(x.importOverview.(sFieldName).(vFieldName).(vSessionName).ids,currentID);
-            end
-        end
-    end
-    
 end
-
-
-
-
-
