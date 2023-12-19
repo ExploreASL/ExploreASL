@@ -34,6 +34,8 @@ function [decodedPWI4D, decodedControl4D, xQ] = xASL_quant_HadamardDecoding(imPa
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Hadamard-4 & Hadamard-8 Decoding.
 % Throughout the explanation comments we use an example of a sequence with 8 echo times and Hadamard-4.
+% We assume that the image volumes are stored as 4D image matrix with the fourth dimension ordered as 
+% innerRepetitions (TEs), blocks (control-PLDs), outerRepetitions, and the parameter vectors ordered accordingly.
 %
 % 0. Admin: Check inputs, load data
 % 1. Specify the decoding matrix
@@ -241,11 +243,16 @@ nBlocks = xQ.TimeEncodedMatrixSize;
 % innerRepetition: single-volume repetitions for each PLD
 
 % Calculate the number of inner repetitions.
-% Lets assume we have PLDs 1000, 1000, 1500,1500, 2000, 2000 - That is nInnerRepetitions == 2
-[~, ~, indexUniquePLD] = unique(xQ.Initial_PLD); % Find volume indices of unique PLDs. Unique PLDs are 1000, 1500, 2000
-indexSecondPLD = find(indexUniquePLD==2); % Find the indices of the volumes of the second PLD. PLDs 1500 are on the position 3 and 4. And it means that all PLDs before the 1500 are equivalent
+% Let's take an example in which our volumes are stored as PLDs 1000, 1000, 1500, 1500, 2000, 2000 (ms)
+% That is nInnerRepetitions == 2, e.g., 2 echoes in the case of multi-TE.
+
+[~, ~, indexUniquePLD] = unique(xQ.Initial_PLD); % Find volume indices of unique PLDs
+indexSecondPLD = find(indexUniquePLD==2); % Find the volume indices of the second PLD (1500). 
+% PLDs 1500 are on the position 3 and 4. And it means that all PLDs before the 1500 are equivalent (== PLD 1000 ms), assuming that 
+% all PLDs are incrementally stored
 if isempty(indexSecondPLD)
-	nInnerRepetitions = length(xQ.Initial_PLD); % There's no second PLD and nInnerRepetitions is the length of the PLD vector
+	nInnerRepetitions = length(xQ.Initial_PLD);
+    % If each PLD has only a single volume (and no second volume), then nInnerRepetitions is the length of the PLD vector
 else
 	nInnerRepetitions = indexSecondPLD(1) - 1; % The number of first-PLDs (1000 in our example), i.e. the count of all PLDs before the second PLD is the number of inner repetitions. 2 in our example
 end
@@ -286,10 +293,11 @@ xQ.LabelingDuration_Control4D = xQ.LabelingDuration(indexControl);
 %
 % The following example illustrates this for a multi-TE innerRepetition:
 % At this point the image volumes are organized as:
-% PLD1/TE1,PLD1/TE2,PLD1/TE3,...,PLD1/TE8,PLD2/TE1,PLD2/TE2,PLD2/TE3... (TEs in first dimension, Hadamard blocks after)
+% TE1 PLD1 | TE2-PLD1 | TE3 PLD1 | ... | TE8 PLD1 | TE1 PLD2 | TE2 PLD2 | TE3 PLD2 | ... (TEs in first dimension, Hadamard blocks after)
 %
 % And for decoding we want to swap the dimensions such that the Hadamard blocks (==PLDs) are the innermost dimension:
-% TE1/PLD1,TE1/PLD2,TE1/PLD3,TE1/PLD4,TE2/PLD1,TE2/PLD2,TE2/PLD3,TE2/PLD4,...,TE8/PLD1,TE8/PLD2,TE8/PLD3,TE8/PLD4 (blocks in the first dimension, TEs after)
+% PLD1 TE1 | PLD2 TE1 | PLD3 TE1 | PLD4 TE1 | PLD1 TE2 | PLD2 TE2 | PLD3 TE2 | PLD4 TE2 | ... | PLD1 TE8 | PLD2-TE8 | PLD3 TE8 | PLD4-TE8
+% (blocks/PLDs in the first dimension, TEs after)
 
 imEncodedReordered = imEncoded;
 
@@ -306,8 +314,8 @@ if nInnerRepetitions > 1 % Reordering is only needed when having inner repetitio
 	% Reorder the data
 	imEncodedReordered = imEncodedReordered(:,:,:,vectorReorderEncoded);
 end
-% Sometimes an acquisition (e.g., Hadamard-8) is: outerRepetition PLD -> PLD1(rep1), PLD1(rep2)... PLD2(rep1), PLD2(rep2)
-% We want here                                    PLD outerRepetition -> PLD1(rep1), PLD2(rep1)... PLD1(rep2), PLD2(rep2)
+% Sometimes an acquisition (e.g., Hadamard-8) is: outerRepetition PLD -> PLD1 rep1 | PLD1 rep2 | ... PLD2 rep1 | PLD2 rep2
+% We want here                                    PLD outerRepetition -> PLD1 rep1 | PLD2 rep1 | ... PLD1 rep2 | PLD2 rep2
 
 
 %% 6. Decode the image volumes
@@ -345,7 +353,9 @@ decodedPWI4D = decodedPWI4D / (xQ.TimeEncodedMatrixSize/2);
 % For model fitting, we want the PLDs-first-TEs-second order (just like at the beginning) so we need to reorder it again
 
 if nInnerRepetitions > 1
-	% This is the original order after decoding the reordered matrix (a vector wit inner repetitions second and outer repetitions first)
+	% This is the order after decoding the reordered matrix: PLDs & outer repetitions first, inner repetitions (TEs) second, e.g.,
+    % PLD1 rep1 TE1 | PLD2 rep1 TE1 | PLD3 rep1 TE1 | PLD1 rep2 TE1 | PLD2 rep2 TE1 | PLD3 rep2 TE1 | .... | PLD1 rep1 TE8 | PLD2 rep1 TE8
+
 	vectorReorderDecoded = 1:size(decodedPWI4D, 4);
 
 	% First reshape to a matrix with innerRepetitions (e.g., TEs) second and all the rest (e.g. PLDs, outerRepetitions) first
