@@ -248,7 +248,7 @@ nBlocks = xQ.TimeEncodedMatrixSize;
 % 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 1000, 1000, etc.
 % That is nInnerRepetitions == 8, e.g., 8 echoes in the case of multi-TE.
 
-[~, ~, indexUniquePLD] = unique(xQ.Initial_PLD); % Find volume indices of unique PLDs
+[~, ~, indexUniquePLD] = unique(xQ.Initial_PLD); % Create a vector that gives for each PLD its unique label in the order as PLDs appear in the original vector
 indexSecondPLD = find(indexUniquePLD==2); % Find the volume indices of the second PLD (1500). 
 % PLDs 1500 are on the position 9 and 10. And it means that all PLDs before the 1500 are equivalent (== PLD 1000 ms), because PLDs==1500 has been labeled as the second different value by unique
 
