@@ -243,20 +243,40 @@ nBlocks = xQ.TimeEncodedMatrixSize;
 % innerRepetition: single-volume repetitions for each PLD
 
 % Calculate the number of inner repetitions.
-% Let's take an example in which our volumes are stored as PLDs 
-% 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 
-% 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 1000, 1000, etc.
+% Let's take an example in which our volumes are stored according to the following PLDs
+% 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, ...
+% 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
 % That is nInnerRepetitions == 8, e.g., 8 echoes in the case of multi-TE.
 
-[~, ~, indexUniquePLD] = unique(xQ.Initial_PLD); % Create a vector that gives for each PLD its unique label in the order as PLDs appear in the original vector
-indexSecondPLD = find(indexUniquePLD==2); % Find the volume indices of the second PLD (1500). 
+[~, ~, indexUniquePLD] = unique(xQ.Initial_PLD); % Create a vector that gives for each PLD its rank
+% e.g., with our example we have
+% 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, ...
+% 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
+% which gives 
+% 
+% unique(xQ.Initial_PLD) == [1000 1500 2000]
+% and indexUniquePLD = 
+% 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, ...
+% 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3
+%
+% if our example was:
+% 2000, 2000, 1500, 1500, 1000, 1000
+% this would give 
+% unique(xQ.Initial_PLD) == [1000 1500 2000]
+% and indexUniquePLD = 
+% 3, 3, 2, 2, 1, 1
+
+
+indexPLD2 = find(indexUniquePLD==2); % Find the volume indices of the second-ranked PLD (1500).
 % PLDs 1500 are on the position 9 and 10. And it means that all PLDs before the 1500 are equivalent (== PLD 1000 ms), because PLDs==1500 has been labeled as the second different value by unique
 
-if isempty(indexSecondPLD)
+if isempty(indexPLD2)
 	nInnerRepetitions = length(xQ.Initial_PLD);
-    % In the unlikely event that there is a single unique PLD value only, then nInnerRepetitions is the length of the PLD vector
+    % In the unlikely event that there is a single unique PLD value only (i.e. that we are dealing with a single-PLD Hadamard)
+    % then nInnerRepetitions is the length of the PLD vector
 else
-	nInnerRepetitions = indexSecondPLD(1) - 1; % The number of first-PLDs (1000 in our example), i.e. the count of all PLDs before the second PLD is the number of inner repetitions. 2 in our example
+	nInnerRepetitions = indexPLD2(1) - 1; % The number of first-PLDs (1000 in our example), i.e. the count of all PLDs before the second PLD is the number of inner repetitions. 
+    % 8 in our example (for 8 echoes)
 end
 
 if nInnerRepetitions ~= xQ.NumberEchoTimes % Check for TE number differ from the number of inner repeats as this is a special option needing a special reordering
