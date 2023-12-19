@@ -102,7 +102,7 @@ else
 
     if isempty(x.dataset.TotalSubjects)
         fprintf('%s\n', 'No subjects found, subjectRegexp in dataPar.json should match with subjectFolder');
-        fprintf(2,'This was %s ...\n\n', x.opts.subjectFolder);
+        fprintf(2,'This was %s ...\n\n', subjectFolder);
         error('No subjects defined...');
     end
 

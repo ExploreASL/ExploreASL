@@ -106,10 +106,7 @@ function [x] = xASL_init_LoadDataPar(x)
         % Add x field
         dataPar.x = struct;
     end
-    % Dataset fields
-    if ~isfield(dataPar.x,'dataset')
-        dataPar.x.dataset = struct;
-    end
+
     % Check for settings fields
     if ~isfield(dataPar.x,'settings')
         dataPar.x.settings = struct;
@@ -121,7 +118,8 @@ function [x] = xASL_init_LoadDataPar(x)
     % Check for DELETETEMP field
     if ~isfield(dataPar.x.settings,'DELETETEMP')
         dataPar.x.settings.DELETETEMP = true;
-    end
+	end
+	
 
     %% Write final dataPar
     x.dir.dataPar = fullfile(x.dir.xASLDerivatives, 'dataPar.json');
