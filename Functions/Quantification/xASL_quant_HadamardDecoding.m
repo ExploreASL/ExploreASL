@@ -35,7 +35,7 @@ function [decodedPWI4D, decodedControl4D, xQ] = xASL_quant_HadamardDecoding(imPa
 % DESCRIPTION:  Hadamard-4 & Hadamard-8 Decoding.
 % Throughout the explanation comments we use an example of a sequence with 8 echo times and Hadamard-4.
 % We assume that the image volumes are stored as 4D image matrix with the fourth dimension ordered as 
-% innerRepetitions (TEs), blocks (control-PLDs), outerRepetitions, and the parameter vectors ordered accordingly.
+% innerRepetitions (TEs), Hadamard-encoded volumes (control-PLDs), outerRepetitions, and the parameter vectors ordered accordingly.
 %
 % 0. Admin: Check inputs, load data
 % 1. Specify the decoding matrix
@@ -243,16 +243,18 @@ nBlocks = xQ.TimeEncodedMatrixSize;
 % innerRepetition: single-volume repetitions for each PLD
 
 % Calculate the number of inner repetitions.
-% Let's take an example in which our volumes are stored as PLDs 1000, 1000, 1500, 1500, 2000, 2000 (ms)
-% That is nInnerRepetitions == 2, e.g., 2 echoes in the case of multi-TE.
+% Let's take an example in which our volumes are stored as PLDs 
+% 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 
+% 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 1000, 1000, etc.
+% That is nInnerRepetitions == 8, e.g., 8 echoes in the case of multi-TE.
 
 [~, ~, indexUniquePLD] = unique(xQ.Initial_PLD); % Find volume indices of unique PLDs
 indexSecondPLD = find(indexUniquePLD==2); % Find the volume indices of the second PLD (1500). 
-% PLDs 1500 are on the position 3 and 4. And it means that all PLDs before the 1500 are equivalent (== PLD 1000 ms), assuming that 
-% all PLDs are incrementally stored
+% PLDs 1500 are on the position 9 and 10. And it means that all PLDs before the 1500 are equivalent (== PLD 1000 ms), because PLDs==1500 has been labeled as the second different value by unique
+
 if isempty(indexSecondPLD)
 	nInnerRepetitions = length(xQ.Initial_PLD);
-    % If each PLD has only a single volume (and no second volume), then nInnerRepetitions is the length of the PLD vector
+    % In the unlikely event that there is a single unique PLD value only, then nInnerRepetitions is the length of the PLD vector
 else
 	nInnerRepetitions = indexSecondPLD(1) - 1; % The number of first-PLDs (1000 in our example), i.e. the count of all PLDs before the second PLD is the number of inner repetitions. 2 in our example
 end
@@ -293,11 +295,11 @@ xQ.LabelingDuration_Control4D = xQ.LabelingDuration(indexControl);
 %
 % The following example illustrates this for a multi-TE innerRepetition:
 % At this point the image volumes are organized as:
-% TE1 PLD1 | TE2-PLD1 | TE3 PLD1 | ... | TE8 PLD1 | TE1 PLD2 | TE2 PLD2 | TE3 PLD2 | ... (TEs in first dimension, Hadamard blocks after)
+% PLD1 TE1 | PLD1 TE2 | PLD1 TE3 | ... | PLD1 TE8 | PLD2 TE1 | PLD2 TE2 | PLD2 TE3 | ... (TEs in first dimension, PLDs after)
 %
 % And for decoding we want to swap the dimensions such that the Hadamard blocks (==PLDs) are the innermost dimension:
 % PLD1 TE1 | PLD2 TE1 | PLD3 TE1 | PLD4 TE1 | PLD1 TE2 | PLD2 TE2 | PLD3 TE2 | PLD4 TE2 | ... | PLD1 TE8 | PLD2-TE8 | PLD3 TE8 | PLD4-TE8
-% (blocks/PLDs in the first dimension, TEs after)
+% (PLDs in the first dimension, TEs after)
 
 imEncodedReordered = imEncoded;
 
