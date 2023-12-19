@@ -324,10 +324,10 @@ try
 
         RemoveFields = {};
         if ~isempty(find(iModule==1)) % if we remove the structural provenance
-            RemoveFields{end+1} = 'Structural';
+            RemoveFields{1} = 'Structural';
         end
         if ~isempty(find(iModule==2)) % if we remove the ASL provenance
-            RemoveFields{end+1} = 'ASL';
+            RemoveFields{2} = 'ASL';
         end        
         
         % keep the x.mat file but remove parts of it        
