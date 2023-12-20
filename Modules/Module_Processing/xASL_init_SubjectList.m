@@ -23,15 +23,19 @@ function [x] = xASL_init_SubjectList(x)
 
 
 %% 1. Define folder to read subjects from
+% By default we use the BIDS or derivative folder to find subjects
+if x.opts.bReadRawdata
+    subjectFolder = x.dir.RawData;
+else
+    subjectFolder = x.dir.xASLDerivatives;
+end
+
+% If the user defined a custom subjectFolder, we use this instead of the default folder
 if isfield(x.opts, 'subjectFolder') && ~exist(x.opts.subjectFolder, 'dir')
     warning(['subjectFolder' x.opts.subjectFolder ' is no valid directory']);
     fprintf('Using default folder instead\n');
 elseif isfield(x.opts, 'subjectFolder')
     subjectFolder = x.opts.subjectFolder;
-elseif x.opts.bReadRawdata
-    subjectFolder = x.dir.RawData;
-else
-    subjectFolder = x.dir.xASLDerivatives;
 end
 
 x.ROOT = subjectFolder;
