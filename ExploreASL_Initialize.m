@@ -600,6 +600,33 @@ end
                 end
             end
         
+			% Check and remove empty spaces at the start and end of the DatasetRoot
+			if ~isempty(x.opts.DatasetRoot)
+
+				% Remove the empty spaces at the start
+				if x.opts.DatasetRoot(1) == ' '
+					[~, ~, indexUniqueChars] = unique(x.opts.DatasetRoot, 'stable'); % Create a vector that gives for each character its unique identifier
+					indexCharacter2 = find(indexUniqueChars==2); % Find the indices of the second unique character
+					if ~isempty(indexCharacter2)
+						x.opts.DatasetRoot = x.opts.DatasetRoot(indexCharacter2(1):end);
+						warning(['x.opts.DataserRoot contains ' xASL_num2str(indexCharacter2(1)-1) ' empty spaces at the start. Fixing this']);
+					end
+				end
+
+				% Remove the empty spaces at the end
+				if x.opts.DatasetRoot(end) == ' '
+					% Repeat exactly the same proceedure, but on reversed character vector
+					x.opts.DatasetRoot = x.opts.DatasetRoot(end:-1:1);
+					[~, ~, indexUniqueChars] = unique(x.opts.DatasetRoot, 'stable'); % Create a vector that gives for each character its unique identifier
+					indexCharacter2 = find(indexUniqueChars==2); % Find the indices of the second unique character
+					if ~isempty(indexCharacter2)
+						x.opts.DatasetRoot = x.opts.DatasetRoot(indexCharacter2(1):end);
+						warning(['x.opts.DataserRoot contains ' xASL_num2str(indexCharacter2(1)-1) ' empty spaces at the end. Fixing this']);
+					end
+					x.opts.DatasetRoot = x.opts.DatasetRoot(end:-1:1);
+				end
+			end
+
             % Check if the user provided any path, and if this path exists
             if isempty(x.opts.DatasetRoot)
                 warning('Dataset root directory is not specified...');
