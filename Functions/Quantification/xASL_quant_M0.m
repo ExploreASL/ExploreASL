@@ -329,10 +329,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 			end
 	end
 	
-    % Initialize the figure
-    FigureHandle = figure('visible','off');
-    subplot(2, 2, 1);
-    
+        
     SignalPercentage = abs(xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, ReadoutTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceReadoutTime, x.D.M0CheckDir, 1));
     
     %% Obtain the slice-wise median Control signal before correction
@@ -364,31 +361,38 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     end    
     
     %% Create the figure
-    % SignalPercentage
-    subplot(2, 2, 2);
-    plot(1:size(M0IM,3), SignalPercentage,'k');
-    title('Signal left after background suppression');
-    ylabel('Residual signal (%)');
-    xlabel('Slice (integer)');    
-    % Before correction
-    subplot(2, 2, 3);
-    plot(1:size(M0IM,3), SignalBeforeCorrection);
-    title('Before correction');
-    ylabel('Pseudo-M0 (a.u.)');
-    xlabel('Slice (integer)');
-    % After correction
-    subplot(2, 2, 4);
-    plot(1:size(M0IM,3), SignalAfterCorrection,'r');
-    title('After correction');
-    ylabel('Pseudo-M0 (a.u.)');
-    xlabel('Slice (integer)');
+	% Only if java virtual machine is used
+	if usejava('desktop')
+		% Initialize the figure
+		FigureHandle = figure('visible','off');
+		subplot(2, 2, 1);
 
-    % Save and close the figure
-    SavePath = fullfile(x.D.M0CheckDir, 'RevertBsupFxControl.jpg');
-	xASL_adm_CreateDir(x.D.M0CheckDir);
-    saveas(FigureHandle, SavePath, 'jpg');
-    close(FigureHandle);
-    
+		% SignalPercentage
+		subplot(2, 2, 2);
+		plot(1:size(M0IM,3), SignalPercentage,'k');
+		title('Signal left after background suppression');
+		ylabel('Residual signal (%)');
+		xlabel('Slice (integer)');
+		% Before correction
+		subplot(2, 2, 3);
+		plot(1:size(M0IM,3), SignalBeforeCorrection);
+		title('Before correction');
+		ylabel('Pseudo-M0 (a.u.)');
+		xlabel('Slice (integer)');
+		% After correction
+		subplot(2, 2, 4);
+		plot(1:size(M0IM,3), SignalAfterCorrection,'r');
+		title('After correction');
+		ylabel('Pseudo-M0 (a.u.)');
+		xlabel('Slice (integer)');
+
+		% Save and close the figure
+		SavePath = fullfile(x.D.M0CheckDir, 'RevertBsupFxControl.jpg');
+		xASL_adm_CreateDir(x.D.M0CheckDir);
+		saveas(FigureHandle, SavePath, 'jpg');
+		close(FigureHandle);
+	end
+
     fprintf('\n');
     if strcmp(x.Q.readoutDim, '2D')
         fprintf('For the average slice: ');
