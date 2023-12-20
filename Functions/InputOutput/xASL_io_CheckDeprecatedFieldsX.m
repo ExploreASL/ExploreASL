@@ -56,9 +56,17 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
                 nOutdatedParameter = nOutdatedParameter+1;
                 detectedFields{nOutdatedParameter,1} = conversionTable{iField,1};
                 % Basic field does not exist
-                if ~isfield(x,conversionTable{iField,2})
+				% If the first level field is structure (conversionTable at column 3 is not empty) and the structure doesn't exist in x-struct, then create it
+                if ~isempty(conversionTable{iField,3}) && ~isfield(x,conversionTable{iField,2})
                     x.(conversionTable{iField,2}) = struct;
-                end
+				end
+
+				% Second field does not exist and it is supposed to be structure
+				% If the second level field is structure (conversionTable at column 4 is not empty) and the structure doesn't exist in x-struct, then create it
+                if ~isempty(conversionTable{iField,4}) && ~isfield(x.(conversionTable{iField,2}),conversionTable{iField,3})
+                    x.(conversionTable{iField,2}).(conversionTable{iField,3}) = struct;
+				end
+				 
                 % Actual deprecated field
                 if ~isfield(x.(conversionTable{iField,2}),conversionTable{iField,3})
                     % Sub-Structure (x.FIELD -> x.STRUCT.FIELD)
