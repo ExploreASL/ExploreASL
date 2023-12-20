@@ -387,7 +387,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 		xlabel('Slice (integer)');
 
 		% Save and close the figure
-		SavePath = fullfile(x.D.M0CheckDir, 'RevertBsupFxControl.jpg');
+		SavePath = fullfile(x.D.M0CheckDir, [x.SUBJECT '_' x.SESSION '_RevertBsupFxControl.jpg']);
 		xASL_adm_CreateDir(x.D.M0CheckDir);
 		saveas(FigureHandle, SavePath, 'jpg');
 		close(FigureHandle);
