@@ -362,7 +362,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     
     %% Create the figure
 	% Only if java virtual machine is used
-	if usejava('desktop')
+	if usejava('desktop') || usejava('jvm')
 		% Initialize the figure
 		FigureHandle = figure('visible','off');
 		subplot(2, 2, 1);
@@ -391,6 +391,8 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 		xASL_adm_CreateDir(x.D.M0CheckDir);
 		saveas(FigureHandle, SavePath, 'jpg');
 		close(FigureHandle);
+    else
+        fprintf('%s\n', 'No Java VM loaded, skipping creating RevertBsupFxControl.jpg');
 	end
 
     fprintf('\n');
