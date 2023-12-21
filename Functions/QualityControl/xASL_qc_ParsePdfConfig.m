@@ -1,5 +1,5 @@
 function [settingsPDF] = xASL_qc_ParsePdfConfig(layoutStructure, x, currentFigure, line, settingsPDF)
-% xASL_qc_ParsePdfConfig function used by xASL_qc_GenerateReport to parse the configuration file loaded by xASL_adm_LoadPdfConfig.
+% xASL_qc_ParsePdfConfig function used by xASL_qc_GenerateReport to parse the configuration file loaded by xASL_qc_LoadPdfConfig.
 %   
 %   
 % FORMAT: xASL_qc_ParsePdfConfig(layoutStructure, x[, currentFigure, line, settingsPDF])
@@ -12,15 +12,16 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig(layoutStructure, x, currentFigur
 %   settingsPDF         - settings used to print (OPTIONAL, will set default settings if not specified)
 %
 % OUTPUT: 
-%   settingsPDF    - settings to print with
+%   settingsPDF         - structure containting all settings used how to print information, used in recursive calls.
 %
 % OUTPUTFILE:
 %   xASL_Report_SubjectName.pdf - printed PDF rapport containing QC images & values
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  xASL_qc_ParsePdfConfig function used by xASL_qc_GenerateReport to parse the configuration file loaded by xASL_adm_LoadPdfConfig.
+% DESCRIPTION:  xASL_qc_ParsePdfConfig function used by xASL_qc_GenerateReport to parse the configuration file loaded by xASL_qc_LoadPdfConfig.
 %               This function will run recursively, and will print all text, images, scans and other content specified in the json file.
 %               The json file should contain a structure with fields specified in the manual.
+%               This function includes recursive calls to itself to explore nested json elements.
 % 
 % EXAMPLE: xASL_qc_ParsePdfConfig(layoutStructure, x);
 % __________________________________
@@ -575,8 +576,10 @@ function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, s
     if isfield(qcStruct, 'range') 
         if ~isempty(qcStruct.range)
             [range] = strsplit(qcStruct.range, '-');
-            if (TempValue < xASL_str2num(range{1})) || (TempValue > xASL_str2num(range{2}))
+            if (TempValue < xASL_str2num(range{1})) || size(range, 2) == 2 && (TempValue > xASL_str2num(range{2}))
                 settingsPDF.color = 'r';
+            elseif size(range, 2) < 2 
+                fprintf('No second value detected for range, check if your quality parameter ranges are properly defined in configReportPDF.json')
             end
             qcStruct.range = ['(' qcStruct.range ')'];
         end
@@ -586,7 +589,6 @@ function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, s
 
     % Convert the value to a string.
     TempValue = xASL_num2str(TempValue);
-
 
     qcStruct.alias = xASL_qc_ParsePdfConfig_sub_PaddedString( qcStruct.alias, settingsPDF.QC_string_limit);
     TempValue = xASL_qc_ParsePdfConfig_sub_PaddedString( TempValue, 12, 'right');
@@ -605,8 +607,8 @@ function [struct] = xASL_qc_ParsePdfConfig_sub_QC_Translation(struct, settingsPD
     index = find(strcmp(settingsPDF.QC_Translation(:,1), name));
     if ~isempty(index)
         struct.alias = char(settingsPDF.QC_Translation(index, 2));
-        struct.unit  = char(settingsPDF.QC_Translation(index, 3));
-        struct.range = char(settingsPDF.QC_Translation(index, 4));
+        struct.unit  = char(settingsPDF.QC_Translation(index, 4));
+        struct.range = char(settingsPDF.QC_Translation(index, 5));
     end
 end
 
@@ -657,11 +659,11 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings(x)
     settingsPDF.figureCount = 0;
     settingsPDF.canvas = [0 0 1 1];
     settingsPDF.BIDS_Translation = 0;
-    settingsPDF.QC_TSV_Translations = 1; %0 = no translation, 1=translation
+    settingsPDF.QC_TSV_Translations = 1; 
     settingsPDF.imageHeaders = 1;
     settingsPDF.QC_string_limit  = 25;
 
-    settingsPDF.QC_Translation = xASL_tsvRead(fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'qc_translation.tsv'));
+    settingsPDF.QC_Translation = xASL_tsvRead(fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'qc_glossary.tsv'));
 
 
     if ispc

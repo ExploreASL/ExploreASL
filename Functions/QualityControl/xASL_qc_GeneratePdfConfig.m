@@ -1,21 +1,22 @@
-function [config] = xASL_adm_GeneratePdfConfig(x, subject, bOverwrite)
-% xASL_adm_GeneratePdfConfig Generates a JSON based on all values in x.Output
+function [config] = xASL_qc_GeneratePdfConfig(x, subject, bOverwrite)
+% xASL_qc_GeneratePdfConfig Generates a JSON based on all values in x.Output
 %
-% FORMAT: xASL_adm_GeneratePdfConfig(x)
+% FORMAT: xASL_qc_GeneratePdfConfig(x[, subject, bOverwrite])
 %
 % INPUT:
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
 %   subject     - subject name (OPTIONAL, default = x.SUBJECT)
-%   bOverWrite  - boolean to determine wether current configReportPDF.json should be overwritten. (OPTIONAL)
+%   bOverWrite  - boolean to determine if current configReportPDF.json should be overwritten. (OPTIONAL, default == true)
 %
 % OUTPUT: 
-%  None
+%   In the ExploreASL Derivatives folder in the subject directory, a configReportPDF.json is generated containing all quality parameters.
+%   Quality parameters are taken from x.Output and x.OutputIm
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  This function dumps all value from x.Output of subject into a configuration file
-%               This configuration can be read by xASL_adm_GeneratePdfConfig to create a pdf that contains all quality values.
+%               This configuration can be read by xASL_qc_GeneratePdfConfig to create a pdf that contains all quality values.
 % 
-% EXAMPLE: xASL_adm_GeneratePdfConfig(x, 'sub-001');
+% EXAMPLE: xASL_qc_GeneratePdfConfig(x, 'sub-001');
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
 

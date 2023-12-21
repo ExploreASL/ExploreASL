@@ -1,0 +1,10 @@
+This is an explanation what qc_glossary.tsv does. 
+
+qc_glossary.tsv contains a list of qc quality parameters from x.Output with string replacements to be used in xASL_qc_GenerateReport.
+Each row is a tab separated entry with the following (sometimes empty) fields:
+parameter	Alias	Description	Unit	Range
+parameter refers to the parameter as internally referred to in ExploreASL. 
+Alias is the term it will be printed as by default in the  xASL_qc_GenerateReport. This should be a short descriptive name (~25 character max).
+Description is a more elaborate description that can be printed if desired, not limited by character length (as of now not printed).
+Unit is the unit that it is printed in.
+Range is the range of acceptable values, this should be two values separated by a hyphen, eg. 0-100 for percentage based values. 

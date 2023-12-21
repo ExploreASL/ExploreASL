@@ -1,10 +1,10 @@
-function [config] = xASL_adm_LoadPdfConfig(x, configPath)
-% xASL_adm_LoadPdfConfig loads parameters from a .json config file to be used in xASL_qc_GenerateReport.
+function [config] = xASL_qc_LoadPdfConfig(x, configPath)
+% xASL_qc_LoadPdfConfig loads parameters from a .json config file to be used in xASL_qc_GenerateReport.
 % Using the config file, the user can define the parameters of the report.
 % If no config file is given, it will first look in the derivatives folder if configReportPDF.json exists.
 % If nothing exists there a default config file is loaded and used. (source at in the ExploreASL/Functions/QualityControl folder)
 %
-% FORMAT: [config] = xASL_adm_LoadPdfConfig(x[, configPath])
+% FORMAT: [config] = xASL_qc_LoadPdfConfig(x[, configPath])
 %
 % INPUT:
 %   x           - Struct containing all ExploreAsl Parameters (REQUIRED)
@@ -21,7 +21,7 @@ function [config] = xASL_adm_LoadPdfConfig(x, configPath)
 % 3. Deal with warnings and return output
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [config] = xASL_adm_LoadPdfConfig(x);
+% EXAMPLE: [config] = xASL_qc_LoadPdfConfig(x);
 % __________________________________
 % Copyright 2015-2023 ExploreASL
 
@@ -41,11 +41,11 @@ end
 
 %% ------------------------------------------------------------------------
 %% 2. Load JSON file 
-if (exist(configPath, 'file') == 2)
+if exist(configPath, 'file')
     config = xASL_io_ReadJson(configPath);
 else
-    fprintf([configPath ' does not exists, using default configuration for PDF generation.\n']);
-    xASL_adm_GeneratePdfConfig(x, x.SUBJECT, false);
+    fprintf(['Custom PDF definitions not found, using default configuration for PDF generation.\n']);
+    xASL_qc_GeneratePdfConfig(x, x.SUBJECT, false);
     config = xASL_io_ReadJson(configPath);
 end
 

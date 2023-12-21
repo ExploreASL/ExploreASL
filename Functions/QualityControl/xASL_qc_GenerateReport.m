@@ -1,20 +1,19 @@
-function [x, settings] = xASL_qc_GenerateReport(x, subject)
-% xASL_qc_GenerateReport Generates a PDF report based on a predifined Json configuration file
+function [x] = xASL_qc_GenerateReport(x, subject)
+% xASL_qc_GenerateReport Generates a PDF report based on a predefined Json configuration file
 %
-% FORMAT: xASL_qc_GenerateReport(x)
+% FORMAT: xASL_qc_GenerateReport(x [,subject])
 %
 % INPUT:
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
 %   subject     - subject name (OPTIONAL, default = x.SUBJECT)
 %
 % OUTPUT: 
-%
-%   x           - structure containing fields with all information required to run this submodule
+%   x           - x structure containing fields with all information as well as now the quality parameters loaded in
 % OUTPUTFILE:
 %   xASL_Report_SubjectName.pdf - printed PDF rapport containing QC images & values
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  This function generates a PDF report based on a predifined Json configuration file.
+% DESCRIPTION:  This function generates a PDF report based on a predefined Json configuration file.
 %               Using the function xASL_qc_ParsePdfConfig, the Json configuration file is parsed and all the pages are created.
 %               The function xASL_qc_ParsePdfConfig is called recursively to parse all the Json objects in the configuration file.
 %               Quality control values are obtained from the x structure using the function xASL_adm_LoadX.
@@ -100,14 +99,14 @@ if ~isempty(ExistingPrintFiles)
 end
 
 % Load Pdf configuration
-config = xASL_adm_LoadPdfConfig(x);
+config = xASL_qc_LoadPdfConfig(x);
 
 % Print the title
 fprintf('Printing ExploreASL PDF report in:   \n');
 fprintf([PrintDir '\n']);
 
 % Parse the entire Json Stack automatically making all the pages.
-settings = xASL_qc_ParsePdfConfig(config, x);
+xASL_qc_ParsePdfConfig(config, x);
 
 % Householding
 if ~isempty(subjectOld)
