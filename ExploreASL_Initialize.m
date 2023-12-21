@@ -39,8 +39,7 @@ function [x] = ExploreASL_Initialize(varargin)
 	if ~exist('x','var') || isempty(x)
 		x = struct;
 	end
-    
-
+ 
     % Validate the Matlab version
 	fprintf('%s\n', ['Matlab version detected: ' version]);
 	fprintf('%s\n', 'Minimal Matlab version required: 9.6 (R2019a)');
@@ -54,41 +53,26 @@ function [x] = ExploreASL_Initialize(varargin)
     % meaning to divide and identify the input parameters, if they are provided in the correct format, 
     % define their defaults, and their meaning for ExploreASL.
     x = xASL_init_InputParsing(x,varargin{:});
-	
-    
+	    
     %% xASL_init_GetBooleansImportProcess Check which ExploreASL modules should be run, 
     % as per the user-provided booleans (e.g., bImport, bProcess)
     x = xASL_init_GetBooleansImportProcess(x);
-    
-    
-
-
+  
     %% 2. Get main ExploreASL path
 
     x = xASL_init_GetMainExploreASLfolder(x);
 
-    
-
-
-
-
-
     %% 3. Add ExploreASL paths to Matlab and prepare x (sub)structs
-
 
     %% xASL_init_AddDirsOfxASL  Add specific ExploreASL directories as Matlab paths, avoiding adding folders that are unused or that may even cause conflict.
     % If toolboxes that ExploreASL uses were already added to the paths, they are removed from the Matlab paths (such as spm, bids) to avoid conflicts.
     xASL_init_AddDirsOfxASL(x.opts.MyPath);
-
     
 	% Initialize substructs
     % xASL_init_SubStructs Initialize the ExploreASL x structure substructs/fields.
     % Only fields which do not exist so far are added.
     x = xASL_init_SubStructs(x);
-    
-
-
-
+   
     %% 4. Check DatasetRoot provided by user & provide feedback on which ExploreASL module is run
 
     if x.opts.bImportData || x.opts.bLoadData || x.opts.bProcessData
@@ -99,34 +83,23 @@ function [x] = ExploreASL_Initialize(varargin)
         x = xASL_init_checkDatasetRoot(x);
     end
     
-
-
     % Provide feedback on which ExploreASL module is run
     % (PM: merge with xASL_init_printSettings below)
     xASL_init_BasicFeedback(x);
     
-
-
-
     %% 5. Define several general settings (mostly used for processing, PM: move these to processing initialization)
 
     % Go to ExploreASL folder
     cd(x.opts.MyPath);
-
 
     % These settings are data-independent
     % Define several data independent settings for processing 
     % (PM: move these to the processing initialization)
     x = xASL_init_DefineIndependentSettings(x);
 
-
-
-
-
     %% 6. Print logo, settings, ExploreASL version etc
     % xASL_init_PrintLogo Print the ExploreASL logo before running ExploreASL
     xASL_init_PrintLogo();
-
 
     % Print chosen settings
     % xASL_init_printSettings Print chosen settings, for:
@@ -152,19 +125,9 @@ function [x] = ExploreASL_Initialize(varargin)
     end
 end
 
-
-
-
 %% =======================================================================================================================
 %% =======================================================================================================================
 %% SUBFUNCTIONS start here 
-
-
-
-
-
-
-
 
 %% 1. Admin ==============================================================================================================
 %% =======================================================================================================================
@@ -310,8 +273,7 @@ function x = xASL_init_InputParsing(x, varargin)
     function x = xASL_init_GetBooleansImportProcess(x)
     % xASL_init_GetBooleansImportProcess Check which ExploreASL modules should be run, 
     % as per the user-provided booleans (e.g., bImport, bProcess)
-    
-        
+            
         % Field to check if the data was loaded or not
         x.opts.bDataLoaded = false;
 
@@ -348,12 +310,6 @@ function x = xASL_init_InputParsing(x, varargin)
         end
     
     end
-
-
-
-
-
-
 
 %% 2. Get main ExploreASL path ===========================================================================================
 %% =======================================================================================================================
@@ -416,9 +372,6 @@ function x = xASL_init_GetMainExploreASLfolder(x)
         cd(x.opts.MyPath);
     
     end
-
-
-
 
 %% 3. Add ExploreASL paths ===============================================================================================
 %% =======================================================================================================================
@@ -509,23 +462,10 @@ function xASL_init_AddDirsOfxASL(MyPath)
     
 end
 
-
-
-
-
-
-
-
-
-    
-    
-
 %% 4. Check DatasetRoot provided =========================================================================================
 %% =======================================================================================================================
 %% =======================================================================================================================
 
-
-    
     function [x] = xASL_init_checkDatasetRoot(x)
         %xASL_init_checkDatasetRoot Check the ExploreASL parameter DatasetRoot
         %
@@ -600,7 +540,7 @@ end
                 end
             end
         
-			% Check and remove empty spaces at the start and end of the DatasetRoot
+			%% Check and remove empty spaces at the start and end of the DatasetRoot
 			if ~isempty(x.opts.DatasetRoot)
 
 				% Remove the empty spaces at the start
@@ -617,7 +557,9 @@ end
 				if x.opts.DatasetRoot(end) == ' '
 					% Repeat exactly the same proceedure, but on reversed character vector
 					x.opts.DatasetRoot = x.opts.DatasetRoot(end:-1:1);
-					[~, ~, indexUniqueChars] = unique(x.opts.DatasetRoot, 'stable'); % Create a vector that gives for each character its unique identifier
+					% Create a vector that gives for each different character its unique numeric identifier starting with 1 and increasing monotonically in the order of appearance
+					% 'aaacdba' will give [1,1,1,2,3,4,1]
+					[~, ~, indexUniqueChars] = unique(x.opts.DatasetRoot, 'stable'); 
 					indexCharacter2 = find(indexUniqueChars==2); % Find the indices of the second unique character
 					if ~isempty(indexCharacter2)
 						x.opts.DatasetRoot = x.opts.DatasetRoot(indexCharacter2(1):end);
@@ -627,7 +569,7 @@ end
 				end
 			end
 
-            % Check if the user provided any path, and if this path exists
+            %% Check if the user provided any path, and if this path exists
             if isempty(x.opts.DatasetRoot)
                 warning('Dataset root directory is not specified...');
                 bValidPath = false;
@@ -663,7 +605,7 @@ end
                 x.dir.dataPar = '';
             end
         
-            % Recheck the JSON files (do they exist and which ones do)
+            %% Recheck the JSON files (do they exist and which ones do)
             
             % Fallbacks
             bSourceStructure = false;
@@ -715,7 +657,7 @@ end
                 
             end
         
-            % Check output
+            %% Check output
             if x.opts.bProcessData>0 && nargout==0
                 warning('Data loading requested but no output structure defined');
                 fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
@@ -728,8 +670,6 @@ end
             end
         
         end
-
-
 
         %% =======================================================================================================================
         %% =======================================================================================================================
@@ -813,12 +753,7 @@ end
                 end
             
             end
-            
-            
-            
-
-
-        
+         
 %% =======================================================================================================================
 %% =======================================================================================================================
 function xASL_init_BasicFeedback(x)
@@ -844,8 +779,6 @@ function xASL_init_BasicFeedback(x)
         fprintf('ExploreASL %swill %s...\n',reportImport,reportProcess);
     
     end
-
-
 
 %% 5. Define several general settings ====================================================================================
 %% =======================================================================================================================
@@ -900,25 +833,17 @@ function xASL_init_BasicFeedback(x)
             warning('Could not obtain ExploreASL version, version file missing');
             x.Version = '0.0.0 VERSION_File_Missing';
         end
-        
-        
+                
         if ~isfield(x,'Q')
             x.Q = struct;
         end
-        
-        
+                
         %% Atlases and templates
         x = xASL_init_MapsAndAtlases(x);
         
         %% Visualization
         x = xASL_init_VisualizationSettings(x);
-        
-        
         end    
-
-
-
-
 
 %% 6. Print ==============================================================================================================
 %% =======================================================================================================================
@@ -943,10 +868,7 @@ function xASL_init_PrintLogo()
     
         xASL_adm_BreakString('',[],[],1);
         fprintf(logoString);
-    
     end
-
-
 
 %% =======================================================================================================================
 %% =======================================================================================================================
@@ -1024,7 +946,6 @@ function xASL_init_printSettings(x)
         xASL_adm_BreakString('',[],[],1);
     
     end
-
 
 %% =======================================================================================================================
 %% =======================================================================================================================
