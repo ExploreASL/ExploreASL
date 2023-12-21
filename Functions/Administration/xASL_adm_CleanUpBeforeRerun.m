@@ -322,13 +322,7 @@ try
         ListXmat = xASL_adm_GetFileList(SubjectDir, '^x\.mat$', 'FPListRec', [0 Inf]);
         ListQCjson = xASL_adm_GetFileList(SubjectDir, ['(?i)^QC_collection_' SubjectID '\.json$'], 'FPListRec', [0 Inf]);
 
-        RemoveFields = cell(0);
-        if ~isempty(find(iModule==1)) % if we remove the structural provenance
-            RemoveFields{end+1} = 'Structural';
-        end
-        if ~isempty(find(iModule==2)) % if we remove the ASL provenance
-            RemoveFields{end+1} = 'ASL';
-        end        
+        RemoveFields = {'Structural' 'ASL' 'Population'};
         
         % keep the x.mat file but remove parts of it        
         if ~isempty(ListXmat)
@@ -351,8 +345,10 @@ try
                     x = xStruct.x;
 
                     % Optional: Remove Output and Output_im fields
+                    % iMod == iModule == input modules to clean up (e.g., 1 = Structural, 2 = ASL, 3 = Population)
+
                     for iMod=iModule
-                        if iMod~=3 % if not a Population module
+                        if ~strcmpi(RemoveFields{iMod}, 'population') % if not a Population module
                             if isfield(x, 'Output')
                                 if isfield(x.Output, RemoveFields{iMod})
 									if strcmpi(RemoveFields{iMod}, 'structural')
