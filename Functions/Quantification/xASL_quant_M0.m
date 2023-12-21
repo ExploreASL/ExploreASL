@@ -329,8 +329,17 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 			end
 	end
 	
-        
-    SignalPercentage = abs(xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, ReadoutTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceReadoutTime, x.D.M0CheckDir, 1));
+	if usejava('desktop') || usejava('jvm')
+		bCreateFigure = 1;
+		% Initialize the figure
+		FigureHandle = figure('visible','off');
+		subplot(2, 2, 1);
+	else
+		bCreateFigure = 0;
+		FigureHandle = [];
+	end
+	
+    SignalPercentage = abs(xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, ReadoutTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceReadoutTime, x.D.M0CheckDir, bCreateFigure));
     
     %% Obtain the slice-wise median Control signal before correction
     % First create a reasonable mask
@@ -362,11 +371,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     
     %% Create the figure
 	% Only if java virtual machine is used
-	if usejava('desktop') || usejava('jvm')
-		% Initialize the figure
-		FigureHandle = figure('visible','off');
-		subplot(2, 2, 1);
-
+	if bCreateFigure
 		% SignalPercentage
 		subplot(2, 2, 2);
 		plot(1:size(M0IM,3), SignalPercentage,'k');
