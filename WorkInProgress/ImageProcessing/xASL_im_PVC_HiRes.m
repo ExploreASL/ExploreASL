@@ -3,7 +3,7 @@ function [ x ] = xASL_im_PVC_HiRes( x )
 % but on high resolution using 3D B-splines, which is faster
 
 
-if  length(xASL_adm_GetFileList( x.D.PopDir, ['^q' x.P.CBF '_(GM|WM)_PVEC_.*_.*.nii']))==x.dataset.nSubjectsSessions*2
+if  length(xASL_adm_GetFileList( x.D.PopDir, ['^q' x.P.CBF '_(GM|WM)_PVEC_.*_.*.nii']))== x.dataset.nSubjects * x.dataset.nSessions * 2
     % All images are already created, skip this
     fprintf('%s\n','PV corrected CBF images were already created, skipping...')
 else

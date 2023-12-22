@@ -46,7 +46,7 @@ for iSubject=1:x.dataset.nSubjects
     for iSession=1:x.dataset.nSessions
         % Keeping track
         iSubjSess = ((iSubject-1)*x.dataset.nSessions)+iSession;
-        xASL_TrackProgress(iSubjSess, x.dataset.nSubjectsSessions);
+        xASL_TrackProgress(iSubjSess, x.dataset.nSubjects * x.dataset.nSessions);
 
         PathMAT = fullfile(x.D.MotionDir, ['motion_correction_NDV_' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession} '.mat'] );
 

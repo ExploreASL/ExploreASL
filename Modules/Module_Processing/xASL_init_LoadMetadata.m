@@ -133,7 +133,7 @@ function [x] = xASL_init_LoadMetadata(x)
         end
 
         for iSession=1:x.dataset.nSessions
-            VarDataOri([iSession:x.dataset.nSessions:x.dataset.nSubjectsSessions-x.dataset.nSessions+iSession], 1) = x.SUBJECTS(:);
+            VarDataOri(iSession:x.dataset.nSessions:(x.dataset.nSubjects * x.dataset.nSessions - x.dataset.nSessions + iSession), 1) = x.SUBJECTS(:);
         end
         VarDataOri(:,2) = repmat(x.SESSIONS(:), [x.dataset.nSubjects 1]);
 

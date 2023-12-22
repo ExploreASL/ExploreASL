@@ -59,7 +59,6 @@ else
 end
 
 x.dataset.nSessions = length(x.SESSIONS);
-x.dataset.nSubjectsSessions = x.dataset.nSubjects .* x.dataset.nSessions;
 
 % ------------------------------------------------------------------------------------------------
 %% 2. Manage TimePoint lists

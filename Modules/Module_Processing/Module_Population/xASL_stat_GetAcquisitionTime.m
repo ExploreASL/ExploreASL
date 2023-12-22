@@ -38,7 +38,7 @@ function x = xASL_stat_GetAcquisitionTime(x)
             
             % Track progress
             iSubjSess = ((iSubject-1)*x.dataset.nSessions)+iSession;
-            xASL_TrackProgress(iSubjSess,x.dataset.nSubjectsSessions);
+            xASL_TrackProgress(iSubjSess, x.dataset.nSubjects * x.dataset.nSessions);
 
             % Initialize defaults
             AcquisitionTime{iSubjSess,1} = x.SUBJECTS{iSubject};
@@ -64,7 +64,7 @@ function x = xASL_stat_GetAcquisitionTime(x)
     
     %% -----------------------------------------------------------------------------------------------
     %% 2) Save times
-    if sum(MissingData)<ceil(0.1*x.dataset.nSubjectsSessions) % allow 10 percent missing data
+    if sum(MissingData)<ceil(0.1 * x.dataset.nSubjects * x.dataset.nSessions) % allow 10 percent missing data
         xASL_bids_Add2ParticipantsTSV(AcquisitionTime, 'AcquisitionTime', x);
     end
 
@@ -72,7 +72,7 @@ function x = xASL_stat_GetAcquisitionTime(x)
     
     %% -----------------------------------------------------------------------------------------------    
     %% 3) Create time histogram
-    if sum(MissingData)<ceil(0.1*x.dataset.nSubjectsSessions) % allow 10 percent missing data
+    if sum(MissingData)<ceil(0.1 * x.dataset.nSubjects * x.dataset.nSessions) % allow 10 percent missing data
         if usejava('jvm')
             % Only create figure when Java Virtual Machine is loaded
             PathFig = fullfile(x.S.StatsDir, 'AcquisitionTime.jpg');

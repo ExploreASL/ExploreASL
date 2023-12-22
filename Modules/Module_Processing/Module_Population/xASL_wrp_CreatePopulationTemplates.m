@@ -161,9 +161,9 @@ elseif x.bForceTemplates==1
     bSkipWhenMissingScans = false;
 end
 
-if ~x.bForceTemplates && x.dataset.nSubjectsSessions<6
+if ~x.bForceTemplates && (x.dataset.nSubjects * x.dataset.nSessions < 6)
     % With too small datasets, created templated won't be reliable
-    fprintf('\n\n%s\n\n', ['Only n=' num2str(x.dataset.nSubjectsSessions) ' subject*runs, group templates may not be useful']);
+    fprintf('\n\n%s\n\n', ['Only n=' xASL_num2str(x.dataset.nSubjects * x.dataset.nSessions) ' subject*runs, group templates may not be useful']);
 end
 
 Size1 = sum(x.S.masks.WBmask(:));
@@ -332,8 +332,8 @@ for iScanType=1:length(PreFixList)
             NoImageN = 1;
             % Searching for available images
             
-            if size(x.S.SetsID, 1)~=x.dataset.nSubjectsSessions
-                error('Mismatch between x.S.SetsID & x.dataset.nSubjectsSessions');
+            if size(x.S.SetsID, 1) ~= x.dataset.nSubjects * x.dataset.nSessions
+                error('Mismatch between x.S.SetsID & x.dataset.nSubjects * x.dataset.nSessions');
             end
             
             LoadSetsID = false(size(x.S.SetsID, 1), 1);
@@ -397,7 +397,7 @@ for iScanType=1:length(PreFixList)
                 % determine whether we load one image per subject or one
                 % image per session (== multiple per subject)
                 if SessionsExist(iScanType)
-                    nSize = x.dataset.nSubjectsSessions;
+                    nSize = x.dataset.nSubjects * x.dataset.nSessions;
                 else
                     nSize = x.dataset.nSubjects;
                 end
@@ -716,10 +716,10 @@ for iU=1:length(UniqueSet)
         try
             WithinGroup = SetID==UniqueSet(iU);
 
-            if ~SessionsExist(iScanType) && length(WithinGroup)==x.dataset.nSubjectsSessions
+            if ~SessionsExist(iScanType) && length(WithinGroup) == x.dataset.nSubjects * x.dataset.nSessions
                 % if no sessions exist, but "WithinGroup" definition was
                 % based on all subject/sessions, then correct this
-                CurrSess = [1:length(listSessions):x.dataset.nSubjectsSessions]' + (iSession-1);
+                CurrSess = (1:length(listSessions):x.dataset.nSubjects * x.dataset.nSessions)' + (iSession-1);
                 WithinGroup = WithinGroup(CurrSess);
             end
 

@@ -240,7 +240,7 @@ for iSubject=1:x.dataset.nSubjects
             TotalRows = x.dataset.nSubjects;
 		else
 			x.S.SubjectSessionID{SubjSess,1} = [x.SUBJECTS{iSubject} '_' listSessions{iSess}];
-            TotalRows = x.dataset.nSubjectsSessions;
+            TotalRows = x.dataset.nSubjects * x.dataset.nSessions;
         end
         
 		if x.S.IsASL

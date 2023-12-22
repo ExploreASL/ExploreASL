@@ -45,9 +45,9 @@ if nargin<2 || isempty(Threshold)
 end
 
 
-if x.dataset.nSubjectsSessions<16
+if x.dataset.nSubjects * x.dataset.nSessions < 16
     % With too small datasets, created templated are not reliable
-    fprintf('\n\n%s\n\n', ['Only n=' num2str(x.dataset.nSubjectsSessions) ' subject*runs, population-based analysis mask may not be useful']);
+    fprintf('\n\n%s\n\n', ['Only n=' xASL_num2str(x.dataset.nSubjects * x.dataset.nSessions) ' subject*runs, population-based analysis mask may not be useful']);
     % x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask);
     % x.S.VBAmask = x.S.MaskSusceptibility;
 end

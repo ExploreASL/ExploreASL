@@ -6,7 +6,7 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 % INPUT:
 %   DataIn      - cell array with data to be added to participants.tsv, (REQUIRED)
 %                 preferably with subjects/sessions (runs) as first & aecond columns, but
-%                 this is not required. Number of datapoints should equal nSubjectsSessions.
+%                 this is not required. Number of datapoints should equal nSubjects * nSessions.
 %   DataName    - Name of the added variable/parameter (REQUIRED)
 %   x           - struct containing the ExploreASL environment parameters
 %                 (REQUIRED)
@@ -27,7 +27,7 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 % This function runs the following steps:
 %
 % 1. Admin - Validate that there are not too many columns
-% 2. Admin - Detect nSubjectsSessions
+% 2. Admin - Detect nSubjects * nSessions
 % 3. Admin - Load pre-existing participants.tsv or create one
 % 4. Admin - Get column number of data
 % 5. Add data to CellArray
@@ -54,11 +54,11 @@ if size(DataIn, 2)>3
     warning('Too many or few columns, skipping');
 end
 
-%% 2) Admin - Detect nSubjectsSessions
+%% 2) Admin - Detect nSubjects * nSessions
 % This part checks if the DataIn has an invalid size.
 % After this part, the columns should be 1) subject, 2) session/run, 3)
 % data value
-if size(DataIn, 1)==x.dataset.nSubjectsSessions && size(DataIn, 1)~=x.dataset.nSubjects
+if size(DataIn, 1) == (x.dataset.nSubjects * x.dataset.nSessions) && size(DataIn, 1) ~= x.dataset.nSubjects
     % Sessions found
     if size(DataIn,2)<3 % A session column should exist
         warning('Session column missing, too few columns, skipping');
@@ -90,7 +90,7 @@ elseif size(DataIn, 1)==x.dataset.nSubjects
         return;
     end
 else
-    warning('Incorrect nDatapoints, needs to be either nSubjects or nSubjectsSessions, skipping');
+    warning('Incorrect nDatapoints, needs to be either nSubjects or nSubjects * nSessions, skipping');
     return;
 end
 
@@ -133,9 +133,9 @@ else
     % 3C) Create required columns subjects & sessions from x.SUBJECTS & x.SESSIONS
 
     for iSession=1:x.dataset.nSessions
-        CellArray(1+iSession:x.dataset.nSessions:x.dataset.nSubjectsSessions+1, 1) = x.SUBJECTS;
+        CellArray(1+iSession:x.dataset.nSessions:x.dataset.nSubjects * x.dataset.nSessions+1, 1) = x.SUBJECTS;
     end
-    CellArray(2:x.dataset.nSubjectsSessions+1, 2) = repmat(x.SESSIONS(:),[x.dataset.nSubjects, 1]);
+    CellArray(2:x.dataset.nSubjects * x.dataset.nSessions+1, 2) = repmat(x.SESSIONS(:),[x.dataset.nSubjects, 1]);
 end
 
 % 3D) Force these names
