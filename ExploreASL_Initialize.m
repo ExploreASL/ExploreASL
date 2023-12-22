@@ -544,28 +544,20 @@ end
 			if ~isempty(x.opts.DatasetRoot)
 
 				% Remove the empty spaces at the start
-				if x.opts.DatasetRoot(1) == ' '
-					[~, ~, indexUniqueChars] = unique(x.opts.DatasetRoot, 'stable'); % Create a vector that gives for each character its unique identifier
-					indexCharacter2 = find(indexUniqueChars==2); % Find the indices of the second unique character
-					if ~isempty(indexCharacter2)
-						x.opts.DatasetRoot = x.opts.DatasetRoot(indexCharacter2(1):end);
-						warning(['x.opts.DataserRoot contains ' xASL_num2str(indexCharacter2(1)-1) ' empty spaces at the start. Fixing this']);
-					end
+				% Get the start and end of a regexp of 'empty spaces at the start of the string
+				[indexStart, indexEnd] = regexp(x.opts.DatasetRoot, '^ +', 'start', 'end');
+				if ~isempty(indexStart)
+					% Shorten the string and remove the first leading zeros
+					x.opts.DatasetRoot = x.opts.DatasetRoot(indexEnd(1)+1:end);
+					warning(['x.opts.DataserRoot contains ' xASL_num2str(indexEnd(1)-indexStart(1)+1) ' empty spaces at the start. Fixing this']);
 				end
 
 				% Remove the empty spaces at the end
-				if x.opts.DatasetRoot(end) == ' '
-					% Repeat exactly the same proceedure, but on reversed character vector
-					x.opts.DatasetRoot = x.opts.DatasetRoot(end:-1:1);
-					% Create a vector that gives for each different character its unique numeric identifier starting with 1 and increasing monotonically in the order of appearance
-					% 'aaacdba' will give [1,1,1,2,3,4,1]
-					[~, ~, indexUniqueChars] = unique(x.opts.DatasetRoot, 'stable'); 
-					indexCharacter2 = find(indexUniqueChars==2); % Find the indices of the second unique character
-					if ~isempty(indexCharacter2)
-						x.opts.DatasetRoot = x.opts.DatasetRoot(indexCharacter2(1):end);
-						warning(['x.opts.DataserRoot contains ' xASL_num2str(indexCharacter2(1)-1) ' empty spaces at the end. Fixing this']);
-					end
-					x.opts.DatasetRoot = x.opts.DatasetRoot(end:-1:1);
+				% Look for the start and end of a string that is at the end and composed of ' ' only
+				[indexStart, indexEnd] = regexp(x.opts.DatasetRoot, ' +$', 'start', 'end');
+				if ~isempty(indexStart)
+					x.opts.DatasetRoot = x.opts.DatasetRoot(1:indexStart(end)-1);
+					warning(['x.opts.DataserRoot contains ' xASL_num2str(indexEnd(end)-indexStart(end)+1) ' empty spaces at the end. Fixing this']);
 				end
 			end
 
