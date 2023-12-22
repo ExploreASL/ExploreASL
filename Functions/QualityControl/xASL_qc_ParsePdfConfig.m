@@ -590,9 +590,9 @@ function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, s
     % Convert the value to a string.
     TempValue = xASL_num2str(TempValue);
 
-    qcStruct.alias = xASL_qc_ParsePdfConfig_sub_PaddedString( qcStruct.alias, settingsPDF.QC_string_limit);
-    TempValue = xASL_qc_ParsePdfConfig_sub_PaddedString( TempValue, 12, 'right');
-    UnitRange = xASL_qc_ParsePdfConfig_sub_PaddedString( [qcStruct.unit, qcStruct.range], 12);
+    qcStruct.alias  = xASL_qc_ParsePdfConfig_sub_PaddedString( qcStruct.alias, settingsPDF.QC_string_limit);
+    TempValue       = xASL_qc_ParsePdfConfig_sub_PaddedString( TempValue, 12, 'right');
+    UnitRange       = xASL_qc_ParsePdfConfig_sub_PaddedString( [qcStruct.unit, qcStruct.range], 12);
 
     % Combine name, value, unit and range into a single string for printing.
     if size(TempValue, 1) == 1
@@ -624,27 +624,34 @@ function resultText = xASL_qc_ParsePdfConfig_sub_PaddedString(textToPrint, textW
     %% Create default string
     resultText = repmat(SymbolToFill, 1, textWidth);
     
-    % Pad spaces
-    if ~isempty(textToPrint)
-        textToPrint = [textToPrint ' '];
+    % Get string sizes
+    [xSize, ySize] = size(textToPrint);
+
+    % If a value contains Two (or more) entries, add a space and concatenate them horizontally
+    if xSize > 1
+        textToPrint(1, ySize + 1) = ' ';  % Add space to each element
+        concatenated = '';
+        
+        for element=1 : xSize
+            concatenated = append(concatenated, textToPrint(element, :));
+        end
+        
+        textToPrint = concatenated(1 : end-1);
+        [~ , ySize] = size(textToPrint);
     end
 
-    % Check length
-    if strcmp(align,'left')
-        if length(textToPrint) < textWidth
-            resultText(1:length(textToPrint)) = textToPrint;
-        else
-            resultText(1:textWidth-2) = textToPrint(1:textWidth-2);
-            resultText(textWidth-2:textWidth) = '...';
+    % If the string size is smalle than the allotted size, alignt the text left or right, otherwise replace final characters with elipses
+    if ySize < textWidth
+        if strcmp(align,'left')
+            resultText(1:ySize) = textToPrint;
+        elseif strcmp(align,'right')
+            resultText(end - ySize+1:textWidth) = textToPrint;
         end
-    elseif strcmp(align,'right')
-        if length(textToPrint) < textWidth
-            resultText(end - length(textToPrint)+1:textWidth) = textToPrint;
-        else
-            resultText(1:textWidth-2) = textToPrint(1:textWidth-2);
-            resultText(textWidth-2:textWidth) = '...';
-        end
+    else
+        resultText(1:textWidth-2) = textToPrint(1:textWidth-2);
+        resultText(textWidth-2:textWidth) = '...';
     end
+   
 end
 
 function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings(x)
