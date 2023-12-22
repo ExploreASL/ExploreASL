@@ -215,7 +215,7 @@ end
 if isfield(xQ, 'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
 	% The first two EchoTimes are equal
 	if length(uniquetol(xQ.EchoTime(1:2), 0.001)) == 1
-		warning('Multi-TE processing is only implemented TEs being the inner-most dimension only in PWI4D repetitions, hence the current implementation may not work correctly for the current data')
+		warning('Multi-TE processing is only implemented TEs being the inner-most dimension only in PWI4D repetitions, hence the current implementation may not work correctly for the current data');
 	end
 end
 
@@ -248,10 +248,12 @@ nBlocks = xQ.TimeEncodedMatrixSize;
 % 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
 % That is nInnerRepetitions == 8, e.g., 8 echoes in the case of multi-TE.
 
-[~, ~, indexUniquePLD] = unique(xQ.Initial_PLD, 'stable'); % Create a vector that gives for each PLD its rank
+[~, ~, indexUniquePLD] = unique(xQ.Initial_PLD, 'stable'); % Create a vector that gives for each unique PLD its order of occurrence
+% e.g, in the above example, with (ignoring innerRepetitions for this example) [3000, 1000, 1500, 2000, 3000 1000 1500 2000] :
+% 3000 occurs first, 1000 occurs second, etc. This gives                       [1     2     3     4     1    2    3    4   ]
 
-indexPLD2 = find(indexUniquePLD==2); % Find the volume indices of the second-ranked PLD (1000).
-% PLDs 1000 are on the position 9-16. And it means that all PLDs before the 1000 are equivalent (== PLD 3000 ms), because PLDs==1000 has been labeled as the second different value by unique
+indexPLD2 = find(indexUniquePLD==2); % Find the volume indices of the second-occurring PLD (1000).
+% PLDs 1000 are on the position 9-16. And it means that all PLDs before the 1000 are equivalent (== PLD 3000 ms), because PLDs==1000 has been labeled as the second occurring unique value
 
 if isempty(indexPLD2)
 	error('Hadamard encoding must have more than a single unique PLD')
@@ -274,7 +276,7 @@ end
 % nVolumesPerOuterRepetition = number of volumes within a single sequence = number of Hadamard blocks * inner repetitions
 
 nVolumesPerOuterRepetition = nBlocks * nInnerRepetitions;
-nOuterRepetitions = nEncodedVolumes / nVolumesPerOuterRepetition; 
+nOuterRepetitions = nEncodedVolumes / nVolumesPerOuterRepetition;
 
 %% 4. Decode control4D
 % Here we select all control volumes
@@ -291,14 +293,14 @@ xQ.LabelingDuration_Control4D = xQ.LabelingDuration(indexControl);
 
 %% 5. Switch Hadamard block dimension and innerRepetition dimension
 % Prepares the ASL volumes for Hadamard decoding, by 
-% reordering volumes such that Hadamard blocks are the most inner dimension/repetition, and any innerRepetitions (such as multi-TE) 
+% reordering volumes such that Hadamard volumes (corresponding to blocks) are the most inner dimension/repetition, and any innerRepetitions (such as multi-TE) 
 % are one dimension layer outside. 
 %
 % The following example illustrates this for a multi-TE innerRepetition:
 % At this point the image volumes are organized as:
 % PLD1 TE1 | PLD1 TE2 | PLD1 TE3 | ... | PLD1 TE8 | PLD2 TE1 | PLD2 TE2 | PLD2 TE3 | ... (TEs in first dimension, PLDs after)
 %
-% And for decoding we want to swap the dimensions such that the Hadamard blocks (==PLDs) are the innermost dimension:
+% And for decoding we want to swap the dimensions such that the Hadamard volumes corresponding to its blocks are the innermost dimension:
 % PLD1 TE1 | PLD2 TE1 | PLD3 TE1 | PLD4 TE1 | PLD1 TE2 | PLD2 TE2 | PLD3 TE2 | PLD4 TE2 | ... | PLD1 TE8 | PLD2-TE8 | PLD3 TE8 | PLD4-TE8
 % (PLDs in the first dimension, TEs after)
 
@@ -348,9 +350,9 @@ end
 
 % Normalization of the decoded data
 % NormalizationFactor = 1/(m_INumSets/2);
-% where m_INumSets is the number of images (e.g. 8 for Hadamard 8x8)
+% where m_INumSets is the number of volumes (e.g. 8 for Hadamard 8x8)
 
-decodedPWI4D = decodedPWI4D / (xQ.TimeEncodedMatrixSize/2);
+decodedPWI4D = decodedPWI4D / (nBlocks/2);
 
 %% 7. Switch Hadamard block dimension and innerRepetition dimension back
 % For model fitting, we want the PLDs-first-TEs-second order (just like at the beginning) so we need to reorder it again
