@@ -206,6 +206,17 @@ if bCreatePWI4D || bCreateControl4D
         return;
     end
 
+    % Verify that image matrix & parameter vectors are compatible
+    if nVolumes ~= length(x.Q.EchoTime)
+        warning('Defined x.Q.EchoTime should have equal length as ASL4D image volumes');
+    end
+    if nVolumes ~= length(x.Q.Initial_PLD)
+        warning('Defined x.Q.Initial_PLD should have equal length as ASL4D image volumes');
+    end
+    if nVolumes ~= length(x.Q.LabelingDuration)
+        warning('Defined x.Q.LabelingDuration should have equal length as ASL4D image volumes');
+    end    
+
 
     %% 2A. Apply motion correction if needed
     % At the beginning of the ASL module we estimate motion, and optionally remove outliers/spikes
@@ -310,6 +321,17 @@ end
 %% 5. Create PWI3D AND/OR Control3D
 if bCreatePWI3D
     
+    % Verify that image matrix & parameter vectors are compatible
+    if size(PWI4D, 4) ~= length(x.Q.EchoTime_PWI4D)
+        warning('Defined x.Q.EchoTime_PWI4D should have equal length as PWI4D image volumes');
+    end
+    if size(PWI4D, 4) ~= length(x.Q.InitialPLD_PWI4D)
+        warning('Defined x.Q.InitialPLD_PWI4D should have equal length as PWI4D image volumes');
+    end
+    if size(PWI4D, 4) ~= length(x.Q.LabelingDuration_PWI4D)
+        warning('Defined x.Q.LabelingDuration_PWI4D should have equal length as PWI4D image volumes');
+    end
+
     % After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
     % indexAverage_PLD_LabDur lists for each original position to where it should be averaged
     [~, ~, iUnique_TE_PLD_LabDur_PWI4D] = unique([x.Q.EchoTime_PWI4D(:), x.Q.InitialPLD_PWI4D(:), x.Q.LabelingDuration_PWI4D(:)], 'stable', 'rows');
@@ -328,6 +350,17 @@ if bCreatePWI3D
 end
 
 if bCreateControl3D
+    % Verify that image matrix & parameter vectors are compatible
+    if size(Control4D, 4) ~= length(x.Q.EchoTime_Control4D)
+        warning('Defined x.Q.EchoTime_Control4D should have equal length as Control4D image volumes');
+    end
+    if size(Control4D, 4) ~= length(x.Q.InitialPLD_Control4D)
+        warning('Defined x.Q.InitialPLD_Control4D should have equal length as Control4D image volumes');
+    end
+    if size(Control4D, 4) ~= length(x.Q.LabelingDuration_Control4D)
+        warning('Defined x.Q.LabelingDuration_Control4D should have equal length as Control4D image volumes');
+    end
+    
     % Now we do the same for Control4D
     [~, ~, iUnique_TE_PLD_LabDur_Control4D] = unique([x.Q.EchoTime_Control4D(:), x.Q.InitialPLD_Control4D(:), x.Q.LabelingDuration_Control4D(:)], 'stable', 'rows');
     
@@ -376,6 +409,17 @@ end
 	% imMeanControl = imMeanControl(:,:,:,Initial_PLD==idealPLD);
 
 if bCreatePWI
+    % Verify that image matrix & parameter vectors are compatible
+    if size(PWI3D, 4) ~= length(x.Q.EchoTime_PWI3D)
+        warning('Defined x.Q.EchoTime_PWI3D should have equal length as PWI3D image volumes');
+    end
+    if size(PWI3D, 4) ~= length(x.Q.InitialPLD_PWI3D)
+        warning('Defined x.Q.InitialPLD_PWI3D should have equal length as PWI3D image volumes');
+    end
+    if size(PWI3D, 4) ~= length(x.Q.LabelingDuration_PWI3D)
+        warning('Defined x.Q.LabelingDuration_PWI3D should have equal length as PWI3D image volumes');
+    end
+    
     %% Current quick&dirty fix was the average of all volumes with the lowest echo time
     iMinTE = x.Q.EchoTime_PWI3D == min(x.Q.EchoTime_PWI3D(:));
     PWI = xASL_stat_MeanNan(PWI3D(:, :, :, iMinTE), 4);
@@ -385,6 +429,17 @@ if bCreatePWI
 end
 
 if bCreateControl
+    % Verify that image matrix & parameter vectors are compatible
+    if size(Control3D, 4) ~= length(x.Q.EchoTime_Control3D)
+        warning('Defined x.Q.EchoTime_Control3D should have equal length as Control3D image volumes');
+    end
+    if size(Control3D, 4) ~= length(x.Q.InitialPLD_Control3D)
+        warning('Defined x.Q.InitialPLD_Control3D should have equal length as Control3D image volumes');
+    end
+    if size(Control3D, 4) ~= length(x.Q.LabelingDuration_Control3D)
+        warning('Defined x.Q.LabelingDuration_Control3D should have equal length as Control3D image volumes');
+    end
+    
     % The same for Control
     iMinTE = x.Q.EchoTime_Control3D == min(x.Q.EchoTime_Control3D(:));
     Control = xASL_stat_MeanNan(Control3D(:, :, :, iMinTE), 4);
