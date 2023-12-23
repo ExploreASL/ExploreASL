@@ -380,8 +380,8 @@ if bCreatePWI
     iMinTE = x.Q.EchoTime_PWI3D == min(x.Q.EchoTime_PWI3D(:));
     PWI = xASL_stat_MeanNan(PWI3D(:, :, :, iMinTE), 4);
     x.Q.EchoTime_PWI = min(x.Q.EchoTime_PWI3D(:));
-    x.Q.initialPLD_PWI = mean(x.Q.InitialPLD_PWI3D(:)); %% Jan is this correct?
-    x.Q.LabelingDuration_PWI = mean(x.Q.LabelingDuration_PWI3D(:)); %% Jan is this correct?
+    x.Q.initialPLD_PWI = mean(x.Q.InitialPLD_PWI3D(:));
+    x.Q.LabelingDuration_PWI = mean(x.Q.LabelingDuration_PWI3D(:));
 end
 
 if bCreateControl
@@ -389,8 +389,8 @@ if bCreateControl
     iMinTE = x.Q.EchoTime_Control3D == min(x.Q.EchoTime_Control3D(:));
     Control = xASL_stat_MeanNan(Control3D(:, :, :, iMinTE), 4);
     x.Q.EchoTime_Control = min(x.Q.EchoTime_Control3D(:));
-    x.Q.initialPLD_Control = mean(x.Q.InitialPLD_Control3D(:)); %% Jan is this correct?
-    x.Q.LabelingDuration_Control = mean(x.Q.LabelingDuration_Control3D(:)); %% Jan is this correct?
+    x.Q.initialPLD_Control = mean(x.Q.InitialPLD_Control3D(:));
+    x.Q.LabelingDuration_Control = mean(x.Q.LabelingDuration_Control3D(:));
 end
 
 end
