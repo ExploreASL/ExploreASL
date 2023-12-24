@@ -86,23 +86,27 @@ for iScanType = 1:length(ScanTypeList)
 	% In previous versions, we have parameters for session one only directly under x.Output.ASL (or similar for other modules) - if these are detected
 	% they are removed as obsolete and a warning is issued. We only keep parameters in x.Output.ASL.ASL_1 etc
 
-	if isfield(x.Output, ScanType)
-		listFields = fields(x.Output.(ScanType));
-
-		bIssuedWarningAboutExtraFields = false;
-		for iField = 1:length(listFields)
-			currentField = listFields{iField};
-			if isempty(regexp(currentField, [ScanType '_\d+'], 'once'))
-				x.Output.(ScanType) = rmfield(x.Output.(ScanType), currentField);
-				if ~bIssuedWarningAboutExtraFields
-					% Obsolete fields are present, report a warning once
-					warning(['QC parameters for ' ScanType ' are now provided inside field x.Output.' ScanType '.' ScanType '_n for run n (e.g. ' ScanType '_1 ' ScanType '_2 ' ScanType '_3) instead of x.Output.' ScanType ]);
-					fprintf('%s\n', ['The QC output of previous ExploreASL runs of the ASL module were deleted from x.Output.' ScanType ]);
-					fprintf('%s\n', '(and will be removed from the resulting QC_*.json file)');
-					bIssuedWarningAboutExtraFields = true;
-				end
-			end
-		end
-	end
+    if isfield(x, 'Output')
+        if isfield(x.Output, ScanType)
+		    listFields = fields(x.Output.(ScanType));
+    
+		    bIssuedWarningAboutExtraFields = false;
+		    for iField = 1:length(listFields)
+			    currentField = listFields{iField};
+			    if isempty(regexp(currentField, [ScanType '_\d+'], 'once'))
+				    x.Output.(ScanType) = rmfield(x.Output.(ScanType), currentField);
+				    if ~bIssuedWarningAboutExtraFields
+					    % Obsolete fields are present, report a warning once
+					    warning(['QC parameters for ' ScanType ' are now provided inside field x.Output.' ScanType '.' ScanType '_n for run n (e.g. ' ScanType '_1 ' ScanType '_2 ' ScanType '_3) instead of x.Output.' ScanType ]);
+					    fprintf('%s\n', ['The QC output of previous ExploreASL runs of the ASL module were deleted from x.Output.' ScanType ]);
+					    fprintf('%s\n', '(and will be removed from the resulting QC_*.json file)');
+					    bIssuedWarningAboutExtraFields = true;
+				    end
+			    end
+		    end
+        end
+    end
 end
+
+
 end
