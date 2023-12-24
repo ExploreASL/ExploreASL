@@ -15,24 +15,23 @@ function xASL_wrp_VisualQC_ASL(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule performs several visualizations for visual & quantitative QC.
 %
-%              1. After initial admin
-%              2. It starts with making ASL NIfTIs ready for visualization
-%                 & conversion to DICOM (though skipped by default)
-%              3. Then it performs a collection of visualizations
-%              4. Visualizes results of the TopUp geometric distortion correction
-%              5. Visualization of slice gradient
-%              6. Visualization & calculation of temporal QC parameters
-%              7. Compute DICE overlap/intersection of ASL brain in FoV & T1w, to calculate coverage
-%              8. Summarize orientation & check left-right flips
-%              9. Collect several other parameters & store in PDF overview
+% 1. Admin
+% 2. Make ASL NIfTIs ready for visualization & conversion to DICOM
+% 3. Perform several visualizations
+% 4. Visualization TopUp results (quick & dirty)
+% 5. Visualize SliceGradient
+% 6. Temporal QC parameters, based on SPM Univariate+ Toolbox
+% 7. Compute overlap (intersection) with templates
+% 8. Summarize ASL orientation & check for left-right flips
+% 9. Collect several other parameters & store all in PDF overview
 %
 % EXAMPLE: xASL_wrp_VisualQC_ASL(x);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
 
 
-%% -----------------------------------------------------------------------------------
-%% 1) Admin
+
+%% 1. Admin
 % Use either original or motion estimated ASL4D
 % Use despiked ASL only if spikes were detected and new file has been created
 % Otherwise, despiked_raw_asl = same as original file
@@ -57,12 +56,11 @@ if ~isfield(x.vis, 'bVisualQCCBFvsGMWMTemplate') || ~isempty(x.vis.bVisualQCCBFv
 	x.vis.bVisualQCCBFvsGMWMTemplate = 0;
 end
 
-if ~isfield(x.vis,'bVisualQCCBFvsGMWMContour') || ~isempty(x.vis.bVisualQCCBFvsGMWMContour)
+if ~isfield(x.vis, 'bVisualQCCBFvsGMWMContour') || ~isempty(x.vis.bVisualQCCBFvsGMWMContour)
 	x.vis.bVisualQCCBFvsGMWMContour = 1;
 end
 
-%% -----------------------------------------------------------------------------------
-%% 2) Make ASL NIfTIs ready for visualization & conversion to DICOM
+%% 2. Make ASL NIfTIs ready for visualization & conversion to DICOM
 if isfield(x.modules.asl,'bMakeNIfTI4DICOM') && x.modules.asl.bMakeNIfTI4DICOM
     if xASL_exist(x.P.Path_T1_ORI, 'file')
         InputT1Oripath = x.P.Path_T1_ORI;
@@ -80,12 +78,10 @@ if isfield(x.modules.asl,'bMakeNIfTI4DICOM') && x.modules.asl.bMakeNIfTI4DICOM
     xASL_io_MakeNifti4DICOM(x.P.Path_CBF, x, 'UINT16', x.P.Path_ASL4D, InputASLOripath); 
 end
 
-%% -----------------------------------------------------------------------------------
-%% 3) Perform several visualizations
+%% 3. Perform several visualizations
 x = xASL_qc_VisualCheckCollective_ASL(x);
 
-%% -----------------------------------------------------------------------------------
-%% 4) Visualization TopUp results (quick & dirty)
+%% 4. Visualization TopUp results (quick & dirty)
 PathPopB0 = fullfile(x.D.PopDir, ['rASL_B0_' x.P.SubjectID '_' x.P.SessionID '.nii']);
 PathPopUnwarped = fullfile(x.D.PopDir, ['rASL_Unwarped_' x.P.SubjectID '_' x.P.SessionID '.nii']);
 
@@ -97,8 +93,7 @@ if xASL_exist(PathPopB0,'file') && xASL_exist(PathPopUnwarped,'file')% if we hav
     xASL_delete(PathPopUnwarped);
 end
 
-%% -----------------------------------------------------------------------------------
-%% 5) Visualize SliceGradient
+%% 5. Visualize SliceGradient
 % Here we create a Figure that shows the ASL slices/FoV with respect to standard space/
 % in standard space. Usually these are rotated forwards, for the ACPC angulation, and to
 % accommodate the forwards-rotated shape of the cerebrum
@@ -115,21 +110,25 @@ WB = logical(xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'brainmask.nii'))
 SliceMask = xASL_io_Nifti2Im(x.P.Pop_Path_SliceGradient)~=0;
 T1template = fullfile(x.D.MapsSPMmodifiedDir, 'rT1.nii');
 
-IM1 = xASL_vis_CreateVisualFig(x, T1template, [], [], [], [], [], WB, true);
-IM2 = xASL_vis_CreateVisualFig(x, x.P.Pop_Path_SliceGradient, [], [], [], x.S.jet256, [], SliceMask, true);
-IM3 = xASL_vis_CreateVisualFig(x, {T1template x.P.Pop_Path_SliceGradient}, [],[0.65 0.6],[],{x.S.gray,x.S.jet256},[],{WB SliceMask},true);
+if ~xASL_exist(x.P.Pop_Path_SliceGradient, 'file')
+    warning(['File missing, consider rerunning ASL module: ' x.P.Pop_Path_SliceGradient]);
+else
 
-Parms.IM = [IM1;IM2;IM3];
-
-xASL_adm_CreateDir(x.D.SliceCheckDir);
-OutputFile = fullfile(x.D.SliceCheckDir,['SliceGradient' x.P.SubjectID '_' x.P.SessionID '.jpg']);
-xASL_delete(OutputFile);
-if sum(isfinite(Parms.IM(:)))>100
-    xASL_vis_Imwrite(Parms.IM,OutputFile);
+    IM1 = xASL_vis_CreateVisualFig(x, T1template, [], [], [], [], [], WB, true);
+    IM2 = xASL_vis_CreateVisualFig(x, x.P.Pop_Path_SliceGradient, [], [], [], x.S.jet256, [], SliceMask, true);
+    IM3 = xASL_vis_CreateVisualFig(x, {T1template x.P.Pop_Path_SliceGradient}, [],[0.65 0.6],[],{x.S.gray,x.S.jet256},[],{WB SliceMask},true);
+    
+    Parms.IM = [IM1;IM2;IM3];
+    
+    xASL_adm_CreateDir(x.D.SliceCheckDir);
+    OutputFile = fullfile(x.D.SliceCheckDir,['SliceGradient' x.P.SubjectID '_' x.P.SessionID '.jpg']);
+    xASL_delete(OutputFile);
+    if sum(isfinite(Parms.IM(:)))>100
+        xASL_vis_Imwrite(Parms.IM,OutputFile);
+    end
 end
 
-%% -----------------------------------------------------------------------------------
-%  6) Temporal QC parameters, based on SPM Univariate+ Toolbox
+%%  6. Temporal QC parameters, based on SPM Univariate+ Toolbox
 %  Run this part only if we have > 10 time points
 if nVolumes>10
     if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
@@ -153,21 +152,40 @@ if nVolumes>10
     end
 end
 
-xASL_delete(x.P.Pop_Path_PWI4D);
 
-%% 7) Compute overlap (intersection)/DICE coefficient with T1w brainmask
+%% 7. Compute overlap (intersection) with templates
+% a) Compute overlap (intersection)/DICE coefficient with T1w brainmask
 if xASL_exist(x.P.Path_mean_control,'file')
     % if mean control doesnt exist, changes are we have a 3D file, then
     % BET doesnt really work, and coverage is usually fine
-    x.Output.ASL.(x.SESSIONS{x.iSession}).ASL_CoveragePerc = xASL_qc_ComputeFoVCoverage(x.P.Path_mean_control, x);
+    x.Output.ASL.(x.SESSIONS{x.iSession}).ASL_Coverage_Perc = round(xASL_qc_ComputeFoVCoverage(x.P.Path_mean_control, x), 1);
+end
+
+if isfield(x,'D') && isfield(x.D,'TemplateDir')
+    PathTemplateASL = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
+    PathTemplateM0 = fullfile(x.D.TemplateDir, 'Philips_2DEPI_noBsup_Control.nii');
+
+    % b) Compute similarity index (Tanimoto Coefficient ~ continuous DICE) for CBF with CBF template
+    x.Output.ASL.(x.SESSIONS{x.iSession}).TC_CBF2template_Perc = round(100 * xASL_qc_TanimotoCoeff(x.P.Pop_Path_qCBF, PathTemplateASL, x.S.masks.WBmask, 3, 0.975, [4 0]), 1);
+    % c) Compute similarity index (Tanimoto Coefficient ~ continuous DICE) for M0 with M0 template
+    if xASL_exist(x.P.Pop_Path_noSmooth_M0, 'file')
+        x.Output.ASL.(x.SESSIONS{x.iSession}).TC_M02template_Perc = round(100 * xASL_qc_TanimotoCoeff(x.P.Pop_Path_noSmooth_M0, PathTemplateM0, x.S.masks.WBmask, 3, 0.975, [4 0]), 1);
+    elseif xASL_exist(x.P.Pop_Path_mean_control, 'file')
+        x.Output.ASL.(x.SESSIONS{x.iSession}).TC_M02template_Perc = round(100 * xASL_qc_TanimotoCoeff(x.P.Pop_Path_mean_control, PathTemplateM0, x.S.masks.WBmask, 3, 0.975, [4 0]), 1);
+    else
+        x.Output.ASL.(x.SESSIONS{x.iSession}).TC_M02template_Perc = NaN;
+        fprintf('%s\n', 'Could not find standard space M0 or mean control image for QC');
+    end
+else
+    fprintf('%s\n', 'Could not find CBF & M0 templates');
 end
 
 
-%% 8) Summarize ASL orientation & check for left-right flips
+%% 8. Summarize ASL orientation & check for left-right flips
 xASL_qc_PrintOrientation(x.P.Path_ASL4D, x.dir.SESSIONDIR, 'RigidRegASL');
 % This function summarizes the T1w orientation. Especially check the determinant, for left-right flips
 
-%% 9) Collect several other parameters & store all in PDF overview
+%% 9. Collect several other parameters & store all in PDF overview
 x = xASL_qc_CollectParameters(x, x.iSubject, 'ASL', x.iSession); % Quick & Dirty solution, 0 == skip structural part
 
 xASL_adm_SaveX(x); % future: do this in each xWrapper
@@ -178,13 +196,17 @@ end
 
 
 
-%% *****************************************************************************************************************
-
+%% =============================================================================
 function x = xASL_qc_VisualCheckCollective_ASL(x)
 %xASL_qc_VisualCheckCollective_ASL Runs a collection of visual QC functions
+%
+% 1. Get visualization settings
+% 2. Take only NIfTIs that exist
+% 3. Clone each row into a transversal & coronal row
+% 4. Perform the visualization
 
 
-%% Get visualization settings
+%% 1. Get visualization settings
 % Parameters for creating visual QC Figures:
 % CBF, CBF with overlay c2T1, CBF with overlay c2T1
 % MeanControl SD
@@ -251,7 +273,7 @@ for iM=1:length(T.ImIn)
     end
 end
 
-%% Take only NIfTIs that exist
+%% 2. Take only NIfTIs that exist
 for iL=1:length(T.ImIn)
     if  ischar(T.ImIn{iL})
         ExistInd(iL) = logical(xASL_exist(T.ImIn{iL},'file'));
@@ -264,7 +286,7 @@ for iP=1:length(Pars)
     T.(Pars{iP}) = T.(Pars{iP})(ExistInd);
 end
 
-%% Clone each row into a transversal & coronal row
+%% 3. Clone each row into a transversal & coronal row
 nIms = length(T.(Pars{1}));
 nRows = ceil( nIms/4);
 
@@ -289,7 +311,7 @@ for iN=1:nRows
 	T2.bContour(nRow1)      = T.bContour(ImsI);
 	T2.bContour(nRow2)      = T.bContour(ImsI);
 
-%%  Perform the visualization
+%% 4. Perform the visualization
 % Perhaps at the end of the row we need to generate empty images, as transversal & coronal have different sizes
 % they don't concatenate well horizontally, need to be concatenated vertically
 

@@ -155,7 +155,8 @@ function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTab
         xASL_TrackProgress(iList, length(Dlist));
         ResultsTable{1+iList,1} = Dlist{iList};
         bidsDir = fullfile(TestDir, Dlist{iList});
-        PopulationDir = fullfile(bidsDir, 'derivatives', 'ExploreASL', 'Population');
+        ExploreASLDir = fullfile(bidsDir, 'derivatives', 'ExploreASL');
+        PopulationDir = fullfile(ExploreASLDir, 'Population');
         StatsDir = fullfile(PopulationDir, 'Stats');
         VolumeDir = fullfile(PopulationDir, 'TissueVolume');
         
@@ -218,16 +219,28 @@ function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTab
         end
         
         % Get registration performance
-        if isfield(x,'D') && isfield(x.D,'TemplateDir')
-            PathTemplateASL = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
-            PathTemplateM0 = fullfile(x.D.TemplateDir, 'Philips_2DEPI_noBsup_Control.nii');
-            PathCBF = xASL_adm_GetFileList(PopulationDir,'(?i)^qCBF(?!.*(4D|masked|Visual2DICOM)).*\.nii$', 'FPList');
-            PathM0 = xASL_adm_GetFileList(PopulationDir,'(?i)^(noSmooth_M0|mean_control).*\.nii$', 'FPList');
-            if ~isempty(PathCBF) && isfield(x.S,'masks')
-                ResultsTable{1+iList,5+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathCBF{1}, PathTemplateASL, x.S.masks.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
-            end
-            if ~isempty(PathM0) && isfield(x.S,'masks')
-                ResultsTable{1+iList,6+length(ResultFile)} = xASL_qc_TanimotoCoeff(PathM0{1}, PathTemplateM0, x.S.masks.WBmask, 3, 0.975, [4 0]); % Tanimoto Coefficient, Similarity index
+        ResultsTable{1+iList,5+length(ResultFile)} = 'n/a';
+        ResultsTable{1+iList,6+length(ResultFile)} = 'n/a';
+        
+        qcFile = xASL_adm_GetFileList(ExploreASLDir, '^QC_collection.*\.json$', 'FPListRec');
+        if ~isempty(qcFile)
+            json = xASL_io_ReadJson(qcFile{1});
+            if isfield(json, 'ASL')
+                RunsAre = fields(json.ASL);
+                bCBFFound = false;
+                bM0Found = false;
+                for iRun=1:length(RunsAre)
+                    % now we try to find these TC parameters for any of the runs,
+                    % we want this to be the first for backward compatibility
+                    if ~bCBFFound && isfield(json.ASL.(RunsAre{iRun}), 'TC_CBF2template_Perc')
+                        ResultsTable{1+iList,5+length(ResultFile)} = json.ASL.(RunsAre{iRun}).TC_CBF2template_Perc;
+                        bCBFFound = true;
+                    end
+                    if ~bM0Found && isfield(json.ASL.(RunsAre{iRun}), 'TC_M02template_Perc')
+                        ResultsTable{1+iList,6+length(ResultFile)} = json.ASL.(RunsAre{iRun}).TC_M02template_Perc;
+                        bM0Found = true;
+                    end
+                end
             end
         end
     end
@@ -239,5 +252,5 @@ function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTab
     SaveFile = fullfile(SaveDir, ResultTableFile);
     SaveTsv = fullfile(SaveDir, ResultTableTsv);
     save(SaveFile, 'ResultsTable');
-    xASL_tsvWrite(ResultsTable, SaveTsv); 
+    xASL_tsvWrite(ResultsTable, SaveTsv);
 end
