@@ -59,7 +59,7 @@ function [comparison] = xASL_test_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 % EXAMPLE:
 %
 % Jan:           [ResultsTable] = xASL_test_TestExploreASL('/pet/projekte/asl/data/ExploreASL_TestCases', '/pet/projekte/asl/data/ExploreASL_TempRes', 1);
-% Henk on MacOS: [ResultsTable] = xASL_test_TestExploreASL('/Users/henk/surfdrive/HolidayPics/ExploreASL_TestCases', '/Users/henk/ExploreASL/ASL/ExploreASL_TestCasesProcessed', 1, 0,[],'henkjanmutsaerts@gmail.com');
+% Henk on MacOS: [ResultsTable] = xASL_test_TestExploreASL('/Users/hjmutsaerts/ExploreASL/TestDataSets', '/Users/hjmutsaerts/ExploreASL/ExploreASL_TestCasesProcessed', 1, 0,[],'henkjanmutsaerts@gmail.com');
 % VUmc server:   [ResultsTable] = xASL_test_TestExploreASL('/radshare/ExploreASL_Test/ExploreASL_TestCases', '/radshare/ExploreASL_Test/ExploreASL_TestCasesProcessed', 1);
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
@@ -300,6 +300,10 @@ function xASL_test_EmailResults(EmailAddress, Password, DifferenceTable)
     sendmail(EmailAddresses, 'ExploreASL TestRun: %AsymmetryIndexWithTemplateResults (should be <0.01%)', NewTable);
 end
 
+
+
+
+%% ==============================================================================================================
 %% Test all individual test datasets
 function LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, MatlabPath, RunTimePath, x, Dlist)
 
@@ -346,6 +350,11 @@ function LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, Matlab
 end
 
 
+
+
+
+
+%% ==============================================================================================================
 %% Test one individual test dataset
 function xASL_test_IndividualTestdataset(RunMethod, MatlabPath, RunTimePath, x, dirBIDS, ScreenName)
 
