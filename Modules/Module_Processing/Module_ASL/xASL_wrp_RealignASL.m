@@ -506,13 +506,7 @@ if bENABLE || bSpikeRemoval
         TempIm = xASL_io_Nifti2Im(InputPath);
         
         % Remove spikes
-        nextFrame = 1;
-        for iFrame=1:nFrames
-            if ~(exclusion(iFrame))
-                NewIm(:,:,:,nextFrame)  = TempIm(:,:,:,iFrame);
-                nextFrame = nextFrame+1;
-            end
-        end
+        NewIm = TempIm(:,:,:, ~exclusion);
         
         % skip this for fMRI, which is more complicated
         % due to tissue T1 effects (incomplete saturation, so temporal relation between volumes)
@@ -525,14 +519,17 @@ if bENABLE || bSpikeRemoval
         LoadParms = load(x.P.Path_ASL4D_mat, '-mat');
         mat = LoadParms.mat;
         
-        Incl = [];
-        for iExcl=1:length(exclusion)
-            if ~exclusion(iExcl)
-                Incl(end+1) = iExcl;
-            end
-        end
-        mat = mat(:,:,Incl);
+        mat = mat(:,:, ~exclusion);
+
         save(x.P.Path_despiked_ASL4D_mat, 'mat');
+
+        % Also change parameter vectors
+        x.Q.EchoTime = x.Q.EchoTime(~exclusion);
+        x.Q.Initial_PLD = x.Q.Initial_PLD(~exclusion);
+        x.Q.LabelingDuration = x.Q.LabelingDuration(~exclusion);
+
+        % #997 Need to save this in json sidecar for further usage in the pipeline
+
     end
     
 else
