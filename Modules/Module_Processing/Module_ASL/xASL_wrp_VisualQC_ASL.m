@@ -165,15 +165,17 @@ if isfield(x,'D') && isfield(x.D,'TemplateDir')
     PathTemplateASL = fullfile(x.D.TemplateDir, 'Philips_2DEPI_Bsup_CBF.nii');
     PathTemplateM0 = fullfile(x.D.TemplateDir, 'Philips_2DEPI_noBsup_Control.nii');
 
-    % b) Compute similarity index (Tanimoto Coefficient ~ continuous DICE) for CBF with CBF template
-    x.Output.ASL.(x.SESSIONS{x.iSession}).TC_CBF2template_Perc = round(100 * xASL_qc_TanimotoCoeff(x.P.Pop_Path_qCBF, PathTemplateASL, x.S.masks.WBmask, 3, 0.975, [4 0]), 1);
-    % c) Compute similarity index (Tanimoto Coefficient ~ continuous DICE) for M0 with M0 template
+    % b) Compute Tanimoto coefficient for CBF with CBF template
+	% Tanimoto coefficient works on continuous variables instead of binary only.
+	% It is sometimes referred to as Jaccard index or Jaccard similarity coefficient and it is similar to DICE coefficient 
+    x.Output.ASL.(x.SESSIONS{x.iSession}).TC_CBF2template = round(xASL_qc_TanimotoCoeff(x.P.Pop_Path_qCBF, PathTemplateASL, x.S.masks.WBmask, 3, 0.975, [4 0]), 3);
+    % c) Compute Tanimoto Coefficient for M0 with M0 template
     if xASL_exist(x.P.Pop_Path_noSmooth_M0, 'file')
-        x.Output.ASL.(x.SESSIONS{x.iSession}).TC_M02template_Perc = round(100 * xASL_qc_TanimotoCoeff(x.P.Pop_Path_noSmooth_M0, PathTemplateM0, x.S.masks.WBmask, 3, 0.975, [4 0]), 1);
+        x.Output.ASL.(x.SESSIONS{x.iSession}).TC_M02template = round(xASL_qc_TanimotoCoeff(x.P.Pop_Path_noSmooth_M0, PathTemplateM0, x.S.masks.WBmask, 3, 0.975, [4 0]), 3);
     elseif xASL_exist(x.P.Pop_Path_mean_control, 'file')
-        x.Output.ASL.(x.SESSIONS{x.iSession}).TC_M02template_Perc = round(100 * xASL_qc_TanimotoCoeff(x.P.Pop_Path_mean_control, PathTemplateM0, x.S.masks.WBmask, 3, 0.975, [4 0]), 1);
+        x.Output.ASL.(x.SESSIONS{x.iSession}).TC_M02template = round(xASL_qc_TanimotoCoeff(x.P.Pop_Path_mean_control, PathTemplateM0, x.S.masks.WBmask, 3, 0.975, [4 0]), 3);
     else
-        x.Output.ASL.(x.SESSIONS{x.iSession}).TC_M02template_Perc = NaN;
+        x.Output.ASL.(x.SESSIONS{x.iSession}).TC_M02template = NaN;
         fprintf('%s\n', 'Could not find standard space M0 or mean control image for QC');
     end
 else

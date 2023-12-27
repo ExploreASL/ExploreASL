@@ -232,12 +232,12 @@ function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTab
                 for iRun=1:length(RunsAre)
                     % now we try to find these TC parameters for any of the runs,
                     % we want this to be the first for backward compatibility
-                    if ~bCBFFound && isfield(json.ASL.(RunsAre{iRun}), 'TC_CBF2template_Perc')
-                        ResultsTable{1+iList,5+length(ResultFile)} = json.ASL.(RunsAre{iRun}).TC_CBF2template_Perc;
+                    if ~bCBFFound && isfield(json.ASL.(RunsAre{iRun}), 'TC_CBF2template')
+                        ResultsTable{1+iList,5+length(ResultFile)} = json.ASL.(RunsAre{iRun}).TC_CBF2template;
                         bCBFFound = true;
                     end
-                    if ~bM0Found && isfield(json.ASL.(RunsAre{iRun}), 'TC_M02template_Perc')
-                        ResultsTable{1+iList,6+length(ResultFile)} = json.ASL.(RunsAre{iRun}).TC_M02template_Perc;
+                    if ~bM0Found && isfield(json.ASL.(RunsAre{iRun}), 'TC_M02template')
+                        ResultsTable{1+iList,6+length(ResultFile)} = json.ASL.(RunsAre{iRun}).TC_M02template;
                         bM0Found = true;
                     end
                 end
