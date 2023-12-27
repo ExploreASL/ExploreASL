@@ -47,6 +47,11 @@ function [x] = xASL_init_DataLoading(x)
 
     
     %% 4. Which data to read
+	% In case we call population module only, then don't attempt to convert rawdata to Legacy, but only read from derivatives
+	if isfield(x.opts, 'bProcess') && isequal(x.opts.bProcess(:), [0;0;1]) && (~isfield(x.opts, 'bReadRawdata') || isempty(x.opts.bReadRawdata))
+		x.opts.bReadRawdata = false; 
+	end
+
     if ~isfield(x.opts, 'bReadRawdata') || isempty(x.opts.bReadRawdata)
         % If the developer has not set this parameter, we try to detect whether we should read from /rawdata or /derivatives/ExploreASL 
         % Usually, this parameter will not exist
