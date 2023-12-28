@@ -60,7 +60,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     end
 
 	% Define if BASIL or FABBER is used - multiTE needs FABBER 
-	if isfield(x.modules.asl, 'bMultiTEQuantification') && x.modules.asl.bMultiTEQuantification
+	if isfield(x.modules.asl, 'bQuantifyMultiTE') && x.modules.asl.bQuantifyMultiTE
 		bUseFabber = 1;
         FSLfunctionName = 'fabber_asl';
 	else
@@ -381,7 +381,7 @@ switch lower(x.Q.LabelingType)
 		TIs = (unique(x.Q.Initial_PLD, 'stable'))'/1000;
 
 		% Print all the TIs
-		if x.modules.asl.bMultiPLD
+		if x.modules.asl.bQuantifyMultiPLD	
 			% For Time-encoded, we skip the first volume
 			if x.modules.asl.bTimeEncoded
 				numberBlocks = numel(TIs)/x.Q.TimeEncodedMatrixSize;
@@ -529,7 +529,7 @@ switch lower(x.Q.LabelingType)
 			fprintf('BASIL: (P)CASL model\n');
 
 			% For BASIL, PLDs are specified
-			if x.modules.asl.bMultiPLD
+			if x.modules.asl.bQuantifyMultiPLD
 				for iPLD = 1:length(PLDs)
 					fprintf(FIDoptionFile, '--pld%d=%.2f\n', iPLD, PLDs(iPLD));
 				end
@@ -539,13 +539,13 @@ switch lower(x.Q.LabelingType)
 		end
 
 		% Print labeling durations
-        if x.modules.asl.bMultiPLD
-            for iLabDurs = 1:length(LabDurs)
-                fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
-            end
-        else
-            fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs);
-        end
+		if x.modules.asl.bQuantifyMultiPLD
+			for iLabDurs = 1:length(LabDurs)
+				fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
+			end
+		else
+			fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs);
+		end
 end
 
 if ~bUseFabber
@@ -580,7 +580,7 @@ if ~bUseFabber
 			fprintf(FIDoptionFile, '--bat=1.3\n');
 	end
 
-	if x.modules.asl.bMultiPLD
+	if x.modules.asl.bQuantifyMultiPLD
 		% Multi-PLD or Time Encoded data allows to fit arrival times
 		fprintf(FIDoptionFile, '--batsd=%f\n', x.Q.BASIL.ATTSD);
 	end
@@ -595,14 +595,14 @@ if ~bUseFabber
 	end
 
 	if x.Q.BASIL.bInferT1
-		if x.modules.asl.bMultiPLD
+		if x.modules.asl.bQuantifyMultiPLD
 			fprintf('BASIL: Infer variable T1 values\n');
 			FSLOptions = [FSLOptions ' --infert1'];
 		end
 	end
 
 	if x.Q.BASIL.bInferArt
-		if x.modules.asl.bMultiPLD
+		if x.modules.asl.bQuantifyMultiPLD
 			fprintf('BASIL: Infer arterial BV and arrival time\n');
 			FSLOptions = [FSLOptions ' --inferart'];
 		end
@@ -625,7 +625,7 @@ if ~bUseFabber
 			warning(['BASIL Exchange model: ' x.Q.BASIL.Exch ' not recognized.'])
 	end
 
-	if x.modules.asl.bMultiPLD
+	if x.modules.asl.bQuantifyMultiPLD
 		switch (x.Q.BASIL.Disp)
 			case 'none'
 				fprintf('BASIL Dispersion model: none\n');
