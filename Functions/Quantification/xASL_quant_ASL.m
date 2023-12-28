@@ -58,7 +58,7 @@ Tex = [];
 ABV = [];
 
 if nargin<5 || isempty(bUseBasilQuantification)
-	if x.modules.asl.bMultiPLD
+	if x.Q.bQuantifyMultiPLD || x.Q.bQuantifyMultiTE
 		bUseBasilQuantification = true;
 	else
 		bUseBasilQuantification = false;
@@ -79,7 +79,7 @@ if  xASL_stat_SumNan(M0_im(:))==0
 	end
 end
 
-if x.modules.asl.bMultiPLD && ~bUseBasilQuantification
+if x.Q.bQuantifyMultiPLD && ~bUseBasilQuantification
 	error('Multi-PLD quantification currently works only with BASIL');
 end
 
@@ -99,7 +99,7 @@ if ~x.modules.asl.ApplyQuantification(3)
 else
     
     % If we have multiple PLDs but requested a single PLD quantification, we use the highest PLD
-    if ~x.modules.asl.bMultiPLD && numel(x.Q.uniqueInitial_PLD)>1
+	if isfield(x.Q, 'bQuantifyMultiPLD') && ~x.Q.bQuantifyMultiPLD && numel(x.Q.uniqueInitial_PLD)>1
 		warning('Multiple PLDs detected, taking the highest PLD only');
 		fprintf('%s\n', 'A multi-PLD quantification may provide more accurate results');
 		x.Q.uniqueInitial_PLD = max(x.Q.uniqueInitial_PLD);
@@ -178,7 +178,7 @@ else
         % (later, when we have multi-PLD, multi-echo, or multi-labeling quantification here as well,
         % then we could use PWI3D here)
 
-		if x.modules.asl.bMultiTE && ~x.modules.asl.bMultiTEQuantification
+		if x.Q.NumberEchoTimes>1 && ~x.modules.asl.bQuantifyMultiTE
             warning('Multiple TE detected, but multi-TE quantification is turned off.');
             fprintf('%s\n', 'We will use the volumes with the shortest echo time');
 		end

@@ -153,7 +153,6 @@ end
 % PM: we do 3 times the same below for TE, PLD, LabelingDuration respectively, we could refactor this code in a for-loop
 % PM: And perhaps we should move these to a separate function
 
-x.modules.asl.bMultiTE = false; % by default, we use single-echo processing
 % The echo-time is then only used to scale the M0 to the deltaM if they have different echo-times
 
 if ~isfield(x.Q, 'EchoTime')
@@ -181,8 +180,10 @@ else
         fprintf('%s\n', 'We will process these ASL images as if they have a single echo, using the first echo only');
         fprintf('%s\n', 'Assuming that this is a dual-echo ASL+BOLD sequence');
         x.Q.EchoTime = min(x.Q.EchoTime);
+		% Update the other fields as well
+		 x.Q.uniqueEchoTimes = x.Q.EchoTime;
+		 x.Q.NumberEchoTimes = 1;
     elseif x.Q.NumberEchoTimes>2
-        x.modules.asl.bMultiTE = true;
         fprintf('%s\n', 'Multiple echo times detected, processing this as multi-echo ASL');
     end
     
@@ -194,13 +195,13 @@ else
 end
 
 % If multi-TE data is detected, we switch on multi-TE quantification by default. Unless this has been deactived in dataPar.json
-if x.modules.asl.bMultiTE
-	if ~isfield(x.modules.asl, 'bMultiTEQuantification') || isempty(x.modules.asl.bMultiTEQuantification)
+if x.Q.NumberEchoTimes>1
+	if ~isfield(x.modules.asl, 'bQuantifyMultiTE') || isempty(x.modules.asl.bQuantifyMultiTE)
 		% By default, initialize as Multi-TE quantification as true
-		x.modules.asl.bMultiTEQuantification = true;
+		x.modules.asl.bQuantifyMultiTE = true;
 	end
 else
-	x.modules.asl.bMultiTEQuantification = false;
+	x.modules.asl.bQuantifyMultiTE = false;
 end
 
 % Deal with too short vectors (e.g., repetitions in the case of single-PLD)
@@ -221,12 +222,12 @@ end
 
 
 %% D4. Multi-PLD parsing
-x.modules.asl.bMultiPLD = false; % by default, we use single-PLD processing
-
 if ~isfield(x.Q,'Initial_PLD')
     warning('Missing field x.Q.Initial_PLD, this is needed for ASL quantification');
+	x.Q.bQuantifyMultiPLD = false;
 elseif isempty(x.Q.Initial_PLD) || ~isnumeric(x.Q.Initial_PLD)
     warning('Illegal field x.Q.Initial_PLD, this should not be empty and should contain numerical values');
+	x.Q.bQuantifyMultiPLD = false;
 else
     x.Q.uniqueInitial_PLD = unique(x.Q.Initial_PLD);
     x.Q.NumberPLDs = length(x.Q.uniqueInitial_PLD);
@@ -238,10 +239,18 @@ else
     % Handle different number of PLDs
     if x.Q.NumberPLDs==1
         fprintf('%s\n', 'Single-PLD ASL detected');
+		x.Q.bQuantifyMultiPLD = false;
     elseif x.Q.NumberPLDs>1
-        fprintf('%s\n', 'Multi PLDs detected, processing this as multi-PLD ASL');
-        fprintf('%s\n', 'Note that this feature is still under development');
-        x.modules.asl.bMultiPLD = true;
+		if isfield(x.Q, 'bQuantifyMultiPLD') && ~x.Q.bQuantifyMultiPLD
+			fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.');
+		else
+			% In case it wasn't defined or it was defined as true, we can set it to true
+			x.Q.bQuantifyMultiPLD = true;
+		end
+		if x.Q.bQuantifyMultiPLD
+			fprintf('%s\n', 'Multi PLDs detected, processing this as multi-PLD ASL');
+			fprintf('%s\n', 'Note that this feature is still under development');
+		end
     end
 
     fprintf('%s\n', 'Detected the following unique PLDs (ms):')
@@ -284,10 +293,10 @@ else
     % Handle different number of Labeling Durations
     if x.Q.NumberLDs==1
         fprintf('%s\n', 'Single-labeling duration ASL detected');
-    elseif x.Q.NumberLDs>1 && x.modules.asl.bMultiPLD
+    elseif x.Q.NumberLDs>1 && x.Q.bQuantifyMultiPLD
         fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
-    elseif x.Q.NumberLD>1 && ~x.modules.asl.bMultiPLD
-        warning('Multi labeling durations detected but not multiple PLDs, is this correct?');
+    elseif x.Q.NumberLDs>1 && ~x.Q.bQuantifyMultiPLD
+        warning('Multi labeling durations detected but multiPLD-quantification is turnedd off, is this correct?');
     end
 
     fprintf('%s\n', 'Detected the following unique Labeling Durations (ms):')
@@ -319,7 +328,6 @@ end
 if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize') || isfield(x.Q, 'TimeEncodedMatrix')
     fprintf(2,'Time encoded data detected, we will process this but this is a new feature that is still under development\n');
     x.modules.asl.bTimeEncoded = true;
-	x.modules.asl.bMultiPLD = true;
 	
 	% Initialize as empty if missing
 	if ~isfield(x.Q, 'TimeEncodedMatrixType')
@@ -443,7 +451,7 @@ end
 if ~isfield(x.Q, 'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
 	x.Q.bUseBasilQuantification = false;
     
-    if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTEQuantification
+    if x.Q.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
         x.Q.bUseBasilQuantification = true;
     end
 end
@@ -768,7 +776,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     
 	% allow 4D quantification as well, storing CBF4D. This is currently not implemented for multi-PLD/multi-TE (BASIL/FABBER)
 	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D
-        if x.modules.asl.bMultiPLD || x.modules.asl.bMultiTEQuantification
+        if x.Q.NumberPLDs>1 || x.modules.asl.bQuantifyMultiTE
             warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, skipping');
 		else
             if size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4) == 1

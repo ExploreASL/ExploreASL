@@ -508,7 +508,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
-if ~x.modules.asl.bMultiPLD || x.Q.bUseBasilQuantification % multi-PLD with BASIL or single-PLD
+if ~x.Q.bQuantifyMultiPLD || x.Q.bUseBasilQuantification % multi-PLD with BASIL or single-PLD
     [~, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
 else
     % multi-PLD quantification without BASIL
