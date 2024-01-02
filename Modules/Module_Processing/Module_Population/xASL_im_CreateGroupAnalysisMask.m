@@ -283,13 +283,13 @@ end
 function [outputPath, bSkipStandard] = xASL_sub_CheckTemplatePath(preFix, x, bSkipStandard)
 %xASL_sub_CheckTemplatePath subfunction for checking & initializing the template path
 
-    outputPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, [preFix x.S.TemplateNumberName '_bs-mean\.nii$'], 'FPList', [1 1]);
+    outputPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, [preFix x.S.TemplateNumberName '_bs-mean_Unmasked\.nii$'], 'FPList', [1 1]);
     
     if isempty(outputPath)
         warning(['Skipping because of missing template: ' preFix]);
         bSkipStandard = true;
     elseif numel(outputPath)>1
-        warning(['Multiple templates found for ' preFix x.S.TemplateNumberName '_bs-mean.nii']);
+        warning(['Multiple templates found for ' preFix x.S.TemplateNumberName '_bs-mean_Unmasked.nii']);
         % This situation should not occur
         outputPath = outputPath{1};
     else
