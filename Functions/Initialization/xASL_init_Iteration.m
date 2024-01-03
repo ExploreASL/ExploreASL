@@ -95,14 +95,16 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
     
     % SUBJECT, SUBJECTDIR & LockDir
     if ~isempty(regexpi(ModName,'(Import|BIDS2Legacy)', 'once'))
-        dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
         dbSettings.x.dir.SUBJECTDIR = fullfile('<ROOT>', '<SUBJECT>');
         dbSettings.x.dir.LockDir = fullfile(dbSettings.x.dir.LockDir, '<SUBJECT>');
+    elseif ~isempty(regexpi(ModName,'Population', 'once'))
+        % dbSettings.x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives, '<SUBJECT>');
+        % dbSettings.x.dir.LockDir = dbSettings.x.dir.LockDir;
     else
-        dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
         dbSettings.x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives, '<SUBJECT>');
         dbSettings.x.dir.LockDir = fullfile(dbSettings.x.dir.LockDir, '<SUBJECT>');
     end
+    dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
 
     
     % Checking SESSIONS
@@ -123,7 +125,7 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         dbSettings.x.dir.SESSIONDIR = fullfile(x.dir.xASLDerivatives, '<SUBJECT>', '<SESSION>');
     elseif ~isempty(regexpi(ModName,'(Import)', 'once'))
         dbSettings.sets.SESSION = x.SESSIONS;
-        dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID]; % Currently we can not support session-wise import
+        dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID]; % Currently we do not support session-wise import
         dbSettings.x.dir.SESSIONDIR = fullfile('<ROOT>', '<SUBJECT>', '<SESSION>');
     end
     
