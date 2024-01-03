@@ -60,9 +60,6 @@ bSkipStandard = false;
 [PathVascularMask, bSkipStandard] = xASL_sub_CheckTemplatePath('^MaskVascular', x, bSkipStandard);
 
 [PathT1, bSkipStandard] = xASL_sub_CheckTemplatePath('^T1', x, bSkipStandard);
-[PathpGM, bSkipStandard] = xASL_sub_CheckTemplatePath('^pGM', x, bSkipStandard);
-[PathpWM, bSkipStandard] = xASL_sub_CheckTemplatePath('^pWM', x, bSkipStandard);
-[PathpCSF, bSkipStandard] = xASL_sub_CheckTemplatePath('^pCSF', x, bSkipStandard);
 
 
 % Not sure if this is the same for the NativeSpaceAnalysis, this still has to be fixed by Jan.
@@ -77,34 +74,22 @@ if ~bSkipStandard
     % If a dataset doesn't have T1w images, these can be supplied using 
     % x.modules.asl.bUseMNIasDummyStructural == 1
     
-    if isempty(PathpGM)
-        warning('Missing pGM image, using MNI version');
-        PathpGM = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii');
-    end
-    if isempty(PathpWM)
-        warning('Missing pWM image, using MNI version');
-        PathpWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii');
-    end
+    PathpGM = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii');
+    PathpWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii');
+    PathpCSF = fullfile(x.D.MapsSPMmodifiedDir, 'rc3T1_ASL_res.nii');
     
 	%% Creation GM, WM & WholeBrain masks by p>0.5
-	GMmask = xASL_io_Nifti2Im(PathpGM)>0.5;
-	WMmask = xASL_io_Nifti2Im(PathpWM)>0.5;
-	
-	if ~isempty(PathpCSF)
-		pCSF = xASL_io_Nifti2Im(PathpCSF)>0.5;
-		WholeBrain = (GMmask+WMmask+pCSF)>0.5;
-	else
-		WholeBrain = (GMmask+WMmask)>0.5;
-	end
+	pGM = xASL_io_Nifti2Im(PathpGM);
+	pWM = xASL_io_Nifti2Im(PathpWM);
+	pCSF = xASL_io_Nifti2Im(PathpCSF);
 
 	GMmask = GMmask>0.5;
-	WMmask = WMmask>0.5;
+    WholeBrain = (pGM+pWM+pCSF)>0.5;
 	
 	%% B) Create, combine & save vascular, susceptibity & FoV masks
 	MaskVascular = xASL_io_Nifti2Im(PathVascularMask)>=Threshold;
     MaskFoV = xASL_io_Nifti2Im(PathFoV)>=Threshold;
     
-
 
     % Legacy Susceptibility Masking
     MaskSusceptibility = xASL_io_Nifti2Im(PathTemplateSusceptibilityMask);
