@@ -98,8 +98,8 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         dbSettings.x.dir.SUBJECTDIR = fullfile('<ROOT>', '<SUBJECT>');
         dbSettings.x.dir.LockDir = fullfile(dbSettings.x.dir.LockDir, '<SUBJECT>');
     elseif ~isempty(regexpi(ModName,'Population', 'once'))
-        % dbSettings.x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives, '<SUBJECT>');
-        % dbSettings.x.dir.LockDir = dbSettings.x.dir.LockDir;
+        % For population module, we do not specify SUBJECTDIR
+        % For population module, we do not add subject name to the lock-folder
     else
         dbSettings.x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives, '<SUBJECT>');
         dbSettings.x.dir.LockDir = fullfile(dbSettings.x.dir.LockDir, '<SUBJECT>');
