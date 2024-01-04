@@ -83,7 +83,7 @@ if ~bSkipStandard
 	pWM = xASL_io_Nifti2Im(PathpWM);
 	pCSF = xASL_io_Nifti2Im(PathpCSF);
 
-	GMmask = GMmask>0.5;
+	GMmask = pGM>0.5;
     WholeBrain = (pGM+pWM+pCSF)>0.5;
 	
 	%% B) Create, combine & save vascular, susceptibity & FoV masks
