@@ -367,8 +367,7 @@ if bCreateControl3D
     % MultiPLD-multiLabDur PWI3D after averaging
     for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur_Control4D)
         indicesAre = iUnique_TE_PLD_LabDur_Control4D == iTE_PLD_LabDur;
-        PWI3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(Control4D(:, :, :, indicesAre), 4); % Averaged Control4D
-        Control3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(Control4D(:, :, :, indicesAre), 4); % Averaged control4D (same indices as PWI4D)
+        Control3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(Control4D(:, :, :, indicesAre), 4); % Averaged control4D
 
         x.Q.EchoTime_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.EchoTime_Control4D(indicesAre));
         x.Q.InitialPLD_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.InitialPLD_Control4D(indicesAre));
