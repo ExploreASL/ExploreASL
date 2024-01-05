@@ -314,9 +314,14 @@ else
 end
 
 %% H. Here we create a temporary dummy ASL image of which the image contrast is curated, for registration only
-PWI = xASL_im_ASLSubtractionAveraging(x, x.P.Path_despiked_ASL4D);
+[PWI, ~, ~, ~, Control] = xASL_im_ASLSubtractionAveraging(x, x.P.Path_despiked_ASL4D);
 xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, PWI, 16, false);
 
+if numel(Control)==1 && isnan(Control)
+    fprintf('%s\n', 'mean_control.nii not created as there is only a single volume, no timeseries');
+else
+    xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_control, Control, 16, false);
+end
 
 if bRegistrationCBF
     % This clipped_ORI is not used in the rest of the pipeline
