@@ -317,7 +317,7 @@ end
 [PWI, ~, ~, ~, Control] = xASL_im_ASLSubtractionAveraging(x, x.P.Path_despiked_ASL4D);
 xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, PWI, 16, false);
 
-if numel(Control)==1 && isnan(Control)
+if isempty(Control)
     fprintf('%s\n', 'mean_control.nii not created as there is only a single volume, no timeseries');
 else
     xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_control, Control, 16, false);
