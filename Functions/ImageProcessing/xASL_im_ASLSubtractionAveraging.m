@@ -24,7 +24,7 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 %   PWI3D   - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (STRING OR 4D MATRIX, OPTIONAL,
 %               DEFAULT = generated below from PWI4D)
 %
-% OUTPUT:
+% OUTPUT: (note that these are [] empty by default, unless they are created)
 %   PWI     - 3D image matrix, see explanation below
 %   PWI3D   - 4D image matrix, see explanation below
 %   PWI4D   - 4D image matrix, see explanation below

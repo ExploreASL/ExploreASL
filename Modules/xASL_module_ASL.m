@@ -544,7 +544,7 @@ else
 	if xASL_exist(x.P.Path_ASL4D, 'file')
 		niftiASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
 		if size(niftiASL.dat,4) == 1
-			warning('ASL4Dcontext.tsv is missing, but a single deltaM volume is expected');
+			warning('ASL4Dcontext.tsv is missing, assuming that this is a single deltaM volume');
 			x.modules.asl.bContainsSubtracted = true;
 		end
 	end
