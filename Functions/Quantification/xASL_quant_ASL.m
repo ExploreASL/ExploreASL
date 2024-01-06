@@ -75,7 +75,7 @@ if  xASL_stat_SumNan(M0_im(:))==0
 	if x.modules.asl.ApplyQuantification(5)
 		error('Empty M0 image, something went wrong in M0 processing');
 	else
-		warning('Empty M0 image detected');
+		fprintf('%s\n', 'Absent or empty M0 image'); % no warning as M0 quantification was disabled
 	end
 end
 
