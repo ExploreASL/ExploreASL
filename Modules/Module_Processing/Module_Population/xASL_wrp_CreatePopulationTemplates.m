@@ -257,33 +257,33 @@ if UsePredefined
     PreFixList{end+1}   = 'SliceGradient';                      TemplateNameList{end+1}  = 'SliceGradient';                 SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = ['q' x.P.CBF '_masked'];              TemplateNameList{end+1}  = 'CBF_masked';                    SessionsExist(end+1)    = 1;
 
-    PreFixList{end+1}   = 'mean_control_beforeMoCo';            TemplateNameList{end+1}  = 'mean_control_beforeMoCo';       SessionsExist(end+1)    = 1;
-    PreFixList{end+1}   = 'SD_control_beforeMoCo';              TemplateNameList{end+1}  = 'SD_control_beforeMoCo';         SessionsExist(end+1)    = 1;
-    PreFixList{end+1}   = 'SNR_control_beforeMoCo';             TemplateNameList{end+1}  = 'SNR_control_beforeMoCo';        SessionsExist(end+1)    = 1;
-    PreFixList{end+1}   = 'mean_PWI_beforeMoCo';                TemplateNameList{end+1}  = 'mean_PWI_beforeMoCo';           SessionsExist(end+1)    = 1;
-    PreFixList{end+1}   = 'SD_PWI_beforeMoCo';                  TemplateNameList{end+1}  = 'SD_PWI_beforeMoCo';             SessionsExist(end+1)    = 1;
-    PreFixList{end+1}   = 'SNR_PWI_beforeMoCo';                 TemplateNameList{end+1}  = 'SNR_PWI_beforeMoCo';            SessionsExist(end+1)    = 1;
+    % PreFixList{end+1}   = 'mean_control_beforeMoCo';            TemplateNameList{end+1}  = 'mean_control_beforeMoCo';       SessionsExist(end+1)    = 1;
+    % PreFixList{end+1}   = 'SD_control_beforeMoCo';              TemplateNameList{end+1}  = 'SD_control_beforeMoCo';         SessionsExist(end+1)    = 1;
+    % PreFixList{end+1}   = 'SNR_control_beforeMoCo';             TemplateNameList{end+1}  = 'SNR_control_beforeMoCo';        SessionsExist(end+1)    = 1;
+    % PreFixList{end+1}   = 'mean_PWI_beforeMoCo';                TemplateNameList{end+1}  = 'mean_PWI_beforeMoCo';           SessionsExist(end+1)    = 1;
+    % PreFixList{end+1}   = 'SD_PWI_beforeMoCo';                  TemplateNameList{end+1}  = 'SD_PWI_beforeMoCo';             SessionsExist(end+1)    = 1;
+    % PreFixList{end+1}   = 'SNR_PWI_beforeMoCo';                 TemplateNameList{end+1}  = 'SNR_PWI_beforeMoCo';            SessionsExist(end+1)    = 1;
 
     PreFixList{end+1}   = 'PWI';                                TemplateNameList{end+1}  = 'PWI';              SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'M0';                                 TemplateNameList{end+1}  = 'M0';               SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'noSmooth_M0';                        TemplateNameList{end+1}  = 'noSmooth_M0';      SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'mean_control';                       TemplateNameList{end+1}  = 'mean_control';     SessionsExist(end+1)    = 1;
-    PreFixList{end+1}   = 'SD_control';                         TemplateNameList{end+1}  = 'SD_control';       SessionsExist(end+1)    = 1;
-    PreFixList{end+1}   = 'SNR_control';                        TemplateNameList{end+1}  = 'SNR_control';      SessionsExist(end+1)    = 1;
+    % PreFixList{end+1}   = 'SD_control';                         TemplateNameList{end+1}  = 'SD_control';       SessionsExist(end+1)    = 1;
+    % PreFixList{end+1}   = 'SNR_control';                        TemplateNameList{end+1}  = 'SNR_control';      SessionsExist(end+1)    = 1;
 
     PreFixList{end+1}   = 'SD';                                 TemplateNameList{end+1}  = 'SD';               SessionsExist(end+1)    = 1;
-    PreFixList{end+1}   = 'SNR';                                TemplateNameList{end+1}  = 'SNR';              SessionsExist(end+1)    = 1;
+    % PreFixList{end+1}   = 'SNR';                                TemplateNameList{end+1}  = 'SNR';              SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'TT';                                 TemplateNameList{end+1}  = 'TT';               SessionsExist(end+1)    = 0;
 	PreFixList{end+1}   = 'ATT';                                TemplateNameList{end+1}  = 'ATT';              SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'FoV';                                TemplateNameList{end+1}  = 'FoV';              SessionsExist(end+1)    = 1;
     
-    PreFixList{end+1}   = '4V_MAP';                             TemplateNameList{end+1}  = '4V_MAP';           SessionsExist(end+1)    = 0;
-    PreFixList{end+1}   = '4V';                                 TemplateNameList{end+1}  = '4V';               SessionsExist(end+1)    = 0;
-    PreFixList{end+1}   = 'CoW_MAP';                            TemplateNameList{end+1}  = 'CoW_MAP';          SessionsExist(end+1)    = 0;
-    PreFixList{end+1}   = 'HEMI';                               TemplateNameList{end+1}  = 'HEMI';             SessionsExist(end+1)    = 0;    
-    PreFixList{end+1}   = 'TASL';                               TemplateNameList{end+1}  = 'TASL';             SessionsExist(end+1)    = 0;        
-	PreFixList{end+1}   = 'Tex';                                TemplateNameList{end+1}  = 'Tex';              SessionsExist(end+1)    = 1;
-	PreFixList{end+1}   = 'ABV';                                TemplateNameList{end+1}  = 'ABV';              SessionsExist(end+1)    = 1;
+    % PreFixList{end+1}   = '4V_MAP';                             TemplateNameList{end+1}  = '4V_MAP';           SessionsExist(end+1)    = 0;
+    % PreFixList{end+1}   = '4V';                                 TemplateNameList{end+1}  = '4V';               SessionsExist(end+1)    = 0;
+    % PreFixList{end+1}   = 'CoW_MAP';                            TemplateNameList{end+1}  = 'CoW_MAP';          SessionsExist(end+1)    = 0;
+    % PreFixList{end+1}   = 'HEMI';                               TemplateNameList{end+1}  = 'HEMI';             SessionsExist(end+1)    = 0;    
+    % PreFixList{end+1}   = 'TASL';                               TemplateNameList{end+1}  = 'TASL';             SessionsExist(end+1)    = 0;        
+	% PreFixList{end+1}   = 'Tex';                                TemplateNameList{end+1}  = 'Tex';              SessionsExist(end+1)    = 1;
+	% PreFixList{end+1}   = 'ABV';                                TemplateNameList{end+1}  = 'ABV';              SessionsExist(end+1)    = 1;
     % % PM: Let this search for different scantypes in /PopDir NIfTIs, & run within those
 end
 
