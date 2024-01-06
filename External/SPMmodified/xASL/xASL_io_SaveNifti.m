@@ -54,8 +54,8 @@ if nargin < 3
 	error('Needs at least three input parameters.');
 end
 
-if min(size(imNew))==0 % QA
-    error(['Empty image: ' pathOrigNifti]);
+if isempty(imNew) || min(size(imNew))==0 % QA
+    error(['Empty image, could not create: ' pathNewNifti]);
 end
 
 if nargin < 5 || isempty(bGZip)
