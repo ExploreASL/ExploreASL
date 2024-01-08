@@ -574,176 +574,113 @@ end
 
 % The echo-time is then only used to scale the M0 to the deltaM if they have different echo-times
 
-if ~isfield(x.Q, 'EchoTime')
-    warning('Missing field x.Q.EchoTime, this can be needed for quantification');
-    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
-	x.Q.NumberEchoTimes = 1;
-elseif isempty(x.Q.EchoTime) || ~isnumeric(x.Q.EchoTime)
-    warning('Illegal field x.Q.EchoTime, this should not be empty and should contain numerical values');
-    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
-	x.Q.NumberEchoTimes = 1;
+parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
+parAbbreviation = {'TE' 'PLD' 'LD'};
+parTolerance = {0.001 0 0};
+parLowestValue = {0 0 0};
+
+for iPar=1:length(parNames)
+
+if ~isfield(x.Q, parNames{iPar})
+    % if the field is completely missing
+    warning(['Missing field x.Q.' parNames{iPar} ', this may be needed for quantification']);
+    % After the warning, we default to single-parameter processing
+    fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
+	x.Q.(['Number' parNames{iPar}]) = 1;
+    % PM: rename this parameter to x.Q.nParName
+    x.Q.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
+
+elseif isempty(x.Q.parNames{iPar}) || ~isnumeric(x.Q.parNames{iPar})
+    % if the field exists but is illegal
+    warning(['Illegal field x.Q.' parNames{iPar} ', this should not be empty and should contain numerical values']);
+    % After the warning, we default to single-parameter processing
+    fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
+	x.Q.(['Number' parNames{iPar}]) = 1;
+    x.Q.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
 else
-    x.Q.uniqueEchoTimes = uniquetol(x.Q.EchoTime, 0.001);
-    x.Q.NumberEchoTimes = length(x.Q.uniqueEchoTimes); % Obtain the number of unique echo times
-    % PM: rename this parameter to x.Q.nUniqueTEs
-    
-    if sum(x.Q.EchoTime<=0)>0
-        warning('x.Q.EchoTime should be positive');
+    % Check, with allowed tolerance (0 is without tolerance) what the unique parameters are
+    x.Q.(['unique' parNames{iPar}]) = uniquetol(x.Q.(parNames{iPar}), parTolerance);
+
+    x.Q.(['Number' parNames{iPar}]) = length(x.Q.(['unique' parNames{iPar} 's']));
+    % Obtain the number of unique parameters
+
+    if sum(x.Q.(parNames{iPar})<=parLowestValue{iPar})>0
+        warning(['x.Q.' parNames{iPar} ' should be larger than ' num2str(parLowestValue{iPar})]);
     end
 
-    % Handle different number of echo times (== potentially different ASL sequences)
-    if x.Q.NumberEchoTimes==1
-        fprintf('%s\n', 'Single-echo ASL detected');
-    elseif x.Q.NumberEchoTimes==2
-        warning('Dual-echo ASL detected, dual-echo ASL processing not yet implemented');
-        fprintf('%s\n', 'We will process these ASL images as if they have a single echo, using the first echo only');
-        fprintf('%s\n', 'Assuming that this is a dual-echo ASL+BOLD sequence');
-        x.Q.EchoTime = min(x.Q.EchoTime);
+    % Handle different number of parameters (== potentially different ASL sequences)
+    if x.Q.(['Number' parNames{iPar}]) == 1
+        fprintf('%s\n', ['Single-' parAbbreviation{iPar} ' ASL detected']);
+    elseif x.Q.(['Number' parNames{iPar}]) == 2
+        fprintf('%s\n', ['Dual-' parAbbreviation{iPar} ' ASL detected']);
+        
+        if strcmp(parAbbreviation{iPar}, 'TE')
+            warning('Dual-echo ASL detected, dual-echo ASL processing not yet implemented');
+            fprintf('%s\n', 'We will process these ASL images as if they have a single echo, using the first echo only');
+            fprintf('%s\n', 'Assuming that this is a dual-echo ASL+BOLD sequence');
+
+            x.Q.EchoTime = min(x.Q.EchoTime);
 		% Update the other fields as well
 		 x.Q.uniqueEchoTimes = x.Q.EchoTime;
 		 x.Q.NumberEchoTimes = 1;
-    elseif x.Q.NumberEchoTimes>2
-        fprintf('%s\n', 'Multiple echo times detected, processing this as multi-echo ASL');
+        end
+
+    elseif x.Q.(['Number' parNames{iPar}])>2
+        fprintf('%s\n', ['Multiple ' parNames{iPar} 's detected, processing this as multi-' parAbbreviation{iPar} ' ASL']);
+        fprintf('%s\n', 'Note that this feature is still under development');
+
+        if strcmp(parAbbreviation{iPar}, 'PLD')
+            if isfield(x.Q, 'bQuantifyMultiPLD') && ~x.Q.bQuantifyMultiPLD
+                fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.');
+            else
+            % In case it wasn't defined or it was defined as true, we can set it to true
+            x.Q.bQuantifyMultiPLD = true;
+            end
+        elseif strcmp(parAbbreviation{iPar}, 'LD')
+            if x.Q.bQuantifyMultiPLD
+                fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
+            else
+                warning('Multi labeling durations detected but multiPLD-quantification is turned off, is this correct?');
+            end
+        end
     end
-    
-    fprintf('%s\n', 'Detected the following unique echo times (ms):')
-    for iTE = 1:x.Q.NumberEchoTimes-1
-        fprintf('%.2f, ', round(x.Q.uniqueEchoTimes(iTE),4));
+
+    % Now we print to the screen which unique parameter-values we detected
+    fprintf('%s\n', ['Detected the following unique ' parNames{iPar} 's (ms):'])
+    for ivol = 1:x.Q.(['Number' parNames{iPar}])
+        fprintf('%.2f, ', round(x.Q.(['unique' parNames{iPar}])(iVol), 4));
     end
-    fprintf('%.2f\n', round(x.Q.uniqueEchoTimes(end),4));
+    fprintf('\n');
 end
 
-% If multi-TE data is detected, we switch on multi-TE quantification by default. Unless this has been deactived in dataPar.json
-if x.Q.NumberEchoTimes>1
-	if ~isfield(x.modules.asl, 'bQuantifyMultiTE') || isempty(x.modules.asl.bQuantifyMultiTE)
-		% By default, initialize as Multi-TE quantification as true
-		x.modules.asl.bQuantifyMultiTE = true;
+% If multi-parameter data is detected, we switch on multi-parameter quantification by default. Unless this has been deactived in dataPar.json
+if x.Q.(['Number' parNames{iPar}])>1
+	if ~isfield(x.modules.asl, ['bQuantifyMulti' parAbbreviation{iPar}]) || isempty(x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]))
+		% By default, initialize as Multi-par quantification as true
+		x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = true;
 	end
 else
-	x.modules.asl.bQuantifyMultiTE = false;
+	x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
 end
 
-% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
-nTE = length(x.Q.EchoTime);
-if mod(nVolumes, nTE)~=0
-    error(['Number of echo times (n=' xASL_num2str(nTE) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
-    % If we don't issue an error here, the repmat will crash
+% Deal with too short vectors (e.g., repetitions in the case of single-parameter)
+nPar = length(x.Q.([parNames{iPar}]));
+if mod(nVolumes, nPar)~=0
+    error(['Number of ' parNames{iPar} 's (n=' xASL_num2str(nPar) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+    % If we don't issue an error here, repmat will crash
 end
 
-factorTE = nVolumes/nTE;
-x.Q.EchoTime = repmat(x.Q.EchoTime(:), [factorTE 1]);
-nTE = length(x.Q.EchoTime);
+factorPar = nVolumes/nPar;
+x.Q.(parNames{iPar}) = repmat(x.Q.(parNames{iPar})(:), [factorPar 1]);
+nPar = length(x.Q.(parNames{iPar}));
 
 % Number of echoes should now be equal to the number of ASL volumes
-if nTE~=nVolumes
-    warning(['Number of echo times (n=' xASL_num2str(nTE) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
+if nPar~=nVolumes
+    warning(['Number of ' parNames{iPar} ' (n=' xASL_num2str(nPar) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
 end
 
 
 
-%% 4. Multi-PLD parsing
-if ~isfield(x.Q,'Initial_PLD')
-    warning('Missing field x.Q.Initial_PLD, this is needed for ASL quantification');
-	x.Q.bQuantifyMultiPLD = false;
-elseif isempty(x.Q.Initial_PLD) || ~isnumeric(x.Q.Initial_PLD)
-    warning('Illegal field x.Q.Initial_PLD, this should not be empty and should contain numerical values');
-	x.Q.bQuantifyMultiPLD = false;
-else
-    x.Q.uniqueInitial_PLD = unique(x.Q.Initial_PLD);
-    x.Q.NumberPLDs = length(x.Q.uniqueInitial_PLD);
-    
-    if sum(x.Q.Initial_PLD<=0)>0
-        warning('x.Q.Initial_PLD should be positive');
-    end
-
-    % Handle different number of PLDs
-    if x.Q.NumberPLDs==1
-        fprintf('%s\n', 'Single-PLD ASL detected');
-		x.Q.bQuantifyMultiPLD = false;
-    else
-        
-        if x.Q.NumberPLDs>1
-		                    if isfield(x.Q, 'bQuantifyMultiPLD') && ~x.Q.bQuantifyMultiPLD
-			                    fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.');
-		                    else
-			                % In case it wasn't defined or it was defined as true, we can set it to true
-			                x.Q.bQuantifyMultiPLD = true;
-                            end
-		end
-		if x.Q.bQuantifyMultiPLD
-			fprintf('%s\n', 'Multi PLDs detected, processing this as multi-PLD ASL');
-			fprintf('%s\n', 'Note that this feature is still under development');
-		end
-    end
-
-    fprintf('%s\n', 'Detected the following unique PLDs (ms):')
-    for iPLD = 1:x.Q.NumberPLDs-1
-        fprintf('%d, ',x.Q.uniqueInitial_PLD(iPLD));
-    end
-    fprintf('%d\n',x.Q.uniqueInitial_PLD(end));
-end
-
-% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
-nPLD = length(x.Q.Initial_PLD);
-if mod(nVolumes, nPLD)~=0
-    error(['Number of PLDs (n=' xASL_num2str(nPLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
-    % If we don't issue an error here, the repmat will crash
-end
-
-factorPLD = nVolumes/nPLD;
-x.Q.Initial_PLD = repmat(x.Q.Initial_PLD(:), [factorPLD 1]);
-nPLD = length(x.Q.Initial_PLD);
-
-% Number of initial PLDs should be equal to number of ASL volumes
-if nPLD~=nVolumes
-    warning(['Number of PLDs (n=' xASL_num2str(nPLD) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
-end
-
-%% 5. Labeling Duration parsing
-
-if ~isfield(x.Q,'LabelingDuration')
-    warning('Missing field x.Q.LabelingDuration, this is needed for ASL quantification');
-elseif isempty(x.Q.LabelingDuration) || ~isnumeric(x.Q.LabelingDuration)
-    warning('Illegal field x.Q.LabelingDuration, this should not be empty and should contain numerical values');
-else
-    x.Q.uniqueLabelingDuration = unique(x.Q.LabelingDuration);
-    x.Q.NumberLDs = length(x.Q.uniqueLabelingDuration);
-    
-    if sum(x.Q.LabelingDuration<=0)>0
-        warning('x.Q.LabelingDuration should be positive');
-    end
-
-    % Handle different number of Labeling Durations
-    if x.Q.NumberLDs==1
-        fprintf('%s\n', 'Single-labeling duration ASL detected');
-    elseif x.Q.NumberLDs>1 && x.Q.bQuantifyMultiPLD
-        fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
-    elseif x.Q.NumberLDs>1 && ~x.Q.bQuantifyMultiPLD
-        warning('Multi labeling durations detected but multiPLD-quantification is turned off, is this correct?');
-    end
-
-    fprintf('%s\n', 'Detected the following unique Labeling Durations (ms):')
-    for iLD = 1:x.Q.NumberLDs-1
-        fprintf('%d, ',x.Q.uniqueLabelingDuration(iLD));
-    end
-    fprintf('%d\n',x.Q.uniqueLabelingDuration(end));
-end
-
-% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
-nLD = length(x.Q.LabelingDuration);
-if mod(nVolumes, nLD)~=0
-    error(['Number of labeling durations (n=' xASL_num2str(nLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
-    % If we don't issue an error here, the repmat will crash
-end
-
-factorLD = nVolumes/nLD;
-x.Q.LabelingDuration = repmat(x.Q.LabelingDuration(:), [factorLD 1]);
-nLD = length(x.Q.LabelingDuration);
-
-% Number of initial PLDs should be equal to number of ASL volumes
-if nLD~=nVolumes
-    warning(['Number of Labeling Durations (n=' xASL_num2str(nLD) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
-end
 
 
 %% 6. TimeEncoded parsing
