@@ -1,4 +1,4 @@
-function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bSaveJson, JsonFields)
+function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields)
 % Save a file to a Nifti format, while taking the parameters from another file
 %
 % FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, newMat])
@@ -16,9 +16,16 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %                  masks, since it cannot contain a large data range
 %   bGZip          Gzip the result (OPTIONAL, DEFAULT 1)
 %   changeMat      New orientation matrix 4x4 (OPTIONAL, DEFAULT same as previous)
-%   bSaveJson      Also save a JSON sidecar file with the NIfTI (OPTIONAL, DEFAULT = false)
-%   JsonFields     Additional JsonFields to be added to the new JSON sidecar, by default
-%                  we take a copy of the sidecar of pathOrigNifti (OPTIONAL, DEFAULT = struct() empty)
+%   bCopyOrigJson  Copy a JSON sidecar file (if existed for the original file) as sidecar of the new NIfTI (OPTIONAL, DEFAULT = false)
+%   JsonFields     Save additional JsonFields to a new JSON sidecar (or merged with the original Json content)
+%                  These fields overwrite fields with the same fieldnames in the original Json
+%                  (OPTIONAL, DEFAULT = struct() empty)
+% Options are:
+% 1. bSaveJson     = false                       -> we don't save a new JSON sidecar
+% 2. bCopyOrigJson = true  & JsonFields = empty  -> we copy the original JSON sidecar only
+% 3. bCopyOrigJson = false & JsonFields = filled -> we create a new JSON sidecar with new fields only
+% 4. bCopyOrigJson = true  & JsonFields = filled -> we merge the original JSON sidecar with the new fields
+%                                                   the new fields have priority
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: It loads the pathOrigNifti, takes all the parameters from it, and creates a new Nifti file with
@@ -63,14 +70,26 @@ else
 	end
 end
 
-if nargin < 7 || isempty(bSaveJson)
-    bSaveJson = false;
+% JSON saving
+% Options are:
+% 1. bSaveJson     = false                       -> we don't save a new JSON sidecar
+% 2. bCopyOrigJson = true  & JsonFields = empty  -> we copy the original JSON sidecar only
+% 3. bCopyOrigJson = false & JsonFields = filled -> we create a new JSON sidecar with new fields only
+% 4. bCopyOrigJson = true  & JsonFields = filled -> we merge the original JSON sidecar with the new fields
+%                                                   the new fields have priority
+bSaveJson = false;
+
+if nargin < 7 || isempty(bCopyOrigJson)
+    bCopyOrigJson = false;
+else
+    bSaveJson = true;
 end
 
-if nargin < 8
-    JsonFields = struct;
+if nargin < 8 || isempty(JsonFields)
+    JsonFields = struct([]);
+else
+    bSaveJson = true;
 end
-
 
 % If the absolute path is missing and filename is given only, then add the current path to the absolute path
 % Do this both for the new filename and the original filename
@@ -86,14 +105,9 @@ if isempty(PathOri)
 	pathOrigNifti = fullfile(pwd(), [NameOri ExtOri]);
 end
 
+% Define the JSON sidecar paths
+pathNewJson = fullfile(PathNew, [NameNew '.json']);
 pathOrigJson = fullfile(PathOri, [NameOri '.json']);
-pathNewJson = fullfile(PathOri, [NameNew '.json']);
-
-[PathOri, NameOri, ExtOri] = xASL_fileparts(pathOrigNifti);
-if isempty(PathOri)
-	% If a file-name only, then add the full current path to avoid ambiguity
-	pathOrigNifti = fullfile(pwd(), [NameOri ExtOri]);
-end
 
 % Create temporary name for new NIFTI, since if pathOrigNifti & pathNewNifti
 % are the same, this will work better
@@ -267,10 +281,12 @@ end
 %% 8. Create JSON sidecar
 if bSaveJson
     % a. First, we load the reference sidecar JSON file, if it exists
-    if xASL_exist(pathOrigJson, 'file')
+    if bCopyOrigJson && xASL_exist(pathOrigJson, 'file')
         json = xASL_io_ReadJson(pathOrigJson);
+    elseif bCopyOrigJson
+        warning([pathOrigJson ' did not exist']);
     else
-        json = struct;
+        json = struct([]);
     end
 
     % b. Second, we add any provided JSON fields
@@ -280,7 +296,8 @@ if bSaveJson
     end
 
     % c. Third, we save the JSON
-    xASL_io_WriteJson(pathNewJson, json, 1); % careful, this will overwrite (that is what the NIfTIs also do in this function)
+    xASL_io_WriteJson(pathNewJson, json, 1);
+    % careful, this will overwrite (that is what the NIfTIs also do in this function)
 end
 
 
