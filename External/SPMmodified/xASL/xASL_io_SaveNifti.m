@@ -1,4 +1,4 @@
-function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat)
+function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bSaveJson, JsonFields)
 % Save a file to a Nifti format, while taking the parameters from another file
 %
 % FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, newMat])
@@ -16,6 +16,9 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %                  masks, since it cannot contain a large data range
 %   bGZip          Gzip the result (OPTIONAL, DEFAULT 1)
 %   changeMat      New orientation matrix 4x4 (OPTIONAL, DEFAULT same as previous)
+%   bSaveJson      Also save a JSON sidecar file with the NIfTI (OPTIONAL, DEFAULT = false)
+%   JsonFields     Additional JsonFields to be added to the new JSON sidecar, by default
+%                  we take a copy of the sidecar of pathOrigNifti (OPTIONAL, DEFAULT = struct() empty)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: It loads the pathOrigNifti, takes all the parameters from it, and creates a new Nifti file with
@@ -49,7 +52,7 @@ if min(size(imNew))==0 % QA
 end
 
 if nargin < 5 || isempty(bGZip)
-	bGZip   = 1; % zip by default
+	bGZip = 1; % zip by default
 end
 
 if nargin < 6 || isempty(changeMat)
@@ -60,18 +63,36 @@ else
 	end
 end
 
-% If the absolute path is missing and filename is given only, then add the current path to the absolute path
-% Do this both for the new filename and the original filename
-[pathstr, name0, ext0] = fileparts(pathNewNifti);
-if isempty(pathstr)
-	% If a file-name only, then add the full current path to avoid ambiguity
-	pathNewNifti = fullfile(pwd(),[name0 ext0]);
+if nargin < 7 || isempty(bSaveJson)
+    bSaveJson = false;
 end
 
-[pathstr, name0, ext0] = fileparts(pathOrigNifti);
-if isempty(pathstr)
+if nargin < 8
+    JsonFields = struct;
+end
+
+
+% If the absolute path is missing and filename is given only, then add the current path to the absolute path
+% Do this both for the new filename and the original filename
+[PathNew, NameNew, ExtNew] = xASL_fileparts(pathNewNifti);
+if isempty(PathNew)
 	% If a file-name only, then add the full current path to avoid ambiguity
-	pathOrigNifti = fullfile(pwd(),[name0 ext0]);
+	pathNewNifti = fullfile(pwd(), [NameNew ExtNew]);
+end
+
+[PathOri, NameOri, ExtOri] = xASL_fileparts(pathOrigNifti);
+if isempty(PathOri)
+	% If a file-name only, then add the full current path to avoid ambiguity
+	pathOrigNifti = fullfile(pwd(), [NameOri ExtOri]);
+end
+
+pathOrigJson = fullfile(PathOri, [NameOri '.json']);
+pathNewJson = fullfile(PathOri, [NameNew '.json']);
+
+[PathOri, NameOri, ExtOri] = xASL_fileparts(pathOrigNifti);
+if isempty(PathOri)
+	% If a file-name only, then add the full current path to avoid ambiguity
+	pathOrigNifti = fullfile(pwd(), [NameOri ExtOri]);
 end
 
 % Create temporary name for new NIFTI, since if pathOrigNifti & pathNewNifti
@@ -87,6 +108,7 @@ if xASL_exist(tempName)
     xASL_delete(tempMat);
 end
 
+%% ====================================================================================
 %% 1. Unzipping and manage name input file
 % First unzip original Nifti if needed
 xASL_io_ReadNifti(pathOrigNifti);
@@ -99,6 +121,7 @@ newNifti = xASL_io_ReadNifti(pathOrigNifti);
 newNifti.dat.fname = tempName;
 
 
+%% ====================================================================================
 %% 2. Determine the bit precision
 bInteger8 = min(min(min(min(min(min(min(uint8(imNew)==imNew)))))));
 bInteger16 = min(min(min(min(min(min(min(int16(imNew)==imNew)))))));
@@ -164,6 +187,8 @@ switch nBits
         error('Unknown bit-choice.');
 end
 
+
+%% ====================================================================================
 %% 3. Create new NIfTI
 if ~isempty(changeMat)
 	newNifti.mat = changeMat;
@@ -180,6 +205,7 @@ create(newNifti);
 newNifti.dat(:,:,:,:,:) = imNew;
 
 
+%% ====================================================================================
 %% 4. Remove redundant .mat orientation files
 if size(imNew,4)==1
     xASL_delete(tempMat);
@@ -194,6 +220,7 @@ if exist(tempMat, 'file')
 end
 
 
+%% ====================================================================================
 %% 5. Manage scale slopes
 if exist('ScaleSlope16', 'var')
     newNifti = xASL_io_ReadNifti(tempName);
@@ -207,6 +234,7 @@ if exist('InterceptN', 'var')
 end
 
 
+%% ====================================================================================
 %% 6. Manage new filename
 xASL_Move(tempName,pathNewNifti,1,0);
 
@@ -215,6 +243,7 @@ if exist(tempMat, 'file')
 end
 
 
+%% ====================================================================================
 %% 7. Delete any pre-existing NIfTI files with the same name
 % Always avoid having two of the same files, of which one copy is zipped
 % E.g. in a rerun
@@ -231,6 +260,27 @@ end
 
 if strcmp(pathNewNifti(end-3:end),'.nii') && exist(pathNewNifti,'file') && exist([pathNewNifti '.gz'],'file')
     delete([pathNewNifti '.gz']);
+end
+
+
+%% ====================================================================================
+%% 8. Create JSON sidecar
+if bSaveJson
+    % a. First, we load the reference sidecar JSON file, if it exists
+    if xASL_exist(pathOrigJson, 'file')
+        json = xASL_io_ReadJson(pathOrigJson);
+    else
+        json = struct;
+    end
+
+    % b. Second, we add any provided JSON fields
+    fieldNames = fields(JsonFields);
+    for iField = 1:length(fieldNames)
+        json.(fieldNames{iField}) = JsonFields.(fieldNames{iField});
+    end
+
+    % c. Third, we save the JSON
+    xASL_io_WriteJson(pathNewJson, json, 1); % careful, this will overwrite (that is what the NIfTIs also do in this function)
 end
 
 
