@@ -38,21 +38,17 @@ function [result, x] = xASL_module_ASL(x)
 %
 % - C. Cleanup before rerunning
 %
-% - D - ASL processing parameters
-% - D1. Load ASL parameters (inheritance principle)
-% - D2. Default ASL processing settings in the x.modules.asl field
-%
-% #1543 THIS WILL BE THE FINAL ORDER
-% - D3. TE parsing
-% - D4. PLD parsing
-% - D5. Labeling Duration parsing
-% - D6. TimeEncoded parsing
-% - D7. Automatic session concatenation
-% #1543 NOT THE CURRENT ORDER
-%
-% - E - ASL quantification parameters
-% - E1. Default quantification parameters in the Q field
-% - E2. Define sequence (educated guess based on the Q field)
+% - D - ASL processing & quantification parameters
+% 1. Load ASL parameters (inheritance principle)
+% 2. Default ASL processing settings in the x.modules.asl field
+% 3. TE parsing
+% 4. PLD parsing
+% 5. Labeling Duration parsing
+% 6. TimeEncoded parsing
+% 7. Session merging
+% 8. Default quantification parameters in the Q field
+% 9. Define sequence (educated guess based on the Q field)
+
 % - F. Backward and forward compatibility of filenames
 % - G1. Split ASL and M0 within the ASL time series
 % - G2. DeltaM parsing - check if all/some volumes are deltams
@@ -125,355 +121,10 @@ x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
 % Check and remove all outdated QC fields that are not used anymore
 x = xASL_qc_CleanOldQC(x, bCompleteRerun);
 
-%% D1. Load ASL parameters (inheritance principle)
-[~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bO);
 
 
-%% D2. Default ASL processing settings in the x.modules.asl field
-if ~isfield(x.modules.asl,'bPVCNativeSpace') || isempty(x.modules.asl.bPVCNativeSpace)
-	x.modules.asl.bPVCNativeSpace = 0;
-end
-
-% Initialize the DummyScan and M0 position fields - by default empty
-if ~isfield(x.modules.asl,'DummyScanPositionInASL4D') 
-	x.modules.asl.DummyScanPositionInASL4D = [];
-end
-if ~isfield(x.modules.asl,'M0PositionInASL4D') 
-	x.modules.asl.M0PositionInASL4D = [];
-end
-if ~isfield(x.modules.asl,'motionCorrection')
-    x.modules.asl.motionCorrection = 1;
-end
-if ~isfield(x,'DoWADQCDC')
-    x.DoWADQCDC = false; % default skip WAD-QC stuff
-end
-
-
-%% D3. Multi-TE parsing
-% PM: we do 3 times the same below for TE, PLD, LabelingDuration respectively, we could refactor this code in a for-loop
-% PM: And perhaps we should move these to a separate function
-
-% The echo-time is then only used to scale the M0 to the deltaM if they have different echo-times
-
-if ~isfield(x.Q, 'EchoTime')
-    warning('Missing field x.Q.EchoTime, this can be needed for quantification');
-    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
-	x.Q.NumberEchoTimes = 1;
-elseif isempty(x.Q.EchoTime) || ~isnumeric(x.Q.EchoTime)
-    warning('Illegal field x.Q.EchoTime, this should not be empty and should contain numerical values');
-    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
-	x.Q.NumberEchoTimes = 1;
-else
-    x.Q.uniqueEchoTimes = uniquetol(x.Q.EchoTime, 0.001);
-    x.Q.NumberEchoTimes = length(x.Q.uniqueEchoTimes); % Obtain the number of unique echo times
-    % PM: rename this parameter to x.Q.nUniqueTEs
-    
-    if sum(x.Q.EchoTime<=0)>0
-        warning('x.Q.EchoTime should be positive');
-    end
-
-    % Handle different number of echo times (== potentially different ASL sequences)
-    if x.Q.NumberEchoTimes==1
-        fprintf('%s\n', 'Single-echo ASL detected');
-    elseif x.Q.NumberEchoTimes==2
-        warning('Dual-echo ASL detected, dual-echo ASL processing not yet implemented');
-        fprintf('%s\n', 'We will process these ASL images as if they have a single echo, using the first echo only');
-        fprintf('%s\n', 'Assuming that this is a dual-echo ASL+BOLD sequence');
-        x.Q.EchoTime = min(x.Q.EchoTime);
-		% Update the other fields as well
-		 x.Q.uniqueEchoTimes = x.Q.EchoTime;
-		 x.Q.NumberEchoTimes = 1;
-    elseif x.Q.NumberEchoTimes>2
-        fprintf('%s\n', 'Multiple echo times detected, processing this as multi-echo ASL');
-    end
-    
-    fprintf('%s\n', 'Detected the following unique echo times (ms):')
-    for iTE = 1:x.Q.NumberEchoTimes-1
-        fprintf('%.2f, ', round(x.Q.uniqueEchoTimes(iTE),4));
-    end
-    fprintf('%.2f\n', round(x.Q.uniqueEchoTimes(end),4));
-end
-
-% If multi-TE data is detected, we switch on multi-TE quantification by default. Unless this has been deactived in dataPar.json
-if x.Q.NumberEchoTimes>1
-	if ~isfield(x.modules.asl, 'bQuantifyMultiTE') || isempty(x.modules.asl.bQuantifyMultiTE)
-		% By default, initialize as Multi-TE quantification as true
-		x.modules.asl.bQuantifyMultiTE = true;
-	end
-else
-	x.modules.asl.bQuantifyMultiTE = false;
-end
-
-% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
-nTE = length(x.Q.EchoTime);
-if mod(nVolumes, nTE)~=0
-    error(['Number of echo times (n=' xASL_num2str(nTE) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
-    % If we don't issue an error here, the repmat will crash
-end
-
-factorTE = nVolumes/nTE;
-x.Q.EchoTime = repmat(x.Q.EchoTime(:), [factorTE 1]);
-nTE = length(x.Q.EchoTime);
-
-% Number of echoes should now be equal to the number of ASL volumes
-if nTE~=nVolumes
-    warning(['Number of echo times (n=' xASL_num2str(nTE) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
-end
-
-
-%% D4. Multi-PLD parsing
-if ~isfield(x.Q,'Initial_PLD')
-    warning('Missing field x.Q.Initial_PLD, this is needed for ASL quantification');
-	x.Q.bQuantifyMultiPLD = false;
-elseif isempty(x.Q.Initial_PLD) || ~isnumeric(x.Q.Initial_PLD)
-    warning('Illegal field x.Q.Initial_PLD, this should not be empty and should contain numerical values');
-	x.Q.bQuantifyMultiPLD = false;
-else
-    x.Q.uniqueInitial_PLD = unique(x.Q.Initial_PLD);
-    x.Q.NumberPLDs = length(x.Q.uniqueInitial_PLD);
-    
-    if sum(x.Q.Initial_PLD<=0)>0
-        warning('x.Q.Initial_PLD should be positive');
-    end
-
-    % Handle different number of PLDs
-    if x.Q.NumberPLDs==1
-        fprintf('%s\n', 'Single-PLD ASL detected');
-		x.Q.bQuantifyMultiPLD = false;
-    elseif x.Q.NumberPLDs>1
-		if isfield(x.Q, 'bQuantifyMultiPLD') && ~x.Q.bQuantifyMultiPLD
-			fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.');
-		else
-			% In case it wasn't defined or it was defined as true, we can set it to true
-			x.Q.bQuantifyMultiPLD = true;
-		end
-		if x.Q.bQuantifyMultiPLD
-			fprintf('%s\n', 'Multi PLDs detected, processing this as multi-PLD ASL');
-			fprintf('%s\n', 'Note that this feature is still under development');
-		end
-    end
-
-    fprintf('%s\n', 'Detected the following unique PLDs (ms):')
-    for iPLD = 1:x.Q.NumberPLDs-1
-        fprintf('%d, ',x.Q.uniqueInitial_PLD(iPLD));
-    end
-    fprintf('%d\n',x.Q.uniqueInitial_PLD(end));
-end
-
-% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
-nPLD = length(x.Q.Initial_PLD);
-if mod(nVolumes, nPLD)~=0
-    error(['Number of PLDs (n=' xASL_num2str(nPLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
-    % If we don't issue an error here, the repmat will crash
-end
-
-factorPLD = nVolumes/nPLD;
-x.Q.Initial_PLD = repmat(x.Q.Initial_PLD(:), [factorPLD 1]);
-nPLD = length(x.Q.Initial_PLD);
-
-% Number of initial PLDs should be equal to number of ASL volumes
-if nPLD~=nVolumes
-    warning(['Number of PLDs (n=' xASL_num2str(nPLD) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
-end
-
-%% D5. Labeling Duration parsing
-
-if ~isfield(x.Q,'LabelingDuration')
-    warning('Missing field x.Q.LabelingDuration, this is needed for ASL quantification');
-elseif isempty(x.Q.LabelingDuration) || ~isnumeric(x.Q.LabelingDuration)
-    warning('Illegal field x.Q.LabelingDuration, this should not be empty and should contain numerical values');
-else
-    x.Q.uniqueLabelingDuration = unique(x.Q.LabelingDuration);
-    x.Q.NumberLDs = length(x.Q.uniqueLabelingDuration);
-    
-    if sum(x.Q.LabelingDuration<=0)>0
-        warning('x.Q.LabelingDuration should be positive');
-    end
-
-    % Handle different number of Labeling Durations
-    if x.Q.NumberLDs==1
-        fprintf('%s\n', 'Single-labeling duration ASL detected');
-    elseif x.Q.NumberLDs>1 && x.Q.bQuantifyMultiPLD
-        fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
-    elseif x.Q.NumberLDs>1 && ~x.Q.bQuantifyMultiPLD
-        warning('Multi labeling durations detected but multiPLD-quantification is turnedd off, is this correct?');
-    end
-
-    fprintf('%s\n', 'Detected the following unique Labeling Durations (ms):')
-    for iLD = 1:x.Q.NumberLDs-1
-        fprintf('%d, ',x.Q.uniqueLabelingDuration(iLD));
-    end
-    fprintf('%d\n',x.Q.uniqueLabelingDuration(end));
-end
-
-% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
-nLD = length(x.Q.LabelingDuration);
-if mod(nVolumes, nLD)~=0
-    error(['Number of labeling durations (n=' xASL_num2str(nLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
-    % If we don't issue an error here, the repmat will crash
-end
-
-factorLD = nVolumes/nLD;
-x.Q.LabelingDuration = repmat(x.Q.LabelingDuration(:), [factorLD 1]);
-nLD = length(x.Q.LabelingDuration);
-
-% Number of initial PLDs should be equal to number of ASL volumes
-if nLD~=nVolumes
-    warning(['Number of Labeling Durations (n=' xASL_num2str(nLD) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
-end
-
-
-%% D6. TimeEncoded parsing
-% Check if TimeEncoded is defined
-if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize') || isfield(x.Q, 'TimeEncodedMatrix')
-    fprintf(2,'Time encoded data detected, we will process this but this is a new feature that is still under development\n');
-    x.modules.asl.bTimeEncoded = true;
-	
-	% Initialize as empty if missing
-	if ~isfield(x.Q, 'TimeEncodedMatrixType')
-		x.Q.TimeEncodedMatrixType = [];
-	end
-
-	if ~isfield(x.Q, 'TimeEncodedMatrixSize')
-		x.Q.TimeEncodedMatrixSize = [];
-	end
-
-	if ~isfield(x.Q, 'TimeEncodedMatrix')
-		x.Q.TimeEncodedMatrix = [];
-	end
-
-	% Check for duplicate definitions
-	if isempty(x.Q.TimeEncodedMatrixType) && isempty(x.Q.TimeEncodedMatrix)
-		error('Neither TimeEncodedMatrixType nor TimeEncodedMatrix were provided for a TimeEncoded acquisition.')
-	end
-	
-	if isempty(x.Q.TimeEncodedMatrixSize)
-		if isempty(x.Q.TimeEncodedMatrix)
-			error('TimeEncodedMatrixSize not defined and TimeEncodedMatrix not provided.')
-		else
-			x.Q.TimeEncodedMatrixSize = size(x.Q.TimeEncodedMatrix,1);
-		end
-	else
-		if (x.Q.TimeEncodedMatrixSize < 2)
-			fprintf(2,'TimeEncodedMatrixSize field missing (should be a multiple of 4)...\n');
-		end
-		if (x.Q.TimeEncodedMatrixSize ~= size(x.Q.TimeEncodedMatrix, 1))
-			error('Mismatch between TimeEncodedMatrix size and TimeEncodedMatrixSize parameters.');
-		end
-	end
-else
-	x.modules.asl.bTimeEncoded = false;
-end
-
-% Check if there is Decoding Matrix as input
-%(some datasets will have a decoding matrix that we can use directly in the decoding part)
-
-
-
-
-%% D6. Automatic session merging
-% Initialization
-nLists = 0;
-
-% SessionMergingList == total list of sessions that need concatenating (can be multiple lists for multiple concatenations)
-% Read the list of sessions to merge, defaulting to empty
-if ~isfield(x.modules.asl, 'SessionMergingList')
-	x.modules.asl.SessionMergingList = {};
-else
-	% The parameter should be a list of lists, but if a single list is provided, it converts it
-	if ~isempty(x.modules.asl.SessionMergingList) && iscell(x.modules.asl.SessionMergingList) && ~iscell(x.modules.asl.SessionMergingList{1})
-		x.modules.asl.SessionMergingList = {x.modules.asl.SessionMergingList};
-	end
-    nLists = numel(x.modules.asl.SessionMergingList);
-    fprintf('\n%s', ['-> Detected ' xASL_num2str(nLists) ' list(s) for concatenating sessions']);
-end
-
-x.modules.asl.bMergingSessions = 0; % By default, we do not merge any sessions
-% sessionsToMerge = session list that we will concatenate for this specific session & run of xASL_module_ASL
-% e.g., if we want to concatenate ASL_1 & ASL_2, this will only contain both sessions for the xASL_module_ASL iteration of ASL_2
-x.modules.asl.sessionsToMerge = {};
-
-
-% Find the lists containing the current session
-% Note that these can be multiple lists
-bSessionListed = false; % It is possible that a single session is in multiple list. That is not illegal
-for iList=1:nLists
-	if ~isempty(x.modules.asl.SessionMergingList{iList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iList}))
-		if bSessionListed
-			fprintf(['Session ' x.SESSION ' appears in more than one list of sessions to merge.\n']);
-		else
-			x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList};
-			bSessionListed = true;
-		end
-
-        if strcmp(x.SESSION, x.modules.asl.SessionMergingList{iList}{end})
-            % If the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
-
-			% If merging is already set to true, it means that there was a previous list to be merged. We report this as a warning and we keep the first fitting list to be merged
-			if x.modules.asl.bMergingSessions
-				warning(['Session ' x.SESSION ' is at the end of more than one list of sessions to merge. We ignore all such lists but the first.'])
-			else
-				% We have to assign the list again, because it is possible that sessionsToMerge was already initialized to a list that contained the current session, but that was not ending it
-				x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList}; 				                                                            
-				x.modules.asl.bMergingSessions = 1;
-			end
-        end
-	end
-end
-
-if x.modules.asl.bMergingSessions
-    fprintf('%s', ' and will now concatenate the following sessions:')
-    for iSession = 1:numel(x.modules.asl.sessionsToMerge)
-        fprintf([' ' x.modules.asl.sessionsToMerge{iSession}]);
-    end
-    fprintf('\n');
-else
-    fprintf('%s\n\n', [' but will not concatenate them here (xASL_module_ASL: ' x.SESSION ')']);
-end
-
-
-%% E1. Default quantification parameters in the Q field
-if ~isfield(x.modules.asl,'ApplyQuantification') || isempty(x.modules.asl.ApplyQuantification)
-    x.modules.asl.ApplyQuantification = [1 1 1 1 1 1]; % by default we perform scaling/quantification in all steps
-elseif length(x.modules.asl.ApplyQuantification)>6
-    warning('x.modules.asl.ApplyQuantification had too many parameters');
-    x.modules.asl.ApplyQuantification = x.modules.asl.ApplyQuantification(1:6);
-elseif length(x.modules.asl.ApplyQuantification)<6
-    warning('x.modules.asl.ApplyQuantification had too few parameters, using default 1');
-    x.modules.asl.ApplyQuantification(length(x.modules.asl.ApplyQuantification)+1:6) = 1;
-end
-
-if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSuppressionNumberPulses')
-    % Temporary backwards compatibility that needs to go
-    x.Q.BackgroundSuppressionNumberPulses = x.BackgroundSuppressionNumberPulses;
-end
-
-if ~isfield(x.Q, 'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
-	x.Q.bUseBasilQuantification = false;
-    
-    if x.Q.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
-        x.Q.bUseBasilQuantification = true;
-    end
-end
-
-% Manage absent M0
-if ~x.modules.asl.ApplyQuantification(5) && ~xASL_exist(x.P.Path_M0) && ~strcmp(x.Q.M0, 'Absent')
-    warning('M0 division was disabled & M0 missing, setting M0 to "absent"');
-    x.Q.M0 = 'Absent';
-end
-
-if strcmp(x.Q.M0, 'Absent')
-    fprintf('%s\n', 'x.Q.M0="Absent" so disabling M0 processing');
-    x.modules.asl.ApplyQuantification([2, 4, 5]) = 0;
-    
-    if xASL_exist(x.P.Path_M0)
-        warning('Ignoring existing M0 file because of x.Q.M0="Absent"');
-    end
-end
-
-
-%% E2. Define sequence (educated guess based on the Q field)
-x = xASL_adm_DefineASLSequence(x, bO);
+%% D. ASL processing & quantification parameters
+x = xASL_module_ASL_ParseParameters(x);
 
 
 %% F. Backward and forward compatibility of filenames
@@ -874,3 +525,376 @@ function [x, bSkip] = xASL_module_ASL_CheckASL(x)
 end
 
 
+
+
+
+
+
+%% =============================================================================================
+function [x,outputArg2] = xASL_module_ASL_ParseParameters(x,inputArg2)
+%% xASL_module_ASL_ParseParameters Manage ASL-specific quantification and processing parameters
+% 1. Load ASL parameters (inheritance principle)
+% 2. Default ASL processing settings in the x.modules.asl field
+% 3. TE parsing
+% 4. PLD parsing
+% 5. Labeling Duration parsing
+% 6. TimeEncoded parsing
+% 7. Session merging
+% 8. Default quantification parameters in the Q field
+% 9. Define sequence (educated guess based on the Q field)
+
+
+%% 1. Load ASL parameters (inheritance principle)
+[~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bO);
+
+
+%% 2. Default ASL processing settings in the x.modules.asl field
+if ~isfield(x.modules.asl,'bPVCNativeSpace') || isempty(x.modules.asl.bPVCNativeSpace)
+	x.modules.asl.bPVCNativeSpace = 0;
+end
+
+% Initialize the DummyScan and M0 position fields - by default empty
+if ~isfield(x.modules.asl,'DummyScanPositionInASL4D') 
+	x.modules.asl.DummyScanPositionInASL4D = [];
+end
+if ~isfield(x.modules.asl,'M0PositionInASL4D') 
+	x.modules.asl.M0PositionInASL4D = [];
+end
+if ~isfield(x.modules.asl,'motionCorrection')
+    x.modules.asl.motionCorrection = 1;
+end
+if ~isfield(x,'DoWADQCDC')
+    x.DoWADQCDC = false; % default skip WAD-QC stuff
+end
+
+
+%% 3. Multi-TE parsing
+% PM: we do 3 times the same below for TE, PLD, LabelingDuration respectively, we could refactor this code in a for-loop
+% PM: And perhaps we should move these to a separate function
+
+% The echo-time is then only used to scale the M0 to the deltaM if they have different echo-times
+
+if ~isfield(x.Q, 'EchoTime')
+    warning('Missing field x.Q.EchoTime, this can be needed for quantification');
+    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
+	x.Q.NumberEchoTimes = 1;
+elseif isempty(x.Q.EchoTime) || ~isnumeric(x.Q.EchoTime)
+    warning('Illegal field x.Q.EchoTime, this should not be empty and should contain numerical values');
+    fprintf('%s\n', 'Defaulting to single-echo ASL processing');
+	x.Q.NumberEchoTimes = 1;
+else
+    x.Q.uniqueEchoTimes = uniquetol(x.Q.EchoTime, 0.001);
+    x.Q.NumberEchoTimes = length(x.Q.uniqueEchoTimes); % Obtain the number of unique echo times
+    % PM: rename this parameter to x.Q.nUniqueTEs
+    
+    if sum(x.Q.EchoTime<=0)>0
+        warning('x.Q.EchoTime should be positive');
+    end
+
+    % Handle different number of echo times (== potentially different ASL sequences)
+    if x.Q.NumberEchoTimes==1
+        fprintf('%s\n', 'Single-echo ASL detected');
+    elseif x.Q.NumberEchoTimes==2
+        warning('Dual-echo ASL detected, dual-echo ASL processing not yet implemented');
+        fprintf('%s\n', 'We will process these ASL images as if they have a single echo, using the first echo only');
+        fprintf('%s\n', 'Assuming that this is a dual-echo ASL+BOLD sequence');
+        x.Q.EchoTime = min(x.Q.EchoTime);
+		% Update the other fields as well
+		 x.Q.uniqueEchoTimes = x.Q.EchoTime;
+		 x.Q.NumberEchoTimes = 1;
+    elseif x.Q.NumberEchoTimes>2
+        fprintf('%s\n', 'Multiple echo times detected, processing this as multi-echo ASL');
+    end
+    
+    fprintf('%s\n', 'Detected the following unique echo times (ms):')
+    for iTE = 1:x.Q.NumberEchoTimes-1
+        fprintf('%.2f, ', round(x.Q.uniqueEchoTimes(iTE),4));
+    end
+    fprintf('%.2f\n', round(x.Q.uniqueEchoTimes(end),4));
+end
+
+% If multi-TE data is detected, we switch on multi-TE quantification by default. Unless this has been deactived in dataPar.json
+if x.Q.NumberEchoTimes>1
+	if ~isfield(x.modules.asl, 'bQuantifyMultiTE') || isempty(x.modules.asl.bQuantifyMultiTE)
+		% By default, initialize as Multi-TE quantification as true
+		x.modules.asl.bQuantifyMultiTE = true;
+	end
+else
+	x.modules.asl.bQuantifyMultiTE = false;
+end
+
+% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
+nTE = length(x.Q.EchoTime);
+if mod(nVolumes, nTE)~=0
+    error(['Number of echo times (n=' xASL_num2str(nTE) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+    % If we don't issue an error here, the repmat will crash
+end
+
+factorTE = nVolumes/nTE;
+x.Q.EchoTime = repmat(x.Q.EchoTime(:), [factorTE 1]);
+nTE = length(x.Q.EchoTime);
+
+% Number of echoes should now be equal to the number of ASL volumes
+if nTE~=nVolumes
+    warning(['Number of echo times (n=' xASL_num2str(nTE) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
+end
+
+
+
+%% 4. Multi-PLD parsing
+if ~isfield(x.Q,'Initial_PLD')
+    warning('Missing field x.Q.Initial_PLD, this is needed for ASL quantification');
+	x.Q.bQuantifyMultiPLD = false;
+elseif isempty(x.Q.Initial_PLD) || ~isnumeric(x.Q.Initial_PLD)
+    warning('Illegal field x.Q.Initial_PLD, this should not be empty and should contain numerical values');
+	x.Q.bQuantifyMultiPLD = false;
+else
+    x.Q.uniqueInitial_PLD = unique(x.Q.Initial_PLD);
+    x.Q.NumberPLDs = length(x.Q.uniqueInitial_PLD);
+    
+    if sum(x.Q.Initial_PLD<=0)>0
+        warning('x.Q.Initial_PLD should be positive');
+    end
+
+    % Handle different number of PLDs
+    if x.Q.NumberPLDs==1
+        fprintf('%s\n', 'Single-PLD ASL detected');
+		x.Q.bQuantifyMultiPLD = false;
+    else
+        
+        if x.Q.NumberPLDs>1
+		                    if isfield(x.Q, 'bQuantifyMultiPLD') && ~x.Q.bQuantifyMultiPLD
+			                    fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.');
+		                    else
+			                % In case it wasn't defined or it was defined as true, we can set it to true
+			                x.Q.bQuantifyMultiPLD = true;
+                            end
+		end
+		if x.Q.bQuantifyMultiPLD
+			fprintf('%s\n', 'Multi PLDs detected, processing this as multi-PLD ASL');
+			fprintf('%s\n', 'Note that this feature is still under development');
+		end
+    end
+
+    fprintf('%s\n', 'Detected the following unique PLDs (ms):')
+    for iPLD = 1:x.Q.NumberPLDs-1
+        fprintf('%d, ',x.Q.uniqueInitial_PLD(iPLD));
+    end
+    fprintf('%d\n',x.Q.uniqueInitial_PLD(end));
+end
+
+% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
+nPLD = length(x.Q.Initial_PLD);
+if mod(nVolumes, nPLD)~=0
+    error(['Number of PLDs (n=' xASL_num2str(nPLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+    % If we don't issue an error here, the repmat will crash
+end
+
+factorPLD = nVolumes/nPLD;
+x.Q.Initial_PLD = repmat(x.Q.Initial_PLD(:), [factorPLD 1]);
+nPLD = length(x.Q.Initial_PLD);
+
+% Number of initial PLDs should be equal to number of ASL volumes
+if nPLD~=nVolumes
+    warning(['Number of PLDs (n=' xASL_num2str(nPLD) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
+end
+
+%% 5. Labeling Duration parsing
+
+if ~isfield(x.Q,'LabelingDuration')
+    warning('Missing field x.Q.LabelingDuration, this is needed for ASL quantification');
+elseif isempty(x.Q.LabelingDuration) || ~isnumeric(x.Q.LabelingDuration)
+    warning('Illegal field x.Q.LabelingDuration, this should not be empty and should contain numerical values');
+else
+    x.Q.uniqueLabelingDuration = unique(x.Q.LabelingDuration);
+    x.Q.NumberLDs = length(x.Q.uniqueLabelingDuration);
+    
+    if sum(x.Q.LabelingDuration<=0)>0
+        warning('x.Q.LabelingDuration should be positive');
+    end
+
+    % Handle different number of Labeling Durations
+    if x.Q.NumberLDs==1
+        fprintf('%s\n', 'Single-labeling duration ASL detected');
+    elseif x.Q.NumberLDs>1 && x.Q.bQuantifyMultiPLD
+        fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
+    elseif x.Q.NumberLDs>1 && ~x.Q.bQuantifyMultiPLD
+        warning('Multi labeling durations detected but multiPLD-quantification is turned off, is this correct?');
+    end
+
+    fprintf('%s\n', 'Detected the following unique Labeling Durations (ms):')
+    for iLD = 1:x.Q.NumberLDs-1
+        fprintf('%d, ',x.Q.uniqueLabelingDuration(iLD));
+    end
+    fprintf('%d\n',x.Q.uniqueLabelingDuration(end));
+end
+
+% Deal with too short vectors (e.g., repetitions in the case of single-PLD)
+nLD = length(x.Q.LabelingDuration);
+if mod(nVolumes, nLD)~=0
+    error(['Number of labeling durations (n=' xASL_num2str(nLD) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+    % If we don't issue an error here, the repmat will crash
+end
+
+factorLD = nVolumes/nLD;
+x.Q.LabelingDuration = repmat(x.Q.LabelingDuration(:), [factorLD 1]);
+nLD = length(x.Q.LabelingDuration);
+
+% Number of initial PLDs should be equal to number of ASL volumes
+if nLD~=nVolumes
+    warning(['Number of Labeling Durations (n=' xASL_num2str(nLD) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
+end
+
+
+%% 6. TimeEncoded parsing
+% Check if TimeEncoded is defined
+if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize') || isfield(x.Q, 'TimeEncodedMatrix')
+    fprintf(2,'Time encoded data detected, we will process this but this is a new feature that is still under development\n');
+    x.modules.asl.bTimeEncoded = true;
+	
+	% Initialize as empty if missing
+	if ~isfield(x.Q, 'TimeEncodedMatrixType')
+		x.Q.TimeEncodedMatrixType = [];
+	end
+
+	if ~isfield(x.Q, 'TimeEncodedMatrixSize')
+		x.Q.TimeEncodedMatrixSize = [];
+	end
+
+	if ~isfield(x.Q, 'TimeEncodedMatrix')
+		x.Q.TimeEncodedMatrix = [];
+	end
+
+	% Check for duplicate definitions
+	if isempty(x.Q.TimeEncodedMatrixType) && isempty(x.Q.TimeEncodedMatrix)
+		error('Neither TimeEncodedMatrixType nor TimeEncodedMatrix were provided for a TimeEncoded acquisition.')
+	end
+	
+	if isempty(x.Q.TimeEncodedMatrixSize)
+		if isempty(x.Q.TimeEncodedMatrix)
+			error('TimeEncodedMatrixSize not defined and TimeEncodedMatrix not provided.')
+		else
+			x.Q.TimeEncodedMatrixSize = size(x.Q.TimeEncodedMatrix,1);
+		end
+	else
+		if (x.Q.TimeEncodedMatrixSize < 2)
+			fprintf(2,'TimeEncodedMatrixSize field missing (should be a multiple of 4)...\n');
+		end
+		if (x.Q.TimeEncodedMatrixSize ~= size(x.Q.TimeEncodedMatrix, 1))
+			error('Mismatch between TimeEncodedMatrix size and TimeEncodedMatrixSize parameters.');
+		end
+	end
+else
+	x.modules.asl.bTimeEncoded = false;
+end
+
+% Check if there is Decoding Matrix as input
+%(some datasets will have a decoding matrix that we can use directly in the decoding part)
+
+%% 7. Session merging
+% Initialization
+nLists = 0;
+
+% SessionMergingList == total list of sessions that need concatenating (can be multiple lists for multiple concatenations)
+% Read the list of sessions to merge, defaulting to empty
+if ~isfield(x.modules.asl, 'SessionMergingList')
+	x.modules.asl.SessionMergingList = {};
+else
+	% The parameter should be a list of lists, but if a single list is provided, it converts it
+	if ~isempty(x.modules.asl.SessionMergingList) && iscell(x.modules.asl.SessionMergingList) && ~iscell(x.modules.asl.SessionMergingList{1})
+		x.modules.asl.SessionMergingList = {x.modules.asl.SessionMergingList};
+	end
+    nLists = numel(x.modules.asl.SessionMergingList);
+    fprintf('\n%s', ['-> Detected ' xASL_num2str(nLists) ' list(s) for concatenating sessions']);
+end
+
+x.modules.asl.bMergingSessions = 0; % By default, we do not merge any sessions
+% sessionsToMerge = session list that we will concatenate for this specific session & run of xASL_module_ASL
+% e.g., if we want to concatenate ASL_1 & ASL_2, this will only contain both sessions for the xASL_module_ASL iteration of ASL_2
+x.modules.asl.sessionsToMerge = {};
+
+
+% Find the lists containing the current session
+% Note that these can be multiple lists
+bSessionListed = false; % It is possible that a single session is in multiple list. That is not illegal
+for iList=1:nLists
+	if ~isempty(x.modules.asl.SessionMergingList{iList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iList}))
+		if bSessionListed
+			fprintf(['Session ' x.SESSION ' appears in more than one list of sessions to merge.\n']);
+		else
+			x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList};
+			bSessionListed = true;
+		end
+
+        if strcmp(x.SESSION, x.modules.asl.SessionMergingList{iList}{end})
+            % If the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
+
+			% If merging is already set to true, it means that there was a previous list to be merged. We report this as a warning and we keep the first fitting list to be merged
+			if x.modules.asl.bMergingSessions
+				warning(['Session ' x.SESSION ' is at the end of more than one list of sessions to merge. We ignore all such lists but the first.'])
+			else
+				% We have to assign the list again, because it is possible that sessionsToMerge was already initialized to a list that contained the current session, but that was not ending it
+				x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList}; 				                                                            
+				x.modules.asl.bMergingSessions = 1;
+			end
+        end
+	end
+end
+
+if x.modules.asl.bMergingSessions
+    fprintf('%s', ' and will now concatenate the following sessions:')
+    for iSession = 1:numel(x.modules.asl.sessionsToMerge)
+        fprintf([' ' x.modules.asl.sessionsToMerge{iSession}]);
+    end
+    fprintf('\n');
+else
+    fprintf('%s\n\n', [' but will not concatenate them here (xASL_module_ASL: ' x.SESSION ')']);
+end
+
+
+%% 8. Default quantification parameters in the Q field
+if ~isfield(x.modules.asl,'ApplyQuantification') || isempty(x.modules.asl.ApplyQuantification)
+    x.modules.asl.ApplyQuantification = [1 1 1 1 1 1]; % by default we perform scaling/quantification in all steps
+elseif length(x.modules.asl.ApplyQuantification)>6
+    warning('x.modules.asl.ApplyQuantification had too many parameters');
+    x.modules.asl.ApplyQuantification = x.modules.asl.ApplyQuantification(1:6);
+elseif length(x.modules.asl.ApplyQuantification)<6
+    warning('x.modules.asl.ApplyQuantification had too few parameters, using default 1');
+    x.modules.asl.ApplyQuantification(length(x.modules.asl.ApplyQuantification)+1:6) = 1;
+end
+
+if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSuppressionNumberPulses')
+    % Temporary backwards compatibility that needs to go
+    x.Q.BackgroundSuppressionNumberPulses = x.BackgroundSuppressionNumberPulses;
+end
+
+if ~isfield(x.Q, 'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
+	x.Q.bUseBasilQuantification = false;
+    
+    if x.Q.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
+        x.Q.bUseBasilQuantification = true;
+    end
+end
+
+% Manage absent M0
+if ~x.modules.asl.ApplyQuantification(5) && ~xASL_exist(x.P.Path_M0) && ~strcmp(x.Q.M0, 'Absent')
+    warning('M0 division was disabled & M0 missing, setting M0 to "absent"');
+    x.Q.M0 = 'Absent';
+end
+
+if strcmp(x.Q.M0, 'Absent')
+    fprintf('%s\n', 'x.Q.M0="Absent" so disabling M0 processing');
+    x.modules.asl.ApplyQuantification([2, 4, 5]) = 0;
+    
+    if xASL_exist(x.P.Path_M0)
+        warning('Ignoring existing M0 file because of x.Q.M0="Absent"');
+    end
+end
+
+
+%% 9. Define sequence (educated guess based on the Q field)
+x = xASL_adm_DefineASLSequence(x, bO);
+
+
+
+end
