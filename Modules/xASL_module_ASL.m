@@ -184,7 +184,7 @@ if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize'
 		if (x.Q.TimeEncodedMatrixSize < 2)
 			fprintf(2,'TimeEncodedMatrixSize field missing (should be a multiple of 4)...\n');
 		end
-		if (x.Q.TimeEncodedMatrixSize ~= size(x.Q.TimeEncodedMatrix, 1))
+		if ~isempty(x.Q.TimeEncodedMatrix) && (x.Q.TimeEncodedMatrixSize ~= size(x.Q.TimeEncodedMatrix, 1))
 			error('Mismatch between TimeEncodedMatrix size and TimeEncodedMatrixSize parameters.');
 		end
 	end
