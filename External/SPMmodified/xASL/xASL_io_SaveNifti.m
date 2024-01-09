@@ -1,7 +1,7 @@
 function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields)
 % Save a file to a Nifti format, while taking the parameters from another file
 %
-% FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, newMat])
+% FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields])
 %
 % INPUT:
 %   pathOrigNifti  Path to the original Nifti file to take parameters from (REQUIRED)
@@ -20,8 +20,8 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %   JsonFields     Save additional JsonFields to a new JSON sidecar (or merged with the original Json content)
 %                  These fields overwrite fields with the same fieldnames in the original Json
 %                  (OPTIONAL, DEFAULT = struct() empty)
-% Options are:
-% 1. bSaveJson     = false                       -> we don't save a new JSON sidecar
+% JSON saving options are:
+% 1. bCopyOrigJson = false & JsonFields = empty  -> we don't save a new JSON sidecar
 % 2. bCopyOrigJson = true  & JsonFields = empty  -> we copy the original JSON sidecar only
 % 3. bCopyOrigJson = false & JsonFields = filled -> we create a new JSON sidecar with new fields only
 % 4. bCopyOrigJson = true  & JsonFields = filled -> we merge the original JSON sidecar with the new fields
@@ -70,13 +70,9 @@ else
 	end
 end
 
-% JSON saving
-% Options are:
-% 1. bSaveJson     = false                       -> we don't save a new JSON sidecar
-% 2. bCopyOrigJson = true  & JsonFields = empty  -> we copy the original JSON sidecar only
-% 3. bCopyOrigJson = false & JsonFields = filled -> we create a new JSON sidecar with new fields only
-% 4. bCopyOrigJson = true  & JsonFields = filled -> we merge the original JSON sidecar with the new fields
-%                                                   the new fields have priority
+% JSON saving, see detailed explanation above.
+% If bCopyOrigJson is true OR JsonFields is not empty, we set bSaveJson to true
+% So we only save a JSON in either or both of these cases
 bSaveJson = false;
 
 if nargin < 7 || isempty(bCopyOrigJson)
@@ -86,7 +82,11 @@ else
 end
 
 if nargin < 8 || isempty(JsonFields)
-    JsonFields = struct([]);
+    JsonFields = struct;
+elseif ~isstruct(JsonFields)
+    error('JsonFields input variable should be a struct');
+elseif isempty(fields(JsonFields))
+    JsonFields = struct;
 else
     bSaveJson = true;
 end
@@ -279,14 +279,19 @@ end
 
 %% ====================================================================================
 %% 8. Create JSON sidecar
+% 0. Remove JSON sidecar if it already exists
+% Even if we don't save a new one, then we still don't want the wrong sidecar to a new NIfTI
+xASL_delete(pathNewJson);
+
 if bSaveJson
     % a. First, we load the reference sidecar JSON file, if it exists
     if bCopyOrigJson && xASL_exist(pathOrigJson, 'file')
         json = xASL_io_ReadJson(pathOrigJson);
     elseif bCopyOrigJson
         warning([pathOrigJson ' did not exist']);
+        json = struct;
     else
-        json = struct([]);
+        json = struct;
     end
 
     % b. Second, we add any provided JSON fields
