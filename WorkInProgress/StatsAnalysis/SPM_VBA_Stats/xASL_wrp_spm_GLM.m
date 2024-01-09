@@ -243,10 +243,10 @@ function LoadFile = xASL_adm_Load4DMemMapping(x, WhichModality)
 
 
 %% Admin, specify for each modality how to treat it
-ModalitiesList  = {'ASL' 'ASL_notScaled' 'ASL_untreated' 'ASL_PVEc'  'ASL_HctCohort'    'ASL_HctCorrInd' 'PWI' 'M0' 'mean_control' 'SD' 'SNR' 'TT' 'ATT' 'PV_pGM' 'PV_pWM'  'FLAIR'   'T1'  'WMH_SEGM'  'c1T1' 'R1'  'T1c'  'T2'};
-PrefixList      = {''    'notScaled'     'untreated'     'GM_PVEC'   'HctCorr_cohort'   'HctCorrInd'     'PWI' 'M0' 'mean_control' 'SD' 'SNR' 'TT' 'ATT' 'PV_pGM' 'PV_pWM' 'rFLAIR' 'rT1' 'rWMH_SEGM'  'rc1T1' 'R1' 'rT1c' 'rT2'};
-qCBFprefix      = [1     1               1               1           1                  1                0     0    0              0    0     0     0     0        0        0        0      0           0       0     0      0];
-NoSession       = [0     0               0               0           0                  0                0     0    0              0    0     1     0     1        1        1        1      1           1       1     1      1];
+ModalitiesList  = {'ASL' 'ASL_notScaled' 'ASL_untreated' 'ASL_PVEc'  'ASL_HctCohort'    'ASL_HctCorrInd' 'PWI' 'M0' 'mean_control' 'SD' 'SNR' 'TT' 'ATT' 'PV_pGM' 'PV_pWM' 'PV_pCSF' 'FLAIR'  'T1'   'WMH_SEGM'  'c1T1'  'R1'  'T1c'  'T2'};
+PrefixList      = {''    'notScaled'     'untreated'     'GM_PVEC'   'HctCorr_cohort'   'HctCorrInd'     'PWI' 'M0' 'mean_control' 'SD' 'SNR' 'TT' 'ATT' 'PV_pGM' 'PV_pWM' 'PV_pCSF' 'rFLAIR' 'rT1' 'rWMH_SEGM'  'rc1T1' 'R1' 'rT1c' 'rT2'};
+qCBFprefix      = [1     1               1               1           1                  1                0     0    0              0    0     0     0     0        0        0         0        0      0           0       0     0      0];
+NoSession       = [0     0               0               0           0                  0                0     0    0              0    0     1     0     1        1        1         1        1      1           1       1     1      1];
 
 %% Which modality are we currently processing
 for iC=1:length(ModalitiesList)

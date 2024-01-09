@@ -59,7 +59,7 @@ end
 x.P.STRUCT = 'T1';
 
 % FileTypes in SUBJECTDIR
-FileDef{1} = {'FLAIR' 'T1' 'T1c' 'T2' 'T1_filled' 'c1T1' 'c2T1' 'c3T1' 'j_T1' 'y_T1' 'WMH_SEGM' 'R1' 'PV_pGM' 'PV_pWM' 'PV_WMH_SEGM'};
+FileDef{1} = {'FLAIR' 'T1' 'T1c' 'T2' 'T1_filled' 'c1T1' 'c2T1' 'c3T1' 'j_T1' 'y_T1' 'WMH_SEGM' 'R1' 'PV_pGM' 'PV_pWM' 'PV_pCSF' 'PV_WMH_SEGM'};
 
 % FileTypes in SESSIONDIR
 FileDef{2} = {'y_ASL' 'ASL4D' 'ASL4D_RevPE' 'M0_RevPE'...

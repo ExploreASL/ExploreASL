@@ -245,6 +245,7 @@ if UsePredefined
 	PreFixList{end+1}   = ['r' x.P.T2];                         TemplateNameList{end+1}    = 'T2';          SessionsExist(end+1) =  0;
     PreFixList{end+1}   = 'PV_pGM';                             TemplateNameList{end+1}    = 'PV_pGM';      SessionsExist(end+1) =  0;
     PreFixList{end+1}   = 'PV_pWM';                             TemplateNameList{end+1}    = 'PV_pWM';      SessionsExist(end+1) =  0;
+	PreFixList{end+1}   = 'PV_pCSF';                            TemplateNameList{end+1}    = 'PV_pCSF';      SessionsExist(end+1) =  0;
     PreFixList{end+1}   = 'R1';                                 TemplateNameList{end+1}    = 'R1';          SessionsExist(end+1) =  0;
     %
     % ASL images

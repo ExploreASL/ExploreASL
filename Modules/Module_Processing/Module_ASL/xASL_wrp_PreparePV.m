@@ -49,7 +49,7 @@ if ~bStandardSpace
 end
 
 % Use either original or motion estimated ASL4D
-% Use despiked ASL only if spikes were detected and new file has been created
+% Use despiked ASL only if spikes were detected and new file has been createdcsf
 % Otherwise, despiked_raw_asl = same as original file
 if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
@@ -76,6 +76,10 @@ else
         % also do this in standard space
         xASL_Copy(x.P.Pop_Path_rc1T1, x.P.Pop_Path_PV_pGM, true);
         xASL_Copy(x.P.Pop_Path_rc2T1, x.P.Pop_Path_PV_pWM, true);
+
+		if xASL_exist(x.P.Pop_Path_rc3T1)
+            xASL_Copy(x.P.Pop_Path_rc3T1, x.P.Path_PV_pCSF, true);
+		end
 		
 		if xASL_exist(x.P.Path_rWMH_SEGM)
             xASL_Copy(x.P.Path_rWMH_SEGM, x.P.Pop_Path_PV_WMH_SEGM, true);
@@ -117,22 +121,28 @@ if bStandardSpace
 	
 	%% ------------------------------------------------------------------------------------------
 	% 5)    Move smoothed tissue posteriors to MNI space
+	InputList = {x.P.Path_rc1T1,x.P.Path_rc2T1};
+	OutputList = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM};
 	if xASL_exist(x.P.Path_WMH_SEGM)
-		InputList   = {x.P.Path_rc1T1,x.P.Path_rc2T1,x.P.Path_rWMH_SEGM};
-		OutputList  = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM,x.P.Pop_Path_PV_WMH_SEGM};
-	else
-		InputList   = {x.P.Path_rc1T1,x.P.Path_rc2T1};
-		OutputList  = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM};
+		InputList{end+1} = x.P.Path_rWMH_SEGM;
+		OutputList{end+1} = x.P.Pop_Path_PV_WMH_SEGM;
+	end
+
+	if xASL_exist(x.P.Path_rc3T1)
+		InputList{end+1} = x.P.Path_rc3T1;
+		OutputList{end+1} = x.P.Pop_Path_PV_pCSF;
 	end
 	
 	xASL_spm_deformations(x,InputList,OutputList,4, [], [], x.P.Path_y_ASL );
 	% Housekeeping
+	List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI};
 	if xASL_exist(x.P.Path_WMH_SEGM)
-		List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI x.P.Path_rWMH_SEGM};
-	else
-		List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI};
+		List2Del{end+1} = x.P.Path_rWMH_SEGM;
 	end
-	
+
+	if xASL_exist(x.P.Path_rc3T1)
+		List2Del{end+1} = x.P.Path_rc3T1;
+	end
     if x.settings.DELETETEMP
         for iL=1:length(List2Del)
             xASL_delete(List2Del{iL});
