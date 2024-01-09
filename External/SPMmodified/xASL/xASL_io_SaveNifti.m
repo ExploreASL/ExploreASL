@@ -111,13 +111,13 @@ pathOrigJson = fullfile(PathOri, [NameOri '.json']);
 
 % Create temporary name for new NIFTI, since if pathOrigNifti & pathNewNifti
 % are the same, this will work better
-tempName = [pathNewNifti(1:end-4) '_temp.nii'];
-tempMat = [pathNewNifti(1:end-4) '_temp.mat'];
-newMat = [pathNewNifti(1:end-4) '.mat'];
+tempName = fullfile(PathNew, [NameNew '_temp.nii']);
+tempMat = fullfile(PathNew, [NameNew '_temp.mat']);
+newMat = fullfile(PathNew, [NameNew '.mat']);
 
 % Remove temp files in case they exist from a previous crash
 if xASL_exist(tempName)
-    warning(['Temporary file already existed, removing: ' tempName]);
+    warning(['Temporary file already existed, perhaps from a previous crash? Removing: ' tempName]);
     xASL_delete(tempName);
     xASL_delete(tempMat);
 end
@@ -221,6 +221,10 @@ newNifti.dat(:,:,:,:,:) = imNew;
 
 %% ====================================================================================
 %% 4. Remove redundant .mat orientation files
+% Start with removing any pre-existing destination .mat files
+% Even if we don't create a new one, we don't want the wrong .mat motion orientation file with a new NIfTI
+xASL_delete(newMat);
+
 if size(imNew,4)==1
     xASL_delete(tempMat);
 end
@@ -253,7 +257,7 @@ end
 xASL_Move(tempName,pathNewNifti,1,0);
 
 if exist(tempMat, 'file')
-    xASL_Move(tempMat,newMat,1,0);
+    xASL_Move(tempMat, newMat, 1, 0);
 end
 
 
