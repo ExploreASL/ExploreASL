@@ -42,13 +42,12 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: NegativeMask = xASL_im_MaskNegativeVascularSignal(x);
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
 
- 
     if nargin<2 || isempty(IsSpace)
         warning('Didnt know space to calculate negative mask in, skipping');
         return;
@@ -61,7 +60,7 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
         GMpath = x.P.Path_PVgm;
     elseif IsSpace==2 % standard space
         PWIpath = x.P.Pop_Path_PWI;
-        GMpath = x.P.Pop_Path_rc1T1;
+        GMpath = x.P.Pop_Path_PV_pGM;
         % no need to reslice
     end
     
@@ -141,6 +140,5 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
  
     xASL_TrackProgress(1,1);
     fprintf('\n');
-    
     
 end

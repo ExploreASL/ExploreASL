@@ -40,7 +40,6 @@ function x = xASL_wrp_PreparePV(x, bStandardSpace)
 % you may only use this file in compliance with the License.
 % __________________________________
 
-
 %% ------------------------------------------------------------------------------------------
 %% 0)   Admin
 if nargin<2 || isempty(bStandardSpace)
@@ -68,7 +67,7 @@ else
         xASL_Copy(x.P.Path_c1T1, x.P.Path_PVgm, true);
         xASL_Copy(x.P.Path_c2T1, x.P.Path_PVwm, true);
 		xASL_Copy(x.P.Path_c3T1, x.P.Path_PVcsf, true);
-				
+		
 		if xASL_exist(x.P.Path_WMH_SEGM, 'file')
             xASL_Copy(x.P.Path_WMH_SEGM, x.P.Path_PVwmh, true);
 		end
@@ -105,7 +104,7 @@ if bStandardSpace
 	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c1T1 ',1'], [],[], x.settings.Quality);
 	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], [],[], x.settings.Quality);
 
-	if xASL_exist(x.P.Path_c3T1)
+	if xASL_exist(x.P.Path_c3T1, 'file')
 		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c3T1 ',1'], [],[], x.settings.Quality);
 	end
 
@@ -122,9 +121,10 @@ if bStandardSpace
 	xASL_spm_smooth(x.P.Path_rc1T1, x.S.optimFWHM_mm, x.P.Path_rc1T1);
 	xASL_spm_smooth(x.P.Path_rc2T1, x.S.optimFWHM_mm, x.P.Path_rc2T1);
 
-	if xASL_exist(x.P.Path_rc3T1)
+	if xASL_exist(x.P.Path_c3T1, 'file')
 		xASL_spm_smooth(x.P.Path_rc3T1, x.S.optimFWHM_mm, x.P.Path_rc3T1);
 	end
+
 	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 		xASL_spm_smooth(x.P.Path_rWMH_SEGM, x.S.optimFWHM_mm, x.P.Path_rWMH_SEGM);
 	end
