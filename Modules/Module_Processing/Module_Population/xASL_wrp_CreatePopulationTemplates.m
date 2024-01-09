@@ -282,8 +282,8 @@ if UsePredefined
     % PreFixList{end+1}   = 'CoW_MAP';                            TemplateNameList{end+1}  = 'CoW_MAP';          SessionsExist(end+1)    = 0;
     % PreFixList{end+1}   = 'HEMI';                               TemplateNameList{end+1}  = 'HEMI';             SessionsExist(end+1)    = 0;    
     % PreFixList{end+1}   = 'TASL';                               TemplateNameList{end+1}  = 'TASL';             SessionsExist(end+1)    = 0;        
-	% PreFixList{end+1}   = 'Tex';                                TemplateNameList{end+1}  = 'Tex';              SessionsExist(end+1)    = 1;
-	% PreFixList{end+1}   = 'ABV';                                TemplateNameList{end+1}  = 'ABV';              SessionsExist(end+1)    = 1;
+	PreFixList{end+1}   = 'Tex';                                TemplateNameList{end+1}  = 'Tex';              SessionsExist(end+1)    = 1;
+	PreFixList{end+1}   = 'ABV';                                TemplateNameList{end+1}  = 'ABV';              SessionsExist(end+1)    = 1;
     % % PM: Let this search for different scantypes in /PopDir NIfTIs, & run within those
 end
 
