@@ -468,11 +468,19 @@ function [bAborted, x] = runIteration(db)
             diary off
         end
         
+
+    
+        %% FEEDBACK ON THE SCREEN
         if AlreadyProcessed
-            fprintf('   ');
+            if I==1
+                fprintf('\n');
+            end
             xASL_TrackProgress(I,N);
-            fprintf('\n');
+            if I==N
+                fprintf('\n');
+            end
         end
+
     end % next DB iteration
     fprintf('%s completed 100%s\n',x.settings.MUTEXID,'%');
    
