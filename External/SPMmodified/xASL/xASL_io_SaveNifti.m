@@ -70,26 +70,25 @@ else
 	end
 end
 
-% JSON saving, see detailed explanation above.
-% If bCopyOrigJson is true OR JsonFields is not empty, we set bSaveJson to true
-% So we only save a JSON in either or both of these cases
-bSaveJson = false;
-
 if nargin < 7 || isempty(bCopyOrigJson)
     bCopyOrigJson = false;
-else
-    bSaveJson = true;
 end
 
 if nargin < 8 || isempty(JsonFields)
     JsonFields = struct;
 elseif ~isstruct(JsonFields)
     error('JsonFields input variable should be a struct');
-elseif isempty(fields(JsonFields))
-    JsonFields = struct;
-else
-    bSaveJson = true;
 end
+
+% JSON saving, see detailed explanation above.
+% If bCopyOrigJson is true OR JsonFields is not empty, we set bSaveJson to true
+% So we only save a JSON in either or both of these cases
+if bCopyOrigJson || ~isempty(fields(JsonFields))
+    bSaveJson = true;
+else
+    bSaveJson = false;
+end
+
 
 % If the absolute path is missing and filename is given only, then add the current path to the absolute path
 % Do this both for the new filename and the original filename
