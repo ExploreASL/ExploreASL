@@ -188,26 +188,31 @@ function [x] = xASL_init_RemoveLockDirs(x)
     % Copyright 2015-2021 ExploreASL
     
     
-        %% LockDir within 2 directories (e.g. T1, FLAIR or ASL)
-        LockDir = fullfile(x.dir.xASLDerivatives, 'lock');
-    
-        if exist(LockDir, 'dir')
-            % fprintf('%s\n','Searching for locked previous ExploreASL image processing');
-            LockDirFound = 0;
-            LockDir = xASL_adm_FindByRegExp(fullfile(x.dir.xASLDerivatives, 'lock'), {'(ASL|Structural|LongReg_T1)', x.dataset.subjectRegexp, '.*module.*','^(locked)$'}, 'Match', 'Directories');
-            if ~isempty(LockDir)
-                warning('Locked folders were found, consider removing them before proceeding');
+    %% LockDir within 2 directories (e.g. T1, FLAIR or ASL)
+    LockDir = fullfile(x.dir.xASLDerivatives, 'lock');
+
+    if exist(LockDir, 'dir')
+
+        listLockedDirs = xASL_adm_FindByRegExp(fullfile(x.dir.xASLDerivatives, 'lock'), {'(ASL|Structural|LongReg_T1|BIDS2Legacy)', x.dataset.subjectRegexp, '.*module.*','^(locked)$'}, 'Match', 'Directories');
+        if ~isempty(listLockedDirs)
+            fprintf('\n');
+            warning('Locked folders were found, consider removing them before proceeding:');
+            for iDir=1:length(listLockedDirs)
+                fprintf('%s\n', listLockedDirs{iDir});
             end
-    
-            % LockDir within 2 directories (e.g. DARTEL)
-            LockDir = xASL_adm_FindByRegExp(fullfile(x.dir.xASLDerivatives, 'lock'), {'(Population|DARTEL_T1)', '.*module.*','^(locked)$'}, 'Match','Directories');
-            if ~isempty(LockDir)
-                warning('Locked folders were found, consider removing them before proceeding');
-            end
-    
-            if LockDirFound==0
-                % fprintf('%s\n', 'No locked folders found from previous ExploreASL image processing');
-            end
+            fprintf('\n');
         end
-    
+
+        % LockDir within 2 directories (e.g. DARTEL)
+        listLockedDirs = xASL_adm_FindByRegExp(fullfile(x.dir.xASLDerivatives, 'lock'), {'(Population|DARTEL_T1)', '.*module.*','^(locked)$'}, 'Match','Directories');
+        if ~isempty(listLockedDirs)
+            fprintf('\n');
+            warning('Locked folders were found, consider removing them before proceeding:');
+            for iDir=1:length(listLockedDirs)
+                fprintf('%s\n', listLockedDirs{iDir});
+            end
+            fprintf('\n');        
+        end
     end
+    
+end
