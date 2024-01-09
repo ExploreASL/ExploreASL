@@ -51,7 +51,7 @@ if ~bStandardSpace
 end
 
 % Use either original or motion estimated ASL4D
-% Use despiked ASL only if spikes were detected and new file has been created
+% Use despiked ASL only if spikes were detected and new file has been createdcsf
 % Otherwise, despiked_raw_asl = same as original file
 if ~xASL_exist(x.P.Path_despiked_ASL4D, 'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
@@ -130,10 +130,11 @@ if bStandardSpace
 	end
 	
 	%% ------------------------------------------------------------------------------------------
-	%% A5. Move smoothed tissue posteriors to MNI space
-	InputList   = {x.P.Path_rc1T1,x.P.Path_rc2T1};
-	OutputList  = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM};
 
+	%% A5. Move smoothed tissue posteriors to MNI space
+	InputList  = {x.P.Path_rc1T1,x.P.Path_rc2T1};
+	OutputList = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM};
+	
 	if xASL_exist(x.P.Path_rc3T1, 'file')
 		InputList{end+1}  = x.P.Path_rc3T1;
 		OutputList{end+1} = x.P.Pop_Path_PV_pCSF;
@@ -143,9 +144,13 @@ if bStandardSpace
 		InputList{end+1}  = x.P.Path_rWMH_SEGM;
 		OutputList{end+1} = x.P.Pop_Path_PV_WMH_SEGM;
 	end
-	
-	xASL_spm_deformations(x,InputList,OutputList,4, [], [], x.P.Path_y_ASL );
-	
+
+	if xASL_exist(x.P.Path_rc3T1, 'file')
+		InputList{end+1} = x.P.Path_rc3T1;
+		OutputList{end+1} = x.P.Pop_Path_PV_pCSF;
+	end
+
+	xASL_spm_deformations(x, InputList, OutputList, 4, [], [], x.P.Path_y_ASL );
     %% ------------------------------------------------------------------------------------------
     %% A6. Housekeeping
 	List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI};
@@ -157,7 +162,11 @@ if bStandardSpace
 	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 		List2Del{end+1} = x.P.Path_rWMH_SEGM;
 	end
-	
+
+	if xASL_exist(x.P.Path_rc3T1, 'file')
+		List2Del{end+1} = x.P.Path_rc3T1;
+	end
+
     if x.settings.DELETETEMP
         for iL=1:length(List2Del)
             xASL_delete(List2Del{iL});
