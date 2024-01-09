@@ -303,7 +303,7 @@ end
 
 
 %% 6    Print parameters used
-fprintf('%s\n',' model with parameters:');
+fprintf('%s\n','with parameters:');
 
 if x.modules.asl.ApplyQuantification(3)
 	if isfield(x.Q, 'LabelingDuration') && isfield(x.Q, 'Initial_PLD')
@@ -341,18 +341,20 @@ if x.modules.asl.ApplyQuantification(3)
 			switch lower(x.Q.LabelingType)
 				case 'pasl'
 					fprintf('%s\n',['TI1 = ' xASL_num2str(LabDurs) ' ms,']);
-					fprintf('%s\n',['TI  = ' xASL_num2str(PLDs) ' ms.']);
+					fprintf('%s',['TI  = ' xASL_num2str(PLDs) ' ms']);
 				case 'casl'
 					fprintf('%s\n',['LabelingDuration = ' xASL_num2str(LabDurs) ' ms,']);
-					fprintf('%s\n',['PLD              = ' xASL_num2str(PLDs) ' ms.']);
+					fprintf('%s',['PLD              = ' xASL_num2str(PLDs) ' ms']);
 			end
 		end
 	else
-		fprintf('Labeling duration and/or PLD undefined...\n');
+		fprintf('Labeling duration and/or PLD undefined...');
 	end
 
 	if max(SliceReadoutTime)>0 && strcmpi(x.Q.readoutDim,'2D')
-		fprintf('%s',[' + ' xASL_num2str(SliceReadoutTime(2)-SliceReadoutTime(1)) ' ms*(slice-1)']);
+		fprintf('%s\n',[' + ' xASL_num2str(SliceReadoutTime(2)-SliceReadoutTime(1)) ' ms*(slice-1).']);
+    else
+        fprintf('.\n');
 	end
 
     fprintf('\n%s',['labeling efficiency (neck*Bsup) = ' xASL_num2str(x.Q.LabEff_Orig) ' * ' xASL_num2str(x.Q.LabEff_Bsup) ', ']);
@@ -380,10 +382,10 @@ function ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage)
             switch lower(x.Q.LabelingType)
                 case 'pasl'
                     DivisionFactor = x.Q.LabelingDuration;
-                    fprintf('%s\n','Using single-compartment PASL');
+                    fprintf('%s\n','Using a single-compartment PASL model');
                 case 'casl'
                     DivisionFactor = x.Q.BloodT1 .* (1 - exp(-x.Q.LabelingDuration./x.Q.BloodT1));
-                    fprintf('%s\n','Using single-compartment CASL');
+                    fprintf('%s\n','Using a single-compartment CASL model');
             end
 
             ScaleImage = exp((ScaleImage./x.Q.BloodT1)) ./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
@@ -393,11 +395,11 @@ function ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage)
                 case 'pasl'
                     DivisionFactor = x.Q.LabelingDuration;
                     ScaleImage = exp((x.Q.ATT./x.Q.BloodT1)).*exp(((ScaleImage-x.Q.ATT)./x.Q.TissueT1))./ (2.*x.Q.LabelingEfficiency.*DivisionFactor);
-                    fprintf('%s\n','Using dual compartment PASL');
+                    fprintf('%s\n','Using a dual-compartment PASL model');
                 case 'casl'
                     DivisionFactor = x.Q.TissueT1 .* (exp((min(x.Q.ATT-ScaleImage,0))./x.Q.TissueT1) - exp((min(x.Q.ATT-x.Q.LabelingDuration-ScaleImage,0))./x.Q.TissueT1));
                     ScaleImage = exp((x.Q.ATT./x.Q.BloodT1))./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
-                    fprintf('%s\n','Using dual compartment CASL');
+                    fprintf('%s\n','Using a dual-compartment CASL model');
             end
 
         otherwise
