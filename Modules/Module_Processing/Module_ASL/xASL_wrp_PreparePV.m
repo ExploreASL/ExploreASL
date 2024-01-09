@@ -34,10 +34,7 @@ function x = xASL_wrp_PreparePV(x, bStandardSpace)
 %
 % EXAMPLE: xASL_wrp_PreparePV(x);
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
-
-
-
+% Copyright (C) 2015-2024 ExploreASL
 
 %% ------------------------------------------------------------------------------------------
 %% 0)   Admin
@@ -65,7 +62,7 @@ else
         % resolution, if the resolutions are identical
         xASL_Copy(x.P.Path_c1T1, x.P.Path_PVgm, true);
         xASL_Copy(x.P.Path_c2T1, x.P.Path_PVwm, true);
-        if xASL_exist(x.P.Path_c3T1)
+		if xASL_exist(x.P.Path_c3T1)
             xASL_Copy(x.P.Path_c3T1, x.P.Path_PVcsf, true);
 		end
 		
@@ -103,6 +100,9 @@ if bStandardSpace
 	% because we then go directly to standard space and only apply the T1->MNI and not ASL->T1 nonlinear transformation
 	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c1T1 ',1'], [],[], x.settings.Quality);
 	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], [],[], x.settings.Quality);
+	if xASL_exist(x.P.Path_c3T1)
+		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c3T1 ',1'], [],[], x.settings.Quality);
+	end
 	if xASL_exist(x.P.Path_WMH_SEGM)
 		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_WMH_SEGM ',1'], [],[], x.settings.Quality);
 	end
@@ -115,6 +115,9 @@ if bStandardSpace
     % 4)    Smooth pGM & pWM to this spatial resolution
 	xASL_spm_smooth(x.P.Path_rc1T1, x.S.optimFWHM_mm, x.P.Path_rc1T1);
 	xASL_spm_smooth(x.P.Path_rc2T1, x.S.optimFWHM_mm, x.P.Path_rc2T1);
+	if xASL_exist(x.P.Path_c3T1)
+		xASL_spm_smooth(x.P.Path_rc3T1, x.S.optimFWHM_mm, x.P.Path_rc3T1);
+	end
 	if xASL_exist(x.P.Path_WMH_SEGM)
 		xASL_spm_smooth(x.P.Path_rWMH_SEGM, x.S.optimFWHM_mm, x.P.Path_rWMH_SEGM);
 	end

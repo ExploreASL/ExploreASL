@@ -43,7 +43,7 @@ function xASL_wrp_CreateIndividualMask(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_wrp_CreateIndividualMask(x);
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 %
 %% 0. Create native space FoV mask
 % Use either original or motion estimated ASL4D
@@ -85,10 +85,6 @@ switch lower(x.Q.Sequence)
         error('Unknown ASL sequence!');
 end
 
-
-
-
-
 %% 1. Negative vascular signal
 NegativeMaskNative = xASL_im_MaskNegativeVascularSignal(x, 1); % native space
 NegativeMaskMNI = xASL_im_MaskNegativeVascularSignal(x, 2); % standard space
@@ -121,9 +117,9 @@ MaskVascularNative(pCSF>0.8) = 1; % Remove WM vascular spots
 BrainMaskProcessingNativeSpace = (pGM+pWM+pCSF)>0.1;
 
 %% 3B. Brainmasking & FoV-masking standard space
-pGM = xASL_io_Nifti2Im(x.P.Pop_Path_rc1T1);
-pWM = xASL_io_Nifti2Im(x.P.Pop_Path_rc2T1);
-pCSF = xASL_io_Nifti2Im(x.P.Pop_Path_rc3T1);
+pGM = xASL_io_Nifti2Im(x.P.Pop_Path_PV_pGM);
+pWM = xASL_io_Nifti2Im(x.P.Pop_Path_PV_pWM);
+pCSF = xASL_io_Nifti2Im(x.P.Pop_Path_PV_pCSF);
 FoVim = xASL_io_Nifti2Im(x.P.Pop_Path_FoV);
 
 MaskVascularMNI = ~NegativeMaskMNI & ~PositiveMaskMNI;
@@ -149,10 +145,6 @@ xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Pop_Path_BrainMaskProcessing, BrainMaskP
 %% 4. Save vascular masks
 xASL_io_SaveNifti(x.P.Path_PWI, x.P.Path_MaskVascular, MaskVascularNative, 8, false);
 xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Pop_Path_MaskVascular, MaskVascularMNI, 8, false);
-
-
-
-
 
 %% 5. Create susceptibility mask in standard space
 if DoSusceptibility
