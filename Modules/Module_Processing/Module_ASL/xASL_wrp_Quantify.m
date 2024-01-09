@@ -172,7 +172,7 @@ end
 % Assigns the shortest minimal positive TE for ASL
 %% THIS SHOULD THEN BE ADAPTED TOO
 ASLshortestTE = [];
-if isfield(ASL_parms.Q, 'EchoTime')
+if isfield(ASL_parms, 'Q') && isfield(ASL_parms.Q, 'EchoTime')
 	ASLshortestTE = min(ASL_parms.Q.EchoTime(ASL_parms.Q.EchoTime > 0));
 else
     warning('EchoTime field missing');
