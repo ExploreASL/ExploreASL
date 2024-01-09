@@ -60,7 +60,7 @@ if ~isempty(xQ.TimeEncodedMatrix)
 	end
 end
 
-if ~isempty(x.Q.TimeEncodedMatrixType)
+if ~isempty(xQ.TimeEncodedMatrixType)
 	% See an example of decoding/encoding matrices in 
 	% Samson-Himmelstjerna, MRM 2015 https://doi.org/10.1002/mrm.26078
 	% Note that the encoding/decoding matrices are symmetric
