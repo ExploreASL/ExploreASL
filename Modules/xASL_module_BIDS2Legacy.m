@@ -56,9 +56,12 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         return;
     end
 
+    if x.mutex.HasState('999_ready')
+        bO = false; % no Output, as everything has been done already
+    else
+        bO = true; % yes Output, not completely done, so we want to know what has or has not been done
+    end    
     
-    xASL_adm_BreakString('BIDS to ExploreASL LEGACY CONVERSION'); % Print feedback
-	
 
     if ~x.mutex.HasState('010_BIDS2LEGACY')
 
@@ -130,7 +133,7 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
 
         x.mutex.AddState('010_BIDS2LEGACY'); % Add mutex state
     elseif x.mutex.HasState('010_BIDS2LEGACY')
-        fprintf('%s\n', ['BIDS2Legacy already done, skipping ' x.SUBJECT '.    ']);
+        if bO; fprintf('%s\n', ['BIDS2Legacy already done, skipping ' x.SUBJECT '.    ']); end
     end
 
     

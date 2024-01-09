@@ -93,6 +93,7 @@ function [x] = ExploreASL_Process(x)
         % (datasetRoot/derivatives/ExploreASL/*) are in ExploreASL's own legacy format.
         % In the future, we will probably move to BIDS derivatives, but for now we keep the legacy format.
         % Therefore, here we copy all BIDS data to the legacy format, and then we run the processing.
+        xASL_adm_BreakString('BIDS to ExploreASL LEGACY CONVERSION'); % Print feedback
         [~, x] = xASL_init_Iteration(x, 'xASL_module_BIDS2Legacy');
         x = xASL_init_CreateParticipantsTSV(x);
     end
