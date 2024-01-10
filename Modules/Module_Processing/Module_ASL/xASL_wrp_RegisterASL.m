@@ -209,8 +209,6 @@ if strcmp(x.P.SessionID,x.SESSIONS{1}) || x.dataset.nSessions==1
     xASL_delete(fullfile(x.dir.SESSIONDIR,'MaskASL.nii'));
 end
 
-
-
 %% E. Allow registration without structural data
 StructuralDerivativesExist = xASL_exist(x.P.Path_y_T1, 'file') && xASL_exist(x.P.Path_c1T1, 'file') && xASL_exist(x.P.Path_c2T1, 'file');
 StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_ORI, 'file');
