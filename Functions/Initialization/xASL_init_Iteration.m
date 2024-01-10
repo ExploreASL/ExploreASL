@@ -104,12 +104,16 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         dbSettings.x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives, '<SUBJECT>');
         dbSettings.x.dir.LockDir = fullfile(dbSettings.x.dir.LockDir, '<SUBJECT>');
     end
-    dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
+    
+    if isempty(regexpi(ModName,'Population', 'once'))
+        % we don't want the population module to run for multiple sets (subjects or sessions)
+        dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
+    end
 
     
     % Checking SESSIONS
-    if isempty(regexpi(ModName,'BIDS2Legacy', 'once'))
-        % We don't use this for BIDS2Legacy
+    if isempty(regexpi(ModName,'(BIDS2Legacy|Population)', 'once'))
+        % We don't use this for the BIDS2Legacy or population modules
         if ~isfield(x,'SESSIONS')
             error('x.SESSIONS field missing: loading sessions went wrong, verify that ExploreASL was correctly initialized');
         elseif isempty(x.SESSIONS)
@@ -391,12 +395,12 @@ function [bAborted, x] = runIteration(db)
              if ~isempty(StartIndex) %writes the session only for ASL module
                 session = diaryFileEx(StartIndex(end)+1:EndIndex(end)-1); %isolate "ASL_1 or ASL_2 etc
                 fprintf('%s\n',['Subject: ' x.SUBJECT ', Session: ' session ', ' printModule]);
-             else % Structural or Population module
-                 if isfield(x,'SUBJECT') 
+             elseif ~isempty(regexp(diaryFileEx, 'xASL_module_Population.log'))
+                 fprintf('%s\n', printModule); % Just print without a subject or session notation
+             elseif isfield(x,'SUBJECT') 
                      fprintf('%s\n',['Subject: ' x.SUBJECT ', ' printModule]);
-                 else
-                     fprintf('%s\n', printModule); %some datasets don't have any field that specifies the current subject
-                 end
+             else
+                  %some datasets don't have any field that specifies the current subject
              end
             fprintf('\n');
         end        
