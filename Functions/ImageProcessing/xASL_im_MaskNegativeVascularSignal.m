@@ -8,8 +8,8 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
 %   x                   - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging (REQUIRED)
 %   x.P.Path_PWI        - path to PWI image
 % & x.P.Pop_Path_PWI
-%   x.P.Path_c1T1       - path to GM segmentation map
-% & x.P.Pop_Path_rc1T1
+%   x.P.Path_PVgm       - path to GM segmentation map
+% & x.P.Pop_Path_PV_pGM
 %   IsSpace             - 1 for native ASL space, 2 for standard space (REQUIRED)
 %
 % OUTPUT:

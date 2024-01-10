@@ -47,14 +47,13 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %               7.  Scale back to the GM M0
 %               8.  Print visual QC figure
 %
-% EXAMPLE: as used in ExploreASL (xASL_wrp_ProcessM0): [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, path_BrainCentralityMap)
+% EXAMPLE: as used in ExploreASL (xASL_wrp_ProcessM0): [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_PV_pGM, x.P.Pop_Path_PV_PWM, path_BrainCentralityMap)
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
-
 
 
 %% ------------------------------------------------------------------------------------------
@@ -94,8 +93,8 @@ if xASL_stat_SumNan(GMim(:))==0
 elseif xASL_stat_SumNan(WMim(:))==0
     error('Empty WM partial volume map, cannot process the M0');
 else
-    GMmask = GMim>0.7;
-    Mask1 = (GMim+WMim)>0.5;
+    GMmask = GMim>0.6;
+    Mask1 = (GMim+WMim)>0.4;
     fprintf('\n%s', 'Processing M0 image: ');
 end
 
