@@ -131,7 +131,7 @@ x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
 x = xASL_qc_CleanOldQC(x, bCompleteRerun);
 
 %% D. ASL processing & quantification parameters
-x = xASL_module_ASL_ParseParameters(x, b0);
+x = xASL_module_ASL_ParseParameters(x, bO, nVolumes);
 
 %% E. Backward and forward compatibility of filenames
 if ~xASL_exist(x.P.Path_M0, 'file')
@@ -540,7 +540,7 @@ end
 
 %% ========================================================================================================================
 %% =============================================================================================
-function [x] = xASL_module_ASL_ParseParameters(x, b0)
+function [x] = xASL_module_ASL_ParseParameters(x, bO, nVolumes)
 %% xASL_module_ASL_ParseParameters Manage ASL-specific quantification and processing parameters
 % 1. Load ASL parameters (inheritance principle)
 % 2. Default ASL processing settings in the x.modules.asl field
@@ -592,7 +592,7 @@ for iPar=1:length(parNames)
         % PM: rename this parameter to x.Q.nParName
         x.Q.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
     
-    elseif isempty(x.Q.parNames{iPar}) || ~isnumeric(x.Q.parNames{iPar})
+    elseif isempty(x.Q.(parNames{iPar})) || ~isnumeric(x.Q.(parNames{iPar}))
         % if the field exists but is illegal
         warning(['Illegal field x.Q.' parNames{iPar} ', this should not be empty and should contain numerical values']);
         % After the warning, we default to single-parameter processing
@@ -601,9 +601,9 @@ for iPar=1:length(parNames)
         x.Q.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
     else
         % Check, with allowed tolerance (0 is without tolerance) what the unique parameters are
-        x.Q.(['unique' parNames{iPar}]) = uniquetol(x.Q.(parNames{iPar}), parTolerance);
+        x.Q.(['unique' parNames{iPar}]) = uniquetol(x.Q.(parNames{iPar}), parTolerance{iPar});
     
-        x.Q.(['Number' parNames{iPar}]) = length(x.Q.(['unique' parNames{iPar} 's']));
+        x.Q.(['Number' parNames{iPar}]) = length(x.Q.(['unique' parNames{iPar}]));
         % Obtain the number of unique parameters
     
         if sum(x.Q.(parNames{iPar})<=parLowestValue{iPar})>0
@@ -622,9 +622,9 @@ for iPar=1:length(parNames)
                 fprintf('%s\n', 'Assuming that this is a dual-echo ASL+BOLD sequence');
     
                 x.Q.EchoTime = min(x.Q.EchoTime);
-		    % Update the other fields as well
-		     x.Q.uniqueEchoTimes = x.Q.EchoTime;
-		     x.Q.NumberEchoTimes = 1;
+		        % Update the other fields as well
+		         x.Q.uniqueEchoTimes = x.Q.EchoTime;
+		         x.Q.NumberEchoTimes = 1;
             end
     
         elseif x.Q.(['Number' parNames{iPar}])>2
@@ -649,7 +649,7 @@ for iPar=1:length(parNames)
     
         % Now we print to the screen which unique parameter-values we detected
         fprintf('%s\n', ['Detected the following unique ' parNames{iPar} 's (ms):'])
-        for ivol = 1:x.Q.(['Number' parNames{iPar}])
+        for iVol = 1:x.Q.(['Number' parNames{iPar}])
             fprintf('%.2f, ', round(x.Q.(['unique' parNames{iPar}])(iVol), 4));
         end
         fprintf('\n');
@@ -781,13 +781,15 @@ for iList=1:nLists
 end
 
 if x.modules.asl.bMergingSessions
-    fprintf('%s', ' and will now concatenate the following sessions:')
-    for iSession = 1:numel(x.modules.asl.sessionsToMerge)
-        fprintf([' ' x.modules.asl.sessionsToMerge{iSession}]);
+    if ~isempty(x.modules.asl.sessionsToMerge)
+        fprintf('%s', ' and will now concatenate the following sessions:')
+        for iSession = 1:numel(x.modules.asl.sessionsToMerge)
+            fprintf([' ' x.modules.asl.sessionsToMerge{iSession}]);
+        end
+        fprintf('\n');
+    else
+        fprintf('%s\n\n', [' but will not concatenate them here (xASL_module_ASL: ' x.SESSION ')']);
     end
-    fprintf('\n');
-else
-    fprintf('%s\n\n', [' but will not concatenate them here (xASL_module_ASL: ' x.SESSION ')']);
 end
 
 
@@ -810,7 +812,7 @@ end
 if ~isfield(x.Q, 'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
 	x.Q.bUseBasilQuantification = false;
     
-    if x.Q.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
+    if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
         x.Q.bUseBasilQuantification = true;
     end
 end
