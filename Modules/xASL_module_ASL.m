@@ -566,6 +566,8 @@ for iPar=1:length(parNames)
         warning(['Missing field x.Q.' parNames{iPar} ', this may be needed for quantification']);
         % After the warning, we default to single-parameter processing
         fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
+		x.Q.(parNames{iPar}) = [];
+		x.Q.(['unique' parNames{iPar}]) = [];
 	    x.Q.(['nUnique' parNames{iPar}]) = 1;
         x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
     
@@ -574,6 +576,8 @@ for iPar=1:length(parNames)
         warning(['Illegal field x.Q.' parNames{iPar} ', this should not be empty and should contain numerical values']);
         % After the warning, we default to single-parameter processing
         fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
+		x.Q.(parNames{iPar}) = [];
+		x.Q.(['unique' parNames{iPar}]) = [];
 	    x.Q.(['nUnique' parNames{iPar}]) = 1;
         x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
     else
@@ -644,19 +648,21 @@ for iPar=1:length(parNames)
     
     % Deal with too short vectors (e.g., repetitions in the case of single-parameter)
     nPar = length(x.Q.([parNames{iPar}]));
-    if mod(nVolumes, nPar)~=0
-        error(['Number of ' parNames{iPar} 's (n=' xASL_num2str(nPar) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
-        % If we don't issue an error here, repmat will crash
-    end
-    
-    factorPar = nVolumes/nPar;
-    x.Q.(parNames{iPar}) = repmat(x.Q.(parNames{iPar})(:), [factorPar 1]);
-    nPar = length(x.Q.(parNames{iPar}));
-    
-    % Number of echoes should now be equal to the number of ASL volumes
-    if nPar~=nVolumes
-        warning(['Number of ' parNames{iPar} ' (n=' xASL_num2str(nPar) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
-    end
+	if nPar > 0
+		if mod(nVolumes, nPar)~=0
+			error(['Number of ' parNames{iPar} 's (n=' xASL_num2str(nPar) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+			% If we don't issue an error here, repmat will crash
+		end
+
+		factorPar = nVolumes/nPar;
+		x.Q.(parNames{iPar}) = repmat(x.Q.(parNames{iPar})(:), [factorPar 1]);
+		nPar = length(x.Q.(parNames{iPar}));
+
+		% Number of echoes should now be equal to the number of ASL volumes
+		if nPar~=nVolumes
+			warning(['Number of ' parNames{iPar} ' (n=' xASL_num2str(nPar) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
+		end
+	end
 
 end
 
