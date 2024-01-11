@@ -45,6 +45,12 @@ if nargin < 4 || isempty(bPriorityBids)
 	bPriorityBids = 1;
 end
 
+% In case we input BIDS and want output in BIDS we skip the rest
+if isempty(inXasl) && bOutBids
+	outParms = inBids;
+	return;
+end
+
 %% ----------------------------------------------------------------------
 %% 1) Define field names that need to be convert/renamed/merged
 

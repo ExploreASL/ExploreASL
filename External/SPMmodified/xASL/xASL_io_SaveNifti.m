@@ -284,7 +284,10 @@ end
 %% 8. Create JSON sidecar
 % 0. Remove JSON sidecar if it already exists
 % Even if we don't save a new one, then we still don't want the wrong sidecar to a new NIfTI
-xASL_delete(pathNewJson);
+% But don't delete the NewJson in case the new and reference file are equivalent
+if ~strcmp(pathNewNifti, pathOrigNifti)
+	xASL_delete(pathNewJson);
+end
 
 if bSaveJson
     % a. First, we load the reference sidecar JSON file, if it exists
