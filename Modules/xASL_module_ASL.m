@@ -567,7 +567,7 @@ for iPar=1:length(parNames)
         % After the warning, we default to single-parameter processing
         fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
 	    x.Q.(['nUnique' parNames{iPar}]) = 1;
-        x.Q.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
+        x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
     
     elseif isempty(x.Q.(parNames{iPar})) || ~isnumeric(x.Q.(parNames{iPar}))
         % if the field exists but is illegal
@@ -575,7 +575,7 @@ for iPar=1:length(parNames)
         % After the warning, we default to single-parameter processing
         fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
 	    x.Q.(['nUnique' parNames{iPar}]) = 1;
-        x.Q.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
+        x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
     else
         % Check, with allowed tolerance (0 is without tolerance) what the unique parameters are
         x.Q.(['unique' parNames{iPar}]) = uniquetol(x.Q.(parNames{iPar}), parTolerance{iPar});
@@ -609,14 +609,14 @@ for iPar=1:length(parNames)
             fprintf('%s\n', 'Note that this feature is still under development');
     
             if strcmp(parAbbreviation{iPar}, 'PLD')
-                if isfield(x.Q, 'bQuantifyMultiPLD') && ~x.Q.bQuantifyMultiPLD
+                if isfield(x.modules.asl, 'bQuantifyMultiPLD') && ~x.modules.asl.bQuantifyMultiPLD
                     fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.');
                 else
                 % In case it wasn't defined or it was defined as true, we can set it to true
-                x.Q.bQuantifyMultiPLD = true;
+                x.modules.asl.bQuantifyMultiPLD = true;
                 end
             elseif strcmp(parAbbreviation{iPar}, 'LD')
-                if x.Q.bQuantifyMultiPLD
+                if x.modules.asl.bQuantifyMultiPLD
                     fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
                 else
                     warning('Multi labeling durations detected but multiPLD-quantification is turned off, is this correct?');
