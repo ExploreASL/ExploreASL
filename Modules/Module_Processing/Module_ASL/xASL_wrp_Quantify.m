@@ -96,8 +96,8 @@ end
 if nargin<5 || isempty(SliceGradientPath)
     SliceGradientPath = x.P.Pop_Path_SliceGradient_extrapolated;
 end
-if ~isfield(x.Q,'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
-   x.Q.bUseBasilQuantification = false;
+if ~isfield(x.modules.asl,'bUseBasilQuantification') || isempty(x.modules.asl.bUseBasilQuantification)
+   x.modules.asl.bUseBasilQuantification = false;
 end
 if ~isfield(x,'Q')
     x.Q = struct;
@@ -522,8 +522,8 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
-if ~x.modules.asl.bQuantifyMultiPLD || x.Q.bUseBasilQuantification % multi-PLD with BASIL or single-PLD
-    [~, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, SliceGradient, x, x.Q.bUseBasilQuantification); % also runs BASIL, but only in native space!
+if ~x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bUseBasilQuantification % multi-PLD with BASIL or single-PLD
+    [~, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, SliceGradient, x, x.modules.asl.bUseBasilQuantification); % also runs BASIL, but only in native space!
 else
     % multi-PLD quantification without BASIL
     error('Multi PLD quantification without BASIL is not yet implemented.');
@@ -613,7 +613,6 @@ if xASL_exist(x.P.Pop_Path_qCBF, 'file') && (strcmp(pathOutputCBF, x.P.Pop_Path_
         xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_qCBF_masked, MaskedCBF, [], false);
     end
 end
-
 
 end
 

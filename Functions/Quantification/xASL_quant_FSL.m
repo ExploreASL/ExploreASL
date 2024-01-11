@@ -26,9 +26,9 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 %
 % 1. Define paths
 % 2. Delete previous BASIL/Fabber output
-% 3. Write the PWI as Nifti file for Basil/Fabber to read as input
+% 3. Write the PWI as Nifti file for BASIL/Fabber to read as input
 % 4. Create option_file that contains options which are passed to the FSL command
-% 5. Run Basil and retrieve CBF output
+% 5. Run BASIL and retrieve CBF output
 % 6. Scaling to physiological units
 % 7. Householding
 %
@@ -36,7 +36,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 % EXAMPLE: CBF_nocalib = xASL_quant_FSL(PWI, x);
 %
 % __________________________________
-% Copyright 2015-2023 ExploreASL 
+% Copyright 2015-2024 ExploreASL 
     
 
     %% 0. Admin
@@ -52,11 +52,9 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	ATT_map = [];
 	ABV_map = [];
 
-	if ~isfield(x.Q, 'BASIL')
-		x.Q.BASIL = [];
-	end
-	if ~isfield(x.Q.BASIL, 'bCleanUp') || isempty(x.Q.BASIL.bCleanUp)
-		x.Q.BASIL.bCleanUp = true;
+
+	if ~isfield(x.modules.asl, 'bCleanUpBASIL') || isempty(x.modules.asl.bCleanUpBASIL)
+		x.modules.asl.bCleanUpBASIL = true;
     end
 
 	% Define if BASIL or FABBER is used - multiTE needs FABBER 
@@ -94,7 +92,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     %xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
     
 
-    %% 3. Write the PWI4D as Nifti file for Basil/Fabber to read as input
+    %% 3. Write the PWI4D as Nifti file for BASIL/FABBER to read as input
     PWI4D_nii = xASL_io_ReadNifti(path_PWI4D);
     PWI4D = PWI4D_nii.dat(:,:,:,:,:,:);
     
@@ -146,7 +144,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, x.modules.asl.bMergingSessions);
         
 
-    %% 5. Run Basil and retrieve CBF output
+    %% 5. Run BASIL and retrieve CBF output
     [~, resultFSL] = xASL_fsl_RunFSL([FSLfunctionName ' ' FSLOptions], x);
     
     % Check if FSL failed
@@ -204,7 +202,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	% Basils Output is in the subfolder '/FSL_Output' which contains multiple steps if there are multiple iterations, and always contains
     % a symbolic link (symlink) to the foldername of the latest iteration/step ('stepX_latest').
 	
-	if x.Q.BASIL.bCleanUp
+	if x.modules.asl.bCleanUpBASIL
 		xASL_delete(pathFSLInput);
 		xASL_delete(pathFSLOptions);
 		xASL_delete(pathFSLOutput, 1);
@@ -246,13 +244,9 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, 
 
 %% 0. Admin
 % Set BASIL dataPar options and their defaults
-if ~isfield(x.Q,'BASIL')
-	x.Q.BASIL = [];
-end
-
-if ~isfield(x.Q.BASIL,'bMasking') || isempty(x.Q.BASIL.bMasking)
+if ~isfield(x.modules.asl,'bMaskingBASIL') || isempty(x.modules.asl.bMaskingBASIL)
 		fprintf('BASIL: Setting default option bMasking = true\n');
-		x.Q.BASIL.bMasking = true;
+		x.bMaskingBASIL = true;
 end
 
 %% #1543 TEMPORARY SOLUTION, MERGING GOES OUT OF XASL_QUANT_FSL
@@ -267,33 +261,33 @@ end
 
 if ~bUseFabber
 	% BASIL specific options
-	if ~isfield(x.Q.BASIL,'bSpatial') || isempty(x.Q.BASIL.bSpatial)
+	if ~isfield(x.modules.asl,'bSpatialBASIL') || isempty(x.modules.asl.bSpatialBASIL)
 		fprintf('BASIL: Setting default option bSpatial = false\n');
-		x.Q.BASIL.bSpatial = false;
+		x.modules.asl.bSpatialBASIL = false;
 	end
 
-	if ~isfield(x.Q.BASIL,'bInferT1') || isempty(x.Q.BASIL.bInferT1)
+	if ~isfield(x.modules.asl,'bInferT1BASIL') || isempty(x.modules.asl.bInferT1BASIL)
 		fprintf('BASIL: Setting default option bInferT1 = false\n');
-		x.Q.BASIL.bInferT1 = false;
+		x.modules.asl.bInferT1BASIL = false;
 	end
 
-	if ~isfield(x.Q.BASIL,'bInferArt') || isempty(x.Q.BASIL.bInferArt)
+	if ~isfield(x.modules.asl,'bInferArtBASIL') || isempty(x.modules.asl.bInferArtBASIL)
 		fprintf('BASIL: Setting default option bInferArt = true\n');
-		x.Q.BASIL.bInferArt = true;
+		x.modules.asl.bInferArtBASIL = true;
 	end
 
-	if ~isfield(x.Q.BASIL,'Exch') || isempty(x.Q.BASIL.Exch)
+	if ~isfield(x.modules.asl,'ExchBASIL') || isempty(x.modules.asl.ExchBASIL)
 		fprintf('BASIL: Setting default option Exch = simple\n');
-		x.Q.BASIL.Exch = 'simple';
+		x.modules.asl.ExchBASIL = 'simple';
 	end
 
-	if ~isfield(x.Q.BASIL,'Disp') || isempty(x.Q.BASIL.Disp)
+	if ~isfield(x.modules.asl,'DispBASIL') || isempty(x.modules.asl.DispBASIL)
 		fprintf('BASIL: Setting default option Disp = none\n');
-		x.Q.BASIL.Disp = 'none';
+		x.modules.asl.DispBASIL = 'none';
 	end
 
-	if ~isfield(x.Q.BASIL, 'ATTSD')
-		x.Q.BASIL.ATTSD = 1.0;
+	if ~isfield(x.modules.asl, 'ATTSDBASIL') || isempty(x.modules.asl.ATTSDBASIL)
+		x.modules.asl.ATTSDBASIL = 1.0;
 	end
 
 end
@@ -326,7 +320,7 @@ else
 end
 
 % Define masking
-if x.Q.BASIL.bMasking
+if x.modules.asl.bMaskingBASIL
 	% Check for uninitialized Mask variable or file
 	if ~isfield(x.P, 'Path_BrainMaskProcessing')
 		warning('BASIL masking set to TRUE, but the mask variable x.P.Path_BrainMaskProcessing is not initialized.');
@@ -582,33 +576,33 @@ if ~bUseFabber
 
 	if x.modules.asl.bQuantifyMultiPLD
 		% Multi-PLD or Time Encoded data allows to fit arrival times
-		fprintf(FIDoptionFile, '--batsd=%f\n', x.Q.BASIL.ATTSD);
+		fprintf(FIDoptionFile, '--batsd=%f\n', x.modules.asl.ATTSDBASIL);
 	end
 end
 
 
 %% 5. Extra BASIL fitting options
 if ~bUseFabber
-	if x.Q.BASIL.bSpatial
+	if x.modules.asl.bSpatialBASIL
 		fprintf('BASIL: Use automated spatial smoothing\n');
 		FSLOptions = [FSLOptions ' --spatial'];
 	end
 
-	if x.Q.BASIL.bInferT1
+	if x.modules.asl.bInferT1BASIL
 		if x.modules.asl.bQuantifyMultiPLD
 			fprintf('BASIL: Infer variable T1 values\n');
 			FSLOptions = [FSLOptions ' --infert1'];
 		end
 	end
 
-	if x.Q.BASIL.bInferArt
+	if x.modules.asl.bInferArtBASIL
 		if x.modules.asl.bQuantifyMultiPLD
 			fprintf('BASIL: Infer arterial BV and arrival time\n');
 			FSLOptions = [FSLOptions ' --inferart'];
 		end
 	end
 
-	switch (x.Q.BASIL.Exch)
+	switch (x.modules.asl.ExchBASIL)
 		case 'simple'
 			fprintf('BASIL Exchange model: Simple single compartment with T1 of blood, per white paper\n');
 			FSLOptions = [FSLOptions ' --exch=simple'];
@@ -622,11 +616,11 @@ if ~bUseFabber
 			fprintf('BASIL Exchange model: A single pass approximation from St. Lawrence\n');
 			FSLOptions = [FSLOptions ' --exch=spa'];
 		otherwise
-			warning(['BASIL Exchange model: ' x.Q.BASIL.Exch ' not recognized.'])
+			warning(['BASIL Exchange model: ' x.modules.asl.ExchBASIL ' not recognized.'])
 	end
 
 	if x.modules.asl.bQuantifyMultiPLD
-		switch (x.Q.BASIL.Disp)
+		switch (x.modules.asl.DispBASIL)
 			case 'none'
 				fprintf('BASIL Dispersion model: none\n');
 				FSLOptions = [FSLOptions ' --disp=none'];
@@ -640,7 +634,7 @@ if ~bUseFabber
 				fprintf('BASIL Dispersion model: Spatial Gaussian dispersion kernel\n');
 				FSLOptions = [FSLOptions ' --disp=sgauss'];
 			otherwise
-				warning(['BASIL Dispersion model: ' x.Q.BASIL.Disp ' not recognized.'])
+				warning(['BASIL Dispersion model: ' x.modules.asl.DispBASIL ' not recognized.'])
 		end
 	else
 		fprintf('BASIL Dispersion model: none\n');
