@@ -408,12 +408,12 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     end
     
 	% allow 4D quantification as well, storing CBF4D. This is currently not implemented for multi-PLD/multi-TE (BASIL/FABBER)
-	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D
+	if isfield(x.modules.asl, 'SaveCBF4D') && x.modules.asl.SaveCBF4D
         if x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQuantifyMultiTE
             warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, skipping');
 		else
             if size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4) == 1
-                warning('x.Q.SaveCBF4D was requested but only one volume exists, skipping');
+                warning('x.modules.asl.SaveCBF4D was requested but only one volume exists, skipping');
             else
                 fprintf('%s\n','Quantifying CBF4D in native space');
                 xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_qCBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);
