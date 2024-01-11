@@ -409,7 +409,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     
 	% allow 4D quantification as well, storing CBF4D. This is currently not implemented for multi-PLD/multi-TE (BASIL/FABBER)
 	if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D
-        if x.Q.NumberPLDs>1 || x.modules.asl.bQuantifyMultiTE
+        if x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQuantifyMultiTE
             warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, skipping');
 		else
             if size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4) == 1
@@ -566,8 +566,7 @@ for iPar=1:length(parNames)
         warning(['Missing field x.Q.' parNames{iPar} ', this may be needed for quantification']);
         % After the warning, we default to single-parameter processing
         fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
-	    x.Q.(['Number' parNames{iPar}]) = 1;
-        % PM: rename this parameter to x.Q.nParName
+	    x.Q.(['nUnique' parNames{iPar}]) = 1;
         x.Q.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
     
     elseif isempty(x.Q.(parNames{iPar})) || ~isnumeric(x.Q.(parNames{iPar}))
@@ -575,13 +574,13 @@ for iPar=1:length(parNames)
         warning(['Illegal field x.Q.' parNames{iPar} ', this should not be empty and should contain numerical values']);
         % After the warning, we default to single-parameter processing
         fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
-	    x.Q.(['Number' parNames{iPar}]) = 1;
+	    x.Q.(['nUnique' parNames{iPar}]) = 1;
         x.Q.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
     else
         % Check, with allowed tolerance (0 is without tolerance) what the unique parameters are
         x.Q.(['unique' parNames{iPar}]) = uniquetol(x.Q.(parNames{iPar}), parTolerance{iPar});
     
-        x.Q.(['Number' parNames{iPar}]) = length(x.Q.(['unique' parNames{iPar}]));
+        x.Q.(['nUnique' parNames{iPar}]) = length(x.Q.(['unique' parNames{iPar}]));
         % Obtain the number of unique parameters
     
         if sum(x.Q.(parNames{iPar})<=parLowestValue{iPar})>0
@@ -589,9 +588,9 @@ for iPar=1:length(parNames)
         end
     
         % Handle different number of parameters (== potentially different ASL sequences)
-        if x.Q.(['Number' parNames{iPar}]) == 1
+        if x.Q.(['nUnique' parNames{iPar}]) == 1
             fprintf('%s\n', ['Single-' parAbbreviation{iPar} ' ASL detected']);
-        elseif x.Q.(['Number' parNames{iPar}]) == 2
+        elseif x.Q.(['nUnique' parNames{iPar}]) == 2
             fprintf('%s\n', ['Dual-' parAbbreviation{iPar} ' ASL detected']);
             
             if strcmp(parAbbreviation{iPar}, 'TE')
@@ -601,11 +600,11 @@ for iPar=1:length(parNames)
     
                 x.Q.EchoTime = min(x.Q.EchoTime);
 		        % Update the other fields as well
-		         x.Q.uniqueEchoTimes = x.Q.EchoTime;
-		         x.Q.NumberEchoTimes = 1;
+		         x.Q.uniqueEchoTime = x.Q.EchoTime;
+		         x.Q.nUniqueEchoTime = 1;
             end
     
-        elseif x.Q.(['Number' parNames{iPar}])>2
+        elseif x.Q.(['nUnique' parNames{iPar}])>2
             fprintf('%s\n', ['Multiple ' parNames{iPar} 's detected, processing this as multi-' parAbbreviation{iPar} ' ASL']);
             fprintf('%s\n', 'Note that this feature is still under development');
     
@@ -627,14 +626,14 @@ for iPar=1:length(parNames)
     
         % Now we print to the screen which unique parameter-values we detected
         fprintf('%s\n', ['Detected the following unique ' parNames{iPar} 's (ms):'])
-        for iVol = 1:x.Q.(['Number' parNames{iPar}])
+        for iVol = 1:x.Q.(['nUnique' parNames{iPar}])
             fprintf('%.2f, ', round(x.Q.(['unique' parNames{iPar}])(iVol), 4));
         end
         fprintf('\n');
     end
     
     % If multi-parameter data is detected, we switch on multi-parameter quantification by default. Unless this has been deactived in dataPar.json
-    if x.Q.(['Number' parNames{iPar}])>1
+    if x.Q.(['nUnique' parNames{iPar}])>1
 	    if ~isfield(x.modules.asl, ['bQuantifyMulti' parAbbreviation{iPar}]) || isempty(x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]))
 		    % By default, initialize as Multi-par quantification as true
 		    x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = true;

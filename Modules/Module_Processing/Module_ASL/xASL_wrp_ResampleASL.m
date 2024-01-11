@@ -270,7 +270,7 @@ MaskIM = MaskIM>(0.7*max(MaskIM(:)));
 if size(PWI4D, 4)>3
     %% PM: here we need to use the positions for the earliest echo, and the latest PLD-labdur
     
-    % PWI4D_statsIndices = x.Q.EchoTime_PWI4D==min(x.Q.uniqueEchoTimes) & x.Q.InitialPLD_PWI4D==max(x.Q.uniqueInitial_PLD);
+    % PWI4D_statsIndices = x.Q.EchoTime_PWI4D==min(x.Q.uniqueEchoTime) & x.Q.InitialPLD_PWI4D==max(x.Q.uniqueInitial_PLD);
     PWI4D_statsIndices = x.Q.InitialPLD_PWI4D==max(x.Q.uniqueInitial_PLD);
     %% #1543 For some reason this didn't work for the combination shortest TE & longest PLD
     %% Better to repeat this for every TE-PLD-LD combination 

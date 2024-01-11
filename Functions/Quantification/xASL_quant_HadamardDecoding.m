@@ -212,7 +212,7 @@ end
 
 % Currently, for multi-TE, we only implement the option that TE times are in the first dimension
 % So in case that there's multi-TE but not as the inner most dimension, we report an error
-if isfield(xQ, 'NumberEchoTimes') && (xQ.NumberEchoTimes > 1)
+if isfield(xQ, 'nUniqueEchoTime') && (xQ.nUniqueEchoTime > 1)
 	% The first two EchoTimes are equal
 	if length(uniquetol(xQ.EchoTime(1:2), 0.001)) == 1
 		warning('Multi-TE processing is only implemented TEs being the inner-most dimension only in PWI4D repetitions, hence the current implementation may not work correctly for the current data');
@@ -262,7 +262,7 @@ else
     % 8 in our example (for 8 echoes)
 end
 
-if nInnerRepetitions ~= xQ.NumberEchoTimes % Check for TE number differ from the number of inner repeats as this is a special option needing a special reordering
+if nInnerRepetitions ~= xQ.nUniqueEchoTime % Check for TE number differ from the number of inner repeats as this is a special option needing a special reordering
 	warning('Number of inner repetitions and echo-times does not match what is expected with a Hadamard sequence, either something is wrong with the sequence or quantification of such a sequence is not yet implemented');
 end
 
