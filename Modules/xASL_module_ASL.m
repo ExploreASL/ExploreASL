@@ -390,7 +390,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
     fprintf('%s\n','Quantifying ASL:   ');
     % If BASIL quantification will be performed, only native space analysis is possible
-    if isfield(x.Q, 'bUseBasilQuantification') && x.Q.bUseBasilQuantification
+    if isfield(x.modules.asl, 'bUseBasilQuantification') && x.modules.asl.bUseBasilQuantification
         % Quantification in native space only for BASIL
 
         xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
@@ -786,11 +786,11 @@ if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSup
     x.Q.BackgroundSuppressionNumberPulses = x.BackgroundSuppressionNumberPulses;
 end
 
-if ~isfield(x.Q, 'bUseBasilQuantification') || isempty(x.Q.bUseBasilQuantification)
-	x.Q.bUseBasilQuantification = false;
+if ~isfield(x.modules.asl, 'bUseBasilQuantification') || isempty(x.modules.asl.bUseBasilQuantification)
+	x.modules.asl.bUseBasilQuantification = false;
     
     if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
-        x.Q.bUseBasilQuantification = true;
+        x.modules.asl.bUseBasilQuantification = true;
     end
 end
 
