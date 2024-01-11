@@ -58,7 +58,7 @@ Tex = [];
 ABV = [];
 
 if nargin<5 || isempty(bUseBasilQuantification)
-	if x.Q.bQuantifyMultiPLD || x.Q.bQuantifyMultiTE
+	if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
 		bUseBasilQuantification = true;
 	else
 		bUseBasilQuantification = false;
@@ -79,7 +79,7 @@ if  xASL_stat_SumNan(M0_im(:))==0
 	end
 end
 
-if x.Q.bQuantifyMultiPLD && ~bUseBasilQuantification
+if x.modules.asl.bQuantifyMultiPLD && ~bUseBasilQuantification
 	error('Multi-PLD quantification currently works only with BASIL');
 end
 
@@ -99,7 +99,7 @@ if ~x.modules.asl.ApplyQuantification(3)
 else
     
     % If we have multiple PLDs but requested a single PLD quantification, we use the highest PLD
-	if isfield(x.Q, 'bQuantifyMultiPLD') && ~x.Q.bQuantifyMultiPLD && numel(x.Q.uniqueInitial_PLD)>1
+	if isfield(x.modules.asl, 'bQuantifyMultiPLD') && ~x.modules.asl.bQuantifyMultiPLD && numel(x.Q.uniqueInitial_PLD)>1
 		warning('Multiple PLDs detected, taking the highest PLD only');
 		fprintf('%s\n', 'A multi-PLD quantification may provide more accurate results');
 		x.Q.uniqueInitial_PLD = max(x.Q.uniqueInitial_PLD);
