@@ -390,13 +390,13 @@ try
                     end
                     
                     % Remove symbolic path of SUBJECTDIR & MyPath
-                    if isfield(x.dir,'SUBJECTDIR')
+                    if isfield(x, 'dir') && isfield(x.dir,'SUBJECTDIR')
                         x.dir = rmfield(x.dir, 'SUBJECTDIR');
                     end
-                    if isfield(x.dir,'SESSIONDIR')
+                    if isfield(x, 'dir') && isfield(x.dir,'SESSIONDIR')
                         x.dir = rmfield(x.dir, 'SESSIONDIR');
                     end
-                    if isfield(x.opts,'MyPath')
+                    if isfield(x, 'opts') && isfield(x.opts,'MyPath')
                         x.opts = rmfield(x.opts, 'MyPath');
                     end
                     

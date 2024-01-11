@@ -246,19 +246,24 @@ for iSpace=1:2
 
     % Save PWI4D (subtracted only)
     fprintf('%s\n', PathPWI4D{iSpace});
-    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false);
-    spm_jsonwrite(PathPWI4Djson{iSpace}, x.Q);
+	jsonFields.EchoTime = x.Q.EchoTime_PWI4D;
+	jsonFields.Initial_PLD = x.Q.InitialPLD_PWI4D;
+	jsonFields.LabelingDuration = x.Q.LabelingDuration_PWI4D;
+    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false, [], 0, xASL_bids_parms2BIDS(jsonFields, [], 1));
 
     % Save PWI3D (averaged volume for each TE-PLD-labdur combination)
     fprintf('%s\n', PathPWI3D{iSpace});
-    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI3D{iSpace}, PWI3D, 32, false);
-    spm_jsonwrite(PathPWI3Djson{iSpace}, x.Q);
+	jsonFields.EchoTime = x.Q.EchoTime_PWI3D;
+	jsonFields.Initial_PLD = x.Q.InitialPLD_PWI3D;
+	jsonFields.LabelingDuration = x.Q.LabelingDuration_PWI3D;
+    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI3D{iSpace}, PWI3D, 32, false, [], 0, xASL_bids_parms2BIDS(jsonFields, [], 1));
 
     % Save PWI (single volume)
     fprintf('%s\n', PathPWI{iSpace});
-    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI{iSpace}, PWI, 32, false);
-    spm_jsonwrite(PathPWIjson{iSpace}, x.Q);
-
+	jsonFields.EchoTime = x.Q.EchoTime_PWI3D;
+	jsonFields.Initial_PLD = x.Q.InitialPLD_PWI3D;
+	jsonFields.LabelingDuration = x.Q.LabelingDuration_PWI3D;
+    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI{iSpace}, PWI, 32, false, [], 0, xASL_bids_parms2BIDS(jsonFields, [], 1));
 end
 
 

@@ -61,8 +61,7 @@ function xASL_wrp_Quantify(x, PWI4D_Path, pathOutputCBF, M0Path, SliceGradientPa
 %     Comparison of 3 T and 7 T ASL techniques for concurrent functional perfusion and BOLD studies
 %     Neuroimage. 2017; 156:363-376.
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL
-
+% Copyright (C) 2015-2024 ExploreASL
 
 %% ------------------------------------------------------------------------------------------------
 %% 0.   Administration
@@ -162,12 +161,12 @@ pathSidecar = fullfile(fPath, [fFile '.json']);
 if ~exist(pathSidecar, 'file')
     warning('PWI4D JSON sidecar with quantification parameters was missing');
 else
-    JSON = spm_jsonread(pathSidecar);
-    x.Q.EchoTime_PWI4D = JSON.EchoTime_PWI4D;
-    x.Q.InitialPLD_PWI4D = JSON.InitialPLD_PWI4D;
-    x.Q.LabelingDuration_PWI4D = JSON.LabelingDuration_PWI4D;
+	JSON = xASL_io_ReadJson(pathSidecar); % Read the sidecar
+	JSON = xASL_bids_parms2BIDS([], JSON, 0); % Convert it from BIDS to Legacy
+    x.Q.EchoTime_PWI4D = JSON.Q.EchoTime;
+    x.Q.InitialPLD_PWI4D = JSON.Q.Initial_PLD;
+    x.Q.LabelingDuration_PWI4D = JSON.Q.LabelingDuration;
 end
-
 
 % Assigns the shortest minimal positive TE for ASL
 %% THIS SHOULD THEN BE ADAPTED TOO
