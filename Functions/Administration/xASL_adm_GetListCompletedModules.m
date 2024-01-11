@@ -37,7 +37,7 @@ end
 listASLSubjects = xASL_adm_GetFileList(dirLockASL, '.*', 'List', [], 1);
 listASLDone = {};
 for iList = 1:length(listASLSubjects)
-    sessions = xASL_adm_GetFileList(fullfile(dirLockASL, listASLSubjects{iList}, '^xASL_module_ASL_.*', 'List', [], 1);
+    sessions = xASL_adm_GetFileList(fullfile(dirLockASL, listASLSubjects{iList}), '^xASL_module_ASL_.*', 'List', [], 1);
     for iSession=1:length(sessions)
         lockFile999 = fullfile(dirLockASL, listASLSubjects{iList}, sessions{iSession}, '999_ready.status');
         if exist(lockFile999, 'file')
