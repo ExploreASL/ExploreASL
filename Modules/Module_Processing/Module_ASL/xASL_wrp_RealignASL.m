@@ -119,7 +119,7 @@ end
 % SpikeRemovalThreshold is an optional field, by default we use ENABLE
 % So, here we check if it exists, but otherwise we default to disabling it
 
-if x.Q.NumberPLDs>1 || x.Q.NumberEchoTimes>1
+if x.Q.nUniqueInitial_PLD>1 || x.Q.nUniqueEchoTime>1
     % outlier exclusion is temporarily disabled for multiPLD/TE
     % as we are still developing this feature
     fprintf('%s\n', 'multi-PLD or multi-TE detected, disabling outlier exclusion, not yet implemented');
@@ -161,7 +161,7 @@ end
 
 
 %% Manage zig-zag in motion correction
-if x.Q.NumberPLDs>1 || x.Q.NumberEchoTimes>1
+if x.Q.nUniqueInitial_PLD>1 || x.Q.nUniqueEchoTime>1
     % ZigZag are temporarily disabled for multiPLD/TE
     % as we are still developing this feature
     fprintf('%s\n', 'multi-PLD or multi-TE detected, disabling zig-zag motion estimation, not yet implemented');    
