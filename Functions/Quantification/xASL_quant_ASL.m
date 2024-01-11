@@ -183,7 +183,7 @@ else
             fprintf('%s\n', 'We will use the volumes with the shortest echo time');
 		end
 
-		if isfield(x.Q, 'SaveCBF4D') && x.Q.SaveCBF4D
+		if isfield(x.modules.asl, 'SaveCBF4D') && x.modules.asl.SaveCBF4D
             PWI = PWI4D;
             fprintf('%s\n', 'Quantifying CBF in 4D');
             % In this case, we want to save a quantified version of PWI4D
