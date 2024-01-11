@@ -302,7 +302,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 	% The Background suppression calculation works with a single PLD only, so we have to make sure that only a scalar value is provided
 	% for both cases of multi-PLD and single-PLD with a vector of same PLDs
 	
-	if x.Q.NumberPLDs>1
+	if x.Q.nUniqueInitial_PLD>1
 		% Adjust initial_PLD for multi-PLD - a value closest to 2000 ms is currently selected
 		% Get unique PLDs
 		idealPLD = unique(Initial_PLD);

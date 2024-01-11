@@ -36,7 +36,7 @@ ICV_vol_mL	ICV Volume	ICV Volume	mL
 ID				
 Initial_PLD_ms	Initial Post Labeling Delay		ms	
 LabelingDuration_ms	Labeling Duration		ms	
-LabelingType	ArterialSpinLabelingType	Either CASL, PCASL or PASL		
+LabelingType	ArterialSpinLabelingType	"Either CASL, PCASL or PASL"		
 LR_flip_YesNo	Left-right Orientation flipped during registation	Left-right Orientation flipped during registation		
 M0	M0Type			
 Matrix				
@@ -51,9 +51,9 @@ MotionMax_mm
 MotionMean_mm	Mean Motion	Mean Motion	mm	
 MotionSD_mm				
 nRMSE_Perc	nRMSE	nRMSE (normalized Root Mean Square Error) within ASL template	%	
-NumberEchoTimes				
+nUniqueEchoTime				
 NumberOfAverages				
-PeakSNR_Ratio		Assuming an individual ASL image can be interpreted as a noise version of an ASL template, this parameter is the dynamic range compared to the mean squared difference of the individual and template ASL images. Dynamic range is calculate here as MaxIntesity-MinIntensity (higher = better)		
+PeakSNR_Ratio		"Assuming an individual ASL image can be interpreted as a noise version of an ASL template, this parameter is the dynamic range compared to the mean squared difference of the individual and template ASL images. Dynamic range is calculate here as MaxIntesity-MinIntensity (higher = better)"		
 readoutDim				
 RescaledSlope		Scale factor used by Philips		
 RigidBody2Anat_mm		Registration offset between ASL and 3D-T1W 	mm	

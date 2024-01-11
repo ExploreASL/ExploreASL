@@ -178,7 +178,7 @@ else
         % (later, when we have multi-PLD, multi-echo, or multi-labeling quantification here as well,
         % then we could use PWI3D here)
 
-		if x.Q.NumberEchoTimes>1 && ~x.modules.asl.bQuantifyMultiTE
+		if x.Q.nUniqueEchoTime>1 && ~x.modules.asl.bQuantifyMultiTE
             warning('Multiple TE detected, but multi-TE quantification is turned off.');
             fprintf('%s\n', 'We will use the volumes with the shortest echo time');
 		end
