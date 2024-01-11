@@ -49,10 +49,10 @@ end
 %% 1) Define field names that need to be convert/renamed/merged
 
 % Fields with these names need to have the time converted between XASL legacy and BIDS, and define their recommended range in ms
-convertTimeFieldsXASL =       {'EchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
-convertTimeFieldsRange =       [0.5        5                10            10                 10                   10              5                  100       10   100        5                  5;...% Minimum in ms
-                                500        20000            10000         5000               5000                 5000            400                5000      500  5000       400                10000];% Maximum in ms   
-convertTimeFieldsAllowOutliers=[0          0                1             1                  1                    0               0                  0         0    0          0                  0]; % For multiple values, don't print a warning if mean value is within the range
+convertTimeFieldsXASL =       {'EchoTime' 'uniqueEchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
+convertTimeFieldsRange =       [0.5        0.5              5                10            10                 10                   10              5                  100       10   100        5                  5;...% Minimum in ms
+                                500        500              20000            10000         5000               5000                 5000            400                5000      500  5000       400                10000];% Maximum in ms   
+convertTimeFieldsAllowOutliers=[0          0                0                1             1                  1                    0               0                  0         0    0          0                  0]; % For multiple values, don't print a warning if mean value is within the range
 					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'EchoTime' 'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LookLocker' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'...
