@@ -56,7 +56,7 @@ xResult = xASL_io_CheckDeprecatedFieldsX(x);
 
 % Create the reference file
 xReference.RepetitionTime = 4400;
-xReference.EchoTime = 14.3660;
+xReference.Q.EchoTime = 14.3660;
 xReference.NumberOfTemporalPositions = 140;
 xReference.RescaleSlope = 10.8730;
 xReference.RescaleSlopeOriginal = 10.8730;
