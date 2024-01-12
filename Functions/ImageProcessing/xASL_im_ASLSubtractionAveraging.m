@@ -379,13 +379,7 @@ end
 
 
 %% 6. Create PWI AND/OR Control
-% We create a dummy CBF image for registration purposes. % The earliest echo, the latest PLD and the longest labeling duration
-% are the best for this, having most SNR, CBF-weighting, and SNR, respectively. But from a single volume, we have little signal.
-% So we take a weighted average accordingly
-
-%% PM: do a weighted average here?
-%
-%% Get mean control does it this way, choosing the PLD closest to 2000 ms
+%% For Look-Locker, choosing the PLD closest to 2000 ms
     % 
 	% % Get unique PLDs
 	% idealPLD = unique(Initial_PLD);
@@ -419,12 +413,112 @@ if bCreatePWI
         warning('Defined x.Q.LabelingDuration_PWI3D should have equal length as PWI3D image volumes');
     end
     
-    %% Current quick&dirty fix was the average of all volumes with the lowest echo time
-    iMinTE = x.Q.EchoTime_PWI3D == min(x.Q.EchoTime_PWI3D(:));
-    PWI = xASL_stat_MeanNan(PWI3D(:, :, :, iMinTE), 4);
-    x.Q.EchoTime_PWI = min(x.Q.EchoTime_PWI3D(:));
-    x.Q.initialPLD_PWI = mean(x.Q.InitialPLD_PWI3D(:));
-    x.Q.LabelingDuration_PWI = mean(x.Q.LabelingDuration_PWI3D(:));
+    %% =================================================================================
+    %% PM: THIS PART ON T2STAR & T2 CAN BE ADDED TO THE START OF xASL_module_ASL INSTEAD
+    if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
+	    if x.MagneticFieldStrength == 3
+		    x.Q.T2star = 47.3; % default for 3T; Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
+	    elseif x.MagneticFieldStrength == 7
+		    x.Q.T2star = 35.6; % Voelker 2021
+	    elseif x.MagneticFieldStrength == 1.5
+		    x.Q.T2star = 62.0; % Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
+	    else
+		    x.Q.T2star = 47.3;
+		    fprintf('%s\n',['Warning: Unknown T2star for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+	    end
+    end
+    if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
+	    if x.MagneticFieldStrength == 3
+		    x.Q.T2 = 85; % in ms - default for 3T (ref Johannes Gregori, JMRI 2013) 88 for frontal GM, 79 for occipital GM (Lu et al, 2005 JMRI)
+		    % Hct specific values are in 10.1002/mrm.21342
+	    elseif x.MagneticFieldStrength == 1.5
+		    x.Q.T2 = 95; % in ms - 99 for frontal GM, 90 for occipital GM (Lu et al, 2005 JMRI).
+	    else
+		    x.Q.T2 = 85;
+		    fprintf('%s\n',['Warning: Unknown T2 for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+	    end
+    end
+
+    if ~isfield(x.Q,'BloodT1') || isempty(x.Q.BloodT1)
+	    % T1 relaxation time of arterial blood
+        % There are 3 options for x.Q.BloodT1:
+        % A) users have provided x.Q.BloodT1
+        % B) users have provided x.Hematocrit which is converted to x.Q.BloodT1 above
+        % C) it doesn't exist and is defaulted here based on MagneticFieldStrength
+	    switch(x.MagneticFieldStrength)
+		    case 0.2 
+			    x.Q.BloodT1 = 776; % Rooney 2007 MRM
+                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 776 ms for 0.2T (Rooney 2007 MRM)');
+		    case 1
+			    x.Q.BloodT1 = 1350; % Rooney 2007 MRM
+                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1350 ms for 1T (Rooney 2007 MRM)');
+		    case 1.5
+			    x.Q.BloodT1 = 1540; % Rooney 2007 MRM
+                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1540 ms for 1.5T (Rooney 2007 MRM)');
+		    case 3
+			    x.Q.BloodT1 = 1650; % Alsop 2015 MRM
+                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1650 ms for 3T (Alsop 2015 MRM)');
+		    case 4
+			    x.Q.BloodT1 = 1914; % Rooney 2007
+                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1914 ms for 4T (Rooney 2007 MRM)');
+		    case 7
+			    %x.Q.BloodT1 = 2578; % Rooney 2007 MRM
+			    x.Q.BloodT1 = 2100; % Ivanov 2017 NeuroImage
+                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 2100 ms for 7T (Ivanov 2007 NeuroImage)');
+		    otherwise
+			    x.Q.BloodT1 = 1650; % Alsop 2015 MRM - assuming default 3 T
+			    fprintf('%s\n',['Warning: Unknown T1-blood for ' xASL_num2str(x.MagneticFieldStrength) 'T scanner, using 3T value (Alsop 2015 MRM)']);
+                % PM: NOTE that this situation is unlikely, given that we
+                % default to x.MagneticFieldStrength = 3 at section 0
+                % Administration above
+        end
+    end
+    %% =================================================================================
+    %% PM: THIS PART ON T2STAR & T2 CAN BE ADDED TO THE START OF xASL_module_ASL INSTEAD    
+
+
+
+
+    % EchoTime weighting
+    % We default to T2*, for 3D GRASE and 2D EPI.
+    % If we detect 3D spiral, we go for T2 instead.
+    % For most 3D spiral sequences (==GE), we do not have individual control-label pairs anyway.
+
+    if isfield(x.Q, 'Sequence') && ~isempty(regexpi(x.Q.Sequence, '3d_spiral'))
+        T2_factor = x.Q.T2;
+    else
+        T2_factor = x.Q.T2star;
+    end
+
+    nsrTE = exp(x.Q.EchoTime_PWI3D ./T2_factor); % for each volume, get the EchoTime weighting
+
+    % PLD & LD weighting
+    nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.BloodT1) ./ (1-exp(-x.Q.LabelingDuration_PWI3D ./x.Q.BloodT1));
+
+    % Perfusion-weighting (PW) vs vascular weighting
+    pwPLD = max((min(x.Q.InitialPLD_PWI3D, 2500) - 1000) ./ 15, 1) ./100;
+
+    % Joint estimated signal contribution per volume
+    contributionVolume = pwPLD ./ (nsrTE .* nsrPLD);
+
+    % Make the sum contribution 1
+    contributionVolume = contributionVolume ./ sum(contributionVolume);
+
+    % Create the joined image & parameters
+    PWI = zeros(size(PWI3D(:,:,:,1)));
+    
+    x.Q.EchoTime_PWI = 0;
+    x.Q.initialPLD_PWI = 0;
+    x.Q.LabelingDuration_PWI = 0;
+
+    for iVolume=1:size(PWI3D, 4)
+        PWI = PWI + contributionVolume(iVolume) .* PWI3D(:,:,:,iVolume);
+    end
+
+    x.Q.EchoTime_PWI = contributionVolume .* x.Q.EchoTime_PWI3D;
+    x.Q.initialPLD_PWI = contributionVolume .* x.Q.InitialPLD_PWI3D;
+    x.Q.LabelingDuration_PWI = contributionVolume .* x.Q.LabelingDuration_PWI3D;
+
 end
 
 if bCreateControl
