@@ -43,6 +43,7 @@ function xASL_wrp_ResampleASL(x)
 % Otherwise, despiked_raw_asl = same as original file
 if ~xASL_exist(x.P.Path_despiked_ASL4D, 'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
+    x.P.Path_despiked_ASL4D_json = x.P.Path_ASL4D_json;
 end
 tempnii = xASL_io_Nifti2Im(x.P.Path_despiked_ASL4D);
 nVolumes = size(tempnii, 4);
@@ -80,7 +81,7 @@ else
 end
 
 xASL_spm_deformations(x, x.P.Path_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, 4, [], AffineTransfPath, x.P.Path_y_ASL);
-
+xASL_Copy(x.P.Path_despiked_ASL4D_json, x.P.Path_rtemp_despiked_ASL4D_json);
 
 %% ------------------------------------------------------------------------------------------
 % 4. Resample to native space (applying any motion correction or registration)
@@ -99,6 +100,10 @@ if nVolumes>1
     
     [Fpath, Ffile] = xASL_fileparts(x.P.Path_despiked_ASL4D);
     x.P.Path_rdespiked_ASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
+    x.P.Path_rdespiked_ASL4D_json = fullfile(Fpath, ['r' Ffile '.json']);
+
+    % Copy the JSON sidecar as well
+    xASL_Copy(x.P.Path_despiked_ASL4D_json, x.P.Path_rdespiked_ASL4D_json);
 else
     x.P.Path_rdespiked_ASL4D = x.P.Path_despiked_ASL4D;
 end
@@ -231,16 +236,7 @@ PathPWI4Djson = {x.P.Path_PWI4D_json x.P.Pop_Path_PWI4D_json};
 for iSpace=1:2
     fprintf('%s\n', ['Saving in ' StringSpaceIs{iSpace} ' space:']);
     
-    % Here we reload this again, because we have different 
-    ASL4D = xASL_io_Nifti2Im(PathASL4D{iSpace}); % Load time-series nifti
-    
-    if ndims(ASL4D)>4
-        fprintf('In BIDS ASL NIfTIs should have [X Y Z n/PLD/TE/etc] as 4 dimensions\n');
-        error(['ASL4D NIfTI has more than 4 dimensions: ' PathASL4D{iSpace}]);
-    end
-
-    [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D);
-    
+    [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, PathASL4D{iSpace});
     
     % Save subtracted/averaged to disk
 
@@ -338,10 +334,10 @@ end
 if x.settings.DELETETEMP
     if ~strcmp(x.P.Path_ASL4D, x.P.Path_rdespiked_ASL4D)
         % in case of single volumes, these can be set to the same NIfTI
-        xASL_adm_DeleteFilePair(x.P.Path_rdespiked_ASL4D, 'mat');
+        xASL_adm_DeleteFilePair(x.P.Path_rdespiked_ASL4D, 'mat', 'json');
     end
-    xASL_delete(x.P.Path_rtemp_despiked_ASL4D);
-    xASL_adm_DeleteFilePair(x.P.Path_temp_despiked_ASL4D, 'mat');
+    xASL_adm_DeleteFilePair(x.P.Path_rtemp_despiked_ASL4D, 'mat', 'json');
+    xASL_adm_DeleteFilePair(x.P.Path_temp_despiked_ASL4D, 'mat', 'json');
 else
     xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, ASL4D, 32);
 end
