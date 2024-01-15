@@ -92,6 +92,33 @@ elseif isempty(path_ASL4D) && ( (nargin>=3 && isempty(PWI4D)) || (nargin>=4 && i
 	error('Empty Path_ASL4D, PWI4D, and PWI3D');
 elseif (numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000)
     % this is a path, not an image or it is empty
+    
+    if xASL_exist(path_ASL4D, 'file')
+        % if this is a path, we will try to get the JSON sidecar
+        [pDir, pFile] = xASL_fileparts(path_ASL4D);
+        path_ASL4Djson = fullfile(pDir, [pFile '.json']);
+
+        if xASL_exist(path_ASL4Djson, 'file')
+            % we try to load this json and extract quantification parameters
+            json = xASL_io_ReadJson(path_ASL4Djson);
+            % if it has the two required quantification fields PLD & LD, we will use this
+            jsonFields = fields(json);
+            fieldPLD = find(contains(jsonFields, 'PostLabelingDelay'));
+            fieldLD = find(contains(jsonFields, 'LabelingDuration'));
+            fieldTE = find(contains(jsonFields, 'EchoTime'));
+
+            if ~isempty(fieldPLD) && ~isempty(fieldLD)
+                x.Q.LabelingDuration = json.LabelingDuration;
+                x.Q.Initial_PLD = json.PostLabelingDelay;
+
+                if ~isempty(fieldTE)
+                    x.Q.EchoTime = json.EchoTime;
+                else
+                    x.Q.EchoTime = [];
+                end
+            end
+        end
+    end
 else
     % Path_ASL4D is a matrix. Then we delete it and move it to ASL4D
 	ASL4D = path_ASL4D;
