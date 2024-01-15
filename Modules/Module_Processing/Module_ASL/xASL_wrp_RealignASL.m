@@ -506,30 +506,22 @@ if bENABLE || bSpikeRemoval
         TempIm = xASL_io_Nifti2Im(InputPath);
         
         % Remove spikes
-        NewIm = TempIm(:,:,:, ~exclusion);
-        
         % skip this for fMRI, which is more complicated
         % due to tissue T1 effects (incomplete saturation, so temporal relation between volumes)
-        % Save in single precision, since conversion back to INT16 would
-        % otherwise loose precious precision
-        % PM: can this be simplified to same format as original??
-        xASL_io_SaveNifti(x.P.Path_ASL4D, x.P.Path_despiked_ASL4D, NewIm, 32, 0);
+        NewIm = TempIm(:,:,:, ~exclusion);
         
         % Do same for *.mat motion sidecars
         LoadParms = load(x.P.Path_ASL4D_mat, '-mat');
         mat = LoadParms.mat;
-        
         mat = mat(:,:, ~exclusion);
-
         save(x.P.Path_despiked_ASL4D_mat, 'mat');
 
         % Also change parameter vectors
-        x.Q.EchoTime = x.Q.EchoTime(~exclusion);
-        x.Q.Initial_PLD = x.Q.Initial_PLD(~exclusion);
-        x.Q.LabelingDuration = x.Q.LabelingDuration(~exclusion);
+        jsonFields.EchoTime = x.Q.EchoTime(~exclusion);
+        jsonFields.Initial_PLD = x.Q.Initial_PLD(~exclusion);
+        jsonFields.LabelingDuration = x.Q.LabelingDuration(~exclusion);
 
-        % #997 Need to save this in json sidecar for further usage in the pipeline
-
+        xASL_io_SaveNifti(x.P.Path_ASL4D, x.P.Path_despiked_ASL4D, NewIm, 32, 0, [], 1, xASL_bids_parms2BIDS(jsonFields, [], 1));
     end
     
 else
