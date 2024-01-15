@@ -160,9 +160,9 @@ if isfield(x.P,'STRUCT') && isfield(x.P,'ASL4D') && isfield(x.P,'CBF')
     % 2) Native space session level
     NativeRegExp_SessionLevel = {[x.P.ASL4D '.nii']};
     % 3) MNI subject level
-    MNI_subject_prefix = {['r' x.P.STRUCT],['rc1' x.P.STRUCT],['rc2' x.P.STRUCT]};
+    MNI_subject_prefix = {};
     % 4) MNI session level
-    MNI_session_prefix = {['q' x.P.CBF] 'PWI' 'SliceGradient'};
+    MNI_session_prefix = {['q' x.P.CBF] 'PWI'};
     % 5) LongReg
 else
     % This will probably only be printed, if something went wrong in the
