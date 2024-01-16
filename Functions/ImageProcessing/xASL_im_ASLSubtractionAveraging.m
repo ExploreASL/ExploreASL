@@ -180,7 +180,7 @@ PWI = []; % dummy output
 Control = []; % dummy output
 
 % Define quantification parameters
-x = xASL_quant_DefineParameters(x);
+x = xASL_quant_DefineQuantificationParameters(x);
 
 
 %% ========================================================================================
@@ -434,7 +434,7 @@ if bCreatePWI
     nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.BloodT1) ./ (1-exp(-x.Q.LabelingDuration_PWI3D ./x.Q.BloodT1));
     % e.g., exp(1525/1650) / (1-exp(-1650/1650) = 3.9865
 
-    % Perfusion-weighting (PW) vs vascular weighting (range 0%-100%)
+    % Perfusion-weighting (PW) vs vascular weighting (range 1%-100%)
     pwPLD = max((min(x.Q.InitialPLD_PWI3D, 2500) - 1000) ./ 15, 1) ./100;
     % e.g., max((min(1525, 2500) - 1000) / 15, 1) / 100 = 0.35 for 35%
 
