@@ -73,7 +73,7 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 % EXAMPLE used by xASL_wrp_ResampleASL: [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D, PWI4D, PWI3D);
 % EXAMPLE used by xASL_quant_ASL: [PWI] = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 
 
 %% ========================================================================================
@@ -179,6 +179,8 @@ end
 PWI = []; % dummy output
 Control = []; % dummy output
 
+% Define quantification parameters
+x = xASL_quant_DefineParameters(x);
 
 
 %% ========================================================================================
@@ -412,71 +414,6 @@ if bCreatePWI
     if size(PWI3D, 4) ~= length(x.Q.LabelingDuration_PWI3D)
         warning('Defined x.Q.LabelingDuration_PWI3D should have equal length as PWI3D image volumes');
     end
-    
-    %% =================================================================================
-    %% PM: THIS PART ON T2STAR & T2 CAN BE ADDED TO THE START OF xASL_module_ASL INSTEAD
-    if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
-	    if x.MagneticFieldStrength == 3
-		    x.Q.T2star = 47.3; % default for 3T; Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
-	    elseif x.MagneticFieldStrength == 7
-		    x.Q.T2star = 35.6; % Voelker 2021
-	    elseif x.MagneticFieldStrength == 1.5
-		    x.Q.T2star = 62.0; % Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
-	    else
-		    x.Q.T2star = 47.3;
-		    fprintf('%s\n',['Warning: Unknown T2star for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
-	    end
-    end
-    if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
-	    if x.MagneticFieldStrength == 3
-		    x.Q.T2 = 85; % in ms - default for 3T (ref Johannes Gregori, JMRI 2013) 88 for frontal GM, 79 for occipital GM (Lu et al, 2005 JMRI)
-		    % Hct specific values are in 10.1002/mrm.21342
-	    elseif x.MagneticFieldStrength == 1.5
-		    x.Q.T2 = 95; % in ms - 99 for frontal GM, 90 for occipital GM (Lu et al, 2005 JMRI).
-	    else
-		    x.Q.T2 = 85;
-		    fprintf('%s\n',['Warning: Unknown T2 for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
-	    end
-    end
-
-    if ~isfield(x.Q,'BloodT1') || isempty(x.Q.BloodT1)
-	    % T1 relaxation time of arterial blood
-        % There are 3 options for x.Q.BloodT1:
-        % A) users have provided x.Q.BloodT1
-        % B) users have provided x.Hematocrit which is converted to x.Q.BloodT1 above
-        % C) it doesn't exist and is defaulted here based on MagneticFieldStrength
-	    switch(x.MagneticFieldStrength)
-		    case 0.2 
-			    x.Q.BloodT1 = 776; % Rooney 2007 MRM
-                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 776 ms for 0.2T (Rooney 2007 MRM)');
-		    case 1
-			    x.Q.BloodT1 = 1350; % Rooney 2007 MRM
-                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1350 ms for 1T (Rooney 2007 MRM)');
-		    case 1.5
-			    x.Q.BloodT1 = 1540; % Rooney 2007 MRM
-                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1540 ms for 1.5T (Rooney 2007 MRM)');
-		    case 3
-			    x.Q.BloodT1 = 1650; % Alsop 2015 MRM
-                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1650 ms for 3T (Alsop 2015 MRM)');
-		    case 4
-			    x.Q.BloodT1 = 1914; % Rooney 2007
-                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1914 ms for 4T (Rooney 2007 MRM)');
-		    case 7
-			    %x.Q.BloodT1 = 2578; % Rooney 2007 MRM
-			    x.Q.BloodT1 = 2100; % Ivanov 2017 NeuroImage
-                fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 2100 ms for 7T (Ivanov 2007 NeuroImage)');
-		    otherwise
-			    x.Q.BloodT1 = 1650; % Alsop 2015 MRM - assuming default 3 T
-			    fprintf('%s\n',['Warning: Unknown T1-blood for ' xASL_num2str(x.MagneticFieldStrength) 'T scanner, using 3T value (Alsop 2015 MRM)']);
-                % PM: NOTE that this situation is unlikely, given that we
-                % default to x.MagneticFieldStrength = 3 at section 0
-                % Administration above
-        end
-    end
-    %% =================================================================================
-    %% PM: THIS PART ON T2STAR & T2 CAN BE ADDED TO THE START OF xASL_module_ASL INSTEAD    
-
-
 
 
     % EchoTime weighting
