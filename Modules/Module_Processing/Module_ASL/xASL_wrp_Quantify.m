@@ -81,7 +81,7 @@ if ~isfield(x,'Q')
 end
 
 % Define quantification parameters
-x = xASL_quant_DefineParameters(x);
+x = xASL_quant_DefineQuantificationParameters(x);
 
 % Check if PWI4D exists
 if ~xASL_exist(PWI4D_Path, 'file')
