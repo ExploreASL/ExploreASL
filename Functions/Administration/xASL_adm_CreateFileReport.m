@@ -162,7 +162,7 @@ if isfield(x.P,'STRUCT') && isfield(x.P,'ASL4D') && isfield(x.P,'CBF')
     % 3) MNI subject level
     MNI_subject_prefix = {};
     % 4) MNI session level
-    MNI_session_prefix = {['q' x.P.CBF] 'PWI'};
+    MNI_session_prefix = {['q' x.P.CBF]};
     % 5) LongReg
 else
     % This will probably only be printed, if something went wrong in the
