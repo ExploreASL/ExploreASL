@@ -491,15 +491,19 @@ if bCreatePWI
     end
 
     nsrTE = exp(x.Q.EchoTime_PWI3D ./T2_factor); % for each volume, get the EchoTime weighting
+    % e.g., exp(17/47.3) = 1.4325
 
     % PLD & LD weighting
     nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.BloodT1) ./ (1-exp(-x.Q.LabelingDuration_PWI3D ./x.Q.BloodT1));
+    % e.g., exp(1525/1650) / (1-exp(-1650/1650) = 3.9865
 
-    % Perfusion-weighting (PW) vs vascular weighting
+    % Perfusion-weighting (PW) vs vascular weighting (range 0%-100%)
     pwPLD = max((min(x.Q.InitialPLD_PWI3D, 2500) - 1000) ./ 15, 1) ./100;
+    % e.g., max((min(1525, 2500) - 1000) / 15, 1) / 100 = 0.35 for 35%
 
     % Joint estimated signal contribution per volume
     contributionVolume = pwPLD ./ (nsrTE .* nsrPLD);
+    % e.g., 0.35 / (1.4325 * 3.9865) = 0.0613
 
     % Make the sum contribution 1
     contributionVolume = contributionVolume ./ sum(contributionVolume);
@@ -515,9 +519,9 @@ if bCreatePWI
         PWI = PWI + contributionVolume(iVolume) .* PWI3D(:,:,:,iVolume);
     end
 
-    x.Q.EchoTime_PWI = contributionVolume .* x.Q.EchoTime_PWI3D;
-    x.Q.initialPLD_PWI = contributionVolume .* x.Q.InitialPLD_PWI3D;
-    x.Q.LabelingDuration_PWI = contributionVolume .* x.Q.LabelingDuration_PWI3D;
+    x.Q.EchoTime_PWI = sum(contributionVolume .* x.Q.EchoTime_PWI3D);
+    x.Q.initialPLD_PWI = sum(contributionVolume .* x.Q.InitialPLD_PWI3D);
+    x.Q.LabelingDuration_PWI = sum(contributionVolume .* x.Q.LabelingDuration_PWI3D);
 
 end
 
