@@ -240,7 +240,7 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, 
 % EXAMPLE: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput)
 %
 % __________________________________
-% Copyright 2015-2023 ExploreASL 
+% Copyright 2015-2024 ExploreASL 
 
 %% 0. Admin
 % Set BASIL dataPar options and their defaults
@@ -254,13 +254,22 @@ if nargin<7 || isempty(bMergingSessions)
 	bMergingSessions = 0;
 end
 
-%% TEMPORARY SOLUTION, MERGING GOES OUT OF XASL_QUANT_FSL
+%% #1543 TEMPORARY SOLUTION, MERGING GOES OUT OF XASL_QUANT_FSL
 if bMergingSessions
     bUseFabber = 1;
 end
 
 if ~bUseFabber
-	% BASIL specific options
+	% On Low quality settings, turn off all extra processing options
+	if isfield(x, 'settings') && isfield(x.settings, 'Quality') && ~x.settings.Quality
+		x.modules.asl.bSpatialBASIL = false;
+		x.modules.asl.bInferT1BASIL = false;
+		x.modules.asl.bInferArtBASIL = false;
+		x.modules.asl.ExchBASIL = 'simple';
+		x.modules.asl.DispBASIL = 'none';
+	end
+
+	% Setting defaults for BASIL specific options
 	if ~isfield(x.modules.asl,'bSpatialBASIL') || isempty(x.modules.asl.bSpatialBASIL)
 		fprintf('BASIL: Setting default option bSpatial = false\n');
 		x.modules.asl.bSpatialBASIL = false;
@@ -289,7 +298,6 @@ if ~bUseFabber
 	if ~isfield(x.modules.asl, 'ATTSDBASIL') || isempty(x.modules.asl.ATTSDBASIL)
 		x.modules.asl.ATTSDBASIL = 1.0;
 	end
-
 end
 
 %% 1. Create the options file
