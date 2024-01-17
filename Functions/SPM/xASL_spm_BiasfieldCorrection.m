@@ -64,10 +64,10 @@ for ii=1:2
     xASL_delete(snMat{ii});
 end
 
-%% 1) Create implicit mask
+%% 1) Create implicit mask 
 if NoMaskInput
     % create an implicit mask from NaNs or zeros, to speed up this
-    % segmentation, but SPM probably does this itself (implicit mask)?
+    % biasfield correction, and to avoid NaNs crashing SPM
 
     PathMask = fullfile(Fpath, ['ImplicitMask_' Ffile Fext]);
     tempIM = xASL_io_Nifti2Im(PathIn{1}(1:end-2));
@@ -100,17 +100,24 @@ matlabbatch{1}.spm.tools.oldseg.opts.biasreg    = 0.0001;
 matlabbatch{1}.spm.tools.oldseg.opts.biasfwhm   = 60;
 matlabbatch{1}.spm.tools.oldseg.opts.msk        = {PathMask};
 
-if Quality
-    matlabbatch{1}.spm.tools.oldseg.opts.samp = 9;
-    % PM: can make this dependent on the image resolution
-else
-    matlabbatch{1}.spm.tools.oldseg.opts.samp = 32; % sufficient for smooth biasfields, saves time
-end
 
 %% ------------------------------------------------------------------------------------------------------
 %% 3) Run SPM 'old segmentation'
-spm_jobman('run',matlabbatch);
 
+if Quality
+    matlabbatch{1}.spm.tools.oldseg.opts.samp = 9;
+    spm_jobman('run',matlabbatch);
+    % PM: can make this dependent on the image resolution
+else
+    matlabbatch{1}.spm.tools.oldseg.opts.samp = 16; % sufficient for smooth biasfields, saves time
+    % But this may give problems, in which case we go for higher resolution, this solves it
+    try
+        spm_jobman('run',matlabbatch);
+    catch
+        matlabbatch{1}.spm.tools.oldseg.opts.samp = 9;
+        spm_jobman('run',matlabbatch);
+    end
+end
 
 
 %% ------------------------------------------------------------------------------------------------------
