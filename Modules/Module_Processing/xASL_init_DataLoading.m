@@ -50,10 +50,24 @@ function [x] = xASL_init_DataLoading(x)
     if ~isfield(x.opts, 'bReadRawdata') || isempty(x.opts.bReadRawdata)
         % If the developer has not set this parameter, we try to detect whether we should read from /rawdata or /derivatives/ExploreASL 
         % Usually, this parameter will not exist
-        if xASL_exist(x.dir.RawData, 'dir')
-            x.opts.bReadRawdata = true; %  by default we read rawdata
-            fprintf('%s\n', '/rawdata folder detected, trying to load subjects from BIDS');
+        if xASL_exist(x.dir.RawData, 'dir') && xASL_exist(x.dir.xASLDerivatives, 'dir')
+			% Both rawdata and derivatives exist
+
+			% By default we read rawdata
+			if ~isequal(x.opts.bProcess(:), [0; 0; 1])
+				x.opts.bReadRawdata = true; %
+				fprintf('%s\n', '/rawdata folder detected, trying to load subjects from BIDS');
+			else
+				% But in case we run a population module only, we read what is already in the derivatives and skip rawdata
+				x.opts.bReadRawdata = false; %
+				fprintf('%s\n', '/rawdata and /derivatives/ExploreASL folders detected, and running Population module only --> We read only derivatives and ignore rawdata');
+			end
+		elseif xASL_exist(x.dir.RawData, 'dir')
+			% Only rawdata exists, we read rawdata then
+			x.opts.bReadRawdata = true; %
+			fprintf('%s\n', '/rawdata folder detected, trying to load subjects from BIDS');
         elseif xASL_exist(x.dir.xASLDerivatives, 'dir')
+			% Only derivatives exists, we skip rawdata and read only derivatives
             x.opts.bReadRawdata = false;
             fprintf('%s\n', '/derivatives/ExploreASL folder detected, trying to load subjects from previous ExploreASL processing');
         else
@@ -63,6 +77,9 @@ function [x] = xASL_init_DataLoading(x)
         % Optionally, developers have set this parameter to force reading subjects from /rawdata
         warning(['rawdata folder missing: ' x.dir.RawData]);
         error('rawdata did not exist, if you want to read subjects from /derivatives/ExploreASL, set x.opts.bReadRawdata to false in dataPar.json');
+    elseif x.opts.bReadRawdata && isequal(x.opts.bProcess(:), [0; 0; 1])
+        % We force reading rawdata, but we run population module only
+        warning('Rawdata reading set to true, but running a Population model only. Any newly converted data will not be processed before the population module');
     elseif ~x.opts.bReadRawdata && ~xASL_exist(x.dir.xASLDerivatives, 'dir')
         % Optionally, developers have set this parameter to force reading subjects from /derivatives/ExploreASL
         warning(['ExploreASL derivatives folder missing: ' x.dir.xASLDerivatives]);
