@@ -1,7 +1,7 @@
-function [x] = xASL_quant_DefineParameters(x)
-%xASL_quant_DefineParameters Central function for defining ASL quantification parameters
+function [x] = xASL_quant_DefineQuantificationParameters(x)
+%xASL_quant_DefineQuantificationParameters Central function for defining ASL quantification parameters
 %
-% FORMAT: [x] = xASL_quant_DefineParameters(x)
+% FORMAT: [x] = xASL_quant_DefineQuantificationParameters(x)
 %
 % INPUT:
 %   x       - structure containing fields with all information required to run this function (REQUIRED)
@@ -43,7 +43,7 @@ function [x] = xASL_quant_DefineParameters(x)
 %     Comparison of 3 T and 7 T ASL techniques for concurrent functional perfusion and BOLD studies
 %     Neuroimage. 2017; 156:363-376.
 % 
-% EXAMPLE: x = xASL_quant_DefineParameters(x);
+% EXAMPLE: x = xASL_quant_DefineQuantificationParameters(x);
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
 
