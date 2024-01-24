@@ -1,1 +1,26 @@
 Maps/templates in this folder are created specifically by and for ExploreASL, mentioned in the ExploreASL paper, and distributed under the ExploreASL license, meaning they can be freely used for non-commercial purposes only.
+
+
+***
+
+The following maps are released with the ExploreASL paper, provided as population-averages from the following studies.
+So not only the ExploreASL paper, but also the specific study, should be cited.
+
+Children (n=28):
+These are the controls from the Neurological, cOgnitive and VIsual performance in perinatally HIV- infected ChildrEn (NOVICE study). 
+Please cite:
+Blokhuis, C., Mutsaerts, Henri J.M. M., Cohen, Sophie, Henriette, J. Scherpbier,
+Caan, Matthan W.A., Majoie, Charles B.L. M., Kuijpers, Taco W., Reiss, P.,
+Wit, F.W.N.M., Pajkrt, D., 2017. Higher subcortical and white matter cerebral blood flow in perinatally HIV-infected children. Medicine 96 (7), e5891.
+
+
+Adults (n=39):
+These are from the Oslo sleep study. 
+Please cite:
+Elvsåshagen, Torbjørn, Mutsaerts, Henri Jmm, Zak, Nathalia, Norbom, Linn B., Quraishi, Sophia H., Pedersen, Per Ø., Malt, Ulrik F., et al., 2019. Cerebral blood flow changes after a day of wake, Sleep, and Sleep deprivation. Neuroimage 186, 497–509.
+
+
+Elderly (n=84):
+These are from the European Prevention of Alzheimer’s Dementia (EPAD) study.
+Please cite:
+Ritchie, Craig W., Jose Luis, Molinuevo, Luc, Truyen, Andrew, Satlin, Van der Geyten, Serge, Simon, Lovestone, 2016. “Development of interventions for the secondary prevention of Alzheimer’s Dementia: the European prevention of alzheimer’s Dementia (EPAD) project. Lan. Psychiatr. 3 (2), 179–186.
