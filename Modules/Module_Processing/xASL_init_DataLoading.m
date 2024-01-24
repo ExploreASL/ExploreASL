@@ -50,22 +50,20 @@ function [x] = xASL_init_DataLoading(x)
     if ~isfield(x.opts, 'bReadRawdata') || isempty(x.opts.bReadRawdata)
         % If the developer has not set this parameter, we try to detect whether we should read from /rawdata or /derivatives/ExploreASL 
         % Usually, this parameter will not exist
-        if xASL_exist(x.dir.RawData, 'dir') && xASL_exist(x.dir.xASLDerivatives, 'dir')
-			% Both rawdata and derivatives exist
 
-			% By default we read rawdata
-			if ~isequal(x.opts.bProcess(:), [0; 0; 1])
-				x.opts.bReadRawdata = true; %
-				fprintf('%s\n', '/rawdata folder detected, trying to load subjects from BIDS');
-			else
-				% But in case we run a population module only, we read what is already in the derivatives and skip rawdata
-				x.opts.bReadRawdata = false; %
-				fprintf('%s\n', '/rawdata and /derivatives/ExploreASL folders detected, and running Population module only --> We read only derivatives and ignore rawdata');
-			end
-		elseif xASL_exist(x.dir.RawData, 'dir')
-			% Only rawdata exists, we read rawdata then
-			x.opts.bReadRawdata = true; %
-			fprintf('%s\n', '/rawdata folder detected, trying to load subjects from BIDS');
+        if xASL_exist(x.dir.RawData, 'dir')
+            % we assume we start with BIDS data
+            
+            if xASL_exist(x.dir.xASLDerivatives, 'dir') && isequal(x.opts.bProcess(:), [0; 0; 1])
+                 % when we also have pre-existing derivatives
+                % when only running the population module, we skip BIDS2Legacy
+			    x.opts.bReadRawdata = false; %
+			    fprintf('%s\n', '/rawdata and /derivatives/ExploreASL folders detected, and running Population module only --> We read only derivatives and ignore rawdata');
+            else
+                % By default we read rawdata
+                x.opts.bReadRawdata = true;
+                fprintf('%s\n', '/rawdata folder detected, trying to load subjects from BIDS');
+            end
         elseif xASL_exist(x.dir.xASLDerivatives, 'dir')
 			% Only derivatives exists, we skip rawdata and read only derivatives
             x.opts.bReadRawdata = false;
