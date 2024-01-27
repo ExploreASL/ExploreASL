@@ -1,7 +1,7 @@
 function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubtractionAveraging(x, path_ASL4D, PWI4D, PWI3D, Control4D, Control3D)
 %xASL_im_ASLSubtractionAveraging Central function for ASL subtraction and averaging, for both PWI & controls
 %
-% FORMAT: [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D [, PWI4D, PWI3D])
+% FORMAT: [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubtractionAveraging(x, ASL4D [, PWI4D, PWI3D, Control4D, Control3D])
 %
 % INPUT:
 %   x       - structure containing fields with all information required to run this function (REQUIRED)
@@ -15,7 +15,7 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 %   x.Q.Initial_PLD - numerical vector. If this is a scalar, it will be extended to the number of image volumes (REQUIRED)
 %   x.Q.LabelingDuration - numerical vector. If this is a scalar, it will be extended to the number of image volumes (REQUIRED)
 % 
-%   path_ASL4D - Path to the encoded ASL4D image we want to decode (STRING OR 4D MATRIX, OPTIONAL, DEFAULT = not needed as PWI4D or PWI3D is passed on input)
+%   path_ASL4D - Path to the ASL4D image we want to load (STRING OR 4D MATRIX, OPTIONAL, DEFAULT = not needed as PWI4D or PWI3D is passed on input)
 %             Alternatively, this can contain the image matrix
 %             (xASL_io_Nifti2Im below allows both path and image matrix inputs).
 %             Best if this is a path, so any motion correction can be applied.
@@ -101,20 +101,24 @@ elseif (numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
         if xASL_exist(path_ASL4Djson, 'file')
             % we try to load this json and extract quantification parameters
             json = xASL_io_ReadJson(path_ASL4Djson);
+            json = xASL_bids_parms2BIDS([], json, 0); % Convert it from BIDS to Legacy
+
             % if it has the two required quantification fields PLD & LD, we will use this
-            jsonFields = fields(json);
-            fieldPLD = find(contains(jsonFields, 'PostLabelingDelay'));
-            fieldLD = find(contains(jsonFields, 'LabelingDuration'));
-            fieldTE = find(contains(jsonFields, 'EchoTime'));
+            if isfield(json, 'Q')
+                jsonFields = fields(json.Q);
+                fieldPLD = find(contains(jsonFields, 'Initial_PLD'));
+                fieldLD = find(contains(jsonFields, 'LabelingDuration'));
+                fieldTE = find(contains(jsonFields, 'EchoTime'));
 
-            if ~isempty(fieldPLD) && ~isempty(fieldLD)
-                x.Q.LabelingDuration = json.LabelingDuration;
-                x.Q.Initial_PLD = json.PostLabelingDelay;
-
-                if ~isempty(fieldTE)
-                    x.Q.EchoTime = json.EchoTime;
-                else
-                    x.Q.EchoTime = [];
+                if ~isempty(fieldPLD) && ~isempty(fieldLD)
+                    x.Q.LabelingDuration = json.Q.LabelingDuration;
+                    x.Q.Initial_PLD = json.Q.Initial_PLD;
+    
+                    if ~isempty(fieldTE)
+                        x.Q.EchoTime = json.Q.EchoTime;
+                    else
+                        x.Q.EchoTime = [];
+                    end
                 end
             end
         end
@@ -486,7 +490,6 @@ if bCreatePWI
     x.Q.EchoTime_PWI = sum(contributionVolume .* x.Q.EchoTime_PWI3D);
     x.Q.initialPLD_PWI = sum(contributionVolume .* x.Q.InitialPLD_PWI3D);
     x.Q.LabelingDuration_PWI = sum(contributionVolume .* x.Q.LabelingDuration_PWI3D);
-
 end
 
 if bCreateControl
@@ -505,7 +508,7 @@ if bCreateControl
     iMinTE = x.Q.EchoTime_Control3D == min(x.Q.EchoTime_Control3D(:));
     Control = xASL_stat_MeanNan(Control3D(:, :, :, iMinTE), 4);
     x.Q.EchoTime_Control = min(x.Q.EchoTime_Control3D(:));
-    x.Q.initialPLD_Control = mean(x.Q.InitialPLD_Control3D(:));
+    x.Q.InitialPLD_Control = mean(x.Q.InitialPLD_Control3D(:));
     x.Q.LabelingDuration_Control = mean(x.Q.LabelingDuration_Control3D(:));
 end
 
