@@ -99,6 +99,8 @@ if nVolumes>1
     spm_jobman('run',matlabbatch); % this applies the motion correction in native space
     
     [Fpath, Ffile] = xASL_fileparts(x.P.Path_despiked_ASL4D);
+
+    x.P.Path_despiked_ASL4D_json = fullfile(Fpath, [Ffile '.json']);
     x.P.Path_rdespiked_ASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
     x.P.Path_rdespiked_ASL4D_json = fullfile(Fpath, ['r' Ffile '.json']);
 
@@ -136,7 +138,7 @@ end
 % 6. Create mean control image, if available, in native & standard space
 if  nVolumes>1
 	% Obtain the mean control image
-    [~, ~, ~, x, imMeanControl] = xASL_im_ASLSubtractionAveraging(x, x.P.Path_rdespiked_ASL4D);
+    [~, ~, ~, ~, imMeanControl] = xASL_im_ASLSubtractionAveraging(x, x.P.Path_rdespiked_ASL4D);
 	xASL_io_SaveNifti(x.P.Path_rdespiked_ASL4D, x.P.Path_mean_control, imMeanControl, [], 0);
 	
     % Transform mean control to standard space
@@ -229,37 +231,12 @@ PathASL4D = {x.P.Path_rdespiked_ASL4D x.P.Path_rtemp_despiked_ASL4D};
 PathPWI = {x.P.Path_PWI x.P.Pop_Path_PWI};
 PathPWI3D = {x.P.Path_PWI3D x.P.Pop_Path_PWI3D};
 PathPWI4D = {x.P.Path_PWI4D x.P.Pop_Path_PWI4D};
-PathPWIjson = {x.P.Path_PWI_json x.P.Pop_Path_PWI_json};
-PathPWI3Djson = {x.P.Path_PWI3D_json x.P.Pop_Path_PWI3D_json};
-PathPWI4Djson = {x.P.Path_PWI4D_json x.P.Pop_Path_PWI4D_json};
 
 for iSpace=1:2
     fprintf('%s\n', ['Saving in ' StringSpaceIs{iSpace} ' space:']);
     
-    [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, PathASL4D{iSpace});
-    
-    % Save subtracted/averaged to disk
-
-    % Save PWI4D (subtracted only)
-    fprintf('%s\n', PathPWI4D{iSpace});
-	jsonFields.EchoTime = x.Q.EchoTime_PWI4D;
-	jsonFields.Initial_PLD = x.Q.InitialPLD_PWI4D;
-	jsonFields.LabelingDuration = x.Q.LabelingDuration_PWI4D;
-    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI4D{iSpace}, PWI4D, 32, false, [], 0, xASL_bids_parms2BIDS(jsonFields, [], 1));
-
-    % Save PWI3D (averaged volume for each TE-PLD-labdur combination)
-    fprintf('%s\n', PathPWI3D{iSpace});
-	jsonFields.EchoTime = x.Q.EchoTime_PWI3D;
-	jsonFields.Initial_PLD = x.Q.InitialPLD_PWI3D;
-	jsonFields.LabelingDuration = x.Q.LabelingDuration_PWI3D;
-    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI3D{iSpace}, PWI3D, 32, false, [], 0, xASL_bids_parms2BIDS(jsonFields, [], 1));
-
-    % Save PWI (single volume)
-    fprintf('%s\n', PathPWI{iSpace});
-	jsonFields.EchoTime = x.Q.EchoTime_PWI3D;
-	jsonFields.Initial_PLD = x.Q.InitialPLD_PWI3D;
-	jsonFields.LabelingDuration = x.Q.LabelingDuration_PWI3D;
-    xASL_io_SaveNifti(PathASL4D{iSpace}, PathPWI{iSpace}, PWI, 32, false, [], 0, xASL_bids_parms2BIDS(jsonFields, [], 1));
+    saveWhichNifti = {1, PathPWI{iSpace}; 2, PathPWI3D{iSpace}; 3, PathPWI4D{iSpace}};
+    xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, PathASL4D{iSpace});
 end
 
 
