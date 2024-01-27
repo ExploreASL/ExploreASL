@@ -559,6 +559,10 @@ parAbbreviation = {'TE' 'PLD' 'LD'};
 parTolerance = {0.001 0 0};
 parLowestValue = {0 0 0};
 
+if exist(x.P.Path_ASL4D_json, 'file')
+    jsonFields = xASL_io_ReadJson(x.P.Path_ASL4D_json);
+end
+
 for iPar=1:length(parNames)
 
     if ~isfield(x.Q, parNames{iPar})
@@ -663,9 +667,11 @@ for iPar=1:length(parNames)
 			warning(['Number of ' parNames{iPar} ' (n=' xASL_num2str(nPar) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
 		end
 	end
-
+    % Save the updated quantification parameters in the JSON sidecar
+    jsonFields.(parNames{iPar}) = x.Q.(parNames{iPar});
 end
 
+xASL_io_WriteJson(x.P.Path_ASL4D_json, jsonFields, 1);
 
 
 %% 4. TimeEncoded parsing
