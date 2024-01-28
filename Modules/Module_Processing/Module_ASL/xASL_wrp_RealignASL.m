@@ -517,9 +517,9 @@ if bENABLE || bSpikeRemoval
         save(x.P.Path_despiked_ASL4D_mat, 'mat');
 
         % Also change parameter vectors
-        jsonFields.EchoTime = x.Q.EchoTime(~exclusion);
-        jsonFields.Initial_PLD = x.Q.Initial_PLD(~exclusion);
-        jsonFields.LabelingDuration = x.Q.LabelingDuration(~exclusion);
+        jsonFields.Q.EchoTime = x.Q.EchoTime(~exclusion);
+        jsonFields.Q.Initial_PLD = x.Q.Initial_PLD(~exclusion);
+        jsonFields.Q.LabelingDuration = x.Q.LabelingDuration(~exclusion);
 
         xASL_io_SaveNifti(x.P.Path_ASL4D, x.P.Path_despiked_ASL4D, NewIm, 32, 0, [], 1, xASL_bids_parms2BIDS(jsonFields, [], 1));
     end
