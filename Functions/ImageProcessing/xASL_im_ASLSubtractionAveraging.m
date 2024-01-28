@@ -121,6 +121,8 @@ elseif (numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
                     end
                 end
             end
+        else
+            warning(['Trying x.Q memory, because JSON file missing: ' path_ASL4Djson]);
         end
     end
 else
