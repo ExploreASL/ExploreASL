@@ -97,23 +97,20 @@ M0ScaleVolume  = ASLvoxelVolume/M0voxelVolume;
 
 % Copy existing M0 for processing, in single precision, we can skip the motion correction here
 % Load and scale the M0 for the ASL-M0 volume changes
-imM0 = xASL_io_Nifti2Im(x.P.Path_M0).*M0ScaleVolume;
+[imM0, jsonM0] = xASL_io_Nifti2Im(x.P.Path_M0);
+imM0 = imM0.*M0ScaleVolume;
 
 % First check if we have a valid M0
 if xASL_stat_SumNan(imM0(:))==0
     error('Invalid M0, M0 image processing will fail, skipping');
 end
 
-% Try to load M0.json
-[pathM0json, filenameM0json,~] = xASL_fileparts(x.P.Path_M0);
-pathM0json = fullfile(pathM0json, [filenameM0json, '.json']);
 % Load JSON and locate TE part
-if xASL_exist(pathM0json, 'file')
-	jsonM0 = xASL_io_ReadJson(pathM0json);
-	if isfield(jsonM0, 'EchoTime')
+if ~isempty(jsonM0)
+	if isfield(jsonM0.Q, 'EchoTime')
 		% If there is more than 1 different nonzero TE, then we have to select the shortest positive non-zero one
 		% Select only non-zero TEs
-		uniqueNonzeroTE = unique(jsonM0.EchoTime(jsonM0.EchoTime > 0));
+		uniqueNonzeroTE = unique(jsonM0.Q.EchoTime(jsonM0.Q.EchoTime > 0));
 		if length(uniqueNonzeroTE) > 1
             % First check if the number of TEs equals the number of M0 volumes
             if length(uniqueNonzeroTE)>size(imM0,4)
@@ -126,7 +123,7 @@ if xASL_exist(pathM0json, 'file')
 			fprintf('Multi-TE M0 present. Using the shortest TE=%.1f ms for M0 calibration.\n', minTE*1000);
 
 			% Average M0 image across all these minimal TEs
-			imM0 = xASL_stat_MeanNan(imM0(:,:,:,jsonM0.EchoTime == minTE), 4);
+			imM0 = xASL_stat_MeanNan(imM0(:,:,:,jsonM0.Q.EchoTime == minTE), 4);
 		end
 	end
 end
