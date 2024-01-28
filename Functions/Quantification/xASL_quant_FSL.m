@@ -141,7 +141,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	end
 
     %% #1543 TEMPORARY SOLUTION
-	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, x.modules.asl.bMergingSessions);
+	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI4D, pathFSLInput, pathFSLOutput, x.modules.asl.bMergingSessions);
         
 
     %% 5. Run BASIL and retrieve CBF output
@@ -246,7 +246,7 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, 
 % Set BASIL dataPar options and their defaults
 if ~isfield(x.modules.asl,'bMaskingBASIL') || isempty(x.modules.asl.bMaskingBASIL)
 		fprintf('BASIL: Setting default option bMasking = true\n');
-		x.bMaskingBASIL = true;
+		x.modules.asl.bMaskingBASIL = true;
 end
 
 %% #1543 TEMPORARY SOLUTION, MERGING GOES OUT OF XASL_QUANT_FSL
