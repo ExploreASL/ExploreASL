@@ -98,37 +98,36 @@ fprintf('%s\n','Loading PWI4D & M0 images');
 %% #1543 This goes to xASL_module_ASL
 % Either load a PWI image or merge several PWIs
 if x.modules.asl.bMergingSessions == 1
-	PWI4D = xASL_wrp_Quantify_MergeSessions(x); %% #1543 THIS WILL BE RENAMED TO xASL_im_MergePWI4D
+	PWI4D = xASL_wrp_Quantify_MergeSessions(x); 
+    %% #1543 THIS WILL BE RENAMED TO xASL_im_MergePWI4D
+    %% AND WILL BE RUN SEPARATELY BEFORE THIS WRAPPER
+    %% TO COMBINE BOTH IMAGES AND JSON, AND SAVE THEM
+    %
+    %% PM: LOAD JSON HERE AS WELL, USING xASL_io_Nifti2Im
 else
 	% Load ASL single PWI
-	PWI4D = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
+	[PWI4D, JSON] = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
 end
 
-ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
-%% #1543 PM: SHOULD WE CHANGE THIS TO THE PWI4D JSON sidecar only?
-%% AND THAT WE DON'T USE X.Q AT ALL, BUT TAKE THIS FROM THE PWI4D sidecar?
-% Load ASL PWI4D quantification parameters
-[fPath, fFile] = xASL_fileparts(PWI4D_Path);
-pathSidecar = fullfile(fPath, [fFile '.json']);
+if isempty(JSON)
+    %% PM: #1543 for backward compatibility, if part of the ASL module was run
+    %% we load ASL_parms or use the x.Q
+    ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
-if ~exist(pathSidecar, 'file')
-    warning('PWI4D JSON sidecar with quantification parameters was missing');
+    if isfield(ASL_parms, 'Q') && isfield(ASL_parms.Q, 'EchoTime')
+        x.Q.EchoTime = ASL_parms.Q.EchoTime;
+    end
 else
-	JSON = xASL_io_ReadJson(pathSidecar); % Read the sidecar
-	JSON = xASL_bids_parms2BIDS([], JSON, 0); % Convert it from BIDS to Legacy
+    %% PM #1543: WE MIGHT WANT TO TURN THIS AROUND
+    %% SUCH THAT WE USE json.EchoTime etc throughout here, 
+    %% which is created from x.Q if the json didn't exist
     x.Q.EchoTime_PWI4D = JSON.Q.EchoTime;
     x.Q.InitialPLD_PWI4D = JSON.Q.Initial_PLD;
     x.Q.LabelingDuration_PWI4D = JSON.Q.LabelingDuration;
 end
 
-% Assigns the shortest minimal positive TE for ASL
-%% THIS SHOULD THEN BE ADAPTED TOO
-ASLshortestTE = [];
-if isfield(ASL_parms, 'Q') && isfield(ASL_parms.Q, 'EchoTime')
-	ASLshortestTE = min(ASL_parms.Q.EchoTime(ASL_parms.Q.EchoTime > 0));
-else
-    warning('EchoTime field missing');
-end
+% Assign the shortest minimal positive TE for ASL
+ASLshortestTE = min(x.Q.EchoTime(x.Q.EchoTime_PWI4D > 0));
 
 if xASL_stat_SumNan(PWI4D(:))==0
     warning(['Empty PWI4D image:' PWI4D_Path]);
