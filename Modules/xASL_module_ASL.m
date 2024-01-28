@@ -671,7 +671,7 @@ for iPar=1:length(parNames)
     jsonFields.(parNames{iPar}) = x.Q.(parNames{iPar});
 end
 
-xASL_io_WriteJson(x.P.Path_ASL4D_json, jsonFields, 1);
+xASL_io_WriteJson(x.P.Path_ASL4D_json, xASL_bids_parms2BIDS(jsonFields, [], 1), 1);
 
 
 %% 4. TimeEncoded parsing
