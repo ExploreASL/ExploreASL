@@ -1,7 +1,7 @@
-function imOut = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle)
+function [imOut, json] = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle)
 % Load image matrix from NIfTI given as a file path or preloaded
 %
-% FORMAT: imOut = xASL_io_Nifti2Im(niftiIn [, ImageSize])
+% FORMAT: [imOut, json] = xASL_io_Nifti2Im(niftiIn [, ImageSize])
 %
 % INPUT:
 %   niftiIn       - can be one of the following (REQUIRED):
@@ -17,6 +17,7 @@ function imOut = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle)
 %
 % OUTPUT:
 %   imOut     - image matrix with single precision
+%   json      - json containing quantification parameters, if niftiIn is a path
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function loads a NIfTI image matrix with flexible input
 %              (as explained under INPUT: niftiIn). It does the following.
@@ -30,7 +31,7 @@ function imOut = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: imOut = xASL_io_Nifti2Im('/analysis/Sub-001/ASL_1/CBF.nii');
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 % Admin
 if nargin < 1 || isempty(niftiIn)
@@ -49,7 +50,7 @@ end
 niiMat = false; % default
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% 1) Load the NIfTI
+% 1) Load the NIfTI (and JSON sidecar)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 if numel(niftiIn) == 1 % Assume this is a NIfTI
     nii = niftiIn;
@@ -62,7 +63,8 @@ else % assume this is a path, we try to open
         if exist(niiPathMat,'file')
             niiMat = true; % load mat below
         else
-            nii = xASL_io_ReadNifti(niftiIn);
+            % Load NIfTI and JSON sidecar
+            [nii, ~, json] = xASL_io_ReadNifti(niftiIn);
         end
     catch ME
         warning(['Could not load ' niftiIn]);
