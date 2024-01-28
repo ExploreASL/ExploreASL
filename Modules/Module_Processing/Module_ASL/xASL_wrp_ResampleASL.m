@@ -235,7 +235,7 @@ for iSpace=1:2
     fprintf('%s\n', ['Saving in ' StringSpaceIs{iSpace} ' space:']);
     
     saveWhichNifti = {1, PathPWI{iSpace}; 2, PathPWI3D{iSpace}; 3, PathPWI4D{iSpace}};
-    xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, PathASL4D{iSpace});
+    xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, 0, PathASL4D{iSpace});
 end
 
 
