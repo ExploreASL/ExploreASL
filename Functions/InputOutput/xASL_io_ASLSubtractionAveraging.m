@@ -1,7 +1,7 @@
-function xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, varargin)
+function xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, bCopyOrigJson, varargin)
 %xASL_io_ASLSubtractionAveraging Wrapper for xASL_io_ASLSubtractionAveraging, managing the loading and saving
 %
-% FORMAT: xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, path_ASL4D, path_PWI4D, path_PWI3D, path_Control4D, path_Control3D)
+% FORMAT: xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, bCopyOrigJson, path_ASL4D, path_PWI4D, path_PWI3D, path_Control4D, path_Control3D)
 %
 % INPUT:
 %   x               - structure containing fields with all information required to run this function (REQUIRED)
@@ -14,6 +14,8 @@ function xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, varargin)
 %                     6 = Control4D
 %                     e.g.: {1, 'path/PWI.nii'; 5, 'path/Control3D.nii'}
 %                     this concerns the output
+%   bCopyOrigJson   - boolean stating if the original JSON contents are copied as well
+%                     (OPTIONAL, DEFAULT = true)
 %                     the following varargin parameters concern the input:
 %   path_ASL4D      - Path to ASL4D NIfTI (STRING, OPTIONAL)
 %   path_PWI4D      - likewise, but then for PWI4D
@@ -39,8 +41,7 @@ function xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, varargin)
 % 
 % % we use the same nomenclature for control: control4D, control3D, control, as these are the same control-label pairs but without subtraction
 %
-% EXAMPLE used by xASL_wrp_ResampleASL: [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D, PWI4D, PWI3D);
-% EXAMPLE used by xASL_quant_ASL: [PWI] = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
+% EXAMPLE used by xASL_wrp_ResampleASL: xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, 0, PathASL4D{iSpace});
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
 
@@ -57,6 +58,9 @@ end
 if nargin<2 || isempty(saveWhichNifti)
     error('Second input argument missing');
 end
+if nargin<3 || isempty(bCopyOrigJson)
+    bCopyOrigJson = true;
+end
 
 % pathNifti     = {path_PWI               path_PWI3D               path_PWI4D                 path_Control                path_Control3D                  path_Control4D};
 
@@ -70,7 +74,7 @@ end
 %% ========================================================================================
 %% 2. Load NIfTIs & JSONs
 for iNifti=1:5
-    if nargin<(iNifti+2)
+    if nargin<(iNifti+3)
         path2load{iNifti} = [];
     else
         path2load{iNifti} = varargin{iNifti};
@@ -174,8 +178,7 @@ function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2sa
             jsonFields.EchoTime = x.Q.(fieldNameTE);
         end
     
-        xASL_io_SaveNifti(x.P.Path_ASL4D, path2save, single(image2save), 32, 0, [], 1, xASL_bids_parms2BIDS(jsonFields, [], 1));
+        xASL_io_SaveNifti(x.P.Path_ASL4D, path2save, single(image2save), 32, 0, [], bCopyOrigJson, xASL_bids_parms2BIDS(jsonFields, [], 1));
     end
-
 
 end
