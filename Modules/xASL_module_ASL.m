@@ -560,7 +560,7 @@ parTolerance = {0.001 0 0};
 parLowestValue = {0 0 0};
 
 if exist(x.P.Path_ASL4D_json, 'file')
-    jsonFields = xASL_io_ReadJson(x.P.Path_ASL4D_json);
+    jsonFields = xASL_bids_parms2BIDS([], xASL_io_ReadJson(x.P.Path_ASL4D_json), 0);
 else
     warning(['Reverting to x.Q memory, JSON file missing' x.P.Path_ASL4D_json]);
 end
