@@ -48,6 +48,11 @@ end
 tempnii = xASL_io_Nifti2Im(x.P.Path_despiked_ASL4D);
 nVolumes = size(tempnii, 4);
 
+[Fpath, Ffile] = xASL_fileparts(x.P.Path_despiked_ASL4D);
+x.P.Path_despiked_ASL4D_json = fullfile(Fpath, [Ffile '.json']);
+x.P.Path_rdespiked_ASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
+x.P.Path_rdespiked_ASL4D_json = fullfile(Fpath, ['r' Ffile '.json']);
+
 xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field in ASL resolution
 
 %% ------------------------------------------------------------------------------------------
@@ -81,6 +86,7 @@ else
 end
 
 xASL_spm_deformations(x, x.P.Path_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, 4, [], AffineTransfPath, x.P.Path_y_ASL);
+% Also copy the json file
 xASL_Copy(x.P.Path_despiked_ASL4D_json, x.P.Path_rtemp_despiked_ASL4D_json);
 
 %% ------------------------------------------------------------------------------------------
@@ -97,12 +103,6 @@ if nVolumes>1
     matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
 
     spm_jobman('run',matlabbatch); % this applies the motion correction in native space
-    
-    [Fpath, Ffile] = xASL_fileparts(x.P.Path_despiked_ASL4D);
-
-    x.P.Path_despiked_ASL4D_json = fullfile(Fpath, [Ffile '.json']);
-    x.P.Path_rdespiked_ASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
-    x.P.Path_rdespiked_ASL4D_json = fullfile(Fpath, ['r' Ffile '.json']);
 
     % Copy the JSON sidecar as well
     xASL_Copy(x.P.Path_despiked_ASL4D_json, x.P.Path_rdespiked_ASL4D_json);
@@ -138,9 +138,8 @@ end
 % 6. Create mean control image, if available, in native & standard space
 if  nVolumes>1
 	% Obtain the mean control image
-    [~, ~, ~, ~, imMeanControl] = xASL_im_ASLSubtractionAveraging(x, x.P.Path_rdespiked_ASL4D);
-	xASL_io_SaveNifti(x.P.Path_rdespiked_ASL4D, x.P.Path_mean_control, imMeanControl, [], 0);
-	
+    xASL_io_ASLSubtractionAveraging(x, {4, x.P.Path_mean_control}, x.P.Path_rdespiked_ASL4D);
+
     % Transform mean control to standard space
     if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') 
         % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
@@ -160,7 +159,7 @@ end
 
 %% ------------------------------------------------------------------------------------------
 % 7. Clone mean control image to be used as pseudo-M0 (if
-% x.Q.M0==UseControlAsM0) -> %%%%% check if the 4d value doesnt break this
+% x.Q.M0==UseControlAsM0) -> %%%%% #1543 check if the 4d value doesnt break this
 
 % If x.Q.M0 is set as UseControlAsM0, this mean control NIfTI will be
 % cloned to an M0 NIfTI (and processed in the M0 submodule)
@@ -199,8 +198,8 @@ if strcmpi(x.Q.M0, 'UseControlAsM0')
 
         xASL_Copy(x.P.Path_mean_control, x.P.Path_M0, true);
         % Do the same for the JSON sidecar & legacy parms.mat
-        if exist(x.P.Path_ASL4D_json, 'file')
-            xASL_Copy(x.P.Path_ASL4D_json, x.P.Path_M0_json, true);
+        if exist(x.P.Path_mean_control_json, 'file')
+            xASL_Copy(x.P.Path_mean_control_json, x.P.Path_M0_json, true);
         end
         if exist(x.P.Path_ASL4D_parms_mat, 'file')
             xASL_Copy(x.P.Path_ASL4D_parms_mat, x.P.Path_M0_parms_mat, true);
@@ -245,11 +244,20 @@ end
 MaskIM = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rgrey.nii'));
 MaskIM = MaskIM>(0.7*max(MaskIM(:)));
 
-if size(PWI4D, 4)>3
+if xASL_exist(x.P.Pop_Path_PWI4D)
+    PWI4D = xASL_io_Nifti2Im(x.P.Pop_Path_PWI4D);
+    nVolumesPWI4D = size(PWI4D, 4);
+else
+    nVolumesPWI4D = 1;
+end
+
+if nVolumesPWI4D>3
+    % Load json in legacy format
+    json = xASL_bids_parms2BIDS([], xASL_io_ReadJson(x.P.Pop_Path_PWI4D_json), 0);
     %% PM: here we need to use the positions for the earliest echo, and the latest PLD-labdur
     
-    % PWI4D_statsIndices = x.Q.EchoTime_PWI4D==min(x.Q.uniqueEchoTime) & x.Q.InitialPLD_PWI4D==max(x.Q.uniqueInitial_PLD);
-    PWI4D_statsIndices = x.Q.InitialPLD_PWI4D==max(x.Q.uniqueInitial_PLD);
+    % PWI4D_statsIndices = json.EchoTime_PWI4D==min(x.Q.uniqueEchoTime) & json.InitialPLD_PWI4D==max(x.Q.uniqueInitial_PLD);
+    PWI4D_statsIndices = json.Q.Initial_PLD==max(x.Q.uniqueInitial_PLD);
     %% #1543 For some reason this didn't work for the combination shortest TE & longest PLD
     %% Better to repeat this for every TE-PLD-LD combination 
     
@@ -324,8 +332,10 @@ end
 % 11. Report spatial CoV as QC
 %% PM: here we also need PWI4D for the first TE and last PLD/labdur
 
-CoV0 = xASL_stat_ComputeSpatialCoV(PWI, MaskIM)*100;
-fprintf('%s\n',['Standard space spatial CoV pGM>0.7 = ' num2str(CoV0,3) '%']);
+if xASL_exist(x.P.Pop_Path_PWI, 'file')
+    CoV0 = xASL_stat_ComputeSpatialCoV(xASL_io_Nifti2Im(x.P.Pop_Path_PWI), MaskIM)*100;
+    fprintf('%s\n',['Standard space spatial CoV pGM>0.7 = ' num2str(CoV0,3) '%']);
+end
 
 
 end
