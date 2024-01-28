@@ -561,6 +561,8 @@ parLowestValue = {0 0 0};
 
 if exist(x.P.Path_ASL4D_json, 'file')
     jsonFields = xASL_io_ReadJson(x.P.Path_ASL4D_json);
+else
+    warning(['Reverting to x.Q memory, JSON file missing' x.P.Path_ASL4D_json]);
 end
 
 for iPar=1:length(parNames)

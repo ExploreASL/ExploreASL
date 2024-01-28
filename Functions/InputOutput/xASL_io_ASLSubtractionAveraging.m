@@ -130,7 +130,7 @@ function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, pat
     [fPath, fFile] = xASL_fileparts(path_Nifti);
     pathJson = fullfile(fPath, [fFile '.json']);
     if ~exist(pathJson, 'file')
-        warning(['Reverting to ExploreASL memory parameters: JSON sidecar missing, : ' pathJson]);
+        warning(['Reverting to x.Q memory: JSON sidecar missing, : ' pathJson]);
     else
         json = xASL_io_ReadJson(pathJson); % load the json-file
         json = xASL_bids_parms2BIDS([], json, 0); % Convert it from BIDS to Legacy

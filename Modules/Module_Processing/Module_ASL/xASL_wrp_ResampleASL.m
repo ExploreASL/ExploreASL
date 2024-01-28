@@ -245,15 +245,18 @@ MaskIM = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rgrey.nii'));
 MaskIM = MaskIM>(0.7*max(MaskIM(:)));
 
 if xASL_exist(x.P.Pop_Path_PWI4D)
-    PWI4D = xASL_io_Nifti2Im(x.P.Pop_Path_PWI4D);
+    [PWI4D, json] = xASL_io_Nifti2Im(x.P.Pop_Path_PWI4D);
     nVolumesPWI4D = size(PWI4D, 4);
 else
     nVolumesPWI4D = 1;
 end
 
 if nVolumesPWI4D>3
-    % Load json in legacy format
-    json = xASL_bids_parms2BIDS([], xASL_io_ReadJson(x.P.Pop_Path_PWI4D_json), 0);
+    if isempty(json)
+        warning(['Reverting to x.Q memory, json file missing: ' x.P.Pop_Path_PWI4D_json]);
+        json.Q = x.Q;
+    end
+    
     %% PM: here we need to use the positions for the earliest echo, and the latest PLD-labdur
     
     % PWI4D_statsIndices = json.EchoTime_PWI4D==min(x.Q.uniqueEchoTime) & json.InitialPLD_PWI4D==max(x.Q.uniqueInitial_PLD);

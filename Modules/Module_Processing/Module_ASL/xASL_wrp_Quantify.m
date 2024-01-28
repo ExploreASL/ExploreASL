@@ -112,6 +112,7 @@ end
 if isempty(JSON)
     %% PM: #1543 for backward compatibility, if part of the ASL module was run
     %% we load ASL_parms or use the x.Q
+	warning(['Reverting to x.Q memory, JSON file missing for: ' PWI4D_Path]);
     ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
 
     if isfield(ASL_parms, 'Q') && isfield(ASL_parms.Q, 'EchoTime')
