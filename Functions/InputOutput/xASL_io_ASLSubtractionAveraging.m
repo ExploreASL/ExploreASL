@@ -100,7 +100,7 @@ fieldNamesTE  = {'EchoTime_PWI'         'EchoTime_PWI3D'         'EchoTime_PWI4D
 
 for iNifti=1:size(saveWhichNifti, 1)
     n2save = saveWhichNifti{iNifti,1};
-    xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, saveWhichNifti{iNifti,2}, imageOutput{n2save}, fieldNamesPLD{n2save}, fieldNamesLD{n2save}, fieldNamesTE{n2save});
+    xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, saveWhichNifti{iNifti,2}, imageOutput{n2save}, fieldNamesPLD{n2save}, fieldNamesLD{n2save}, fieldNamesTE{n2save}, bCopyOrigJson);
 end
 
 
@@ -166,7 +166,7 @@ end
 
 %% ========================================================================================
 %% ========================================================================================
-function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2save, fieldNamePLD, fieldNameLD, fieldNameTE)
+function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2save, fieldNamePLD, fieldNameLD, fieldNameTE, bCopyOrigJson)
 %xASL_io_ASLSubtractionAveraging_sub_LoadJSON Load NIfTI image matrix & sidecar JSON
 
     if ~isempty(image2save)

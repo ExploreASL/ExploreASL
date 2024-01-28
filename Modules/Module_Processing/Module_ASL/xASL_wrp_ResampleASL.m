@@ -138,7 +138,7 @@ end
 % 6. Create mean control image, if available, in native & standard space
 if  nVolumes>1
 	% Obtain the mean control image
-    xASL_io_ASLSubtractionAveraging(x, {4, x.P.Path_mean_control}, x.P.Path_rdespiked_ASL4D);
+    xASL_io_ASLSubtractionAveraging(x, {4, x.P.Path_mean_control}, [], x.P.Path_rdespiked_ASL4D);
 
     % Transform mean control to standard space
     if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') 

@@ -52,6 +52,8 @@ end
 [Fpath, Ffile, Fext] = fileparts(InputPath);
 rpfile = fullfile( Fpath, ['rp_' Ffile '.txt']);
 rInputPath = fullfile( Fpath, ['r' Ffile Fext]);
+InputPathJson = fullfile( Fpath, [Ffile '.json']);
+rInputPathJson = fullfile( Fpath, ['r' Ffile '.json']);
 
 
 %% Set defaults
@@ -299,7 +301,8 @@ end
 
 if bENABLE || bSpikeRemoval
     % Resample ASL image (apply motion estimation)
-    xASL_delete(rInputPath);
+    xASL_adm_DeleteFilePair(rInputPath, 'json');
+
     matlabbatch{1}.spm.spatial.realign.write.data = {InputPath};
     matlabbatch{1}.spm.spatial.realign.write.roptions.which = [2 0];
     matlabbatch{1}.spm.spatial.realign.write.roptions.interp = 1;
@@ -308,6 +311,7 @@ if bENABLE || bSpikeRemoval
     matlabbatch{1}.spm.spatial.realign.write.roptions.prefix = 'r';
     spm_jobman('run',matlabbatch);
     
+    xASL_Copy(InputPathJson, rInputPathJson);
     
     % Create a mask from the mean PWI
     [PWI, ~, PWI4D] = xASL_im_ASLSubtractionAveraging(x, rInputPath);
@@ -316,7 +320,6 @@ if bENABLE || bSpikeRemoval
     MaskIm = xASL_im_ClipExtremes(x.P.Path_mean_PWI_Clipped, 0.95, 0.7);
     MaskIm = MaskIm>min(MaskIm(:));
     xASL_delete(x.P.Path_mean_PWI_Clipped);
-    
 end
 
 
@@ -530,7 +533,7 @@ else
     MinimumtValue = 0;
 end
 
-xASL_delete(rInputPath); % delete temporary image
+xASL_adm_DeleteFilePair(rInputPath, 'json'); % delete temporary image
 
 %% ----------------------------------------------------------------------------------------
 %% 9. Save motion statistics before excluding motion spikes
