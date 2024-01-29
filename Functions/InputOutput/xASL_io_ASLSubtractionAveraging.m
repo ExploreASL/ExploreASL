@@ -62,24 +62,22 @@ if nargin<3 || isempty(bCopyOrigJson)
     bCopyOrigJson = true;
 end
 
-% pathNifti     = {path_PWI               path_PWI3D               path_PWI4D                 path_Control                path_Control3D                  path_Control4D};
-
-% [fPath, fFile]  = fileparts(x.P.Path_mean_control);
-% x.P.Path_Control3D = fullfile(fPath, [fFile '3D.nii']);
-% x.P.Path_Control4D = fullfile(fPath, [fFile '4D.nii']);
-% 
-% pathDefault   = {x.P.Path_PWI           x.P.Path_PWI3D           x.P.Path_PWI4D             x.P.Path_mean_control       x.P.Path_Control3D              x.P.Path_Control4D              x.P.Path_ASL4D};
-
 
 %% ========================================================================================
 %% 2. Load NIfTIs & JSONs
+% ASL4D, PWI4D, PWI3D, Control4D, Control3D
+
+fieldNamesPLD = {'Initial_PLD'      'InitialPLD_PWI4D'       'InitialPLD_PWI3D'       'InitialPLD_Control4D'       'InitialPLD_Control3D'};
+fieldNamesLD  = {'LabelingDuration' 'LabelingDuration_PWI4D' 'LabelingDuration_PWI3D' 'LabelingDuration_Control4D' 'LabelingDuration_Control3D'};
+fieldNamesTE  = {'EchoTime'         'EchoTime_PWI4D'         'EchoTime_PWI3D'         'EchoTime_Control4D'         'EchoTime_Control3D'};
+
 for iNifti=1:5
     if nargin<(iNifti+3)
         path2load{iNifti} = [];
     else
         path2load{iNifti} = varargin{iNifti};
     end
-    [x, imageInput{iNifti}] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, path2load{iNifti});
+    [x, imageInput{iNifti}] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, path2load{iNifti}, fieldNamesPLD{iNifti}, fieldNamesLD{iNifti}, fieldNamesTE{iNifti});
 end
 
 
@@ -111,7 +109,7 @@ end
 
 %% ========================================================================================
 %% ========================================================================================
-function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, path_Nifti)
+function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, path_Nifti, fieldNamePLD, fieldNameLD, fieldNameTE)
 %xASL_io_ASLSubtractionAveraging_sub_LoadJSON Load NIfTI image matrix & sidecar JSON
 
     imageOut = []; % default
@@ -147,14 +145,15 @@ function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, pat
             fieldTE = find(contains(jsonFields, 'EchoTime'));
 
             if ~isempty(fieldPLD) && ~isempty(fieldLD)
-                x.Q.LabelingDuration = json.Q.LabelingDuration;
-                x.Q.Initial_PLD = json.Q.Initial_PLD;
+                x.Q.(fieldNameLD) = json.Q.LabelingDuration;
+                x.Q.(fieldNamePLD) = json.Q.Initial_PLD;
 
                 if ~isempty(fieldTE)
-                    x.Q.EchoTime = json.Q.EchoTime;
+                    x.Q.(fieldNameTE) = json.Q.EchoTime;
                 else
-                    x.Q.EchoTime = [];
+                    warning(['EchoTime missing from: ' pathJson]);
                 end
+                warning(['PLD or LD missing from: ' pathJson]);
             end
         end
     end
