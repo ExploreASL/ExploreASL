@@ -117,8 +117,10 @@ elseif (numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
                     if ~isempty(fieldTE)
                         x.Q.EchoTime = json.Q.EchoTime;
                     else
-                        x.Q.EchoTime = [];
+                        warning(['EchoTime missing from: ' path_ASL4Djson]);
                     end
+                else
+                    warning(['PLD or LD missing from: ' path_ASL4Djson]);
                 end
             end
         else
