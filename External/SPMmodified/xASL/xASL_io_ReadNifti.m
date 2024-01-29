@@ -8,14 +8,16 @@ function [NiftiObject, pathOut, json] = xASL_io_ReadNifti(pathIn)
 %
 % OUTPUT:
 %   NiftiObject - Nifti structure of the loaded file.
-%   pathOut   - Modified path to the image in the form that is valid for the current (possibly unzipped) file.
+%   pathOut     - Modified path to the image in the form that is valid for the current (possibly unzipped) file.
+%   json        - Loaded JSON sidecar, in ExploreASL legacy format
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Read Nifti file given by the path. Return the NII object. And also return the actual path to the loaded 
 %              Nifti if by any reason the name changed during the function runtime (e.g. unzipping).
 %
-% EXAMPLE:  NiftiObject = xASL_io_ReadNifti('/home/tmp/CBF.nii'); % for only loading the nifti
-% EXAMPLE2: [NiftiObject, ~, json] = xASL_io_ReadNifti('/home/tmp/CBF.nii'); % for also loading the json sidecar
+% EXAMPLE:  
+%   NiftiObject = xASL_io_ReadNifti('/home/tmp/CBF.nii'); % for only loading the nifti
+%   [NiftiObject, ~, json] = xASL_io_ReadNifti('/home/tmp/CBF.nii'); % for also loading the json sidecar
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
