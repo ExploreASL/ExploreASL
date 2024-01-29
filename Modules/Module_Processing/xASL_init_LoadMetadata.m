@@ -385,6 +385,7 @@ if ~isempty(ContainsSessions) && min(min(ContainsSessions~=0))
     ContainsSessions = 1;
     SessionColumn = 2;
     DataColumn = 3;
+    VarContent(:,2) = strtrim(VarContent(:,2)); % remove whitespaces
 else
     ContainsSessions = 0;
     DataColumn = 2;
@@ -634,7 +635,10 @@ end
 
 %% ------------------------------------------------------------------------------------------------------------
 %% 5) Check if data is complete for all subjects
-CountAbsent = 0;
+%% PM: this code is a bit convolved, better to always insert a session column
+%% by default, and always have data in the 3rd column
+%% or alternatively, separate data and subject/session variables above
+AbsentSubjects = cell(0);
 
 for iSubject=1:x.dataset.nSubjects
     for iSess=1:x.dataset.nSessions
@@ -654,51 +658,60 @@ for iSubject=1:x.dataset.nSubjects
 
 
         NewVariable(iSubjSess,1) = NaN; % pre-filling for missing values
+        nIndex = []; % default is to skip this subject
+
         % SubjectIndex
         SubjectIndex = xASL_adm_FindStrIndex(VarContent(:,1), x.SUBJECTS{iSubject});
 
         if max(isempty(SubjectIndex) | SubjectIndex==0) % if this subject couldn't be found in variable data
-            AbsentSubjects{CountAbsent+1,1} = x.SUBJECTS{iSubject};
-            CountAbsent = CountAbsent+1;                    
-
+            AbsentSubjects{end+1} = x.SUBJECTS{iSubject};                 
         else
-            if ~ContainsSessions % If there is no session column
+
+            if ~ContainsSessions 
+                % If there is no session column
+                nIndex = SubjectIndex;
+                
                 VC = VarContent{SubjectIndex,DataColumn}; % this debugs any erroneous double entries
                 if ~isempty(VC)
-                    NewVariable(iSubjSess,1) = VC(1);
+                    if isnumeric(VC) || iscell(VC) % for numbers or cells, we take the first instance
+                        NewVariable(iSubjSess,1) = VC(1);
+                    else
+                        NewVariable(iSubjSess,1) = VC; % for strings/chars, we take the full instance (there is probably only one)
+                    end
                 end
 
             else % if there is a session column
-
-                VarContent(:,2) = strtrim(VarContent(:,2)); % remove whitespaces
 
                 % This code assumes 1 column for x.P.SubjectID & 1 column for x.P.SessionID SessionIndex
                 SessionIndex = xASL_adm_FindStrIndex( VarContent(SubjectIndex(:,1),SessionColumn), x.SESSIONS{iSess} );
 
                 if isempty(SessionIndex) || SessionIndex==0 % no session data found for this subject/session
-                    AbsentSubjects{CountAbsent+1,1} = x.SUBJECTS{iSubject};
-                    CountAbsent = CountAbsent+1;
+                    AbsentSubjects{end+1} = x.SUBJECTS{iSubject};
                 else
-                    CurrentVarContent = xASL_str2num(VarContent{ SubjectIndex(SessionIndex),DataColumn});
-                    if ~isnan(CurrentVarContent) && ~isempty(CurrentVarContent)
+                    nIndex = SubjectIndex(SessionIndex);
+                end
+            end
 
-                        nIndex = SubjectIndex(SessionIndex);
-                        VC = VarContent{nIndex, DataColumn}; % this debugs any erroneous double entries
-                        if ~isempty(VC)
-                            NewVariable(iSubjSess,1) = VC(1);
-                        end
+            if ~isempty(nIndex)
+                CurrentVarContent = xASL_str2num(VarContent{nIndex, DataColumn});
+                if ~isnan(CurrentVarContent) && ~isempty(CurrentVarContent)
+                    if isnumeric(CurrentVarContent) || iscell(CurrentVarContent)
+                        NewVariable(iSubjSess,1) = CurrentVarContent(1); % for numbers or cells, we take the first instance
                     else
-                        AbsentSubjects{CountAbsent+1,1} = x.SUBJECTS{iSubject};
-                        CountAbsent = CountAbsent+1;
-                    end % if ~isnan(CurrentVarContent) && ~isempty(CurrentVarContent)
-                end % if isempty(index2) | index2==0
-            end % if ~ContainsSessions
+                        NewVariable(iSubjSess,1) = CurrentVarContent; % for strings/chars, we take the full instance (there is probably only one)
+                    end
+                else
+                    AbsentSubjects{end+1} = x.SUBJECTS{iSubject};
+                end
+            else
+                AbsentSubjects{end+1} = x.SUBJECTS{iSubject};             
+            end
+            
         end % if  max(isempty(index1) | index1==0
     end % for iSess=1:x.dataset.nSessions
 end % for iSubj=1:x.dataset.nSubjects
 
-
-
+CountAbsent = size(AbsentSubjects, 2);
 
 
 %% ------------------------------------------------------------------------------------------------------------
