@@ -141,6 +141,7 @@ if ~xASL_exist(PWI_Path, 'file')
 end
 
 % 0b. Remove output paths if they exist, to avoid confusion between different ExploreASL repetitions
+
 xASL_delete(pathOutputCBF);
 xASL_delete(pathOutputATT);
 xASL_delete(pathOutputTex);
@@ -512,7 +513,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 9.	Save files
-% both ExploreASL and BASIL quantified will similarly
+% Both ExploreASL and BASIL-quantified maps will be saved similarly here
 fprintf('%s\n','Saving PWI & CBF niftis');
 
 xASL_io_SaveNifti(PWI_Path, pathOutputCBF, CBF, 32, 0);
@@ -531,6 +532,30 @@ if numel(Tex) > 1
 	% Save the Tex file
 	xASL_io_SaveNifti(PWI_Path, pathOutputTex, Tex, 32, 0);
 end
+
+%% 9.b Save files in standard space for BASIL native space output
+% Transform BASIL CBF to standard space as BASIL only quantifies in native space
+if x.Q.bUseBasilQuantification && strcmp(x.P.Path_CBF, pathOutputCBF)
+    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
+        AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
+    else
+        AffineTransfPath = [];
+    end
+    
+    xASL_spm_deformations(x, {x.P.Path_CBF}, {x.P.Pop_Path_qCBF}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+	if xASL_exist(x.P.Path_ATT,'file')
+		xASL_spm_deformations(x, {x.P.Path_ATT}, {x.P.Pop_Path_ATT}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+	end
+    
+	if xASL_exist(x.P.Path_Tex,'file')
+		xASL_spm_deformations(x, {x.P.Path_Tex}, {x.P.Pop_Path_Tex}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+	end
+
+	if xASL_exist(x.P.Path_ABV,'file')
+		xASL_spm_deformations(x, {x.P.Path_ABV}, {x.P.Pop_Path_ABV}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+	end
+end
+
 
 %% ------------------------------------------------------------------------------------------------
 %% 10.   FEAST quantification
@@ -562,25 +587,5 @@ if strcmp(pathOutputCBF, x.P.Pop_Path_qCBF)
     end
 end
 
-% Transform BASIL CBF to standard space as BASIL only quantifies in native space
-if x.Q.bUseBasilQuantification
-    if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
-        AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
-    else
-        AffineTransfPath = [];
-    end
-    
-    xASL_spm_deformations(x, {x.P.Path_CBF}, {x.P.Pop_Path_CBF}, [], [], AffineTransfPath, x.P.Path_y_ASL);
-	if xASL_exist(x.P.Path_ATT,'file')
-		xASL_spm_deformations(x, {x.P.Path_ATT}, {x.P.Pop_Path_ATT}, [], [], AffineTransfPath, x.P.Path_y_ASL);
-	end
-    
-	if xASL_exist(x.P.Path_Tex,'file')
-		xASL_spm_deformations(x, {x.P.Path_Tex}, {x.P.Pop_Path_Tex}, [], [], AffineTransfPath, x.P.Path_y_ASL);
-	end
 
-	if xASL_exist(x.P.Path_ABV,'file')
-		xASL_spm_deformations(x, {x.P.Path_ABV}, {x.P.Pop_Path_ABV}, [], [], AffineTransfPath, x.P.Path_y_ASL);
-	end
-end
 end
