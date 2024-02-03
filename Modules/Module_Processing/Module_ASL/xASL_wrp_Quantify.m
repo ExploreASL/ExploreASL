@@ -140,6 +140,19 @@ if ~xASL_exist(PWI_Path, 'file')
     return;
 end
 
+% 0b. Remove output paths if they exist, to avoid confusion between different ExploreASL repetitions
+xASL_delete(pathOutputCBF);
+xASL_delete(pathOutputATT);
+xASL_delete(pathOutputTex);
+xASL_delete(pathOutputABV);
+
+if x.Q.bUseBasilQuantification
+    xASL_delete(x.P.Pop_Path_qCBF);
+    xASL_delete(x.P.Pop_Path_ATT);
+    xASL_delete(x.P.Pop_Path_Tex);
+    xASL_delete(x.P.Pop_Path_ABV);
+end
+
 %% ------------------------------------------------------------------------------------------------
 %% 1.   Load PWI
 fprintf('%s\n','Loading PWI & M0 images');
