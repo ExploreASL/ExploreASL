@@ -570,7 +570,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 11.  Create standard space masked image to visualize masking effect
-if strcmp(pathOutputCBF, x.P.Pop_Path_qCBF)
+if xASL_exist(x.P.Pop_Path_qCBF, 'file') && (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.Q.bUseBasilQuantification)
     % Load CBF image
     MaskedCBF = xASL_io_Nifti2Im(x.P.Pop_Path_qCBF);
     % Mask vascular voxels (i.e. set them to NaN)
