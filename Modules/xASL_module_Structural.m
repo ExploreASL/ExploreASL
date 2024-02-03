@@ -71,7 +71,9 @@ if ~xASL_exist(x.P.Path_T1,'file') && ~xASL_exist(x.P.Path_T1_ORI,'file')
     if ~isempty(Flist)
         xASL_Move(Flist{1}, x.P.Path_T1);
     else
-        warning([x.dir.SUBJECTDIR ' didnt contain a T1w structural image, skipping...']);
+        fprintf('\n\n');
+        warning([x.dir.SUBJECTDIR ' did not contain a T1w structural image, skipping Structural module...']);
+        fprintf('\n\n');
         result = true;
 
 		% Unlocks the patient as this wouldn't be done in the iteration for the last subject
