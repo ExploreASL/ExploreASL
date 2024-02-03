@@ -75,6 +75,31 @@ x = xASL_init_FileSystem(x); % Do this only here, to save time when skipping thi
 oldFolder = cd(x.dir.SESSIONDIR); % Change working directory to make sure that unspecified output will go there...
 
 
+%% A2. Check if T1w structural reference exists
+StructuralDerivativesExist = xASL_exist(x.P.Path_y_T1, 'file') && xASL_exist(x.P.Path_c1T1, 'file') && xASL_exist(x.P.Path_c2T1, 'file');
+StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_ORI, 'file');
+
+if ~isfield(x.modules.asl, 'bUseMNIasDummyStructural')
+    x.modules.asl.bUseMNIasDummyStructural = false;
+end
+
+% In case that we don't have the structural derived data, we need to check the reason
+if ~StructuralDerivativesExist
+	fprintf('\n\n%s\n', ['Structural derivatives missing: ' x.dir.SUBJECTDIR]);
+
+	if StructuralRawExist && ~x.modules.asl.bUseMNIasDummyStructural
+		% Either the Structural data are there, but the population module wasn't run
+		fprintf('though structural scans are present in rawdata\n');
+        fprintf('Please run the structural module first\n');
+	elseif ~x.modules.asl.bUseMNIasDummyStructural
+		% We don't have the structural data and the DummyMNI mode wasn't activated
+        fprintf('also, there are no structural scans present in rawdata\n');
+		fprintf('Consider enabling "x.modules.asl.bUseMNIasDummyStructural" to run the ASL module without structural images\n');
+    end
+    error('Skipping ASL module');
+end
+
+
 %% B. Manage mutex state processing step
 StateName{ 1} = '010_TopUp';
 StateName{ 2} = '020_RealignASL';
