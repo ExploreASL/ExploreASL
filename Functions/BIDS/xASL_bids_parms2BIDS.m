@@ -25,7 +25,7 @@ function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids
 % EXAMPLE: outParms = xASL_bids_parms2BIDS(inXasl, inBids);
 %          outParms = xASL_bids_parms2BIDS(inXasl, [], 1, 0);
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
 %% Admin
