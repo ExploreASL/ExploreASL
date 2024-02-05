@@ -69,9 +69,9 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 % quantification. So the user can, after QC, potentially remove some volumes from PWI4D, but should be aware that the information in the JSON sidecar
 % (TE, PLD, LabDur) should be adapted accordingly.
 %
-% EXAMPLE used by xASL_wrp_RegisterASL: PWI = xASL_im_ASLSubtractionAveraging(x, ASL_im);
-% EXAMPLE used by xASL_wrp_ResampleASL: [PWI, PWI3D, PWI4D, x] = xASL_im_ASLSubtractionAveraging(x, ASL4D, PWI4D, PWI3D);
-% EXAMPLE used by xASL_quant_ASL: [PWI] = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
+% EXAMPLE:
+%     Inside xASL_wrp_RegisterASL: [PWI, ~, ~, ~, Control] = xASL_im_ASLSubtractionAveraging(x, x.P.Path_despiked_ASL4D);
+%     Inside xASL_quant_ASL: [PWI] = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
 
@@ -105,23 +105,23 @@ elseif (numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
 
             % if it has the two required quantification fields PLD & LD, we will use this
             if isfield(json, 'Q')
-                jsonFields = fields(json.Q);
-                fieldPLD = find(contains(jsonFields, 'Initial_PLD'));
-                fieldLD = find(contains(jsonFields, 'LabelingDuration'));
-                fieldTE = find(contains(jsonFields, 'EchoTime'));
+				if isfield(json.Q, 'LabelingDuration')
+					x.Q.LabelingDuration = json.Q.LabelingDuration;
+				else
+					 warning(['LD missing in: ' path_ASL4Djson]);
+				end
 
-                if ~isempty(fieldPLD) && ~isempty(fieldLD)
-                    x.Q.LabelingDuration = json.Q.LabelingDuration;
-                    x.Q.Initial_PLD = json.Q.Initial_PLD;
-    
-                    if ~isempty(fieldTE)
-                        x.Q.EchoTime = json.Q.EchoTime;
-                    else
-                        warning(['EchoTime missing from: ' path_ASL4Djson]);
-                    end
-                else
-                    warning(['PLD or LD missing from: ' path_ASL4Djson]);
-                end
+				if isfield(json.Q, 'Initial_PLD')
+					x.Q.Initial_PLD = json.Q.Initial_PLD;
+				else
+					warning(['PLD missing in: ' path_ASL4Djson]);
+				end
+				
+				if isfield(json.Q, 'EchoTime')
+					x.Q.EchoTime = json.Q.EchoTime;
+				else
+					warning(['EchoTime missing from: ' path_ASL4Djson]);
+				end
             end
         else
             warning(['Trying x.Q memory, because JSON file missing: ' path_ASL4Djson]);

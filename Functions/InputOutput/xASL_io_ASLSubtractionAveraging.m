@@ -41,11 +41,11 @@ function xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, bCopyOrigJson, varar
 % 
 % % we use the same nomenclature for control: control4D, control3D, control, as these are the same control-label pairs but without subtraction
 %
-% EXAMPLE used by xASL_wrp_ResampleASL: xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, 0, PathASL4D{iSpace});
+% EXAMPLE: 
+%     Inside xASL_wrp_ResampleASL: xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, 0, PathASL4D{iSpace});
+%     Inside xASL_wrp_ResampleASL: xASL_io_ASLSubtractionAveraging(x, {4, x.P.Path_mean_control}, [], x.P.Path_rdespiked_ASL4D)
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
-
-
 
 %% ========================================================================================
 %% 1. Admin & checks
@@ -131,7 +131,7 @@ function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, pat
     %% Load JSON
     [fPath, fFile] = xASL_fileparts(path_Nifti);
     pathJson = fullfile(fPath, [fFile '.json']);
-    if ~exist(pathJson, 'file')
+	if ~exist(pathJson, 'file')
         warning(['Reverting to x.Q memory: JSON sidecar missing, : ' pathJson]);
     else
         json = xASL_io_ReadJson(pathJson); % load the json-file
@@ -139,29 +139,27 @@ function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, pat
 
         % if it has the two required quantification fields PLD & LD, we will use this
         if isfield(json, 'Q')
-            jsonFields = fields(json.Q);
-            fieldPLD = find(contains(jsonFields, 'Initial_PLD'));
-            fieldLD = find(contains(jsonFields, 'LabelingDuration'));
-            fieldTE = find(contains(jsonFields, 'EchoTime'));
+			if isfield(json.Q, 'LabelingDuration')
+				x.Q.(fieldNameLD) = json.Q.LabelingDuration;
+			else
+				warning(['LD missing in: '  pathJson]);
+			end
 
-            if ~isempty(fieldPLD) && ~isempty(fieldLD)
-                x.Q.(fieldNameLD) = json.Q.LabelingDuration;
-                x.Q.(fieldNamePLD) = json.Q.Initial_PLD;
+			if isfield(json.Q, 'Initial_PLD')
+				x.Q.(fieldNamePLD) = json.Q.Initial_PLD;
+			else
+				warning(['PLD missing in: '  pathJson]);
+			end
 
-                if ~isempty(fieldTE)
-                    x.Q.(fieldNameTE) = json.Q.EchoTime;
-                else
-                    warning(['EchoTime missing from: ' pathJson]);
-                end
-                warning(['PLD or LD missing from: ' pathJson]);
-            end
+			if isfield(json.Q, 'EchoTime')
+				x.Q.(fieldNameTE) = json.Q.EchoTime;
+			else
+				warning(['EchoTime missing from: '  pathJson]);
+			end
         end
-    end
-
+	end
 
 end
-
-
 
 %% ========================================================================================
 %% ========================================================================================
