@@ -751,12 +751,12 @@ for iList=1:nLists
 	if ~isempty(x.modules.asl.SessionMergingList{iList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iList}))
 		currentSortedList = sort(x.modules.asl.SessionMergingList{iList});
 
-        if strcmp(x.SESSION, currentSortedList{end})
+        if length(currentSortedList) > 1 && strcmp(x.SESSION, currentSortedList{end})
             % If the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
 
 			% If merging is already set to true, it means that there was a previous list to be merged. We report this as a warning and we keep the first fitting list to be merged
 			if x.modules.asl.bMergingSessions
-				warning(['Session ' x.SESSION ' is at the end of more than one list of sessions to merge. We ignore all such lists but the first.'])
+				warning(['Session ' x.SESSION ' is at the end of more than one list of sessions to merge. We ignore all such lists but the first.']);
 			else
 				% We have to assign the list again, because it is possible that sessionsToMerge was already initialized to a list that contained the current session, but that was not ending it
 				x.modules.asl.sessionsToMerge = currentSortedList;                      
