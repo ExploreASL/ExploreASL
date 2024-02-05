@@ -670,7 +670,7 @@ for iPar=1:length(parNames)
 		end
 	end
     % Save the updated quantification parameters in the JSON sidecar
-    jsonFields.(parNames{iPar}) = x.Q.(parNames{iPar});
+    jsonFields.Q.(parNames{iPar}) = x.Q.(parNames{iPar});
 end
 
 xASL_io_WriteJson(x.P.Path_ASL4D_json, xASL_bids_parms2BIDS(jsonFields, [], 1), 1);
@@ -744,19 +744,14 @@ x.modules.asl.bMergingSessions = 0; % By default, we do not merge any sessions
 x.modules.asl.sessionsToMerge = {};
 
 
-% Find the lists containing the current session
+% Find the lists containing the current session and identify if we are 
 % Note that these can be multiple lists
-bSessionListed = false; % It is possible that a single session is in multiple list. That is not illegal
+x.modules.asl.sessionsToMerge = {}; % Set the list of sessions to merge at empty
 for iList=1:nLists
 	if ~isempty(x.modules.asl.SessionMergingList{iList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iList}))
-		if bSessionListed
-			fprintf(['Session ' x.SESSION ' appears in more than one list of sessions to merge.\n']);
-		else
-			x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList};
-			bSessionListed = true;
-		end
+		currentSortedList = sort(x.modules.asl.SessionMergingList{iList});
 
-        if strcmp(x.SESSION, x.modules.asl.SessionMergingList{iList}{end})
+        if strcmp(x.SESSION, currentSortedList{end})
             % If the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
 
 			% If merging is already set to true, it means that there was a previous list to be merged. We report this as a warning and we keep the first fitting list to be merged
@@ -764,7 +759,7 @@ for iList=1:nLists
 				warning(['Session ' x.SESSION ' is at the end of more than one list of sessions to merge. We ignore all such lists but the first.'])
 			else
 				% We have to assign the list again, because it is possible that sessionsToMerge was already initialized to a list that contained the current session, but that was not ending it
-				x.modules.asl.sessionsToMerge = x.modules.asl.SessionMergingList{iList}; 				                                                            
+				x.modules.asl.sessionsToMerge = currentSortedList;                      
 				x.modules.asl.bMergingSessions = 1;
 			end
         end

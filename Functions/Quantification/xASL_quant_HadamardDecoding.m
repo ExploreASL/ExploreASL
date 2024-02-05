@@ -86,7 +86,7 @@ if ~isempty(xQ.TimeEncodedMatrix)
 	end
 end
 
-if ~isempty(x.Q.TimeEncodedMatrixType)
+if ~isempty(xQ.TimeEncodedMatrixType)
 	% See an example of decoding/encoding matrices in 
 	% Samson-Himmelstjerna, MRM 2015 https://doi.org/10.1002/mrm.26078
 	% Note that the encoding/decoding matrices are symmetric
@@ -333,7 +333,7 @@ nPLDs = nBlocks-1;
 decodedPWI4D = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), nOuterRepetitions * nPLDs);
 
 % Go through all repetitions of the full Hadamard blocks
-for iRepetition = 1:nOuterRepetitions
+for iRepetition = 1:(nOuterRepetitions*nInnerRepetitions)
 	offsetEncoded = nBlocks * (iRepetition-1); % Index offset for the given repetition to search in the encoded data
 	encodedBlocks = imEncodedReordered(:,:,:,(1:nBlocks) + offsetEncoded); % Obtain the single encoded block
 	decodedBlocks = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), nPLDs); % Temporary single decoded Hadamard block
