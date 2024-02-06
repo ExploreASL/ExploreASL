@@ -133,7 +133,7 @@ end
 imM0 = xASL_stat_MeanNan(imM0, 4);
 
 % Save the resampled mean M0
-xASL_io_SaveNifti(x.P.Path_M0, x.P.Path_rM0, imM0, 32, 0);
+xASL_io_SaveNifti(x.P.Path_M0, x.P.Path_rM0, imM0, 32, 0, [], 0, xASL_bids_parms2BIDS(jsonM0, [], 1));
 
 xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field in ASL resolution
 
