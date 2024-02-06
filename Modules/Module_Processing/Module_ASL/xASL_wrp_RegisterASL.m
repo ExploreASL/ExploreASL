@@ -314,13 +314,19 @@ else
 end
 
 %% H. Here we create a temporary dummy ASL image of which the image contrast is curated, for registration only
-[PWI, ~, ~, ~, Control] = xASL_im_ASLSubtractionAveraging(x, x.P.Path_despiked_ASL4D);
-xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, PWI, 16, false);
+[PWI, ~, ~, xSubtracted, Control] = xASL_im_ASLSubtractionAveraging(x, x.P.Path_despiked_ASL4D);
+jsonFields.Initial_PLD = xSubtracted.Q.InitialPLD_PWI;
+jsonFields.LabelingDuration = xSubtracted.Q.LabelingDuration_PWI;
+jsonFields.EchoTime = xSubtracted.Q.EchoTime_PWI;
+xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, PWI, 16, false, [], 0, xASL_bids_parms2BIDS(jsonFields, [], 1));
 
 if isempty(Control)
     fprintf('%s\n', 'mean_control.nii not created as there is only a single volume, no timeseries');
 else
-    xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_control, Control, 16, false);
+	jsonFields.Initial_PLD = xSubtracted.Q.InitialPLD_Control;
+	jsonFields.LabelingDuration = xSubtracted.Q.LabelingDuration_Control;
+	jsonFields.EchoTime = xSubtracted.Q.EchoTime_Control;
+    xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_control, Control, 16, false, [], 0, xASL_bids_parms2BIDS(jsonFields, [], 1));
 end
 
 if bRegistrationCBF
