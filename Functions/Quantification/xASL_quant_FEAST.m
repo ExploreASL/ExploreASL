@@ -25,8 +25,7 @@ function xASL_quant_FEAST(x)
 % EXAMPLE: xASL_quant_FEAST(x);
 % REFERENCE: JJ Wang, 2003 MRM; Y Chen, 2012 MAGMA
 % __________________________________
-% Copyright 2015-2021 ExploreASL
-
+% Copyright 2015-2024 ExploreASL
 
 %% -------------------------------------------------------------
 %% 1. Provide feedback
@@ -38,7 +37,6 @@ end
 if x.Q.nCompartments~=1
     warning('Not a single compartment model used for CBF quantification, FEAST ATT computation might be inaccurate');
 end
-
 
 %% -------------------------------------------------------------
 %% 2. Admin
@@ -65,9 +63,12 @@ for iSession=1:2
 	SliceNumber = round(SliceNumber);
 	SliceNumber(SliceNumber<1) = 1;
 	SliceNumber(SliceNumber>length(SliceReadoutTime)) = length(SliceReadoutTime);
-	PLD{iSession} = x.Q.Initial_PLD + SliceReadoutTime(SliceNumber);
-	
-    CBF{iSession} = CBF{iSession}./(exp(PLD{iSession}./x.Q.BloodT1) / (2.*x.Q.LabelingEfficiency.*x.Q.BloodT1 .* (1- exp(-x.Q.LabelingDuration./x.Q.BloodT1)) ));
+	if x.Q.nUniqueInitial_PLD == 1 && x.Q.nUniqueLabelingDuration == 1
+		PLD{iSession} = x.Q.uniqueInitial_PLD + SliceReadoutTime(SliceNumber);
+		CBF{iSession} = CBF{iSession}./(exp(PLD{iSession}./x.Q.BloodT1) / (2.*x.Q.LabelingEfficiency.*x.Q.BloodT1 .* (1- exp(-x.Q.uniqueLabelingDuration./x.Q.BloodT1)) ));
+	else
+		error('FEAST can only handle sequences with single PLD and labeling duration.');
+	end
 end
 % Average different PLD scales
 PLD_combined= (PLD{1}+PLD{2})./2;
@@ -90,12 +91,9 @@ FEAST_ratio(FEAST_ratio<0) = 0; % clip @ 0 (== infinite ATT)
 %% -------------------------------------------------------------
 %% 5. Compute TT maps
 qnt_PLDdecay = exp(-PLD_combined/x.Q.BloodT1);
-qnt_combidecay = exp( (-x.Q.LabelingDuration - PLD_combined) / x.Q.BloodT1);
+qnt_combidecay = exp( (-x.Q.uniqueLabelingDuration - PLD_combined) / x.Q.BloodT1);
 TT = -x.Q.BloodT1 .* reallog( FEAST_ratio .* (qnt_PLDdecay  - qnt_combidecay ) + qnt_combidecay );
 
 xASL_io_SaveNifti(PathCBF{1}, fullfile(x.D.PopDir, ['TT_'  x.P.SubjectID '.nii']), TT, 32);
-
-
-
 
 end

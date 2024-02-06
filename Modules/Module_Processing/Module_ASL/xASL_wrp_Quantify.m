@@ -98,7 +98,7 @@ xASL_delete(pathOutputATT);
 xASL_delete(pathOutputTex);
 xASL_delete(pathOutputABV);
 
-if x.Q.bUseBasilQuantification
+if x.modules.asl.bUseBasilQuantification
     xASL_delete(x.P.Pop_Path_qCBF);
     xASL_delete(x.P.Pop_Path_ATT);
     xASL_delete(x.P.Pop_Path_Tex);
@@ -447,7 +447,7 @@ end
 
 %% 9.b Save files in standard space for BASIL native space output
 % Transform BASIL CBF to standard space as BASIL only quantifies in native space
-if x.Q.bUseBasilQuantification && strcmp(x.P.Path_CBF, pathOutputCBF)
+if x.modules.asl.bUseBasilQuantification && strcmp(x.P.Path_CBF, pathOutputCBF)
     if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else
@@ -482,7 +482,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 11.  Create standard space masked image to visualize masking effect
-if xASL_exist(x.P.Pop_Path_qCBF, 'file') && (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.Q.bUseBasilQuantification)
+if xASL_exist(x.P.Pop_Path_qCBF, 'file') && (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.modules.asl.bUseBasilQuantification)
     % Load CBF image
     MaskedCBF = xASL_io_Nifti2Im(x.P.Pop_Path_qCBF);
     % Mask vascular voxels (i.e. set them to NaN)
