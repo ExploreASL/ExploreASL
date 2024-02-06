@@ -32,7 +32,7 @@ function [M0IM] = xASL_quant_M0(inputM0, x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: M0IM = xASL_quant_M0('MyStudy/sub-001/ASL_1/rM0.nii', x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------------
@@ -149,7 +149,13 @@ else
 		if  x.M0_usesASLtiming
 			% in this case, the M0 readout has the exact same timing as the ASL readout
 			% this is the case e.g. for Siemens 2D EPI
-			NetTR = max(x.Q.LabelingDuration) + max(x.Q.Initial_PLD) + SliceReadoutTime(SliceIM);
+			if isfield(x.modules.asl, 'bTimeEncoded') && x.modules.asl.bTimeEncoded == 1
+				% For Time-Encoded, we can't take the longest PLD, but the longest PLD in PWI4D. 
+				% This is by definition the last PLD in the vector, as typically the first corresponds to the control image and can be ignored
+				NetTR = x.Q.LabelingDuration(end) + x.Q.Initial_PLD(end) + SliceReadoutTime(SliceIM);
+			else
+				NetTR = max(x.Q.LabelingDuration) + max(x.Q.Initial_PLD) + SliceReadoutTime(SliceIM);
+			end
 
 			fprintf('%s\n','2D sliceWise M0 readout assumed, same timing as ASL slices readout used');
 		elseif ~x.M0_usesASLtiming
