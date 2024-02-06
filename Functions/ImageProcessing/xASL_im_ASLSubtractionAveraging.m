@@ -484,7 +484,7 @@ if bCreatePWI
     PWI = zeros(size(PWI3D(:,:,:,1)));
     
     x.Q.EchoTime_PWI = 0;
-    x.Q.initialPLD_PWI = 0;
+    x.Q.InitialPLD_PWI = 0;
     x.Q.LabelingDuration_PWI = 0;
 
     for iVolume=1:size(PWI3D, 4)
@@ -492,7 +492,7 @@ if bCreatePWI
     end
 
     x.Q.EchoTime_PWI = sum(contributionVolume .* x.Q.EchoTime_PWI3D);
-    x.Q.initialPLD_PWI = sum(contributionVolume .* x.Q.InitialPLD_PWI3D);
+    x.Q.InitialPLD_PWI = sum(contributionVolume .* x.Q.InitialPLD_PWI3D);
     x.Q.LabelingDuration_PWI = sum(contributionVolume .* x.Q.LabelingDuration_PWI3D);
 end
 
