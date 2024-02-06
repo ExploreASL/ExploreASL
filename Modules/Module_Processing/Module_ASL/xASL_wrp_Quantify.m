@@ -109,20 +109,9 @@ end
 %% 1.   Load PWI4D
 fprintf('%s\n','Loading PWI4D & M0 images');
 
-%% #1543 This goes to xASL_module_ASL
-% Either load a PWI image or merge several PWIs
-if x.modules.asl.bMergingSessions == 1
-	PWI4D = xASL_wrp_Quantify_MergeSessions(x); 
-    %% #1543 THIS WILL BE RENAMED TO xASL_im_MergePWI4D
-    %% AND WILL BE RUN SEPARATELY BEFORE THIS WRAPPER
-    %% TO COMBINE BOTH IMAGES AND JSON, AND SAVE THEM
-    %
-    %% PM: LOAD JSON HERE AS WELL, USING xASL_io_Nifti2Im
-else
-	% Load ASL single PWI
-	[PWI4D, JSON] = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
-	JSON = xASL_bids_parms2BIDS([], JSON, 0); % BIDS to Legacy conversion
-end
+% Load ASL single PWI
+[PWI4D, JSON] = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
+JSON = xASL_bids_parms2BIDS([], JSON, 0); % BIDS to Legacy conversion
 
 if isempty(JSON)
     %% PM: #1543 for backward compatibility, if part of the ASL module was run
@@ -408,6 +397,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
+%% #1543 In case we save as CBF4D or bUseBasil then we don't average. Otherwise, for non-basil non-cbf4D, we have to average PWI4D before quantification - perhaps in this subfunction.
 if ~x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bUseBasilQuantification % multi-PLD with BASIL or single-PLD
     [~, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, SliceGradient, x, x.modules.asl.bUseBasilQuantification); % also runs BASIL, but only in native space!
 else
@@ -502,48 +492,3 @@ end
 
 end
 
-%% #1543 This part goes to the new separate function xASL_im_MergePWI4D
-%% #1543 Which will have as input:
-%% PWI4D.nii
-%% PWI4D.json
-%% SessionMergingList
-%% (not x if we don't need it)
-
-function PWI = xASL_wrp_Quantify_MergeSessions(x)
-% Merge several PWIs based on the list in x.modules.asl.sessionsToMerge
-PWI = []; % this becomes the total concatenated image matrix
-
-fprintf('Concatenating PWI4D for sessions/runs (nVolumes):');
-
-for iSession = 1:numel(x.modules.asl.sessionsToMerge)
-	% Here we get the path of the first session, by replacing the foldername ASL_X
-    pathCurrentPWI4D = replace(x.P.Path_PWI4D, x.modules.asl.sessionsToMerge{end}, x.modules.asl.sessionsToMerge{iSession});
-    
-	if xASL_exist(pathCurrentPWI4D, 'file')
-		imPWI4Dcurrent = xASL_io_Nifti2Im(pathCurrentPWI4D);
-        
-        dim4(iSession) = size(imPWI4Dcurrent, 4);
-
-        fprintf([' ' x.modules.asl.sessionsToMerge{iSession} ' (' xASL_num2str(dim4(iSession)) ')']);
-
-		if iSession == 1
-			% Take the first volume as it is
-			PWI = imPWI4Dcurrent;
-		else
-			% For the following ones, check dimensions
-			if isequal(size(imPWI4Dcurrent, 1:3), size(PWI, 1:3))
-				% Here we concatenate (cat) over the 4rd dimension (4), PWI (total concatenated image matrix) with the new current PWI
-                PWI = cat(4, PWI, imPWI4Dcurrent);
-			else
-				error(['Cannot concatenate sessions for subject ' x.SUBJECT ' as session '  x.modules.asl.sessionsToMerge{iSession} ' has a different matrix size from the previous sessions.']);
-			end
-		end
-	else
-		% If one of the sessions are missing, then we issue an error
-		error(['Cannot concatenate sessions for subject ' x.SUBJECT ': session '  x.modules.asl.sessionsToMerge{iSession} ' is missing.']);
-	end
-end
-
-fprintf('\n%s\n', ['Concatenated PWI4Ds into a new PWI4D with name XXXXX #1543 and ' xASL_num2str(sum(dim4)) ' volumes']);
-
-end

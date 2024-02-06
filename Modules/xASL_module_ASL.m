@@ -410,23 +410,25 @@ end
 iState = 8;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
+	%% Run merging if needed as first function before any quantification, as quantification itself should disregard the data source
+	if x.modules.asl.bMergingSessions == 1
+		[path_PWI4D, path_PWI4D_Pop] = xASL_im_MergePWI4D(x);
+	else
+		% Use default non-merged paths
+		path_PWI4D = x.P.Path_PWI4D;
+		path_PWI4D_Pop = x.P.Pop_Path_PWI4D;
+	end
+
     fprintf('%s\n','Quantifying ASL:   ');
     % If BASIL quantification will be performed, only native space analysis is possible
     if isfield(x.modules.asl, 'bUseBasilQuantification') && x.modules.asl.bUseBasilQuantification
         % Quantification in native space only for BASIL
-
-        xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
-        % Transform the output volumes of BASIL to standard space (running
-        % it in standard space takes too much time and the
-        % noise-distributions may differ due to the B-spline interpolation
-        InputPaths = {x.P.Path_CBF, x.P.Path_ATT, x.P.Path_ABV};
-        OutputPaths = {x.P.Pop_Path_qCBF, x.P.Pop_Path_ATT, x.P.Pop_Path_ABV}; 
-        xASL_spm_deformations(x, InputPaths, OutputPaths, 4, [], [], x.P.Path_y_ASL);
+        xASL_wrp_Quantify(x, path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
     else
         % Quantification in standard space:
-        xASL_wrp_Quantify(x);
+        xASL_wrp_Quantify(x, path_PWI4D_Pop);
         % Quantification in native space:
-        xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
+        xASL_wrp_Quantify(x, path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
     end
     
 	% allow 4D quantification as well, storing CBF4D. This is currently not implemented for multi-PLD/multi-TE (BASIL/FABBER)
@@ -434,14 +436,14 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
         if x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQuantifyMultiTE
             warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, skipping');
 		else
-            if size(xASL_io_Nifti2Im(x.P.Path_ASL4D), 4) == 1
+            if size(xASL_io_Nifti2Im(path_PWI4D), 4) == 1
                 warning('x.modules.asl.SaveCBF4D was requested but only one volume exists, skipping');
             else
                 fprintf('%s\n','Quantifying CBF4D in native space');
-                xASL_wrp_Quantify(x, x.P.Path_PWI4D, x.P.Path_qCBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);
+                xASL_wrp_Quantify(x, path_PWI4D, x.P.Path_CBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);
     
                 fprintf('%s\n','Quantifying CBF4D in standard space');
-                xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D, x.P.Pop_Path_qCBF4D);
+                xASL_wrp_Quantify(x, path_PWI4D_Pop, x.P.Pop_Path_qCBF4D);
             end
         end
 	end
