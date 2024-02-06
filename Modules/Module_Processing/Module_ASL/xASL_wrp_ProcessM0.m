@@ -98,6 +98,7 @@ M0ScaleVolume  = ASLvoxelVolume/M0voxelVolume;
 % Copy existing M0 for processing, in single precision, we can skip the motion correction here
 % Load and scale the M0 for the ASL-M0 volume changes
 [imM0, jsonM0] = xASL_io_Nifti2Im(x.P.Path_M0);
+jsonM0 = xASL_bids_parms2BIDS([], jsonM0, 0); % BIDS to Legacy conversion
 imM0 = imM0.*M0ScaleVolume;
 
 % First check if we have a valid M0

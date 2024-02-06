@@ -22,7 +22,7 @@ function [imOut, json] = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle)
 % DESCRIPTION: This function loads a NIfTI image matrix with flexible input
 %              (as explained under INPUT: niftiIn). It does the following.
 %
-%              1. Try to load a NIfTI
+%              1. Try to load a NIfTI and JSON (keeps it in the original format
 %              2. If NIfTI successfully loaded, try to load the NIfTI image
 %              3. If the above didnt work, try to create a dummy image
 %              4. Convert to single precision data format
