@@ -121,6 +121,7 @@ if x.modules.asl.bMergingSessions == 1
 else
 	% Load ASL single PWI
 	[PWI4D, JSON] = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
+	JSON = xASL_bids_parms2BIDS([], JSON, 0); % BIDS to Legacy conversion
 end
 
 if isempty(JSON)
