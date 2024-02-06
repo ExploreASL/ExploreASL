@@ -245,26 +245,29 @@ MaskIM = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rgrey.nii'));
 MaskIM = MaskIM>(0.7*max(MaskIM(:)));
 
 if xASL_exist(x.P.Pop_Path_PWI4D)
-    [PWI4D, json] = xASL_io_Nifti2Im(x.P.Pop_Path_PWI4D);
+    [PWI4D, json_PWI4D] = xASL_io_Nifti2Im(x.P.Pop_Path_PWI4D);
 	% Convert JSON from BIDS to Legacy
-	json = xASL_bids_parms2BIDS([], json, 0);
+	json_PWI4D = xASL_bids_parms2BIDS([], json_PWI4D, 0);
     nVolumesPWI4D = size(PWI4D, 4);
 else
     nVolumesPWI4D = 1;
+	json_PWI4D = [];
 end
 
 if nVolumesPWI4D>3
-    if isempty(json)
+    if isempty(json_PWI4D)
         warning(['Reverting to x.Q memory, json file missing: ' x.P.Pop_Path_PWI4D_json]);
-        json.Q = x.Q;
+        json_PWI4D.Q = x.Q;
     end
     
-    %% PM: here we need to use the positions for the earliest echo, and the latest PLD-labdur
-    
-    % PWI4D_statsIndices = json.EchoTime_PWI4D==min(x.Q.uniqueEchoTime) & json.InitialPLD_PWI4D==max(x.Q.uniqueInitial_PLD);
-    PWI4D_statsIndices = json.Q.Initial_PLD==max(x.Q.uniqueInitial_PLD);
-    %% #1543 For some reason this didn't work for the combination shortest TE & longest PLD
-    %% Better to repeat this for every TE-PLD-LD combination 
+    %% Use the positions for the earliest echo, and the latest PLD-labdur
+	% Choose the optimal PLD as the one closes to 2000 ms
+	optimalPLD = json_PWI4D.Q.Initial_PLD((abs(json_PWI4D.Q.Initial_PLD-2000)) == min(abs(json_PWI4D.Q.Initial_PLD-2000)));
+	% In case there are multiple PLDs - e.g. 1500 and 2500, then take the longer PLD
+	optimalPLD = max(optimalPLD);
+
+	% Index of the shortest TE and optimal PLD
+    PWI4D_statsIndices = (json_PWI4D.Q.EchoTime == min(json_PWI4D.Q.EchoTime)) & (json_PWI4D.Q.Initial_PLD == optimalPLD);
     
     if sum(PWI4D_statsIndices)>3
         PWI4D_stats = PWI4D(:,:,:, PWI4D_statsIndices);
