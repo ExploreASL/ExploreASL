@@ -201,7 +201,7 @@ else
             % In this case, we want to save a quantified version of PWI4D
 		else
 			% We need to update the information in x to match the current PWI4D
-            PWI = xASL_im_ASLSubtractionAveraging(xModified, [], PWI4D_Path);
+            PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D_Path);
 		end
 
         %% 3    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
