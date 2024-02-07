@@ -19,10 +19,14 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 %             Alternatively, this can contain the image matrix
 %             (xASL_io_Nifti2Im below allows both path and image matrix inputs).
 %             Best if this is a path, so any motion correction can be applied.
-%   PWI4D   - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (STRING OR 4D MATRIX, OPTIONAL,
+%   PWI4D      - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D MATRIX, OPTIONAL,
 %               DEFAULT = generated below from ASL4D)
-%   PWI3D   - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (STRING OR 4D MATRIX, OPTIONAL,
+%   PWI3D      - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D MATRIX, OPTIONAL,
 %               DEFAULT = generated below from PWI4D)
+%   Control4D  - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D MATRIX, OPTIONAL,
+%               DEFAULT = generated below from ASL4D)
+%   Control3D  - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D MATRIX, OPTIONAL,
+%               DEFAULT = generated below from Control4D)
 %
 % OUTPUT: (note that these are [] empty by default, unless they are created)
 %   PWI     - 3D image matrix, see explanation below
@@ -147,6 +151,16 @@ bCreateControl = false;
 
 % We skip the computation of PWI4D if it is provided
 if nargin>=3 && ~isempty(PWI4D)
+	if ischar(PWI4D) && xASL_exist(PWI4D, 'file')
+		% Load NII and update the JSON information from it
+		[PWI4D, json] = xASL_io_Nifti2Im(PWI4D);
+		json = xASL_bids_parms2BIDS([], json, 0); % BIDS to Legacy conversion
+
+		x.Q.EchoTime_PWI4D = json.Q.EchoTime;
+		x.Q.InitialPLD_PWI4D = json.Q.Initial_PLD;
+		x.Q.LabelingDuration_PWI4D = json.Q.LabelingDuration;
+	end
+
     if ~isnumeric(PWI4D)
         error('Illegal PWI4D, it should be numerical');
     elseif ndims(PWI4D)>4 || ndims(PWI4D)<3 % In theory, PWI4D can be a 3D matrix when it contains a single deltaM
@@ -161,6 +175,16 @@ end
 
 % We skip the computation of Control4D if it is provided
 if nargin>=5 && ~isempty(Control4D) % same as above
+	if ischar(Control4D) && xASL_exist(Control4D, 'file')
+		% Load NII and update the JSON information from it
+		[Control4D, json] = xASL_io_Nifti2Im(Control4D);
+		json = xASL_bids_parms2BIDS([], json, 0); % BIDS to Legacy conversion
+
+		x.Q.EchoTime_Control4D = json.Q.EchoTime;
+		x.Q.InitialPLD_Control4D = json.Q.Initial_PLD;
+		x.Q.LabelingDuration_Control4D = json.Q.LabelingDuration;
+	end
+
     if ~isnumeric(Control4D)
         error('Illegal Control4D, it should be numerical');
     elseif ndims(Control4D)>4 || ndims(Control4D)<3
@@ -185,6 +209,16 @@ end
 
 % We skip the computation of PWI3D if it is provided
 if nargin>=4 && ~isempty(PWI3D)
+	if ischar(PWI3D) && xASL_exist(PWI3D, 'file')
+		% Load NII and update the JSON information from it
+		[PWI3D, json] = xASL_io_Nifti2Im(PWI3D);
+		json = xASL_bids_parms2BIDS([], json, 0); % BIDS to Legacy conversion
+
+		x.Q.EchoTime_PWI3D = json.Q.EchoTime;
+		x.Q.InitialPLD_PWI3D = json.Q.Initial_PLD;
+		x.Q.LabelingDuration_PWI3D = json.Q.LabelingDuration;
+	end
+
     if ~isnumeric(PWI3D)
         error('Illegal PWI3D, it should be numerical');
     elseif ndims(PWI3D)>4 || ndims(PWI3D)<3
@@ -199,6 +233,16 @@ end
 
 % We skip the computation of Control3D if it is provided
 if nargin>=6 && ~isempty(Control3D)
+	if ischar(Control3D) && xASL_exist(Control3D, 'file')
+		% Load NII and update the JSON information from it
+		[Control3D, json] = xASL_io_Nifti2Im(Control3D);
+		json = xASL_bids_parms2BIDS([], json, 0); % BIDS to Legacy conversion
+
+		x.Q.EchoTime_Control3D = json.Q.EchoTime;
+		x.Q.InitialPLD_Control3D = json.Q.Initial_PLD;
+		x.Q.LabelingDuration_Control3D = json.Q.LabelingDuration;
+	end
+
     if ~isnumeric(Control3D)
         error('Illegal Control3D, it should be numerical');
     elseif ndims(Control3D)>4 || ndims(Control3D)<3
