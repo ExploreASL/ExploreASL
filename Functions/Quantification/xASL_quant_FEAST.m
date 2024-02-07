@@ -5,8 +5,6 @@ function xASL_quant_FEAST(x)
 % 
 % INPUT:
 %   x           - struct containing pipeline environment parameters
-% OUTPUT:
-%   x           - struct containing pipeline environment parameters
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function quantifies ATT using the FEAST equations,
 % using crushed and non-crushed sessions, of which the ratio is

@@ -1,7 +1,7 @@
-function xASL_wrp_Quantify(x, PWI4D_Path, pathOutputCBF, M0Path, SliceGradientPath)
+function xASL_wrp_Quantify(x, PWI4D_Path, pathOutputCBF, M0Path, SliceGradientPath, bSaveCBF4D)
 %xASL_wrp_Quantify Submodule of ExploreASL ASL Module, that performs quantfication
 %
-% FORMAT: xASL_wrp_Quantify(x [, PWI4D_Path, pathOutputCBF, M0Path, SliceGradientPath])
+% FORMAT: xASL_wrp_Quantify(x [, PWI4D_Path, pathOutputCBF, M0Path, SliceGradientPath, bSaveCBF4D])
 %
 % INPUT:
 %   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
@@ -9,6 +9,7 @@ function xASL_wrp_Quantify(x, PWI4D_Path, pathOutputCBF, M0Path, SliceGradientPa
 %   pathOutputCBF       - path to NifTI to create, with the quantified CBF map (OPTIONAL, DEFAULT = x.P.Pop_Path_qCBF)
 %   M0Path              - path to NifTI containing M0 image (OPTIONAL, default = x.Pop_Path_M0)
 %   SliceGradientPath   - path to Slice gradient NIfTI (OPTIONAL, default = x.P.Pop_Path_SliceGradient_extrapolated)
+%   bSaveCBF4D          - Boolean to save CBF quantified in 4D (OPTIONAL, default = false)
 %
 % OUTPUT: n/a
 % OUTPUT FILES: NIfTI containing quantified CBF map in native or standard space (depending on input NIfTI),
@@ -44,13 +45,6 @@ function xASL_wrp_Quantify(x, PWI4D_Path, pathOutputCBF, M0Path, SliceGradientPa
 %% ------------------------------------------------------------------------------------------------
 %% 0.   Administration
 
-% Use either original or motion estimated ASL4D
-% Use despiked ASL only if spikes were detected and new file has been created
-% Otherwise, despiked_raw_asl = same as original file
-if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
-    x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
-end
-
 % by default, we use standard space NIfTIs
 if nargin<2 || isempty(PWI4D_Path)
     PWI4D_Path = x.P.Pop_Path_PWI4D;
@@ -73,9 +67,19 @@ end
 if nargin<5 || isempty(SliceGradientPath)
     SliceGradientPath = x.P.Pop_Path_SliceGradient_extrapolated;
 end
+
 if ~isfield(x.modules.asl,'bUseBasilQuantification') || isempty(x.modules.asl.bUseBasilQuantification)
    x.modules.asl.bUseBasilQuantification = false;
 end
+
+if nargin<6 || isempty(bSaveCBF4D)
+	bSaveCBF4D = false;
+end
+
+if x.modules.asl.bUseBasilQuantification && bSaveCBF4D
+	warning('Cannot save CBF4D when using BASIL');
+end
+
 if ~isfield(x,'Q')
     x.Q = struct;
 end
@@ -98,6 +102,8 @@ xASL_delete(pathOutputATT);
 xASL_delete(pathOutputTex);
 xASL_delete(pathOutputABV);
 
+% For BASIL, only native data are processed and standard space data are not directly quantified, but only transformed
+% So that's why we need to delete both the native and standard space data at once for BASIL
 if x.modules.asl.bUseBasilQuantification
     xASL_delete(x.P.Pop_Path_qCBF);
     xASL_delete(x.P.Pop_Path_ATT);
@@ -110,48 +116,18 @@ end
 fprintf('%s\n','Loading PWI4D & M0 images');
 
 % Load ASL single PWI
-[PWI4D, JSON] = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
-JSON = xASL_bids_parms2BIDS([], JSON, 0); % BIDS to Legacy conversion
+[~, jsonASL] = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
+jsonASL = xASL_bids_parms2BIDS([], jsonASL, 0); % BIDS to Legacy conversion
 
-if isempty(JSON)
-    %% PM: #1543 for backward compatibility, if part of the ASL module was run
-    %% we load ASL_parms or use the x.Q
-	warning(['Reverting to x.Q memory, JSON file missing for: ' PWI4D_Path]);
-    ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
-
-    if isfield(ASL_parms, 'Q') && isfield(ASL_parms.Q, 'EchoTime')
-        x.Q.EchoTime = ASL_parms.Q.EchoTime;
-    end
-else
-    %% PM #1543: WE MIGHT WANT TO TURN THIS AROUND
-    %% SUCH THAT WE USE json.EchoTime etc throughout here, 
-    %% which is created from x.Q if the json didn't exist
-    x.Q.EchoTime_PWI4D = JSON.Q.EchoTime;
-    x.Q.InitialPLD_PWI4D = JSON.Q.Initial_PLD;
-    x.Q.LabelingDuration_PWI4D = JSON.Q.LabelingDuration;
+if isempty(jsonASL)
+    % If jsonASL is missing, we have to throw an error. Because all x.Q.PLD are for the raw unsubtracted data.
+	% We could have recalculated the correct PLD vectors, but that should not really be done here but in the 
+	% previous functions.
+	error(['JSON file missing for: ' PWI4D_Path]);
 end
 
 % Assign the shortest minimal positive TE for ASL
-ASLshortestTE = min(x.Q.EchoTime(x.Q.EchoTime_PWI4D > 0));
-
-if xASL_stat_SumNan(PWI4D(:))==0
-    warning(['Empty PWI4D image:' PWI4D_Path]);
-end
-
-%% #1543 AT JAN: CAN WE REMOVE THIS???
-% % % Philips dcm2niiX scaling fix:
-% % % in the new dcm2niiX with the default Philips scaling,
-% % % there can be a discrepancy in the rescale slope that was stored as
-% % % DICOM rescale slope, and the NIfTI rescale slope applied by dcm2niiX
-% % % to use the full 16 bit spectrum. This discrepancy is not normally
-% % % taken into account by SPM's NIfTI function.
-% % HeaderTemp = xASL_io_ReadNifti(x.P.Path_ASL4D);
-% %
-% % if HeaderTemp.dat.scl_slope~=1 && ASL_parms.RescaleSlope~=1
-% %     ReRescaleFactor = ASL_parms.RescaleSlope./HeaderTemp.dat.scl_slope;
-% %     PWI = PWI.*ReRescaleFactor;
-% % end
-
+ASLshortestTE = min(jsonASL.Q.EchoTime(jsonASL.Q.EchoTime > 0));
 
 %% ------------------------------------------------------------------------------------------------
 %% 2.   Prepare M0
@@ -193,26 +169,10 @@ else
         warning(['Empty M0:' M0Path]);
     end
 
-% %     % Philips dcm2niiX scaling fix:
-% %     % in the new dcm2niiX with the default Philips scaling,
-% %     % there can be a discrepancy in the rescale slope that was stored as
-% %     % DICOM rescale slope, and the NIfTI rescale slope applied by dcm2niiX
-% %     % to use the full 16 bit spectrum. This discrepancy is not normally
-% %     % taken into account by SPM's NIfTI function.
-% %     HeaderTemp = xASL_io_ReadNifti(x.P.Path_M0);
-% %
-% %     if HeaderTemp.dat.scl_slope~=1 && M0_parms.RescaleSlope~=1
-% %         ReRescaleFactor = M0_parms.RescaleSlope./HeaderTemp.dat.scl_slope;
-% %         M0_im = M0_im.*ReRescaleFactor;
-% %     end
-
-
-
     % NB: M0 quantification has largely been done in previous script,
     % load M0-parms only to check that ASL & M0-parms are identical
     % Scale slopes & incomplete T1 relaxation were already corrected in M0 module
 end
-
 
 %% ------------------------------------------------------------------------------------------------
 %% 3.   Hematocrit & blood T1 correction
@@ -234,12 +194,14 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 4)   ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
 if strcmpi(x.Q.M0,'separate_scan')
-    M0_parms = xASL_adm_LoadParms(x.P.Path_M0_parms_mat, x);
+	[~, jsonM0] = xASL_io_Nifti2Im(x.P.Path_M0);
+	jsonM0 = xASL_bids_parms2BIDS([], jsonM0, 0);
+    %M0_parms = xASL_adm_LoadParms(x.P.Path_M0_parms_mat, x);
 	
 	% Assigns the shortest minimal positive TE for M0
 	M0shortestTE = [];
-	if isfield(M0_parms.Q, 'EchoTime')
-		M0shortestTE = min(M0_parms.Q.EchoTime(M0_parms.Q.EchoTime > 0));
+	if isfield(jsonM0.Q, 'EchoTime')
+		M0shortestTE = min(jsonM0.Q.EchoTime(jsonM0.Q.EchoTime > 0));
     else
         warning('Missing M0 Echo Time');
 	end
@@ -397,9 +359,8 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
-%% #1543 In case we save as CBF4D or bUseBasil then we don't average. Otherwise, for non-basil non-cbf4D, we have to average PWI4D before quantification - perhaps in this subfunction.
 if ~x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bUseBasilQuantification % multi-PLD with BASIL or single-PLD
-    [~, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, SliceGradient, x, x.modules.asl.bUseBasilQuantification); % also runs BASIL, but only in native space!
+    [~, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D_Path, M0_im, SliceGradient, x, x.modules.asl.bUseBasilQuantification, bSaveCBF4D); % also runs BASIL, but only in native space!
 else
     % multi-PLD quantification without BASIL
     error('Multi PLD quantification without BASIL is not yet implemented.');
@@ -473,7 +434,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 11.  Create standard space masked image to visualize masking effect
-if xASL_exist(x.P.Pop_Path_qCBF, 'file') && (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.modules.asl.bUseBasilQuantification)
+if xASL_exist(x.P.Pop_Path_qCBF, 'file') && (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.modules.asl.bUseBasilQuantification) && ~bSaveCBF4D
     % Load CBF image
     MaskedCBF = xASL_io_Nifti2Im(x.P.Pop_Path_qCBF);
     % Mask vascular voxels (i.e. set them to NaN)

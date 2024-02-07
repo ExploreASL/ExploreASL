@@ -401,6 +401,14 @@ end
 %% ========================================================================================================================
 %% 8    Quantification
 
+%% % Use either original or motion estimated ASL4D
+% #1543 Make sure that despiked is used instead of normal ASL in case it exists - to be solved here rather than inside Quantify
+% Use despiked ASL only if spikes were detected and new file has been created
+% Otherwise, despiked_raw_asl = same as original file
+% if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
+%    x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
+% end
+
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
 % Including PVC
 iState = 8;
@@ -436,10 +444,10 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
                 warning('x.modules.asl.SaveCBF4D was requested but only one volume exists, skipping');
             else
                 fprintf('%s\n','Quantifying CBF4D in native space');
-                xASL_wrp_Quantify(x, path_PWI4D, x.P.Path_CBF4D, x.P.Path_rM0, x.P.Path_SliceGradient);
+                xASL_wrp_Quantify(x, path_PWI4D, x.P.Path_CBF4D, x.P.Path_rM0, x.P.Path_SliceGradient, true);
     
                 fprintf('%s\n','Quantifying CBF4D in standard space');
-                xASL_wrp_Quantify(x, path_PWI4D_Pop, x.P.Pop_Path_qCBF4D);
+                xASL_wrp_Quantify(x, path_PWI4D_Pop, x.P.Pop_Path_qCBF4D, [], [], true);
             end
         end
 	end
