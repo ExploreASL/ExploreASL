@@ -401,10 +401,6 @@ end
 %% ========================================================================================================================
 %% 8    Quantification
 
-%% #1543 Here we call xASL_im_MergePWI4D as first function before any quantification (so the user can move it somewhere else/it can be a separate step in a GUI)
-%% This is not part of the quantification, just as HadamardDecoding is also not part of the quantification, it is a resorting/reconcatenation of image & parameter matrices
-
-
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
 % Including PVC
 iState = 8;
