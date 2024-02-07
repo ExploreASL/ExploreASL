@@ -1,15 +1,16 @@
-function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, imSliceNumber, x, bUseBasilQuantification)
+function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseBasilQuantification, bSaveCBF4D)
 %xASL_quant_ASL Perform a multi-step quantification of single or multi-PLD with or without BASIL
-% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex]] = xASL_quant_ASL(PWI4D, M0_im, imSliceNumber, x[, bUseBasilQuantification])
+% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex]] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x[, bUseBasilQuantification, bSaveCBF4D])
 %
 % INPUT:
-%   PWI4D           - 4D timeseries of (control-label subtracted) perfusion-weighted images (REQUIRED)
+%   PWI4D           - Path to the 4D timeseries of (control-label subtracted) perfusion-weighted images (REQUIRED)
 %   M0_im           - M0 image (can be a single number or image matrix) (REQUIRED)
 %   imSliceNumber   - image matrix showing slice number in current ASL space (REQUIRED for 2D multi-slice)
 %   x               - struct containing pipeline environment parameters (REQUIRED)
 %   bUseBasilQuantification - boolean, true for using FSL BASIL for
 %                             quantification, false for using ExploreASL's
 %                             own quantification (OPTIONAL, DEFAULT = false for singlePLD, true for multiPLD)
+%   bSaveCBF4D      - Boolean to save CBF quantified in 4D (OPTIONAL, default = false)
 %
 % OUTPUT:
 % ScaleImage        - image matrix containing net/effective quantification scale factor
@@ -45,10 +46,11 @@ function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, imSlice
 %              multi-PLD or multi-TE quantifications are performed with BASIL or FABBER here, respectively.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D, M0_im, imSliceNumber, x, bUseBasilQuantification);
+% EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseBasilQuantification);
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 
+%% #1543 In case we save as CBF4D or bUseBasil then we don't average. Otherwise, for non-basil non-cbf4D, we have to average PWI4D before quantification - perhaps in this subfunction.
 
 %% Admin
 fprintf('%s\n', 'Performing quantification');
@@ -57,7 +59,7 @@ ATT = [];
 Tex = [];
 ABV = [];
 
-if nargin<5 || isempty(bUseBasilQuantification)
+if nargin<6 || isempty(bUseBasilQuantification)
 	if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
 		bUseBasilQuantification = true;
 	else
@@ -65,10 +67,14 @@ if nargin<5 || isempty(bUseBasilQuantification)
 	end
 end
 
-if nargin < 4
-	error('Four input parameters required');
+if nargin < 5
+	error('Five input parameters required');
 elseif isempty(x) || ~isstruct(x)
     error('Illegal x structure');
+end
+
+if nargin<6 || isempty(bSaveCBF4D)
+	bSaveCBF4D = false;
 end
 
 if  xASL_stat_SumNan(M0_im(:))==0 
@@ -86,6 +92,14 @@ end
 ScaleImage = 1; % initializing (double data format by default in Matlab)
 ScaleImageABV = 1;
 
+% Load ASL single PWI
+[PWI4D, jsonASL] = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
+jsonASL = xASL_bids_parms2BIDS([], jsonASL, 0); % BIDS to Legacy conversion
+
+if xASL_stat_SumNan(PWI4D(:))==0
+    warning(['Empty PWI4D image:' PWI4D_Path]);
+end
+
 % Convert to double precision to increase quantification precision
 % This is especially useful with the large factors that we can multiply and
 % divide with in ASL quantification
@@ -95,7 +109,7 @@ M0_im = double(M0_im);
 if ~x.modules.asl.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 	% In case we don't run quantification, we still need to average the PWI image
-	PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
+	PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D_Path);
 else
     
     % If we have multiple PLDs but requested a single PLD quantification, we use the highest PLD
@@ -163,10 +177,8 @@ else
     %% 2. Run BASIL quantification
     if bUseBasilQuantification
         % Here we perform FSL quantification
-
-        % #1543 We may want to move the NaN extrapolation here
-
-		[PWI, ATT, ABV, Tex] = xASL_quant_FSL(x.P.Path_PWI4D, x); % #1543 Quick and dirty fix for the NaN extrapolation at the start of xASL_quant_FSL
+		% We pass the path to the image and do all the Image and JSON reading inside the function
+		[PWI, ATT, ABV, Tex] = xASL_quant_FSL(PWI4D_Path, x); 
 		
 		% If resultFSL is not 0, something went wrong
         % This will issue a warning inside xASL_quant_FSL
@@ -183,16 +195,18 @@ else
             fprintf('%s\n', 'We will use the volumes with the shortest echo time');
 		end
 
-		if isfield(x.modules.asl, 'SaveCBF4D') && x.modules.asl.SaveCBF4D
+		if bSaveCBF4D
             PWI = PWI4D;
             fprintf('%s\n', 'Quantifying CBF in 4D');
             % In this case, we want to save a quantified version of PWI4D
 		else
-            PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
+            PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D_Path);
 		end
 
         %% 3    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'uniqueLabelingDuration')
+			% Note that this function uses PLD and other parameters from x.Q, but this is fine, because this is only executed for single-PLD.
+			% For multi-parameteric sequences, we have to use BASIL that calculates this ScaleImage internally and doesn't use this ScaleImage
             ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage);
         else
             warning('Please define both LabelingType and LabelingDuration of this dataset...');
