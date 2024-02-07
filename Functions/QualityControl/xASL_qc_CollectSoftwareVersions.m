@@ -80,6 +80,12 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
         Software.ExploreASL = [Fname(9:end) Fext];
     end
     
+
+    %% Get ExploreASL commit for optimal provenance
+    [~, xASL_gitCommit] = xASL_system(['cd ' x.opts.MyPath '; git rev-parse HEAD']);
+    Software.ExploreASL_git = strtrim(xASL_gitCommit);
+
+    %% Add software field to x output
     try
         x.Output.SoftwareVersion(1) = Software;
     catch
