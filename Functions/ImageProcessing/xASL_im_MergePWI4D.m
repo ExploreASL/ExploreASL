@@ -27,12 +27,18 @@ if nargin<1 || isempty(x)
 	error('Empty input parameters');
 end
 
-fprintf('Concatenating PWI4D for sessions:');
+fprintf('Concatenating PWI4D for subject ' x.SUBJECT ' for sessions: ');
 % Do this for native and standard space
 pathPWI4D = {x.P.Path_PWI4D x.P.Pop_Path_PWI4D};
 
 % Name of the merged session
 sessionName = [];
+
+% Print the name of the session being added
+for iSession = 1:numel(x.modules.asl.sessionsToMerge)
+	fprintf([' ' x.modules.asl.sessionsToMerge{iSession}]);
+	sessionName = [sessionName '_' x.modules.asl.sessionsToMerge{iSession}];
+end
 
 for iSpace = 1:2
 	for iSession = 1:numel(x.modules.asl.sessionsToMerge)
@@ -44,18 +50,12 @@ for iSpace = 1:2
 			[imPWI4Dcurrent, jsonPWI4Dcurrent] = xASL_io_Nifti2Im(pathCurrentPWI4D, [], [], false); % Don't even bother converting to Legacy before merging
 		else
 			% If one of the sessions are missing, then we issue an error
-			error(['Cannot concatenate sessions for subject ' x.SUBJECT ': session '  x.modules.asl.sessionsToMerge{iSession} ' is missing.']);
+			error(['Cannot concatenate all sessions as session '  x.modules.asl.sessionsToMerge{iSession} ' is missing.']);
 		end
 
 		% Error with a missing JSON
 		if isempty(jsonPWI4Dcurrent)
-			error(['Cannot concatenate sessions for subject ' x.SUBJECT ': session '  x.modules.asl.sessionsToMerge{iSession} ' has missing JSON information.']);
-		end
-
-		% Print the name of the session being added
-		if iSpace == 1
-			fprintf([' ' x.modules.asl.sessionsToMerge{iSession}]);
-			sessionName = [sessionName '_' x.modules.asl.sessionsToMerge{iSession}];
+			error(['Cannot concatenate all sessions as session '  x.modules.asl.sessionsToMerge{iSession} ' has missing JSON information.']);
 		end
 
 		if iSession == 1
@@ -64,28 +64,50 @@ for iSpace = 1:2
 
 			% Note that we don't convert to Legacy and work with BIDS format directly
 			jsonPWI4DConcatenated = struct();
-			jsonPWI4DConcatenated.EchoTime = jsonPWI4Dcurrent.EchoTime;
-			jsonPWI4DConcatenated.PostLabelingDelay = jsonPWI4Dcurrent.PostLabelingDelay;
-			jsonPWI4DConcatenated.LabelingDuration = jsonPWI4Dcurrent.LabelingDuration;
 		else	
 			% For following sessions, concatenate NII and JSON
 			% Check dimensions
 			if isequal(size(imPWI4Dcurrent, 1:3), size(imPWI4DConcatenated, 1:3))
 				% Here we concatenate (cat) over the 4rd dimension (4), PWI (total concatenated image matrix) with the new current PWI
                 imPWI4DConcatenated = cat(4, imPWI4DConcatenated, imPWI4Dcurrent);
-
-				% Concatenate the JSON info
-				jsonPWI4DConcatenated.EchoTime = [jsonPWI4DConcatenated.EchoTime; jsonPWI4Dcurrent.EchoTime];
-				jsonPWI4DConcatenated.PostLabelingDelay = [jsonPWI4DConcatenated.PostLabelingDelay; jsonPWI4Dcurrent.PostLabelingDelay];
-				jsonPWI4DConcatenated.LabelingDuration = [jsonPWI4DConcatenated.LabelingDuration; jsonPWI4Dcurrent.LabelingDuration];
 			else
-				error(['Cannot concatenate sessions for subject ' x.SUBJECT ' as session '  x.modules.asl.sessionsToMerge{iSession} ' has a different matrix size than the previous sessions.']);
+				error(['Cannot concatenate all sessions as session '  x.modules.asl.sessionsToMerge{iSession} ' has a different matrix size than the previous sessions.']);
 			end
+		end
+
+		if isfield(jsonPWI4DConcatenated, 'EchoTime')
+			if iSession == 1
+				jsonPWI4DConcatenated.EchoTime = jsonPWI4Dcurrent.EchoTime;
+			else
+				jsonPWI4DConcatenated.EchoTime = [jsonPWI4DConcatenated.EchoTime; jsonPWI4Dcurrent.EchoTime];
+			end
+		else
+			warning(['Missing EchoTime for session ' x.modules.asl.sessionsToMerge{iSession}]);
+		end
+
+		if isfield(jsonPWI4DConcatenated, 'PostLabelingDelay')
+			if iSession == 1
+				jsonPWI4DConcatenated.PostLabelingDelay = jsonPWI4Dcurrent.PostLabelingDelay;
+			else
+				jsonPWI4DConcatenated.PostLabelingDelay = [jsonPWI4DConcatenated.PostLabelingDelay; jsonPWI4Dcurrent.PostLabelingDelay];
+			end
+		else
+			warning(['Missing PostLabelingDelay for session ' x.modules.asl.sessionsToMerge{iSession}]);
+		end
+
+		if isfield(jsonPWI4DConcatenated, 'LabelingDuration')
+			if iSession == 1
+				jsonPWI4DConcatenated.LabelingDuration = jsonPWI4Dcurrent.LabelingDuration;
+			else
+				jsonPWI4DConcatenated.LabelingDuration = [jsonPWI4DConcatenated.LabelingDuration; jsonPWI4Dcurrent.LabelingDuration];
+			end
+		else
+			warning(['Missing LabelingDuration for session ' x.modules.asl.sessionsToMerge{iSession}]);
 		end
 	end
 	% Create the specific new name
-	[fPath, fName, fExtension] = xASL_fileparts(pathPWI4D{iSpace});
-	pathOut = fullfile(fPath, [fName sessionName fExtension]);
+	[fPath, fName] = xASL_fileparts(pathPWI4D{iSpace});
+	pathOut = fullfile(fPath, [fName sessionName '.nii']);
 
 	if iSpace == 1
 		path_PWI4D = pathOut;

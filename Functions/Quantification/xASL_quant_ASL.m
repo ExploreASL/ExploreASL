@@ -59,18 +59,18 @@ ATT = [];
 Tex = [];
 ABV = [];
 
-if nargin<6 || isempty(bUseBasilQuantification)
+if nargin < 4
+	error('Four input parameters required');
+elseif isempty(x) || ~isstruct(x)
+    error('Illegal x structure');
+end
+
+if nargin<5 || isempty(bUseBasilQuantification)
 	if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
 		bUseBasilQuantification = true;
 	else
 		bUseBasilQuantification = false;
 	end
-end
-
-if nargin < 5
-	error('Five input parameters required');
-elseif isempty(x) || ~isstruct(x)
-    error('Illegal x structure');
 end
 
 if nargin<6 || isempty(bSaveCBF4D)
