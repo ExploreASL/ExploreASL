@@ -78,16 +78,16 @@ if ~isfield(x.modules.asl, 'bUseMNIasDummyStructural')
     x.modules.asl.bUseMNIasDummyStructural = false;
 end
 
-% In case that we don't have the structural derived data, we need to check the reason
+% In case that we don't have the structural derived images, we need to check the reason
 if ~StructuralDerivativesExist
 	fprintf('\n\n%s\n', ['Structural derivatives missing: ' x.dir.SUBJECTDIR]);
 
 	if StructuralRawExist && ~x.modules.asl.bUseMNIasDummyStructural
-		% Either the Structural data are there, but the population module wasn't run
+		% Either the Structural images are there, but the population module wasn't run
 		fprintf('though structural scans are present in rawdata\n');
         fprintf('Please run the structural module first\n');
 	elseif ~x.modules.asl.bUseMNIasDummyStructural
-		% We don't have the structural data and the DummyMNI mode wasn't activated
+		% We don't have the structural images and the DummyMNI mode wasn't activated
         fprintf('also, there are no structural scans present in rawdata\n');
 		fprintf('Consider enabling "x.modules.asl.bUseMNIasDummyStructural" to run the ASL module without structural images\n');
     end
@@ -158,12 +158,12 @@ end
 
 
 %% F. Split ASL and M0 within the ASL time series
-% Run this when the data hasn't been touched yet
+% Run this when the images hasn't been touched yet
 % The first three states are here, because the first two are run only conditionally
 
 % NOTE THAT THIS PART IS BEING PHASED OUT, AND NOW PROCESSED IN
 % `xASL_bids_parseM0` (BIDS->Legacy conversion). We keep this here only for
-% backward compatibility, for data imported a long time ago
+% backward compatibility, for images imported a long time ago
 if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mutex.HasState(StateName{3})
 	% Split the M0 and dummy scans from the ASL time-series
 	xASL_io_SplitASL(x.P.Path_ASL4D, x.modules.asl.M0PositionInASL4D, x.modules.asl.DummyScanPositionInASL4D);
@@ -249,7 +249,7 @@ elseif ~x.mutex.HasState(StateName{iState})
 
 %         % First, solve dimensionality (in case there are empty dims, that need restructuring)
         
-        % Then, check matrix size: throw error if 2D data with 3 dimensions only
+        % Then, check matrix size: throw error if 2D images with 3 dimensions only
 
         if nVolumes>1 && ~x.modules.asl.bContainsSubtracted && mod(nVolumes, 2) ~= 0
             error('Uneven number of control-label frames, either incomplete pairs or M0 image in time-series!');
@@ -303,7 +303,7 @@ end
 
 
 %% ========================================================================================================================
-%% 4    Resample ASL data
+%% 4    Resample ASL images
 iState = 4;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-1})
 
@@ -414,8 +414,8 @@ end
 iState = 8;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
-	%% Run merging if needed as first function before any quantification, as quantification itself should disregard the data source
-	if x.modules.asl.bMergingSessions == 1
+	%% Run merging if requested as first function before any quantification, as quantification itself should disregard the data source
+	if x.modules.asl.bMergingSessions
 		[path_PWI4D, path_PWI4D_Pop] = xASL_im_MergePWI4D(x);
 	else
 		% Use default non-merged paths
@@ -707,7 +707,7 @@ xASL_io_WriteJson(x.P.Path_ASL4D_json, xASL_bids_parms2BIDS(jsonFields, [], 1), 
 %% 4. TimeEncoded parsing
 % Check if TimeEncoded is defined
 if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize') || isfield(x.Q, 'TimeEncodedMatrix')
-    fprintf(2,'Time encoded data detected, we will process this but this is a new feature that is still under development\n');
+    fprintf(2,'Time encoded images detected, we will process this but this is a new feature that is still under development\n');
     x.modules.asl.bTimeEncoded = true;
 	
 	% Initialize as empty if missing

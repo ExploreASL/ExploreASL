@@ -245,9 +245,7 @@ MaskIM = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rgrey.nii'));
 MaskIM = MaskIM>(0.7*max(MaskIM(:)));
 
 if xASL_exist(x.P.Pop_Path_PWI4D)
-    [PWI4D, json_PWI4D] = xASL_io_Nifti2Im(x.P.Pop_Path_PWI4D);
-	% Convert JSON from BIDS to Legacy
-	json_PWI4D = xASL_bids_parms2BIDS([], json_PWI4D, 0);
+    [PWI4D, json_PWI4D] = xASL_io_Nifti2Im(x.P.Pop_Path_PWI4D, [], [], true); % Convert JSON from BIDS to Legacy
     nVolumesPWI4D = size(PWI4D, 4);
 else
     nVolumesPWI4D = 1;

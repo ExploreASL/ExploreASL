@@ -1,7 +1,7 @@
-function [imOut, json] = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle)
+function [imOut, json] = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle, bBIDS2Legacy)
 % Load image matrix from NIfTI given as a file path or preloaded
 %
-% FORMAT: [imOut, json] = xASL_io_Nifti2Im(niftiIn [, ImageSize])
+% FORMAT: [imOut, json] = xASL_io_Nifti2Im(niftiIn [, ImageSize, bLoadAsSingle, bBIDS2Legacy])
 %
 % INPUT:
 %   niftiIn       - can be one of the following (REQUIRED):
@@ -11,22 +11,25 @@ function [imOut, json] = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle)
 %   ImageSize     - if NIfTI doesnt exist or is corrupt,
 %                   will create a dummy image matrix with this size
 %                   (OPTIONAL, DEFAULT=none)
-%   bLoadAsSingle - Load image as single (DEFAULT=true)
+%   bLoadAsSingle - Load image as single (OPTIONAL, DEFAULT=true)
 %                   If set to false, the image can be loaded as uint8
 %                   as well to save memory
+%   bBIDS2Legacy  - Convert loaded JSON from BIDS to Legacy (OPTIONAL, DEFAULT = true)
 %
 % OUTPUT:
 %   imOut     - image matrix with single precision
 %   json      - json containing quantification parameters, if niftiIn is a path
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function loads a NIfTI image matrix with flexible input
-%              (as explained under INPUT: niftiIn). It does the following.
+%              (as explained under INPUT: niftiIn). It does the following. It also loads the JSON sidecar and 
+%              can convert it from BIDS to Legacy
 %
-%              1. Try to load a NIfTI and JSON (keeps it in the original format
+%              1. Try to load a NIfTI and JSON
 %              2. If NIfTI successfully loaded, try to load the NIfTI image
 %              3. If the above didnt work, try to create a dummy image
 %              4. Convert to single precision data format
 %              5. Also able to load NIfTI as .nii.mat format
+%              6. Checks scaling
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: imOut = xASL_io_Nifti2Im('/analysis/Sub-001/ASL_1/CBF.nii');
@@ -46,6 +49,9 @@ end
 if nargin<3 || isempty(bLoadAsSingle)
     bLoadAsSingle = true;
 end
+if nargin<4 || isempty(bBIDS2Legacy)
+	bBIDS2Legacy = true;
+end
 
 niiMat = false; % default
 
@@ -64,7 +70,12 @@ else % assume this is a path, we try to open
             niiMat = true; % load mat below
         else
             % Load NIfTI and JSON sidecar
-            [nii, ~, json] = xASL_io_ReadNifti(niftiIn);
+			if nargout < 2
+				% No need to read the JSON
+				[nii] = xASL_io_ReadNifti(niftiIn);
+			else
+				[nii, ~, json] = xASL_io_ReadNifti(niftiIn, bBIDS2Legacy);
+			end
         end
     catch ME
         warning(['Could not load ' niftiIn]);

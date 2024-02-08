@@ -93,8 +93,7 @@ ScaleImage = 1; % initializing (double data format by default in Matlab)
 ScaleImageABV = 1;
 
 % Load ASL single PWI
-[PWI4D, jsonASL] = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
-jsonASL = xASL_bids_parms2BIDS([], jsonASL, 0); % BIDS to Legacy conversion
+PWI4D = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
 
 if xASL_stat_SumNan(PWI4D(:))==0
     warning(['Empty PWI4D image:' PWI4D_Path]);

@@ -175,7 +175,7 @@ function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2sa
             jsonFields.EchoTime = x.Q.(fieldNameTE);
         end
     
-        xASL_io_SaveNifti(x.P.Path_ASL4D, path2save, single(image2save), 32, 0, [], bCopyOrigJson, xASL_bids_parms2BIDS(jsonFields, [], 1));
+        xASL_io_SaveNifti(x.P.Path_ASL4D, path2save, single(image2save), 32, 0, [], bCopyOrigJson, jsonFields, true);
     end
 
 end
