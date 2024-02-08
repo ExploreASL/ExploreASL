@@ -36,6 +36,10 @@ if x.Q.nCompartments~=1
     warning('Not a single compartment model used for CBF quantification, FEAST ATT computation might be inaccurate');
 end
 
+if x.Q.nUniqueInitial_PLD > 1 || x.Q.nUniqueLabelingDuration > 1
+	error('FEAST can only handle sequences with a single PLD and labeling duration.');
+end
+
 %% -------------------------------------------------------------
 %% 2. Admin
 for iSession=1:2
@@ -61,12 +65,9 @@ for iSession=1:2
 	SliceNumber = round(SliceNumber);
 	SliceNumber(SliceNumber<1) = 1;
 	SliceNumber(SliceNumber>length(SliceReadoutTime)) = length(SliceReadoutTime);
-	if x.Q.nUniqueInitial_PLD == 1 && x.Q.nUniqueLabelingDuration == 1
-		PLD{iSession} = x.Q.uniqueInitial_PLD + SliceReadoutTime(SliceNumber);
-		CBF{iSession} = CBF{iSession}./(exp(PLD{iSession}./x.Q.BloodT1) / (2.*x.Q.LabelingEfficiency.*x.Q.BloodT1 .* (1- exp(-x.Q.uniqueLabelingDuration./x.Q.BloodT1)) ));
-	else
-		error('FEAST can only handle sequences with single PLD and labeling duration.');
-	end
+	
+	PLD{iSession} = x.Q.uniqueInitial_PLD + SliceReadoutTime(SliceNumber);
+	CBF{iSession} = CBF{iSession}./(exp(PLD{iSession}./x.Q.BloodT1) / (2.*x.Q.LabelingEfficiency.*x.Q.BloodT1 .* (1- exp(-x.Q.uniqueLabelingDuration./x.Q.BloodT1)) ));
 end
 % Average different PLD scales
 PLD_combined= (PLD{1}+PLD{2})./2;
