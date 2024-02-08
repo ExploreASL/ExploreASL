@@ -1,4 +1,4 @@
-function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields)
+function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS)
 % Save a file to a Nifti format, while taking the parameters from another file
 %
 % FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields])
@@ -20,6 +20,9 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %   JsonFields     Save additional JsonFields to a new JSON sidecar (or merged with the original Json content)
 %                  These fields overwrite fields with the same fieldnames in the original Json
 %                  (OPTIONAL, DEFAULT = struct() empty)
+%   bLegacy2BIDS   Convert saved JSON from Legacy to BIDS. This only applies to the JsonFields passed on the input. The JSON read from 
+%                  the origNifti is in BIDS already and is never converted. This means that the saved JSON is always in BIDS, this only 
+%                  solves the problem if the input is in Legacy or already in BIDS (OPTIONAL, DEFAULT = true)
 % JSON saving options are:
 % 1. bCopyOrigJson = false & JsonFields = empty  -> we don't save a new JSON sidecar
 % 2. bCopyOrigJson = true  & JsonFields = empty  -> we copy the original JSON sidecar only
@@ -78,6 +81,10 @@ if nargin < 8 || isempty(JsonFields)
     JsonFields = struct;
 elseif ~isstruct(JsonFields)
     error('JsonFields input variable should be a struct');
+end
+
+if nargin < 9 || isempty(bLegacy2BIDS)
+	bLegacy2BIDS = true;
 end
 
 % JSON saving, see detailed explanation above.
@@ -298,15 +305,20 @@ if bSaveJson
         json = struct;
     else
         json = struct;
-    end
+	end
 
-    % b. Second, we add any provided JSON fields
+	% b. Second, we convert provided JSON fields to BIDS if necessary
+	if bLegacy2BIDS && ~isempty(JsonFields) && length(fieldnames(JsonFields))
+		JsonFields = xASL_bids_parms2BIDS(JsonFields, [], 1);
+	end
+
+    % c. Third, we add any provided JSON fields
     fieldNames = fields(JsonFields);
     for iField = 1:length(fieldNames)
         json.(fieldNames{iField}) = JsonFields.(fieldNames{iField});
     end
 
-    % c. Third, we save the JSON
+    % d. Fourth, we save the JSON
     xASL_io_WriteJson(pathNewJson, json, 1);
     % careful, this will overwrite (that is what the NIfTIs also do in this function)
 end

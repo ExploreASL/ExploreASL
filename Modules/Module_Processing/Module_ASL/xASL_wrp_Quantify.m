@@ -102,8 +102,8 @@ xASL_delete(pathOutputATT);
 xASL_delete(pathOutputTex);
 xASL_delete(pathOutputABV);
 
-% For BASIL, only native data are processed and standard space data are not directly quantified, but only transformed
-% So that's why we need to delete both the native and standard space data at once for BASIL
+% For BASIL, only native images are processed and standard space images are not directly quantified, but only transformed
+% So that's why we need to delete both the native and standard space images at once for BASIL
 if x.modules.asl.bUseBasilQuantification
     xASL_delete(x.P.Pop_Path_qCBF);
     xASL_delete(x.P.Pop_Path_ATT);
@@ -116,11 +116,10 @@ end
 fprintf('%s\n','Loading PWI4D & M0 images');
 
 % Load ASL single PWI
-[~, jsonASL] = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
-jsonASL = xASL_bids_parms2BIDS([], jsonASL, 0); % BIDS to Legacy conversion
+[~, jsonASL] = xASL_io_Nifti2Im(PWI4D_Path, [], [], true); % Load CBF nifti and convert JSON to Legacy
 
 if isempty(jsonASL)
-    % If jsonASL is missing, we have to throw an error. Because all x.Q.PLD are for the raw unsubtracted data.
+    % If jsonASL is missing, we have to throw an error. Because all x.Q.PLD are for the raw unsubtracted images.
 	% We could have recalculated the correct PLD vectors, but that should not really be done here but in the 
 	% previous functions.
 	error(['JSON file missing for: ' PWI4D_Path]);
@@ -160,7 +159,7 @@ else
     % In this case we have a proper M0 image that should have voxel-wise
     % orientation agreement with the ASL PWI. We may need to correct it"s values.
 
-    % Load M0 data
+    % Load M0 images
 
     fprintf('%s\n','M0 scan used');
     M0_im = xASL_io_Nifti2Im(M0Path);
@@ -194,8 +193,8 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 4)   ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
 if strcmpi(x.Q.M0,'separate_scan')
-	[~, jsonM0] = xASL_io_Nifti2Im(x.P.Path_M0);
-	jsonM0 = xASL_bids_parms2BIDS([], jsonM0, 0);
+	[~, jsonM0] = xASL_io_Nifti2Im(x.P.Path_M0, [], [], true); %and convert JSON to Legacy
+
     %M0_parms = xASL_adm_LoadParms(x.P.Path_M0_parms_mat, x);
 	
 	% Assigns the shortest minimal positive TE for M0

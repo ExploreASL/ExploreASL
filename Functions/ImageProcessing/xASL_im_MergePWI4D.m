@@ -7,8 +7,8 @@ function [path_PWI4D, path_PWI4D_Pop] = xASL_im_MergePWI4D(x)
 %   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
 %
 % OUTPUT: 
-%   path_PWI4D          - Path to the new merged file
-%   path_PWI4D_Pop      - Path to the new merged file in the Population directory
+%   path_PWI4D          - Path to the new merged NIfTI file
+%   path_PWI4D_Pop      - Path to the new merged NIfTI file in the Population directory
 % OUTPUT FILES: 
 %   NIfTI files (see paths above) containing the merged sessions.
 %
@@ -41,7 +41,7 @@ for iSpace = 1:2
 
 		% Load NII and JSON
 		if xASL_exist(pathCurrentPWI4D, 'file')
-			[imPWI4Dcurrent, jsonPWI4Dcurrent] = xASL_io_Nifti2Im(pathCurrentPWI4D); % Don't even bother converting to Legacy before merging
+			[imPWI4Dcurrent, jsonPWI4Dcurrent] = xASL_io_Nifti2Im(pathCurrentPWI4D, [], [], false); % Don't even bother converting to Legacy before merging
 		else
 			% If one of the sessions are missing, then we issue an error
 			error(['Cannot concatenate sessions for subject ' x.SUBJECT ': session '  x.modules.asl.sessionsToMerge{iSession} ' is missing.']);
@@ -62,7 +62,7 @@ for iSpace = 1:2
 			% For the first session, we take both JSON and NII as they are
 			imPWI4DConcatenated = imPWI4Dcurrent; 
 
-			% Note the we don't convert to Legacy and work with BIDS format directly
+			% Note that we don't convert to Legacy and work with BIDS format directly
 			jsonPWI4DConcatenated = struct();
 			jsonPWI4DConcatenated.EchoTime = jsonPWI4Dcurrent.EchoTime;
 			jsonPWI4DConcatenated.PostLabelingDelay = jsonPWI4Dcurrent.PostLabelingDelay;
@@ -93,8 +93,8 @@ for iSpace = 1:2
 		path_PWI4D_Pop = pathOut;
 	end
 
-	% Save NII with JSON
-	xASL_io_SaveNifti(pathPWI4D{iSpace}, pathOut, imPWI4DConcatenated, [], 0, [], 0, jsonPWI4DConcatenated);
+	% Save NII with JSON - note that JSON is provided in BIDS so doesn't need to be converted from Legacy to BIDS
+	xASL_io_SaveNifti(pathPWI4D{iSpace}, pathOut, imPWI4DConcatenated, [], 0, [], 0, jsonPWI4DConcatenated, false);
 
 end
 fprintf('\n');

@@ -153,9 +153,8 @@ bCreateControl = false;
 if nargin>=3 && ~isempty(PWI4D)
 	if ischar(PWI4D) && xASL_exist(PWI4D, 'file')
 		% Load NII and update the JSON information from it
-		[PWI4D, json] = xASL_io_Nifti2Im(PWI4D);
-		json = xASL_bids_parms2BIDS([], json, 0); % BIDS to Legacy conversion
-
+		[PWI4D, json] = xASL_io_Nifti2Im(PWI4D, [], [], true); % Convert BIDS JSON to Legacy
+		
 		x.Q.EchoTime_PWI4D = json.Q.EchoTime;
 		x.Q.InitialPLD_PWI4D = json.Q.Initial_PLD;
 		x.Q.LabelingDuration_PWI4D = json.Q.LabelingDuration;
@@ -177,9 +176,8 @@ end
 if nargin>=5 && ~isempty(Control4D) % same as above
 	if ischar(Control4D) && xASL_exist(Control4D, 'file')
 		% Load NII and update the JSON information from it
-		[Control4D, json] = xASL_io_Nifti2Im(Control4D);
-		json = xASL_bids_parms2BIDS([], json, 0); % BIDS to Legacy conversion
-
+		[Control4D, json] = xASL_io_Nifti2Im(Control4D, [], [], true);
+		
 		x.Q.EchoTime_Control4D = json.Q.EchoTime;
 		x.Q.InitialPLD_Control4D = json.Q.Initial_PLD;
 		x.Q.LabelingDuration_Control4D = json.Q.LabelingDuration;
@@ -211,9 +209,8 @@ end
 if nargin>=4 && ~isempty(PWI3D)
 	if ischar(PWI3D) && xASL_exist(PWI3D, 'file')
 		% Load NII and update the JSON information from it
-		[PWI3D, json] = xASL_io_Nifti2Im(PWI3D);
-		json = xASL_bids_parms2BIDS([], json, 0); % BIDS to Legacy conversion
-
+		[PWI3D, json] = xASL_io_Nifti2Im(PWI3D, [], [], true);
+		
 		x.Q.EchoTime_PWI3D = json.Q.EchoTime;
 		x.Q.InitialPLD_PWI3D = json.Q.Initial_PLD;
 		x.Q.LabelingDuration_PWI3D = json.Q.LabelingDuration;
@@ -235,9 +232,8 @@ end
 if nargin>=6 && ~isempty(Control3D)
 	if ischar(Control3D) && xASL_exist(Control3D, 'file')
 		% Load NII and update the JSON information from it
-		[Control3D, json] = xASL_io_Nifti2Im(Control3D);
-		json = xASL_bids_parms2BIDS([], json, 0); % BIDS to Legacy conversion
-
+		[Control3D, json] = xASL_io_Nifti2Im(Control3D, [], [], true);
+		
 		x.Q.EchoTime_Control3D = json.Q.EchoTime;
 		x.Q.InitialPLD_Control3D = json.Q.Initial_PLD;
 		x.Q.LabelingDuration_Control3D = json.Q.LabelingDuration;
