@@ -53,15 +53,6 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	if ~isfield(x.modules.asl, 'bCleanUpBASIL') || isempty(x.modules.asl.bCleanUpBASIL)
 		x.modules.asl.bCleanUpBASIL = true;
 	end
-
-	% Define if BASIL or FABBER is used - multiTE needs FABBER 
-	if isfield(x.modules.asl, 'bQuantifyMultiTE') && x.modules.asl.bQuantifyMultiTE
-		bUseFabber = 1;
-        FSLfunctionName = 'fabber_asl';
-	else
-		bUseFabber = 0;
-        FSLfunctionName = 'basil';
-	end
     
     %% 1. Define temporary paths for FSL
 	% Create FSL output directory
@@ -102,8 +93,23 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 
     xASL_io_SaveNifti(path_PWI4D, pathFSLInput, PWI4D);
 
+	if length(unique(PWI4D_json.Q.EchoTime)) > 1
+		bQuantifyMultiTE = true;
+	else
+		bQuantifyMultiTE = false;
+	end
+
     %% 4. Create option_file that contains options which are passed to the FSL command
     % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
+	% Define if BASIL or FABBER is used - multiTE needs FABBER 
+	if (isfield(x.modules.asl, 'bQuantifyMultiTE') && x.modules.asl.bQuantifyMultiTE) || bQuantifyMultiTE
+		bUseFabber = 1;
+        FSLfunctionName = 'fabber_asl';
+	else
+		bUseFabber = 0;
+        FSLfunctionName = 'basil';
+	end
+
 	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI4D_json, pathFSLInput, pathFSLOutput);
 
     %% 5. Run BASIL and retrieve CBF output
@@ -221,10 +227,7 @@ else
 end
 
 if length(unique(jsonPWI4D.Q.EchoTime)) > 1
-	bQuantifyMultiTE = true;
 	bUseFabber = 1;
-else
-	bQuantifyMultiTE = false;
 end
 
 if ~bUseFabber
