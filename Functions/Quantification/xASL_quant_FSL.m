@@ -173,16 +173,16 @@ end
 function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, sizePWI4D, jsonPWI4D, pathFSLInput, pathFSLOutput)
 %xASL_sub_FSLOptions generates the options and saves them in a file and returns some commandline options as well
 %
-% FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput [, bMergingSessions])
+% FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, sizePWI4D, jsonPWI4D, pathFSLInput, pathFSLOutput)
 % 
 % INPUT:
 %   pathFSLOptions  - filepath to the options file (REQUIRED)
 %   x               - struct containing pipeline environment parameters (REQUIRED)
 %   bUseFabber      - Use FABBER, alternative BASIL (REQUIRED)
+%   sizePWI4D       - size of the PWI4D matrix (REQUIRED)
+%   jsonPWI4D       - JSON in Legacy of the PWI4D containing LD, PLD, JSON (REQUIRED)
 %   pathFSLInput    - Path to the data input file (REQUIRED)
 %   pathFSLOutput   - Path to the output directory (REQUIRED)
-%% #1543 TEMPORARY SOLUTION, MERGING GOES OUT OF XASL_QUANT_FSL
-%   bMergingSessions - Merge FSLOptions.txt (DEBBIE - only 1 for the last session of MergingLists) (OPTIONAL, DEFAULT 0)
 %
 % OUTPUT:
 % FSLOptions      - command-line options
@@ -193,29 +193,33 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, sizeP
 % 0. Admin
 % 1. Create the options file
 % 2. Basic model and tissue parameters
+% 3. Basic acquisition parameters
+% 4. Model fiting parameters
 % 5. Extra BASIL fitting options
 % 6. Save and close the options file
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput)
+% EXAMPLE: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, sizePWI4D, jsonPWI4D, pathFSLInput, pathFSLOutput)
 %
 % __________________________________
 % Copyright 2015-2024 ExploreASL 
 
 %% 0. Admin
+if nargin<7 
+	error('Require 7 input parameters.');
+end
+
 % Set BASIL dataPar options and their defaults
 if ~isfield(x.modules.asl,'bMaskingBASIL') || isempty(x.modules.asl.bMaskingBASIL)
 		fprintf('BASIL: Setting default option bMasking = true\n');
 		x.modules.asl.bMaskingBASIL = true;
 end
 
-%% #1543 TEMPORARY SOLUTION, MERGING GOES OUT OF XASL_QUANT_FSL
-if nargin<7 || isempty(bMergingSessions)
-	bMergingSessions = 0;
-end
-
-%% #1543 TEMPORARY SOLUTION, MERGING GOES OUT OF XASL_QUANT_FSL
-if bMergingSessions
-    bUseFabber = 1;
+% Set basic parameters newly as they might differ in case of a merged sequence
+%bQuantifyMultiPLD = x.modules.asl.bQuantifyMultiPLD;
+if length(unique(jsonPWI4D.Q.Initial_PLD))>1 && length(unique(jsonPWI4D.Q.LabelingDuration))>1
+	bQuantifyMultiPLD = true;
+else
+	bQuantifyMultiPLD = false;
 end
 
 if ~bUseFabber
@@ -342,7 +346,7 @@ switch lower(x.Q.LabelingType)
 		TIs = (unique(x.Q.Initial_PLD, 'stable'))'/1000;
 
 		% Print all the TIs
-		if x.modules.asl.bQuantifyMultiPLD	
+		if bQuantifyMultiPLD	
 			% For Time-encoded, we skip the first volume
 			if x.modules.asl.bTimeEncoded
 				numberBlocks = numel(TIs)/x.Q.TimeEncodedMatrixSize;
@@ -490,7 +494,7 @@ switch lower(x.Q.LabelingType)
 			fprintf('BASIL: (P)CASL model\n');
 
 			% For BASIL, PLDs are specified
-			if x.modules.asl.bQuantifyMultiPLD
+			if bQuantifyMultiPLD
 				for iPLD = 1:length(PLDs)
 					fprintf(FIDoptionFile, '--pld%d=%.2f\n', iPLD, PLDs(iPLD));
 				end
@@ -500,7 +504,7 @@ switch lower(x.Q.LabelingType)
 		end
 
 		% Print labeling durations
-		if x.modules.asl.bQuantifyMultiPLD
+		if bQuantifyMultiPLD
 			for iLabDurs = 1:length(LabDurs)
 				fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
 			end
@@ -541,7 +545,7 @@ if ~bUseFabber
 			fprintf(FIDoptionFile, '--bat=1.3\n');
 	end
 
-	if x.modules.asl.bQuantifyMultiPLD
+	if bQuantifyMultiPLD
 		% Multi-PLD or Time Encoded data allows to fit arrival times
 		fprintf(FIDoptionFile, '--batsd=%f\n', x.modules.asl.ATTSDBASIL);
 	end
@@ -556,14 +560,14 @@ if ~bUseFabber
 	end
 
 	if x.modules.asl.bInferT1BASIL
-		if x.modules.asl.bQuantifyMultiPLD
+		if bQuantifyMultiPLD
 			fprintf('BASIL: Infer variable T1 values\n');
 			FSLOptions = [FSLOptions ' --infert1'];
 		end
 	end
 
 	if x.modules.asl.bInferArtBASIL
-		if x.modules.asl.bQuantifyMultiPLD
+		if bQuantifyMultiPLD
 			fprintf('BASIL: Infer arterial BV and arrival time\n');
 			FSLOptions = [FSLOptions ' --inferart'];
 		end
@@ -586,7 +590,7 @@ if ~bUseFabber
 			warning(['BASIL Exchange model: ' x.modules.asl.ExchBASIL ' not recognized.'])
 	end
 
-	if x.modules.asl.bQuantifyMultiPLD
+	if bQuantifyMultiPLD
 		switch (x.modules.asl.DispBASIL)
 			case 'none'
 				fprintf('BASIL Dispersion model: none\n');
