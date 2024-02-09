@@ -163,30 +163,6 @@ else
     PWI4D = []; % dummy output
 end
 
-% We skip the computation of Control4D if it is provided
-if nargin>=5 && ~isempty(Control4D) % same as above
-    if ~isnumeric(Control4D)
-        error('Illegal Control4D, it should be numerical');
-    elseif ndims(Control4D)>4 || ndims(Control4D)<3
-        error('Control4D has an incorrect number of dimensions');
-	else
-        bCreateControl4D = false; % All is correct and we don't have to compute Control4D
-        bCreateControl3D = true; % if Control4D is provided, we compute Control3D
-    end
-else
-    Control4D = []; % dummy output  
-end
-
-% If PWI4D is provided but Control4D is not, we only want to compute PWI3D and PWI
-if bCreatePWI3D && ~bCreateControl3D
-    bCreateControl4D = false; % If only PWI4D is provided, we only want to compute PWI3D and PWI
-end
-% Same vice versa
-if bCreateControl3D && ~bCreatePWI3D
-    bCreatePWI4D = false; % If only Control4D is provided, we only want to compute Control3D and Control
-end
-
-
 % We skip the computation of PWI3D if it is provided
 if nargin>=4 && ~isempty(PWI3D)
     if ~isnumeric(PWI3D)
@@ -201,6 +177,20 @@ else
     PWI3D = []; % dummy output
 end
 
+% We skip the computation of Control4D if it is provided
+if nargin>=5 && ~isempty(Control4D) % same as above
+    if ~isnumeric(Control4D)
+        error('Illegal Control4D, it should be numerical');
+    elseif ndims(Control4D)>4 || ndims(Control4D)<3
+        error('Control4D has an incorrect number of dimensions');
+	else
+        bCreateControl4D = false; % All is correct and we don't have to compute Control4D
+        bCreateControl3D = true; % if Control4D is provided, we compute Control3D
+    end
+else
+    Control4D = []; % dummy output  
+end
+
 % We skip the computation of Control3D if it is provided
 if nargin>=6 && ~isempty(Control3D)
     if ~isnumeric(Control3D)
@@ -213,6 +203,15 @@ if nargin>=6 && ~isempty(Control3D)
     end
 else
     Control3D = []; % dummy output
+end
+
+% If PWI4D is provided but Control4D is not, we only want to compute PWI3D and PWI
+if bCreatePWI3D && ~bCreateControl3D
+    bCreateControl4D = false; % If only PWI4D is provided, we only want to compute PWI3D and PWI
+end
+% Same vice versa
+if bCreateControl3D && ~bCreatePWI3D
+    bCreatePWI4D = false; % If only Control4D is provided, we only want to compute Control3D and Control
 end
 
 PWI = []; % dummy output
