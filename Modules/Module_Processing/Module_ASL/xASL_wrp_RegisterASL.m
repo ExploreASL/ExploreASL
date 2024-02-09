@@ -314,20 +314,9 @@ else
 end
 
 %% H. Here we create a temporary dummy ASL image of which the image contrast is curated, for registration only
-[PWI, ~, ~, xSubtracted, Control] = xASL_im_ASLSubtractionAveraging(x, x.P.Path_despiked_ASL4D);
-jsonFields.Initial_PLD = xSubtracted.Q.InitialPLD_PWI;
-jsonFields.LabelingDuration = xSubtracted.Q.LabelingDuration_PWI;
-jsonFields.EchoTime = xSubtracted.Q.EchoTime_PWI;
-xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_PWI_Clipped, PWI, 16, false, [], 0, jsonFields, true);
-
-if isempty(Control)
-    fprintf('%s\n', 'mean_control.nii not created as there is only a single volume, no timeseries');
-else
-	jsonFields.Initial_PLD = xSubtracted.Q.InitialPLD_Control;
-	jsonFields.LabelingDuration = xSubtracted.Q.LabelingDuration_Control;
-	jsonFields.EchoTime = xSubtracted.Q.EchoTime_Control;
-    xASL_io_SaveNifti(x.P.Path_despiked_ASL4D, x.P.Path_mean_control, Control, 16, false, [], 0, jsonFields, true);
-end
+saveWhichNifti{1,1} = 1; saveWhichNifti{1,2} = x.P.Path_mean_PWI_Clipped;
+saveWhichNifti{1,1} = 4; saveWhichNifti{1,2} = x.P.Path_mean_control;
+xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, 0, [], x.P.Path_despiked_ASL4D);
 
 if bRegistrationCBF
     % This clipped_ORI is not used in the rest of the pipeline

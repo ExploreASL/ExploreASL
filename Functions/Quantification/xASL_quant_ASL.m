@@ -105,10 +105,17 @@ end
 PWI4D = double(PWI4D);
 M0_im = double(M0_im);
 
+% Create path to PWI3D based on the PWI4D path (Because PWI4D_Path can be a path to a merged NII)
+PWI3D_Path = PWI4D_Path;
+indexString = regexp(PWI4D_Path,'PWI4D');
+indexString = indexString(end); % Take the last occurence
+PWI3D_Path(indexString+3) = '3'; % Replace PWI4D by PWI3D
+
 if ~x.modules.asl.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 	% In case we don't run quantification, we still need to average the PWI image
-	PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D_Path);
+	xASL_io_ASLSubtractionAveraging(x, {2, PWI3D_Path}, 0, [], PWI4D_Path);
+	PWI = xASL_io_Nifti2Im(PWI3D_Path);
 else
     
     % If we have multiple PLDs but requested a single PLD quantification, we use the highest PLD
@@ -200,7 +207,8 @@ else
             % In this case, we want to save a quantified version of PWI4D
 		else
 			% We need to update the information in x to match the current PWI4D
-            PWI = xASL_im_ASLSubtractionAveraging(x, [], PWI4D_Path);
+            xASL_io_ASLSubtractionAveraging(x, {2, PWI3D_Path}, 0, [], PWI4D_Path);
+			PWI = xASL_io_Nifti2Im(PWI3D_Path);
 		end
 
         %% 3    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
