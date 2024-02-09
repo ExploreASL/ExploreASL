@@ -307,8 +307,8 @@ if bSaveJson
         json = struct;
 	end
 
-	% b. Second, we convert provided JSON fields to BIDS if necessary
-	if bLegacy2BIDS && ~isempty(JsonFields) && length(fieldnames(JsonFields))
+	% b. Second, we convert provided JSON fields to BIDS if requested
+	if bLegacy2BIDS && ~isempty(JsonFields) && ~isempty(fieldnames(JsonFields))
 		JsonFields = xASL_bids_parms2BIDS(JsonFields, [], 1);
 	end
 
