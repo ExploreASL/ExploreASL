@@ -433,7 +433,17 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 11.  Create standard space masked image to visualize masking effect
-if xASL_exist(x.P.Pop_Path_qCBF, 'file') && (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.modules.asl.bUseBasilQuantification) && ~bSaveCBF4D
+if (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.modules.asl.bUseBasilQuantification) && ~bSaveCBF4D
+    % we do the masking only for the standard space image, for visualization
+    % so here we check:
+    % 1. strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) -> if the created output CBF is the standard space NIfTI
+    % 2. || x.modules.asl.bUseBasilQuantification -> for BASIL, the standard space qCBF is a copy of the here created native space CBF NIfTI
+    % 3. ~bSaveCBF4D -> we create the masked image only for the single volume CBF
+
+    if ~xASL_exist(x.P.Pop_Path_qCBF, 'file')
+        error(['Somehow, saving went wrong for : ' x.P.Pop_Path_qCBF]);
+    end
+
     % Load CBF image
     MaskedCBF = xASL_io_Nifti2Im(x.P.Pop_Path_qCBF);
     % Mask vascular voxels (i.e. set them to NaN)
@@ -450,5 +460,5 @@ if xASL_exist(x.P.Pop_Path_qCBF, 'file') && (strcmp(pathOutputCBF, x.P.Pop_Path_
     end
 end
 
-end
 
+end
