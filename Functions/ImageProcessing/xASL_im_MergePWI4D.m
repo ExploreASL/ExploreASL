@@ -27,7 +27,7 @@ if nargin<1 || isempty(x)
 	error('Empty input parameters');
 end
 
-fprintf('Concatenating PWI4D for subject ' x.SUBJECT ' for sessions: ');
+fprintf(['Concatenating PWI4D for subject ' x.SUBJECT ' for sessions: ']);
 % Do this for native and standard space
 pathPWI4D = {x.P.Path_PWI4D x.P.Pop_Path_PWI4D};
 
