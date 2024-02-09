@@ -67,11 +67,10 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	% Create FSL output directory
     dirFSLOutput = 'FSL_Output';
 	pathFSLOutput = fullfile(x.dir.SESSIONDIR, dirFSLOutput);
-	xASL_adm_CreateDir(pathFSLOutput)
-
+	
     % For input, output, and options
-    pathFSLInput = fullfile(pathFSLOutput, 'PWI4D_FSLInput.nii');
-    pathFSLOptions = fullfile(pathFSLOutput, 'FSL_ModelOptions.txt');
+    pathFSLInput = fullfile(x.dir.SESSIONDIR, 'PWI4D_FSLInput.nii');
+    pathFSLOptions = fullfile(x.dir.SESSIONDIR, 'FSL_ModelOptions.txt');
 
     %% 2. Delete previous output
     xASL_adm_DeleteFileList(x.dir.SESSIONDIR, ['(?i)^' dirFSLOutput '.*$'], 1, [0 Inf]);
@@ -82,14 +81,14 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     fprintf('%s\n', 'Note that any file not found warnings can be ignored, this pertains to the use of symbolic links by BASIL/FABBER');
     
     % Remove residual BASIL-related files
-    %xASL_delete(pathFSLOptions); % These files are now deleted as part of the FSLOutput directory
-    %xASL_delete(pathFSLInput);
+    xASL_delete(pathFSLOptions);
+    xASL_delete(pathFSLInput);
 	xASL_delete(pathFSLOutput, 1);
     
     %% 3. Write the PWI4D as Nifti file for BASIL/FABBER to read as input
     [PWI4D, PWI4D_json] = xASL_io_Nifti2Im(path_PWI4D, [], [], true);
-	PWI4D_size = size(PWI4D);
-    
+	    
+	PWI4D_nii = xASL_io_ReadNifti(path_PWI4D);
     % First, we extrapolate values to fill NaNs with a small kernel only, inside the brainmask
     % We don't have a brainmask here yet, so now we just run this small kernel once
     voxelSize = PWI4D_nii.hdr.pixdim(2:4);
@@ -105,7 +104,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 
     %% 4. Create option_file that contains options which are passed to the FSL command
     % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
-	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI4D_size, PWI4D_json, pathFSLInput, pathFSLOutput);
+	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI4D_json, pathFSLInput, pathFSLOutput);
 
     %% 5. Run BASIL and retrieve CBF output
     [~, resultFSL] = xASL_fsl_RunFSL([FSLfunctionName ' ' FSLOptions], x);
@@ -163,23 +162,22 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     % a symbolic link (symlink) to the foldername of the latest iteration/step ('stepX_latest').
 	
 	if x.modules.asl.bCleanUpBASIL
-		%xASL_delete(pathFSLInput); % These files are now part of FSLOutput DIR, so are deleted with the rest of the dir
-		%xASL_delete(pathFSLOptions);
+		xASL_delete(pathFSLInput);
+		xASL_delete(pathFSLOptions);
 		xASL_delete(pathFSLOutput, 1);
 	end
     
 end
 
-function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, sizePWI4D, jsonPWI4D, pathFSLInput, pathFSLOutput)
+function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, jsonPWI4D, pathFSLInput, pathFSLOutput)
 %xASL_sub_FSLOptions generates the options and saves them in a file and returns some commandline options as well
 %
-% FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, sizePWI4D, jsonPWI4D, pathFSLInput, pathFSLOutput)
+% FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, jsonPWI4D, pathFSLInput, pathFSLOutput)
 % 
 % INPUT:
 %   pathFSLOptions  - filepath to the options file (REQUIRED)
 %   x               - struct containing pipeline environment parameters (REQUIRED)
 %   bUseFabber      - Use FABBER, alternative BASIL (REQUIRED)
-%   sizePWI4D       - size of the PWI4D matrix (REQUIRED)
 %   jsonPWI4D       - JSON in Legacy of the PWI4D containing LD, PLD, JSON (REQUIRED)
 %   pathFSLInput    - Path to the data input file (REQUIRED)
 %   pathFSLOutput   - Path to the output directory (REQUIRED)
@@ -198,14 +196,14 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, sizeP
 % 5. Extra BASIL fitting options
 % 6. Save and close the options file
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, sizePWI4D, jsonPWI4D, pathFSLInput, pathFSLOutput)
+% EXAMPLE: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, jsonPWI4D, pathFSLInput, pathFSLOutput)
 %
 % __________________________________
 % Copyright 2015-2024 ExploreASL 
 
 %% 0. Admin
-if nargin<7 
-	error('Require 7 input parameters.');
+if nargin<6 
+	error('Require 6 input parameters.');
 end
 
 % Set BASIL dataPar options and their defaults
@@ -216,10 +214,17 @@ end
 
 % Set basic parameters newly as they might differ in case of a merged sequence
 %bQuantifyMultiPLD = x.modules.asl.bQuantifyMultiPLD;
-if length(unique(jsonPWI4D.Q.Initial_PLD))>1 && length(unique(jsonPWI4D.Q.LabelingDuration))>1
+if length(unique(jsonPWI4D.Q.Initial_PLD))>1 || length(unique(jsonPWI4D.Q.LabelingDuration))>1
 	bQuantifyMultiPLD = true;
 else
 	bQuantifyMultiPLD = false;
+end
+
+if length(unique(jsonPWI4D.Q.EchoTime)) > 1
+	bQuantifyMultiTE = true;
+	bUseFabber = 1;
+else
+	bQuantifyMultiTE = false;
 end
 
 if ~bUseFabber
@@ -359,7 +364,7 @@ switch lower(x.Q.LabelingType)
 			if length(unique(jsonPWI4D.Q.LabelingDuration))>1
 				warning('PASL multi-PLD currently supports only a single Labeling Duration');
 			end
-			fprintf(FIDoptionFile, '--tau=%.2f\n', x.Q.LabelingDuration(1)/1000);
+			fprintf(FIDoptionFile, '--tau=%.2f\n', jsonPWI4D.Q.LabelingDuration(1)/1000);
 		else
 			% Bolus duration not know. If multi-TI, then try to infer it
 			if length(TIs) > 1
@@ -367,98 +372,57 @@ switch lower(x.Q.LabelingType)
 				fprintf('BASIL: Infer bolus duration component\n')
 			end
 		end
-vvvvvvvvvvvvvvvvvvv
+
 	% CASL and PCASL quantification
 	case {'casl','pcasl'}
 		% Prepare unique PLDs+LabDur combinations
 		
 		% First create a labeling duration vector of the same length
-		if length(x.Q.LabelingDuration)>1
-			LabDurs = x.Q.LabelingDuration/1000;
-		else
-			LabDurs = ones(size(x.Q.Initial_PLD))*x.Q.LabelingDuration/1000;
-		end
+		LabDurs = jsonPWI4D.Q.LabelingDuration/1000;
+		PLDs = jsonPWI4D.Q.Initial_PLD/1000;
+		% Normal multi-timepoint without multi-TE
+		TEs = [];
+		nTE = [];
 
-		PLDs = x.Q.Initial_PLD/1000;
+		% For FABBER and multi-TE, we have to group TEs
+		if bUseFabber
+			% Convert Echo Times to seconds and keep 4 decimal digits
+			% TEs are kept fully with the same number as volumes
+			TEs = round(jsonPWI4D.Q.EchoTime'/1000,3); 
 
-        %% #1543 TEMPORARY SOLUTION, MERGING GOES OUT & to xASL_im_MergePWI4D
+			% We go through the LabDurs, PLDs, and TEs and keep grouping similar LD+PLD with increasing TE into groups
+			LabDursGrouped = [];
+			PLDsGrouped = [];
+			nTEGrouped = [];
+			iTE = 1;
+			
+			while iTE<=length(TEs)
+				% We define a block
+				iTEstart = iTE;
+				iTEend   = iTE;
 
-		% For Time-encoded, we skip the first volume per block
-		if x.modules.asl.bTimeEncoded
-			% In case we are merging sessions, we have to read all JSONs again from files
-			if bMergingSessions
-				PLDs = [];
-				LabDurs = [];
-				nTE = [];
-				TEs = [];
-				for iSession = 1: numel(x.modules.asl.sessionsToMerge)
-					sessionsToMergeJSONdir = fullfile(x.dir.SUBJECTDIR, x.modules.asl.sessionsToMerge{iSession}, 'ASL4D.json');
-
-					sessionsToMergeJSON = xASL_io_ReadJson(sessionsToMergeJSONdir);
-					NewPLDs = sessionsToMergeJSON.PostLabelingDelay;
-					NewLabDurs = sessionsToMergeJSON.LabelingDuration;
-
-					NewEchoTimes = unique(sessionsToMergeJSON.EchoTime);
-					if length(NewEchoTimes) < length(NewPLDs)
-						NewEchoTimes = repmat(NewEchoTimes, [length(NewPLDs)/length(NewEchoTimes), 1]);
-					end
-
-					% For Time-encoded, we skip the first volume per block -> the same as above
-					if x.modules.asl.bTimeEncoded
-						NewTimeEncodedMatrixSize = sessionsToMergeJSON.TimeEncodedMatrixSize;
-						[NewPLDs, ~] = unique(NewPLDs, 'stable');
-
-						numberBlocks = numel(NewPLDs)/NewTimeEncodedMatrixSize;
-						index = (ones(numberBlocks,1)*(2:NewTimeEncodedMatrixSize) + (0:(numberBlocks-1))' * NewTimeEncodedMatrixSize * ones(1,NewTimeEncodedMatrixSize-1))';
-						NewPLDs = NewPLDs(index(:));
-						NewEchoTimes = NewEchoTimes((numberBlocks*length(unique(NewEchoTimes))+1):end);
-					else
-						% For normal multi-timepoint, we look for unique PLD+LabDur combinations
-						[~, indexNew, ~] = unique([NewPLDs(:), NewLabDurs(:)], 'stable', 'rows');
-
-						NewPLDs = NewPLDs(indexNew);
-					end
-					if length(NewLabDurs)==1
-						NewLabDurs = ones(size(NewPLDs))*NewLabDurs;
-					end
-					NewNTE = ones(size(NewPLDs))*length(unique(NewEchoTimes));
-
-					PLDs = [PLDs; NewPLDs];
-					LabDurs = [LabDurs; NewLabDurs];
-					nTE = [nTE; NewNTE];
-					TEs = [TEs; NewEchoTimes];
+				% We enlarge the block if PLD and LD are similar, but TE increasing
+				while (iTEend+1 <= length(TEs)) &&... % There are more values
+						(LabDurs(iTEend+1)==LabDurs(iTEstart)) && (PLDs(iTEend+1)==PLDs(iTEstart)) &&... % The further PLDs and LD are matching the block
+						(TEs(iTEend+1)>TEs(iTEend)) % And TE increases
+					% If all fulfilled, then we increase the block
+					iTEend = iTEend+1;
 				end
-			else
-				[PLDs, index] = unique(PLDs, 'stable');
-				LabDurs = LabDurs(index)';
-
-				numberBlocks = numel(PLDs)/x.Q.TimeEncodedMatrixSize;
-				index = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
-				PLDs = PLDs(index(:));
-				LabDurs = LabDurs(index(:));
+				% We add the block to the grouped vector
+				LabDursGrouped = [LabDursGrouped, LabDurs(iTEstart)];
+				PLDsGrouped = [PLDsGrouped, PLDs(iTEstart)];
+				nTEGrouped = [nTEGrouped, iTEend-iTEstart+1];
+				iTE = iTEend+1;
 			end
-		else
-			% For normal multi-timepoint, we look for unique PLD+LabDur combinations
-			[~, indexNew, ~] = unique([PLDs(:), LabDurs(:)], 'stable', 'rows');
 
-			PLDs = PLDs(indexNew);
-			LabDurs = LabDurs(indexNew);
+			LabDurs = LabDursGrouped;
+			PLDs = PLDsGrouped;
+			nTE = nTEGrouped;
 		end
 
 		if bUseFabber
-			%Echo Times 
-			nPLD = length(PLDs); % Number of PLDs in the PLD vector
-			nVolume = size(PWI,4); % Number of volumes in PWI
-
-			nTE = length(unique(x.Q.EchoTime)); % Calculate the number of Echo Times
-			TEs = round(x.Q.EchoTime'/1000,3); % Convert Echo Times to seconds and keep 4 decimal digits
-			
-			if (nPLD*nTE) ~= nVolume
-				error('The number of volumes %d does not match number of PLDs %d * number of TEs %d', nVolume, nPLD, nTE);
-			end
-			nTE = ones(size(PLDs))*nTE;
-
 			% Printing the values in the FSL option file (PLD=ti, LD=tau)
+			% If we have for a give PLD more TEs, then we print once the PLD, once nTE for each collection of multi-TE volumes
 			for iPLD = 1:length(PLDs)
 				fprintf(FIDoptionFile, '--ti%d=%.2f\n', iPLD, PLDs(iPLD) + LabDurs(iPLD));
 			end
@@ -468,17 +432,17 @@ vvvvvvvvvvvvvvvvvvv
 
 			if length(nTE) == 1 && nTE == 1
 				% For a single-TE, we have to repeat it for each volume
-				for iTE = 1:nVolume %We need a TE for each volume
+				for iTE = 1:length(TEs) %So for each volume, we print a TE value
 					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE, TEs(1));
 				end
 			else
 				% For multi-TE, we print all of them
-				for iTE = 1:nVolume %We need a TE for each volume
+				for iTE = 1:length(TEs) %So for each volume, we print a TE value
 					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE, TEs(iTE));
 				end
 			end
 
-			% Right now, we assume that we have averaged over PLDs
+			% Future extension - specify the repetitions explicitly
 			%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
 			%fprintf(FIDoptionFile, '--repeats=1\n');
 		else
@@ -492,7 +456,7 @@ vvvvvvvvvvvvvvvvvvv
 					fprintf(FIDoptionFile, '--pld%d=%.2f\n', iPLD, PLDs(iPLD));
 				end
 			else
-				fprintf(FIDoptionFile, '--pld=%.2f\n', PLDs);
+				fprintf(FIDoptionFile, '--pld=%.2f\n', PLDs(1));
 			end
 		end
 
@@ -502,12 +466,12 @@ vvvvvvvvvvvvvvvvvvv
 				fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
 			end
 		else
-			fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs);
+			fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs(1));
 		end
 end
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 if ~bUseFabber
-	% Right now, we assume that we have averaged over PLDs
+	% Act as if we do not have repeats
 	%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
 	fprintf(FIDoptionFile, '--repeats=1\n');
 
