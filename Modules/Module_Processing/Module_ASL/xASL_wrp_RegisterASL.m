@@ -314,8 +314,8 @@ else
 end
 
 %% H. Here we create a temporary dummy ASL image of which the image contrast is curated, for registration only
-saveWhichNifti{1,1} = 1; saveWhichNifti{1,2} = x.P.Path_mean_PWI_Clipped;
-saveWhichNifti{1,1} = 4; saveWhichNifti{1,2} = x.P.Path_mean_control;
+saveWhichNifti = {1, x.P.Path_mean_PWI_Clipped;...
+                  4; x.P.Path_mean_control};
 xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, 0, [], x.P.Path_despiked_ASL4D);
 
 if bRegistrationCBF

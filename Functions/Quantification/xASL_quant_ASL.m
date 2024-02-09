@@ -106,10 +106,12 @@ PWI4D = double(PWI4D);
 M0_im = double(M0_im);
 
 % Create path to PWI3D based on the PWI4D path (Because PWI4D_Path can be a path to a merged NII)
-PWI3D_Path = PWI4D_Path;
-indexString = regexp(PWI4D_Path,'PWI4D');
-indexString = indexString(end); % Take the last occurence
-PWI3D_Path(indexString+3) = '3'; % Replace PWI4D by PWI3D
+[fPath, fFile, fExt] = xASL_fileparts(PWI4D_Path);
+if ~strcmp(fFile(1:5), 'PWI4D')
+	error('Incorrect PWI4D NIfTI path');
+else
+	PWI3D_Path = fullfile(fPath, ['PWI3D' fFile(6:end) fExt]);
+end
 
 if ~x.modules.asl.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
