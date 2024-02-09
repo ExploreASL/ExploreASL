@@ -402,13 +402,6 @@ end
 %% 8    Quantification
 
 %% % Use either original or motion estimated ASL4D
-% #1543 Make sure that despiked is used instead of normal ASL in case it exists - to be solved here rather than inside Quantify
-% Use despiked ASL only if spikes were detected and new file has been created
-% Otherwise, despiked_raw_asl = same as original file
-% if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
-%    x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
-% end
-
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
 % Including PVC
 iState = 8;
