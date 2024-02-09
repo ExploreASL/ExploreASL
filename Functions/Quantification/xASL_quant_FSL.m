@@ -37,12 +37,10 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 %
 % __________________________________
 % Copyright 2015-2024 ExploreASL 
-    
 
     %% 0. Admin
     fprintf('%s\n','Quantification CBF using FSL BASIL/FABBER:');   
 
-    % #1543: I know you won't like this, this is a temporary solution, we need to shift the order of the input parameters in #1543
     if nargin<1 || isempty(path_PWI4D)
         path_PWI4D = x.P.Path_PWI4D;
     end
@@ -52,10 +50,9 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	ATT_map = [];
 	ABV_map = [];
 
-
 	if ~isfield(x.modules.asl, 'bCleanUpBASIL') || isempty(x.modules.asl.bCleanUpBASIL)
 		x.modules.asl.bCleanUpBASIL = true;
-    end
+	end
 
 	% Define if BASIL or FABBER is used - multiTE needs FABBER 
 	if isfield(x.modules.asl, 'bQuantifyMultiTE') && x.modules.asl.bQuantifyMultiTE
@@ -67,15 +64,14 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	end
     
     %% 1. Define temporary paths for FSL
-    %% PM: @ Jan: shouldn't we want these in the FSL subdirectory as well?
-    %  This is created by FSL anyway, so it would be nice and clean to put all temporary files there
-
-    % For input, output, and options
-    pathFSLInput = fullfile(x.dir.SESSIONDIR, 'PWI4D_FSLInput.nii');
-    pathFSLOptions = fullfile(x.dir.SESSIONDIR, 'FSL_ModelOptions.txt');
+	% Create FSL output directory
     dirFSLOutput = 'FSL_Output';
 	pathFSLOutput = fullfile(x.dir.SESSIONDIR, dirFSLOutput);
+	xASL_adm_CreateDir(pathFSLOutput)
 
+    % For input, output, and options
+    pathFSLInput = fullfile(pathFSLOutput, 'PWI4D_FSLInput.nii');
+    pathFSLOptions = fullfile(pathFSLOutput, 'FSL_ModelOptions.txt');
 
     %% 2. Delete previous output
     xASL_adm_DeleteFileList(x.dir.SESSIONDIR, ['(?i)^' dirFSLOutput '.*$'], 1, [0 Inf]);
@@ -86,63 +82,30 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     fprintf('%s\n', 'Note that any file not found warnings can be ignored, this pertains to the use of symbolic links by BASIL/FABBER');
     
     % Remove residual BASIL-related files
-    xASL_delete(pathFSLOptions);
-    xASL_delete(pathFSLInput);
+    %xASL_delete(pathFSLOptions); % These files are now deleted as part of the FSLOutput directory
+    %xASL_delete(pathFSLInput);
 	xASL_delete(pathFSLOutput, 1);
-    %xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
     
-
     %% 3. Write the PWI4D as Nifti file for BASIL/FABBER to read as input
-    PWI4D_nii = xASL_io_ReadNifti(path_PWI4D);
-    PWI4D = PWI4D_nii.dat(:,:,:,:,:,:);
-    
-    % FIXME would be good to have a brain mask at this point -> PM: if this would be a brainmask as well, we can skip creating a dummy input image here
+    [PWI4D, PWI4D_json] = xASL_io_Nifti2Im(path_PWI4D, [], [], true);
+	PWI4D_size = size(PWI4D);
     
     % First, we extrapolate values to fill NaNs with a small kernel only, inside the brainmask
     % We don't have a brainmask here yet, so now we just run this small kernel once
     voxelSize = PWI4D_nii.hdr.pixdim(2:4);
     kernelSize = round([8 8 8]./voxelSize);
-    for i4D = 1:size(PWI4D,4)
+	for i4D = 1:size(PWI4D,4)
         PWI4D(:,:,:,i4D) = xASL_im_ndnanfilter(PWI4D(:,:,:,i4D), 'gauss', double(kernelSize), 2);
-    end
+	end
+
+	% Then, we extrapolate all outside the brain mask to ensure that there are no NaNs left
+	PWI4D = xASL_im_FillNaNs(PWI4D, 1, 1, voxelSize);
+
     xASL_io_SaveNifti(path_PWI4D, pathFSLInput, PWI4D);
-
-    % Then, we extrapolate all outside the brain mask to ensure that there are no NaNs left
-
-    PWI4D = xASL_im_FillNaNs(pathFSLInput, 1, 1, voxelSize);
-
-
-    % In the future, we may want to have less ugly masking with BASIL/FABBER
-
-	% Here, we don't mask implicitly, but we will provide an explicit mask to BASIL/FABBER.
-	% This mask can be used: x.P.Path_BrainMaskProcessing
-	% This is a relatively conservative mask that is created by xASL_wrp_CreateIndividualMask for image processing (pGM+pWM+pCSF).*FoV mask
-    %
-	% BrainMask = xASL_io_Nifti2Im(x.P.Path_BrainMaskProcessing); % load the brain mask used for processing
-    % PWI(BrainMask==0) = 0; % set voxels outside the mask to zero
-    
-    
-    % For both single- and multi-PLD we use the PWI4D
-    xASL_io_SaveNifti(x.P.Path_PWI4D, pathFSLInput, PWI4D, [], 0); % use PWI4D path
-
 
     %% 4. Create option_file that contains options which are passed to the FSL command
     % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
-    % FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput); %% #1543 PUT THIS BACK
-    
-    %% #1543 REMOVE THIS BECAUSE MERGING & FABBER ARE INDEPENDENT
-	%% #1543 THE NEW SEPARATE FUNCTION xASL_im_MergePWI4D will have as input:
-	%% PWI4D.nii
-	%% PWI4D.json
-	%% SessionMergingList
-	%% (not x if we don't need it)
-	if x.modules.asl.bMergingSessions == 1
-		bUseFabber = 1;
-	end
-
-    %% #1543 TEMPORARY SOLUTION
-	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI4D, pathFSLInput, pathFSLOutput, x.modules.asl.bMergingSessions);
-        
+	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI4D_size, PWI4D_json, pathFSLInput, pathFSLOutput);
 
     %% 5. Run BASIL and retrieve CBF output
     [~, resultFSL] = xASL_fsl_RunFSL([FSLfunctionName ' ' FSLOptions], x);
@@ -156,7 +119,6 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     
     fprintf('%s\n', 'The following warning (if mentioned above) can be ignored:');
     fprintf('%s\n', '/.../fsl/bin/basil: line 124: imcp: command not found');
-    
 
     % CBF/nocalib, mean fit (->> is this what "ftiss" means?)
     pathBasilCBF = xASL_adm_GetFileList(pathFSLOutput, '^mean_ftiss\.nii$', 'FPListRec');
@@ -186,7 +148,6 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 		Tex_map = xASL_io_Nifti2Im(pathFabberTex{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
 	
-
     %% 6. Scaling to physiological units
     % Note different to xASL_quant_ASL since Fabber has T1 in seconds
     % and does not take into account labeling efficiency
@@ -197,21 +158,19 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 
 	ABV_map = ABV_map ./ x.Q.LabelingEfficiency;
     
-    
     %% 7. Householding
 	% Basils Output is in the subfolder '/FSL_Output' which contains multiple steps if there are multiple iterations, and always contains
     % a symbolic link (symlink) to the foldername of the latest iteration/step ('stepX_latest').
 	
 	if x.modules.asl.bCleanUpBASIL
-		xASL_delete(pathFSLInput);
-		xASL_delete(pathFSLOptions);
+		%xASL_delete(pathFSLInput); % These files are now part of FSLOutput DIR, so are deleted with the rest of the dir
+		%xASL_delete(pathFSLOptions);
 		xASL_delete(pathFSLOutput, 1);
-		%xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '(?i)^.*basil.*$', 1, [0 Inf]);
 	end
     
 end
 
-function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput, bMergingSessions)
+function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, sizePWI4D, jsonPWI4D, pathFSLInput, pathFSLOutput)
 %xASL_sub_FSLOptions generates the options and saves them in a file and returns some commandline options as well
 %
 % FORMAT: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI, pathFSLInput, pathFSLOutput [, bMergingSessions])
