@@ -75,7 +75,7 @@ for iSpace = 1:2
 			end
 		end
 
-		if isfield(jsonPWI4DConcatenated, 'EchoTime')
+		if isfield(jsonPWI4Dcurrent, 'EchoTime')
 			if iSession == 1
 				jsonPWI4DConcatenated.EchoTime = jsonPWI4Dcurrent.EchoTime;
 			else
@@ -85,7 +85,7 @@ for iSpace = 1:2
 			warning(['Missing EchoTime for session ' x.modules.asl.sessionsToMerge{iSession}]);
 		end
 
-		if isfield(jsonPWI4DConcatenated, 'PostLabelingDelay')
+		if isfield(jsonPWI4Dcurrent, 'PostLabelingDelay')
 			if iSession == 1
 				jsonPWI4DConcatenated.PostLabelingDelay = jsonPWI4Dcurrent.PostLabelingDelay;
 			else
@@ -95,7 +95,7 @@ for iSpace = 1:2
 			warning(['Missing PostLabelingDelay for session ' x.modules.asl.sessionsToMerge{iSession}]);
 		end
 
-		if isfield(jsonPWI4DConcatenated, 'LabelingDuration')
+		if isfield(jsonPWI4Dcurrent, 'LabelingDuration')
 			if iSession == 1
 				jsonPWI4DConcatenated.LabelingDuration = jsonPWI4Dcurrent.LabelingDuration;
 			else
