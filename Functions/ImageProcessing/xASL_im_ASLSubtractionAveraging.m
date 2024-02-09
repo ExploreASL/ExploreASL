@@ -15,17 +15,17 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 %   x.Q.Initial_PLD - numerical vector. If this is a scalar, it will be extended to the number of image volumes (REQUIRED)
 %   x.Q.LabelingDuration - numerical vector. If this is a scalar, it will be extended to the number of image volumes (REQUIRED)
 % 
-%   path_ASL4D - Path to the ASL4D image we want to load (STRING OR 4D MATRIX, OPTIONAL, DEFAULT = not needed as PWI4D or PWI3D is passed on input)
+%   path_ASL4D - Path to the ASL4D image we want to load (PATH OR 4D IMAGE, OPTIONAL, DEFAULT = not needed as PWI4D or PWI3D is passed on input)
 %             Alternatively, this can contain the image matrix
 %             (xASL_io_Nifti2Im below allows both path and image matrix inputs).
 %             Best if this is a path, so any motion correction can be applied.
-%   PWI4D      - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D MATRIX, OPTIONAL,
+%   PWI4D      - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D IMAGE, OPTIONAL,
 %               DEFAULT = generated below from ASL4D)
-%   PWI3D      - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D MATRIX, OPTIONAL,
+%   PWI3D      - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D IMAGE, OPTIONAL,
 %               DEFAULT = generated below from PWI4D)
-%   Control4D  - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D MATRIX, OPTIONAL,
+%   Control4D  - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D IMAGE, OPTIONAL,
 %               DEFAULT = generated below from ASL4D)
-%   Control3D  - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D MATRIX, OPTIONAL,
+%   Control3D  - likewise, see explanation below. If this is provided, it will override the PWI4D calculation below (PATH OR 4D IMAGE, OPTIONAL,
 %               DEFAULT = generated below from Control4D)
 %
 % OUTPUT: (note that these are [] empty by default, unless they are created)

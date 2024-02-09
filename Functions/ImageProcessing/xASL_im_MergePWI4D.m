@@ -55,7 +55,7 @@ for iSpace = 1:2
 
 		% Error with a missing JSON
 		if isempty(jsonPWI4Dcurrent)
-			error(['Cannot concatenate all sessions as session '  x.modules.asl.sessionsToMerge{iSession} ' has missing JSON information.']);
+			error(['Cannot concatenate all sessions as session '  x.modules.asl.sessionsToMerge{iSession} ' does not have a JSON sidecar.']);
 		end
 
 		if iSession == 1
