@@ -218,8 +218,12 @@ else
 			% Note that this function uses PLD and other parameters from x.Q, but this is fine, because this is only executed for single-PLD.
 			% For multi-parameteric sequences, we have to use BASIL that calculates this ScaleImage internally and doesn't use this ScaleImage
             ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage);
-        else
-            warning('Please define both LabelingType and LabelingDuration of this dataset...');
+		else
+			if ~isfield(x.Q, 'LabelingType')
+				warning('Please define LabelingType of this dataset...');
+			elseif ~strcmpi(x.Q.LabelingType, 'pasl')
+				warning('Please define Labeling duration of this dataset...');
+			end
         end
 
         %% 4    Scaling to physiological units
@@ -352,7 +356,7 @@ if x.modules.asl.ApplyQuantification(3)
 	% Print the prepared parameters
 	switch lower(x.Q.LabelingType)
 		case 'pasl'
-			fprintf('%s\n',['TI1 = ' xASL_num2str(x.Q.uniqueLabelingDuration) ' ms,']);
+			%fprintf('%s\n',['TI1 = ' xASL_num2str(x.Q.uniqueLabelingDuration) ' ms,']);
 			fprintf('%s\n',['TI  = ' xASL_num2str(x.Q.uniqueInitial_PLD) ' ms.']);
 		case 'casl'
 			fprintf('%s\n',['LabelingDuration = ' xASL_num2str(x.Q.uniqueLabelingDuration) ' ms,']);

@@ -343,27 +343,20 @@ switch lower(x.Q.LabelingType)
 		fprintf('BASIL: PASL model\n');
 
 		% For PASL, there can be only a single LabelingDuration, so unique PLD+LabDur combinations are uniquely based on PLDs
-		TIs = (unique(x.Q.Initial_PLD, 'stable'))'/1000;
+		TIs = jsonPWI4D.Q.Initial_PLD'/1000;
 
 		% Print all the TIs
 		if bQuantifyMultiPLD	
-			% For Time-encoded, we skip the first volume
-			if x.modules.asl.bTimeEncoded
-				numberBlocks = numel(TIs)/x.Q.TimeEncodedMatrixSize;
-				ind = (ones(numberBlocks,1)*(2:x.Q.TimeEncodedMatrixSize) + (0:(numberBlocks-1))' * x.Q.TimeEncodedMatrixSize * ones(1,x.Q.TimeEncodedMatrixSize-1))';
-				TIs = TIs(ind(:)');
-			end
 			for iTI = 1:length(TIs)
 				fprintf(FIDoptionFile, '--ti%d=%.2f\n', iTI, TIs(iTI));
 			end
-
 		else
 			fprintf(FIDoptionFile, '--ti=%.2f\n', TIs);
 		end
 
 		% Either print bolus duration or unspecify it
-		if isfield(x.Q,'LabelingDuration') && x.Q.LabelingDuration
-			if length(unique(x.Q.LabelingDuration))>1
+		if isfield(jsonPWI4D.Q, 'LabelingDuration') && jsonPWI4D.Q.LabelingDuration
+			if length(unique(jsonPWI4D.Q.LabelingDuration))>1
 				warning('PASL multi-PLD currently supports only a single Labeling Duration');
 			end
 			fprintf(FIDoptionFile, '--tau=%.2f\n', x.Q.LabelingDuration(1)/1000);
@@ -374,7 +367,7 @@ switch lower(x.Q.LabelingType)
 				fprintf('BASIL: Infer bolus duration component\n')
 			end
 		end
-
+vvvvvvvvvvvvvvvvvvv
 	% CASL and PCASL quantification
 	case {'casl','pcasl'}
 		% Prepare unique PLDs+LabDur combinations
@@ -512,7 +505,7 @@ switch lower(x.Q.LabelingType)
 			fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs);
 		end
 end
-
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 if ~bUseFabber
 	% Right now, we assume that we have averaged over PLDs
 	%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
@@ -550,7 +543,6 @@ if ~bUseFabber
 		fprintf(FIDoptionFile, '--batsd=%f\n', x.modules.asl.ATTSDBASIL);
 	end
 end
-
 
 %% 5. Extra BASIL fitting options
 if ~bUseFabber

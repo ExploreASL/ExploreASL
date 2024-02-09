@@ -142,7 +142,10 @@ function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, pat
 			if isfield(json.Q, 'LabelingDuration')
 				x.Q.(fieldNameLD) = json.Q.LabelingDuration;
 			else
-				warning(['LD missing in: '  pathJson]);
+				x.Q.(fieldNameLD) = [];
+				if ~strcmp(x.Q.LabelingType, 'pasl') % Labeling duration is required for PCASL, but not for PASL, there are saturation times there instead
+					warning(['LD missing in: '  pathJson]);
+				end
 			end
 
 			if isfield(json.Q, 'Initial_PLD')
