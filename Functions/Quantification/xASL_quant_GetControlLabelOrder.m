@@ -8,7 +8,7 @@ function [ControlIm, LabelIm, OrderContLabl, xQ] = xASL_quant_GetControlLabelOrd
 %   xQ     - xQ field with input parameters containing the following subfields (OPTIONAL)
 %                           - EchoTime: TE vector for unsubtracted images
 %                           - Initial_PLD: PLD vector for unsubtracted images
-%                           - LabelingDuration: : LD vector for unsubtracted images
+%                           - LabelingDuration: LD vector for unsubtracted images
 %
 % OUTPUT:
 %   ControlIm     - 4D matrix with 3D ASL control image volumes

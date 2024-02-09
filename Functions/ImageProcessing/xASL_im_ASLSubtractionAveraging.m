@@ -112,7 +112,10 @@ elseif (numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
 				if isfield(json.Q, 'LabelingDuration')
 					x.Q.LabelingDuration = json.Q.LabelingDuration;
 				else
-					 warning(['LD missing in: ' path_ASL4Djson]);
+					x.Q.LabelingDuration = [];
+					if ~strcmp(x.Q.LabelingType, 'pasl') % Labeling duration is required for PCASL, but not for PASL, there are saturation times there instead
+						warning(['LD missing in: '  path_ASL4Djson]);
+					end
 				end
 
 				if isfield(json.Q, 'Initial_PLD')
@@ -253,7 +256,7 @@ if bCreatePWI4D || bCreateControl4D
     if nVolumes ~= length(x.Q.Initial_PLD)
         warning('Defined x.Q.Initial_PLD should have equal length as ASL4D image volumes');
     end
-    if nVolumes ~= length(x.Q.LabelingDuration)
+    if ~isempty(x.Q.LabelingDuration) && (nVolumes ~= length(x.Q.LabelingDuration))
         warning('Defined x.Q.LabelingDuration should have equal length as ASL4D image volumes');
     end    
 
@@ -332,7 +335,11 @@ if bCreatePWI4D || bCreateControl4D
             x.Q.LabelingDuration_PWI4D = [];
 			x.Q.EchoTime_Control4D = x.Q.EchoTime;
             x.Q.InitialPLD_Control4D = x.Q.Initial_PLD;
-            x.Q.LabelingDuration_Control4D = x.Q.LabelingDuration;
+			if isfield(x.Q, 'LabelingDuration')
+				x.Q.LabelingDuration_Control4D = x.Q.LabelingDuration;
+			else
+				x.Q.LabelingDuration_Control4D = [];
+			end
 
             bCreateControl3D = true; % because we can do this now
             % but we cannot create PWI4D, PWI3D, PWI
@@ -347,7 +354,11 @@ if bCreatePWI4D || bCreateControl4D
             % Now the vectors stay the same as for ASL4D (there is no subtraction)
             x.Q.EchoTime_PWI4D = x.Q.EchoTime;
             x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD;
-            x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration;
+			if isfield(x.Q, 'LabelingDuration')
+				x.Q.LabelingDuration_PWI4D = x.Q.LabelingDuration;
+			else
+				x.Q.LabelingDuration_PWI4D = [];
+			end
             x.Q.EchoTime_Control4D = [];
             x.Q.InitialPLD_Control4D = [];
             x.Q.LabelingDuration_Control4D = [];
@@ -368,13 +379,17 @@ if bCreatePWI3D
     if size(PWI4D, 4) ~= length(x.Q.InitialPLD_PWI4D)
         warning('Defined x.Q.InitialPLD_PWI4D should have equal length as PWI4D image volumes');
     end
-    if size(PWI4D, 4) ~= length(x.Q.LabelingDuration_PWI4D)
+    if ~isempty(x.Q.LabelingDuration_PWI4D) && (size(PWI4D, 4) ~= length(x.Q.LabelingDuration_PWI4D))
         warning('Defined x.Q.LabelingDuration_PWI4D should have equal length as PWI4D image volumes');
     end
 
     % After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
     % indexAverage_PLD_LabDur lists for each original position to where it should be averaged
-    [~, ~, iUnique_TE_PLD_LabDur_PWI4D] = unique([x.Q.EchoTime_PWI4D(:), x.Q.InitialPLD_PWI4D(:), x.Q.LabelingDuration_PWI4D(:)], 'stable', 'rows');
+	if isempty(x.Q.LabelingDuration)
+		[~, ~, iUnique_TE_PLD_LabDur_PWI4D] = unique([x.Q.EchoTime_PWI4D(:), x.Q.InitialPLD_PWI4D(:)], 'stable', 'rows');
+	else
+		[~, ~, iUnique_TE_PLD_LabDur_PWI4D] = unique([x.Q.EchoTime_PWI4D(:), x.Q.InitialPLD_PWI4D(:), x.Q.LabelingDuration_PWI4D(:)], 'stable', 'rows');
+	end
     
     % MultiPLD-multiLabDur PWI3D after averaging
     for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur_PWI4D)
@@ -383,7 +398,11 @@ if bCreatePWI3D
 
         x.Q.EchoTime_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.EchoTime_PWI4D(indicesAre));
         x.Q.InitialPLD_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.InitialPLD_PWI4D(indicesAre));
-        x.Q.LabelingDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_PWI4D(indicesAre));
+		if isempty(x.Q.LabelingDuration)
+			x.Q.LabelingDuration_PWI3D = [];
+		else
+			x.Q.LabelingDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_PWI4D(indicesAre));
+		end
     end
 
     bCreatePWI = true; % because we can do this now
@@ -397,12 +416,16 @@ if bCreateControl3D
     if size(Control4D, 4) ~= length(x.Q.InitialPLD_Control4D)
         warning('Defined x.Q.InitialPLD_Control4D should have equal length as Control4D image volumes');
     end
-    if size(Control4D, 4) ~= length(x.Q.LabelingDuration_Control4D)
+    if ~isempty(x.Q.LabelingDuration_Control4D) && size(Control4D, 4) ~= length(x.Q.LabelingDuration_Control4D)
         warning('Defined x.Q.LabelingDuration_Control4D should have equal length as Control4D image volumes');
     end
     
     % Now we do the same for Control4D
-    [~, ~, iUnique_TE_PLD_LabDur_Control4D] = unique([x.Q.EchoTime_Control4D(:), x.Q.InitialPLD_Control4D(:), x.Q.LabelingDuration_Control4D(:)], 'stable', 'rows');
+	if isempty(x.Q.LabelingDuration)
+		[~, ~, iUnique_TE_PLD_LabDur_Control4D] = unique([x.Q.EchoTime_Control4D(:), x.Q.InitialPLD_Control4D(:)], 'stable', 'rows');
+	else
+		[~, ~, iUnique_TE_PLD_LabDur_Control4D] = unique([x.Q.EchoTime_Control4D(:), x.Q.InitialPLD_Control4D(:), x.Q.LabelingDuration_Control4D(:)], 'stable', 'rows');
+	end
     
     % MultiPLD-multiLabDur PWI3D after averaging
     for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur_Control4D)
@@ -411,7 +434,11 @@ if bCreateControl3D
 
         x.Q.EchoTime_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.EchoTime_Control4D(indicesAre));
         x.Q.InitialPLD_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.InitialPLD_Control4D(indicesAre));
-        x.Q.LabelingDuration_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_Control4D(indicesAre));
+		if isempty(x.Q.LabelingDuration_Control4D)
+			x.Q.LabelingDuration_Control3D = x.Q.LabelingDuration_Control4D;
+		else
+			x.Q.LabelingDuration_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_Control4D(indicesAre));
+		end
     end
 
     bCreateControl = true; % because we can do this now
@@ -449,7 +476,7 @@ if bCreatePWI
     if size(PWI3D, 4) ~= length(x.Q.InitialPLD_PWI3D)
         warning('Defined x.Q.InitialPLD_PWI3D should have equal length as PWI3D image volumes');
     end
-    if size(PWI3D, 4) ~= length(x.Q.LabelingDuration_PWI3D)
+    if ~isempty(x.Q.LabelingDuration_PWI3D) && (size(PWI3D, 4) ~= length(x.Q.LabelingDuration_PWI3D))
         warning('Defined x.Q.LabelingDuration_PWI3D should have equal length as PWI3D image volumes');
     end
 
@@ -469,7 +496,11 @@ if bCreatePWI
     % e.g., exp(17/47.3) = 1.4325
 
     % PLD & LD weighting
-    nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.BloodT1) ./ (1-exp(-x.Q.LabelingDuration_PWI3D ./x.Q.BloodT1));
+	if isempty(x.Q.LabelingDuration_PWI3D)
+		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.BloodT1);
+	else
+		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.BloodT1) ./ (1-exp(-x.Q.LabelingDuration_PWI3D ./x.Q.BloodT1));
+	end
     % e.g., exp(1525/1650) / (1-exp(-1650/1650) = 3.9865
 
     % Perfusion-weighting (PW) vs vascular weighting (range 1%-100%)
@@ -486,17 +517,17 @@ if bCreatePWI
     % Create the joined image & parameters
     PWI = zeros(size(PWI3D(:,:,:,1)));
     
-    x.Q.EchoTime_PWI = 0;
-    x.Q.InitialPLD_PWI = 0;
-    x.Q.LabelingDuration_PWI = 0;
-
     for iVolume=1:size(PWI3D, 4)
         PWI = PWI + contributionVolume(iVolume) .* PWI3D(:,:,:,iVolume);
     end
 
     x.Q.EchoTime_PWI = sum(contributionVolume .* x.Q.EchoTime_PWI3D);
     x.Q.InitialPLD_PWI = sum(contributionVolume .* x.Q.InitialPLD_PWI3D);
-    x.Q.LabelingDuration_PWI = sum(contributionVolume .* x.Q.LabelingDuration_PWI3D);
+	if ~isempty(x.Q.LabelingDuration_PWI3D)
+		x.Q.LabelingDuration_PWI = sum(contributionVolume .* x.Q.LabelingDuration_PWI3D);
+	else
+		x.Q.LabelingDuration_PWI = [];
+	end
 end
 
 if bCreateControl
@@ -507,7 +538,7 @@ if bCreateControl
     if size(Control3D, 4) ~= length(x.Q.InitialPLD_Control3D)
         warning('Defined x.Q.InitialPLD_Control3D should have equal length as Control3D image volumes');
     end
-    if size(Control3D, 4) ~= length(x.Q.LabelingDuration_Control3D)
+    if ~isempty(x.Q.LabelingDuration_Control3D) && (size(Control3D, 4) ~= length(x.Q.LabelingDuration_Control3D))
         warning('Defined x.Q.LabelingDuration_Control3D should have equal length as Control3D image volumes');
     end
     
@@ -516,7 +547,11 @@ if bCreateControl
     Control = xASL_stat_MeanNan(Control3D(:, :, :, iMinTE), 4);
     x.Q.EchoTime_Control = min(x.Q.EchoTime_Control3D(:));
     x.Q.InitialPLD_Control = mean(x.Q.InitialPLD_Control3D(:));
-    x.Q.LabelingDuration_Control = mean(x.Q.LabelingDuration_Control3D(:));
+	if isempty(x.Q.LabelingDuration_Control3D)
+		x.Q.LabelingDuration_Control = [];
+	else
+		x.Q.LabelingDuration_Control = mean(x.Q.LabelingDuration_Control3D(:));
+	end
 end
 
 end

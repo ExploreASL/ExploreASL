@@ -102,7 +102,10 @@ for iSpace = 1:2
 				jsonPWI4DConcatenated.LabelingDuration = [jsonPWI4DConcatenated.LabelingDuration; jsonPWI4Dcurrent.LabelingDuration];
 			end
 		else
-			warning(['Missing LabelingDuration for session ' x.modules.asl.sessionsToMerge{iSession}]);
+			jsonPWI4DConcatenated.LabelingDuration = [];
+			if ~strcmpi(x.Q.LabelingType, 'pasl')
+				warning(['Missing LabelingDuration for session ' x.modules.asl.sessionsToMerge{iSession}]);
+			end
 		end
 	end
 	% Create the specific new name
