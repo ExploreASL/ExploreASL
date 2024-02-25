@@ -66,6 +66,11 @@ for iSpace = 1:2
 			jsonPWI4DConcatenated = struct();
 		else	
 			% For following sessions, concatenate NII and JSON
+            % Check if x.Q.M0Scaling exists (should be a double [1, 1.27] e.g.)
+            if isfield(x.Q, 'M0Scaling')
+	            imPWI4Dcurrent = imPWI4Dcurrent/(x.Q.M0Scaling (iSession));
+            end
+
 			% Check dimensions
 			if isequal(size(imPWI4Dcurrent, 1:3), size(imPWI4DConcatenated, 1:3))
 				% Here we concatenate (cat) over the 4rd dimension (4), PWI (total concatenated image matrix) with the new current PWI
