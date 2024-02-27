@@ -69,9 +69,27 @@ function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
             thisVisit = thisSubject.(visitFieldName);
             for iScan=1:thisVisit.nScans
                 for iSession=1:thisVisit.nSessions
-                    if thisSubject.globalCounts.converted_scans(iSubject, iVisit, iSession, iScan) || ...
+
+                    % Here we try to skip this table if something went wrong in dicom2nii
+                    bSkipIt = false;
+                    if x.modules.import.nSubjects>sizeConvertedScans(1)
+                        warning('Something went wrong with number of subjects');
+                        bSkipIt = true;
+                    elseif thisSubject.nVisits>sizeConvertedScans(2)
+                        warning('Something went wrong with number of visits');
+                        bSkipIt = true;
+                    elseif thisVisit.nSessions>sizeConvertedScans(3)
+                        warning('Something went wrong with number of sessions');
+                        bSkipIt = true;
+                    elseif thisVisit.nScans>sizeConvertedScans(4)
+                        warning('Something went wrong with number of scans');
+                        bSkipIt = true;
+                    end
+
+
+                    if ~bSkipIt && ( thisSubject.globalCounts.converted_scans(iSubject, iVisit, iSession, iScan) || ...
                             thisSubject.globalCounts.skipped_scans(iSubject, iVisit, iSession, iScan) || ...
-                            thisSubject.globalCounts.missing_scans(iSubject, iVisit, iSession, iScan)
+                            thisSubject.globalCounts.missing_scans(iSubject, iVisit, iSession, iScan) )
                         fprintf(fid_summary,'"%s","%s","%s","%s"%s,\n', ...
                             x.modules.import.listsIDs.subjectIDs{iSubject}, ...
                             thisSubject.visitIDs{iVisit}, ...
