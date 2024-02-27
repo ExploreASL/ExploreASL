@@ -67,8 +67,8 @@ for iSpace = 1:2
 		else	
 			% For following sessions, concatenate NII and JSON
             % Check if x.Q.M0Scaling exists (should be a double [1, 1.27] e.g.)
-            if isfield(x.Q, 'M0Scaling')
-	            imPWI4Dcurrent = imPWI4Dcurrent/(x.Q.M0Scaling (iSession));
+            if isfield(x.modules.asl, 'M0Scaling')
+	            imPWI4Dcurrent = imPWI4Dcurrent/(x.modules.asl.M0Scaling(iSession));
             end
 
 			% Check dimensions
