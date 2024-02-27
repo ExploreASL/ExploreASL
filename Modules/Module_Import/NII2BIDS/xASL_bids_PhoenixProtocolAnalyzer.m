@@ -202,9 +202,11 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			bidsPar.LabelingDuration = sourcePar.alTI0 / 1000 / 1000;
 		elseif ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pcasl'))
 			if isfield(sourcePar,'alTI0') && ~isempty(sourcePar.alTI0)
-				bidsPar.LabelingDuration = sourcePar.alTI0 / 1000 / 1000;
-				if isfield(sourcePar,'alTI2') && ~isempty(sourcePar.alTI2)
-					bidsPar.PostLabelingDelay = (sourcePar.alTI2-sourcePar.alTI0) / 1000 / 1000;
+				if ~isfield(sourcePar, 'tSequenceFileName') || isempty(regexp(sourcePar.tSequenceFileName, 'ep2d_VEPCASL'))
+					bidsPar.LabelingDuration = sourcePar.alTI0 / 1000 / 1000;
+					if isfield(sourcePar,'alTI2') && ~isempty(sourcePar.alTI2)
+						bidsPar.PostLabelingDelay = (sourcePar.alTI2-sourcePar.alTI0) / 1000 / 1000;
+					end
 				end
 			end
 		end
