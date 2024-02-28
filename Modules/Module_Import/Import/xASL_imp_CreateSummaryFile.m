@@ -44,9 +44,13 @@ function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
     
     % Check if the converted_scans, skipped_scans, and missing_scans tables
     % have equal sizes, otherwise try to fix it
-    sizeConvertedScans = size(thisSubject.globalCounts.converted_scans);
-    sizeSkippedScans = size(thisSubject.globalCounts.skipped_scans);
-    sizeMissingScans = size(thisSubject.globalCounts.missing_scans);
+
+	% We are expecting a 4D matrix. So we have to ask for 4 dimensions as this is required on the lines below
+	% For example size(ones(5,1,1,1)      = [5 1]
+	% but         size(ones(5,1,1,1),1:4) = [5 1 1 1]
+    sizeConvertedScans = size(thisSubject.globalCounts.converted_scans, 1:4);
+    sizeSkippedScans = size(thisSubject.globalCounts.skipped_scans, 1:4);
+    sizeMissingScans = size(thisSubject.globalCounts.missing_scans, 1:4);
 
     if ~isequal(sizeConvertedScans, sizeSkippedScans)
         warning('Skipped scans had a different size than converted scans, fixing this but summary file could be incorrect');
