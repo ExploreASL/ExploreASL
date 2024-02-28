@@ -82,8 +82,41 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
     
 
     %% Get ExploreASL commit for optimal provenance
-    [~, xASL_gitCommit] = xASL_system(['cd ' x.opts.MyPath '; git rev-parse HEAD']);
-    Software.ExploreASL_git = strtrim(xASL_gitCommit);
+    % We also record if git was installed and if a git-version of ExploreASL was downloaded
+
+    % Test if git was installed
+    [ResultIs, gitVersion] = xASL_system('git --version');
+    if ResultIs~=0
+        Software.ExploreASL_git = 'NoGitInstalled';
+    else
+        [indexStart, indexEnd] = regexp(gitVersion, '\d*\.\d*\.\d*');
+        if isempty(indexStart) || isempty(indexEnd)
+            warning('Unknown git version format');
+        else
+            gitVersion = gitVersion(indexStart:indexEnd);
+        end
+        
+        Software.GIT = gitVersion;
+
+        % Test if there is a gitdir (if ExploreASL was cloned from github)
+        gitDir = fullfile(x.opts.MyPath, '.git');
+        
+        if ~exist(gitDir, 'dir')
+            Software.ExploreASL_git = 'NoGitDir';
+        else
+
+            oldPath = pwd;
+            cd(x.opts.MyPath);
+            
+            [ResultIs, xASL_gitCommit] = xASL_system(['git rev-parse HEAD']);
+            cd(oldPath);
+            if ResultIs~=0
+                Software.ExploreASL_git = 'SomethingWrong';
+            else
+                Software.ExploreASL_git = strtrim(xASL_gitCommit);
+            end
+        end
+    end
 
     %% Add software field to x output
     try
