@@ -27,50 +27,58 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 % Copyright @ 2015-2024 ExploreASL
 
     %% 1. Extract parameters from Phoenix
-    sourcePar = addParToList('tSequenceFileName',{},1);
-    sourcePar = addParToList('UserScaleFactor',sourcePar,2);
-    sourcePar = addParToList('M0Threshold',sourcePar,3);
-    sourcePar = addParToList('TI1_us',sourcePar,4);
-    sourcePar = addParToList('TI2_us',sourcePar,5);
-    sourcePar = addParToList('sAsl.ulMode',sourcePar,6);
-    sourcePar = addParToList('sAsl.ulAveragingMode',sourcePar,7);
-    sourcePar = addParToList('sAsl.ulSuppressionMode',sourcePar,8);
-    sourcePar = addParToList('sAsl.ulArrayLength',sourcePar,9);
-    sourcePar = addParToList('M0Mode',sourcePar,10);
-    sourcePar = addParToList('alTE[0]',sourcePar,11);
-    sourcePar = addParToList('alTR[0]',sourcePar,12);
-    sourcePar = addParToList('alTI[0]',sourcePar,13);
-    sourcePar = addParToList('alTI[1]',sourcePar,14);
-    sourcePar = addParToList('alTI[2]',sourcePar,15);
-    sourcePar = addParToList('alTR.__attribute__.size',sourcePar,16);
-    sourcePar = addParToList('alTI.__attribute__.size',sourcePar,17);
-    sourcePar = addParToList('acFlowComp[0]',sourcePar,18);
-    sourcePar = addParToList('lRepetitions',sourcePar,19);
-    sourcePar = addParToList('lAverages',sourcePar,20);
-    sourcePar = addParToList('lScanTimeSec',sourcePar,21);
-    sourcePar = addParToList('CBFUpperLimit',sourcePar,22);
-    sourcePar = addParToList('PerfPrepMode',sourcePar,23);
-    sourcePar = addParToList('Slab_thickness_mm',sourcePar,24);
-    sourcePar = addParToList('Dist_factor',sourcePar,25);
-    sourcePar = addParToList('Flow_limit',sourcePar,26);
-    sourcePar = addParToList('sGroupArray.sPSat.dGap',sourcePar,27);
-    sourcePar = addParToList('sGroupArray.sPSat.dThickness',sourcePar,28);
-    sourcePar = addParToList('sProtConsistencyInfo.tBaselineString',sourcePar,29);
-    sourcePar = addParToList('sAsl.fFlowLimit',sourcePar,30);
-    sourcePar = addParToList('sWipMemBlock.tFree',sourcePar,31);
-    sourcePar = addParToList('sWipMemBlock.alFree.__attribute__.size',sourcePar,32);
-    sourcePar = addParToList('sWipMemBlock.alFree[0]',sourcePar,33);
-    sourcePar = addParToList('sWipMemBlock.alFree[1]',sourcePar,34);
-    sourcePar = addParToList('sWipMemBlock.alFree[2]',sourcePar,35);
-    sourcePar = addParToList('sWipMemBlock.alFree[5]',sourcePar,36);
-    sourcePar = addParToList('sWipMemBlock.alFree[6]',sourcePar,37);
-    sourcePar = addParToList('sWipMemBlock.alFree[63]',sourcePar,38);
-    sourcePar = addParToList('sWipMemBlock.adFree.__attribute__.size',sourcePar,39);
-    sourcePar = addParToList('sWipMemBlock.adFree[7]',sourcePar,40);
-    sourcePar = addParToList('sWipMemBlock.adFree[8]',sourcePar,41);
-    sourcePar = addParToList('sWipMemBlock.adFree[9]',sourcePar,42);
-    sourcePar = addParToList('sWipMemBlock.adFree[10]',sourcePar,43);
-    sourcePar = addParToList('sWipMemBlock.adFree[13]',sourcePar,44);
+	parIndex = 1;
+    sourcePar = addParToList('tSequenceFileName',{}, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('UserScaleFactor',sourcePar,parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('M0Threshold',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('TI1_us',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('TI2_us',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sAsl.ulMode',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sAsl.ulAveragingMode',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sAsl.ulSuppressionMode',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sAsl.ulArrayLength',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('M0Mode',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('alTE[0]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('alTR[0]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('alTI[0]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('alTI[1]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('alTI[2]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('alTR.__attribute__.size',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('alTI.__attribute__.size',sourcePar,parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('acFlowComp[0]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('lRepetitions',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('lAverages',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('lScanTimeSec',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('CBFUpperLimit',sourcePar,parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('PerfPrepMode',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('Slab_thickness_mm',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('Dist_factor',sourcePar,parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('Flow_limit',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sGroupArray.sPSat.dGap',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sGroupArray.sPSat.dThickness',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sProtConsistencyInfo.tBaselineString',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sAsl.fFlowLimit',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.tFree',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.alFree.__attribute__.size',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.alFree[0]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.alFree[1]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.alFree[2]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.alFree[3]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.alFree[4]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.alFree[5]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.alFree[6]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.alFree[9]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.alFree[10]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.alFree[11]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.alFree[63]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.adFree.__attribute__.size',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.adFree[0]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.adFree[1]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.adFree[7]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.adFree[8]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.adFree[9]',sourcePar,parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.adFree[10]',sourcePar, parIndex);parIndex = parIndex+1;
+    sourcePar = addParToList('sWipMemBlock.adFree[13]',sourcePar, parIndex);parIndex = parIndex+1;
 
     % Get the predefined parameters
     sourcePar = getPhoenixParameters(sourcePar,parameterList,false);
@@ -81,41 +89,80 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 	%% 2. Obtain basic information about the sequence
 	bidsPar = struct();
     % Find out if it's a product sequence or a patch
-	if ~isempty(regexp(sourcePar.tSequenceFileName,'SiemensSeq'), 'once')
+	if ~isempty(regexp(sourcePar.tSequenceFileName,'SiemensSeq', 'once'))
 		sequenceType = 'Siemens'; % Not really a BIDS field
-	elseif ~isempty(regexp(sourcePar.tSequenceFileName,'CustomerSeq'), 'once')
+	elseif ~isempty(regexp(sourcePar.tSequenceFileName,'CustomerSeq', 'once'))
 		sequenceType = 'Customer';
 	end
     
 	% Readout 2D or 3D
-    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'ep2d'), 'once')
+    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'ep2d', 'once'))
         bidsPar.PulseSequenceType = '2D_EPI'; 
-    elseif ~isempty(regexpi(sourcePar.tSequenceFileName, '(gse|grs3d'), 'once')            
+    elseif ~isempty(regexpi(sourcePar.tSequenceFileName, '(gse|grs3d', 'once'))
         bidsPar.PulseSequenceType = '3D_GRASE'; 
     end
     
 	% Labeling type
-    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'pasl'), 'once')
+    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'pasl', 'once'))
         bidsPar.ArterialSpinLabelingType = 'PASL';
     end
-    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'casl'), 'once')
+    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'casl', 'once'))
         bidsPar.ArterialSpinLabelingType = 'CASL';
     end
-    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'pcasl'), 'once')
+    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'pcasl', 'once'))
         bidsPar.ArterialSpinLabelingType = 'PCASL';
     end
-    if ~isempty(regexpi(sourcePar.sWipMemBlocktFree, 'pcasl'), 'once')                % Siemens PCASL 3DGRASE volunteer2
+    if ~isempty(regexpi(sourcePar.sWipMemBlocktFree, 'pcasl', 'once'))                % Siemens PCASL 3DGRASE volunteer2
         bidsPar.ArterialSpinLabelingType = 'PCASL';
     end
     
-	if ~isempty(regexpi(sourcePar.tSequenceFileName, '(M0_|_fid'), 'once')           % Siemens PASL 3DGRASE AD, Siemens PASL 2D EPI noBsup AD
+	if ~isempty(regexpi(sourcePar.tSequenceFileName, '(M0_|_fid', 'once'))           % Siemens PASL 3DGRASE AD, Siemens PASL 2D EPI noBsup AD
         bidsPar.ScanType = 'M0';
 	end
     
 	bSequenceIdentified = false; % Try to identify different sequences and in case this doesn't work we rollback to the defaults
 
 	%% 3. Reading sequence VEPCASL
-	if ~bSequenceIdentified && ~isempty(regexp(sourcePar.tSequenceFileName,'SiemensSeq'), 'once')
+	if ~bSequenceIdentified && ~isempty(regexp(sourcePar.tSequenceFileName,'VEPCASL', 'once'))
+		if ~isempty(regexp(sourcePar.tSequenceFileName,'ep2d_VEPCASL', 'once'))
+			% Basic check
+			if ~isempty(sourcePar.sWipMemBlockalFree9) &&  ~isempty(sourcePar.sWipMemBlockalFree11) 
+				% All basic passes checked, we can proceed to parameter parsing
+				bSequenceIdentified = true;
+
+				% Load the required parameters
+				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockalFree11 / 1000;
+				bidsPar.LabelingDuration = sourcePar.sWipMemBlockalFree11 / 1000;
+
+				if ~isempty(sourcePar.sWipMemBlockalFree3) && sourcePar.sWipMemBlockalFree3 == 2
+					bidsPar.BackgroundSuppression = true;
+				end
+
+				if ~isempty(sourcePar.sWipMemBlockalFree4)
+					bidsPar.LabelingPulseFlipAngle = sourcePar.sWipMemBlockalFree4;
+				end
+
+				if ~isempty(sourcePar.sWipMemBlockalFree5)
+					bidsPar.LabelingPulseDuration = sourcePar.sWipMemBlockalFree5 / 1000;
+					if ~isempty(sourcePar.sWipMemBlockalFree6)
+						bidsPar.LabelingPulseInterval = sourcePar.sWipMemBlockalFree6 / 1000 + bidsPar.LabelingPulseDuration;
+					end
+				end
+
+				if ~isempty(sourcePar.sWipMemBlockadFree0)
+					bidsPar.LabelingPulseAverageGradient = sourcePar.sWipMemBlockadFree0;
+				end
+
+				if ~isempty(sourcePar.sWipMemBlockadFree1)
+					bidsPar.LabelingPulseMaximumGradien = sourcePar.sWipMemBlockadFree1;
+				end
+			else
+				warning('Missing important parameters in Phoenix for Siemens VEPCASL sequence');
+			end
+		else
+			% An unknown version detected, skipping to the default
+			warning('An unknown version of Siemens VEPCASL sequence detected');
+		end
 	end
 
 	%% 4. Reading a default sequence
