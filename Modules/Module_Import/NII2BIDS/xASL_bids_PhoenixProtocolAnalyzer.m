@@ -14,15 +14,19 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 % DESCRIPTION:      This function analyzes the parameter list of the phoenix protocol (tag = [0x29,0x1020]).
 %                   This function is usually called from xASL_bids_GetPhoenixProtocol.
 %
+% 1. Extract parameters from Phoenix
+% 2. Obtain basic information about the sequence
+% 3. Reading sequence VEPCASL
+% 4. Reading a default sequence
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList);
 %
 % REFERENCES:       ...
 % __________________________________
-% Copyright @ 2015-2021 ExploreASL
+% Copyright @ 2015-2024 ExploreASL
 
-    %% Defaults
+    %% 1. Extract parameters from Phoenix
     sourcePar = addParToList('tSequenceFileName',{},1);
     sourcePar = addParToList('UserScaleFactor',sourcePar,2);
     sourcePar = addParToList('M0Threshold',sourcePar,3);
@@ -68,144 +72,153 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     sourcePar = addParToList('sWipMemBlock.adFree[10]',sourcePar,43);
     sourcePar = addParToList('sWipMemBlock.adFree[13]',sourcePar,44);
 
-    
-    %% Get the predefined parameters
+    % Get the predefined parameters
     sourcePar = getPhoenixParameters(sourcePar,parameterList,false);
     
-    %% Get xASL parameters
+    % Get xASL parameters
     sourcePar = convertCellArrayToStruct(sourcePar);
 
+	%% 2. Obtain basic information about the sequence
 	bidsPar = struct();
-    %% Analyze parameters                                                   % Exemplary dataset in ExploreASL flavor library
-	if ~isempty(strfind(sourcePar.tSequenceFileName,'SiemensSeq'))
-		bidsPar.SequenceType = 'Siemens'; % Not really a BIDS field
-	elseif ~isempty(strfind(sourcePar.tSequenceFileName,'CustomerSeq'))
-		bidsPar.SequenceType = 'Customer';
+    % Find out if it's a product sequence or a patch
+	if ~isempty(regexp(sourcePar.tSequenceFileName,'SiemensSeq'), 'once')
+		sequenceType = 'Siemens'; % Not really a BIDS field
+	elseif ~isempty(regexp(sourcePar.tSequenceFileName,'CustomerSeq'), 'once')
+		sequenceType = 'Customer';
 	end
     
-    if ~isempty(strfind(lower(sourcePar.tSequenceFileName),'ep2d'))
+	% Readout 2D or 3D
+    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'ep2d'), 'once')
         bidsPar.PulseSequenceType = '2D_EPI'; 
-    elseif ~isempty(strfind(lower(sourcePar.tSequenceFileName),'gse')) || ...
-           ~isempty(strfind(lower(sourcePar.tSequenceFileName),'grs3d'))            % Siemens PASL 3DGRASE AD
+    elseif ~isempty(regexpi(sourcePar.tSequenceFileName, '(gse|grs3d'), 'once')            
         bidsPar.PulseSequenceType = '3D_GRASE'; 
     end
     
-    if ~isempty(strfind(lower(sourcePar.tSequenceFileName),'pasl'))
+	% Labeling type
+    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'pasl'), 'once')
         bidsPar.ArterialSpinLabelingType = 'PASL';
     end
-    if ~isempty(strfind(lower(sourcePar.tSequenceFileName),'casl'))
+    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'casl'), 'once')
         bidsPar.ArterialSpinLabelingType = 'CASL';
     end
-    if ~isempty(strfind(lower(sourcePar.tSequenceFileName),'pcasl'))
+    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'pcasl'), 'once')
         bidsPar.ArterialSpinLabelingType = 'PCASL';
     end
-    if ~isempty(strfind(lower(sourcePar.sWipMemBlocktFree),'pcasl'))                % Siemens PCASL 3DGRASE volunteer2
+    if ~isempty(regexpi(sourcePar.sWipMemBlocktFree, 'pcasl'), 'once')                % Siemens PCASL 3DGRASE volunteer2
         bidsPar.ArterialSpinLabelingType = 'PCASL';
     end
     
-    if ~isempty(strfind(lower(sourcePar.tSequenceFileName),'M0_')) || ...           % Siemens PASL 3DGRASE AD
-       ~isempty(strfind(lower(sourcePar.tSequenceFileName),'_fid'))                 % Siemens PASL 2D EPI noBsup AD
+	if ~isempty(regexpi(sourcePar.tSequenceFileName, '(M0_|_fid'), 'once')           % Siemens PASL 3DGRASE AD, Siemens PASL 2D EPI noBsup AD
         bidsPar.ScanType = 'M0';
 	end
     
-	%TODO
-	% Saw this option also in QUIPSSII
-    %if sourcePar.sAslulMode==4
-    %    bidsPar.BolusCutOffFlag = true;
-	%	bidsPar.BolusCutOffTechnique = 'Q2TIPS';
-    %end
-    
-	%TODO - does it really work for other sequences?
-    if ~isempty(sourcePar.alTI0) && ~isempty(sourcePar.alTI2)
-        if sourcePar.alTI0~=100000 && sourcePar.alTI2~=7000000
-            bidsPar.ScanType = 'ASL';
-        elseif sourcePar.alTI0==100000 && sourcePar.alTI2==7000000
-            bidsPar.ScanType = 'PseudoM0';
-        end
+	bSequenceIdentified = false; % Try to identify different sequences and in case this doesn't work we rollback to the defaults
+
+	%% 3. Reading sequence VEPCASL
+	if ~bSequenceIdentified && ~isempty(regexp(sourcePar.tSequenceFileName,'SiemensSeq'), 'once')
 	end
-    
-	if isfield(sourcePar,'sProtConsistencyInfotBaselineString') && ~isempty(sourcePar.sProtConsistencyInfotBaselineString)
-		bidsPar.SoftwareVersions = strrep(sourcePar.sProtConsistencyInfotBaselineString,'"','');
-	end
-	
-	% N4_VD13D and N4_VE11C have also slab_thickness_mm parameter defined and it is unclear if this is imaging FOV or labeling slab thickness...
-	if isfield(bidsPar,'SoftwareVersions') &&...
-			(~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB15A'))||...
-			 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB17A'))||...
-			 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB19A')))
-		if isfield(sourcePar,'sGroupArraysPSatdGap') && ~isempty(sourcePar.sGroupArraysPSatdGap)
-			bidsPar.LabelingDistance = sourcePar.sGroupArraysPSatdGap;
-		end
-	
-		if isfield(bidsPar,'ArterialSpinLabelingType') && ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl')) &&...
-				isfield(sourcePar,'sGroupArraysPSatdThickness') && ~isempty(sourcePar.sGroupArraysPSatdThickness)
-			bidsPar.LabelingSlabThickness = sourcePar.sGroupArraysPSatdThickness;
-		end
-	end
-	% The function of this parameter is unclear
-	%if isfield(sourcePar,'Slab_thickness_mm') && ~isempty(sourcePar.Slab_thickness_mm)
-	%	bidsPar.LabelingSlabThickness = sourcePar.Slab_thickness_mm;
-	%end
-	
-	if isfield(sourcePar,'alTE0') && ~isempty(sourcePar.alTE0)
-		bidsPar.EchoTime = sourcePar.alTE0 / 1000 / 1000;
-		lastEchoTime = bidsPar.EchoTime;
-		lastEchoTimeCount = 1;
-		while lastEchoTime > 0
-			lastEchoTimeCount = lastEchoTimeCount + 1;
-			echoTimePar = getPhoenixParameters({['alTE[' num2str(lastEchoTimeCount) ']']},parameterList,0);
-			if isempty(echoTimePar{2})
-				lastEchoTime = 0;
-			else
-				lastEchoTime = str2num(echoTimePar{2})/1000/1000;
-				bidsPar.EchoTime(lastEchoTimeCount) = lastEchoTime;
+
+	%% 4. Reading a default sequence
+	if ~bSequenceIdentified
+		%TODO
+		% Saw this option also in QUIPSSII
+		%if sourcePar.sAslulMode==4
+		%    bidsPar.BolusCutOffFlag = true;
+		%	bidsPar.BolusCutOffTechnique = 'Q2TIPS';
+		%end
+
+		%TODO - does it really work for other sequences?
+		if ~isempty(sourcePar.alTI0) && ~isempty(sourcePar.alTI2)
+			if sourcePar.alTI0~=100000 && sourcePar.alTI2~=7000000
+				bidsPar.ScanType = 'ASL';
+			elseif sourcePar.alTI0==100000 && sourcePar.alTI2==7000000
+				bidsPar.ScanType = 'PseudoM0';
 			end
-		end		
-		
-	end
-	
-	% If the labeling type is recognized, then proceed to labeling timing information extraction
-	if isfield(bidsPar,'ArterialSpinLabelingType') 
-		if~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl'))
-			if isfield(bidsPar,'SoftwareVersions') &&...
-					(~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB15A'))||...
-					 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB17A'))||...
-					 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB19A'))||...
-					 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VD13D'))||...
-					 ~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VE11C')))
-				
-				if isfield(sourcePar,'alTI0') && ~isempty(sourcePar.alTI0)
-					bidsPar.PostLabelingDelay = sourcePar.alTI0 / 1000 / 1000;
+		end
+
+		if isfield(sourcePar,'sProtConsistencyInfotBaselineString') && ~isempty(sourcePar.sProtConsistencyInfotBaselineString)
+			bidsPar.SoftwareVersions = strrep(sourcePar.sProtConsistencyInfotBaselineString,'"','');
+		end
+
+		% N4_VD13D and N4_VE11C have also slab_thickness_mm parameter defined and it is unclear if this is imaging FOV or labeling slab thickness...
+		if isfield(bidsPar,'SoftwareVersions') &&...
+				(~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB15A', 'once'))||...
+				~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB17A', 'once'))||...
+				~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB19A', 'once')))
+			if isfield(sourcePar,'sGroupArraysPSatdGap') && ~isempty(sourcePar.sGroupArraysPSatdGap)
+				bidsPar.LabelingDistance = sourcePar.sGroupArraysPSatdGap;
+			end
+
+			if isfield(bidsPar,'ArterialSpinLabelingType') && ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl', 'once')) &&...
+					isfield(sourcePar,'sGroupArraysPSatdThickness') && ~isempty(sourcePar.sGroupArraysPSatdThickness)
+				bidsPar.LabelingSlabThickness = sourcePar.sGroupArraysPSatdThickness;
+			end
+		end
+		% The function of this parameter is unclear
+		%if isfield(sourcePar,'Slab_thickness_mm') && ~isempty(sourcePar.Slab_thickness_mm)
+		%	bidsPar.LabelingSlabThickness = sourcePar.Slab_thickness_mm;
+		%end
+
+		if isfield(sourcePar,'alTE0') && ~isempty(sourcePar.alTE0)
+			bidsPar.EchoTime = sourcePar.alTE0 / 1000 / 1000;
+			lastEchoTime = bidsPar.EchoTime;
+			lastEchoTimeCount = 1;
+			while lastEchoTime > 0
+				lastEchoTimeCount = lastEchoTimeCount + 1;
+				echoTimePar = getPhoenixParameters({['alTE[' num2str(lastEchoTimeCount) ']']},parameterList,0);
+				if isempty(echoTimePar{2})
+					lastEchoTime = 0;
+				else
+					lastEchoTime = str2num(echoTimePar{2})/1000/1000;
+					bidsPar.EchoTime(lastEchoTimeCount) = lastEchoTime;
 				end
-				if isfield(sourcePar,'alTI1') && ~isempty(sourcePar.alTI1)
-					if isfield(sourcePar,'alTI2') && ~isempty(sourcePar.alTI2)
-						%N4_VB15A, N4_VB17A, N4_VB19A
-						bidsPar.BolusCutOffDelayTime = [sourcePar.alTI1, sourcePar.alTI2] / 1000 / 1000;
-						bidsPar.BolusCutOffFlag = true;
-						bidsPar.BolusCutOffTechnique = 'Q2TIPS';
+			end
+
+		end
+
+		% If the labeling type is recognized, then proceed to labeling timing information extraction
+		if isfield(bidsPar,'ArterialSpinLabelingType')
+			if~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl', 'once'))
+				if isfield(bidsPar,'SoftwareVersions') &&...
+						(~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB15A', 'once'))||...
+						~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB17A', 'once'))||...
+						~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB19A', 'once'))||...
+						~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VD13D', 'once'))||...
+						~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VE11C', 'once')))
+
+					if isfield(sourcePar,'alTI0') && ~isempty(sourcePar.alTI0)
 						bidsPar.PostLabelingDelay = sourcePar.alTI0 / 1000 / 1000;
+					end
+					if isfield(sourcePar,'alTI1') && ~isempty(sourcePar.alTI1)
+						if isfield(sourcePar,'alTI2') && ~isempty(sourcePar.alTI2)
+							%N4_VB15A, N4_VB17A, N4_VB19A
+							bidsPar.BolusCutOffDelayTime = [sourcePar.alTI1, sourcePar.alTI2] / 1000 / 1000;
+							bidsPar.BolusCutOffFlag = true;
+							bidsPar.BolusCutOffTechnique = 'Q2TIPS';
+							bidsPar.PostLabelingDelay = sourcePar.alTI0 / 1000 / 1000;
+						else
+							bidsPar.PostLabelingDelay = sourcePar.alTI0 / 1000 / 1000;
+							bidsPar.LabelingDuration = sourcePar.alTI1 / 1000 / 1000;
+						end
 					else
-						bidsPar.PostLabelingDelay = sourcePar.alTI0 / 1000 / 1000;
-						bidsPar.LabelingDuration = sourcePar.alTI1 / 1000 / 1000;
+						%N4_VD13D, N4_VE11C
+						if isfield(sourcePar,'alTI2') && ~isempty(sourcePar.alTI2)
+							bidsPar.PostLabelingDelay = sourcePar.alTI2 / 1000 / 1000;
+							bidsPar.BolusCutOffDelayTime = sourcePar.alTI0 / 1000 / 1000;
+							bidsPar.BolusCutOffFlag = true;
+							bidsPar.BolusCutOffTechnique = 'QUIPSSII';
+						end
 					end
 				else
-					%N4_VD13D, N4_VE11C
-					if isfield(sourcePar,'alTI2') && ~isempty(sourcePar.alTI2)
-						bidsPar.PostLabelingDelay = sourcePar.alTI2 / 1000 / 1000;
-						bidsPar.BolusCutOffDelayTime = sourcePar.alTI0 / 1000 / 1000;
-						bidsPar.BolusCutOffFlag = true;
-						bidsPar.BolusCutOffTechnique = 'QUIPSSII';
-					end
-				end
-			end
-		elseif ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl'))
-			bidsPar.LabelingDuration = sourcePar.alTI0 / 1000 / 1000;
-		elseif ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pcasl'))
-			if isfield(sourcePar,'alTI0') && ~isempty(sourcePar.alTI0)
-				if ~isfield(sourcePar, 'tSequenceFileName') || isempty(regexp(sourcePar.tSequenceFileName, 'ep2d_VEPCASL'))
 					bidsPar.LabelingDuration = sourcePar.alTI0 / 1000 / 1000;
-					if isfield(sourcePar,'alTI2') && ~isempty(sourcePar.alTI2)
-						bidsPar.PostLabelingDelay = (sourcePar.alTI2-sourcePar.alTI0) / 1000 / 1000;
+				end
+			elseif ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pcasl', 'once'))
+				if isfield(sourcePar,'alTI0') && ~isempty(sourcePar.alTI0)
+					if ~isfield(sourcePar, 'tSequenceFileName') || isempty(regexp(sourcePar.tSequenceFileName, 'ep2d_VEPCASL', 'once'))
+						bidsPar.LabelingDuration = sourcePar.alTI0 / 1000 / 1000;
+						if isfield(sourcePar,'alTI2') && ~isempty(sourcePar.alTI2)
+							bidsPar.PostLabelingDelay = (sourcePar.alTI2-sourcePar.alTI0) / 1000 / 1000;
+						end
 					end
 				end
 			end
