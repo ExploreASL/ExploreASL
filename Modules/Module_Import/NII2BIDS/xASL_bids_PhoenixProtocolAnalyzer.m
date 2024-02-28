@@ -89,9 +89,9 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 	%% 2. Obtain basic information about the sequence
 	bidsPar = struct();
     % Find out if it's a product sequence or a patch
-	if ~isempty(regexp(sourcePar.tSequenceFileName,'SiemensSeq', 'once'))
+	if ~isempty(regexpi(sourcePar.tSequenceFileName,'SiemensSeq', 'once'))
 		sequenceType = 'Siemens'; % Not really a BIDS field
-	elseif ~isempty(regexp(sourcePar.tSequenceFileName,'CustomerSeq', 'once'))
+	elseif ~isempty(regexpi(sourcePar.tSequenceFileName,'CustomerSeq', 'once'))
 		sequenceType = 'Customer';
 	end
     
@@ -134,14 +134,17 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockalFree11 / 1000;
 				bidsPar.LabelingDuration = sourcePar.sWipMemBlockalFree11 / 1000;
 
+				% Background suppression
 				if ~isempty(sourcePar.sWipMemBlockalFree3) && sourcePar.sWipMemBlockalFree3 == 2
 					bidsPar.BackgroundSuppression = true;
 				end
 
+				% Flip angle
 				if ~isempty(sourcePar.sWipMemBlockalFree4)
 					bidsPar.LabelingPulseFlipAngle = sourcePar.sWipMemBlockalFree4;
 				end
 
+				% Details of the labeling pulse design
 				if ~isempty(sourcePar.sWipMemBlockalFree5)
 					bidsPar.LabelingPulseDuration = sourcePar.sWipMemBlockalFree5 / 1000;
 					if ~isempty(sourcePar.sWipMemBlockalFree6)
@@ -167,14 +170,14 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 
 	%% 4. Reading a default sequence
 	if ~bSequenceIdentified
-		%TODO
+		% TODO
 		% Saw this option also in QUIPSSII
 		%if sourcePar.sAslulMode==4
 		%    bidsPar.BolusCutOffFlag = true;
 		%	bidsPar.BolusCutOffTechnique = 'Q2TIPS';
 		%end
 
-		%TODO - does it really work for other sequences?
+		% TODO - does it really work for other sequences?
 		if ~isempty(sourcePar.alTI0) && ~isempty(sourcePar.alTI2)
 			if sourcePar.alTI0~=100000 && sourcePar.alTI2~=7000000
 				bidsPar.ScanType = 'ASL';
