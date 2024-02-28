@@ -154,7 +154,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 				end
 
 				if ~isempty(sourcePar.sWipMemBlockadFree1)
-					bidsPar.LabelingPulseMaximumGradien = sourcePar.sWipMemBlockadFree1;
+					bidsPar.LabelingPulseMaximumGradient = sourcePar.sWipMemBlockadFree1;
 				end
 			else
 				warning('Missing important parameters in Phoenix for Siemens VEPCASL sequence');
@@ -225,7 +225,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 
 		% If the labeling type is recognized, then proceed to labeling timing information extraction
 		if isfield(bidsPar,'ArterialSpinLabelingType')
-			if~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl', 'once'))
+			if ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl', 'once'))
 				if isfield(bidsPar,'SoftwareVersions') &&...
 						(~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB15A', 'once'))||...
 						~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB17A', 'once'))||...
@@ -256,8 +256,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 							bidsPar.BolusCutOffTechnique = 'QUIPSSII';
 						end
 					end
-				else
-					bidsPar.LabelingDuration = sourcePar.alTI0 / 1000 / 1000;
 				end
 			elseif ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pcasl', 'once'))
 				if isfield(sourcePar,'alTI0') && ~isempty(sourcePar.alTI0)
