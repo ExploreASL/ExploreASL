@@ -522,7 +522,7 @@ if bENABLE || bSpikeRemoval
         % Also change parameter vectors
         jsonFields.Q.EchoTime = x.Q.EchoTime(~exclusion);
         jsonFields.Q.Initial_PLD = x.Q.Initial_PLD(~exclusion);
-		if ~isempty(jsonFields.Q.LabelingDuration)
+		if isfield(x.Q, 'LabelingDuration') && ~isempty(x.Q.LabelingDuration)
 			jsonFields.Q.LabelingDuration = x.Q.LabelingDuration(~exclusion);
 		end
 
