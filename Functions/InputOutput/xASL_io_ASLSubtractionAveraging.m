@@ -88,7 +88,8 @@ end
 % imageOutput = {PWI PWI3D PWI4D Control Control3D Control4D}
 
 % [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubtractionAveraging(x, ASL4D [, PWI4D, PWI3D, Control4D, Control3D]);
-[imageOutput{1}, imageOutput{2}, imageOutput{3}, x, imageOutput{4}, imageOutput{5}, imageOutput{6}] = xASL_im_ASLSubtractionAveraging(x, imageInput{1}, imageInput{2}, imageInput{3}, imageInput{4}, imageInput{5});
+% While the images 2-5 can be passed is images, the first has to be passed as a path as ASL4D might need to have motion correction applied
+[imageOutput{1}, imageOutput{2}, imageOutput{3}, x, imageOutput{4}, imageOutput{5}, imageOutput{6}] = xASL_im_ASLSubtractionAveraging(x, path2load{1}, imageInput{2}, imageInput{3}, imageInput{4}, imageInput{5});
  
 
 %% 3. =====================================================================================
@@ -99,7 +100,31 @@ fieldNamesTE  = {'EchoTime_PWI'         'EchoTime_PWI3D'         'EchoTime_PWI4D
 
 for iNifti=1:size(saveWhichNifti, 1)
     n2save = saveWhichNifti{iNifti,1}; % which NIfTI to save
-    xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, saveWhichNifti{iNifti,2}, imageOutput{n2save}, fieldNamesPLD{n2save}, fieldNamesLD{n2save}, fieldNamesTE{n2save}, bCopyOrigJson);
+
+	% For saving, we have to use the path of the closest reference image
+	switch n2save
+		case 1
+			pathReferenceList = [1,2,3];	% Saving 1 = PWI, check path 1,2,3
+		case 2
+			pathReferenceList = [1,2]; % Saving 2 = PWI3D, check path 1,2
+		case 3
+			pathReferenceList = 1; % Saving 3 = PWI4D, check path 1
+		case 4
+			pathReferenceList = [1,4,5]; % Saving 4 = Control, check path 1,4,5
+		case 5
+			pathReferenceList = [1,4]; % Saving 5 = Control3D, check path 1,4
+		case 6
+			pathReferenceList = 1; % Saving 6 = Control4D, check path 1
+	end
+
+	% By default use Path_ASL4D as the reference
+	pathReference = x.P.Path_ASL4D;
+	for iReference = 1:length(pathReferenceList)
+		if ~isempty(path2load{pathReferenceList(iReference)})
+			pathReference = path2load{pathReferenceList(iReference)};
+		end
+	end
+    xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, saveWhichNifti{iNifti,2}, imageOutput{n2save}, fieldNamesPLD{n2save}, fieldNamesLD{n2save}, fieldNamesTE{n2save}, bCopyOrigJson, pathReference);
 end
 
 
@@ -174,7 +199,7 @@ end
 
 %% ========================================================================================
 %% ========================================================================================
-function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2save, fieldNamePLD, fieldNameLD, fieldNameTE, bCopyOrigJson)
+function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2save, fieldNamePLD, fieldNameLD, fieldNameTE, bCopyOrigJson, pathReference)
 %xASL_io_ASLSubtractionAveraging_sub_LoadJSON Load NIfTI image matrix & sidecar JSON
 %
 % x               - structure containing fields with all information required to run this function (REQUIRED)
@@ -194,7 +219,7 @@ function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2sa
             jsonFields.EchoTime = x.Q.(fieldNameTE);
         end
     
-        xASL_io_SaveNifti(x.P.Path_ASL4D, path2save, single(image2save), 32, 0, [], bCopyOrigJson, jsonFields, true);
+        xASL_io_SaveNifti(pathReference, path2save, single(image2save), 32, 0, [], bCopyOrigJson, jsonFields, true);
     end
 
 end
