@@ -43,7 +43,8 @@ function xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, bCopyOrigJson, varar
 %
 % EXAMPLE: 
 %     Inside xASL_wrp_ResampleASL: xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, 0, PathASL4D{iSpace});
-%     Inside xASL_wrp_ResampleASL: xASL_io_ASLSubtractionAveraging(x, {4, x.P.Path_mean_control}, [], x.P.Path_rdespiked_ASL4D)
+%     Inside xASL_wrp_ResampleASL: xASL_io_ASLSubtractionAveraging(x, {4, x.P.Path_mean_control}, 1, x.P.Path_rdespiked_ASL4D)
+%     Inside xASL_wrp_RegisterASL: xASL_io_ASLSubtractionAveraging(x, {1, x.P.Path_mean_PWI_Clipped;4, x.P.Path_mean_control}, 0, x.P.Path_despiked_ASL4D);
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
 
@@ -72,10 +73,10 @@ fieldNamesLD  = {'LabelingDuration' 'LabelingDuration_PWI4D' 'LabelingDuration_P
 fieldNamesTE  = {'EchoTime'         'EchoTime_PWI4D'         'EchoTime_PWI3D'         'EchoTime_Control4D'         'EchoTime_Control3D'};
 
 for iNifti=1:5
-    if nargin<(iNifti+3)
-        path2load{iNifti} = [];
+    if nargin<(iNifti+3) % if the path is not defined, we will skip loading
+        path2load{iNifti} = []; % empty path
     else
-        path2load{iNifti} = varargin{iNifti};
+        path2load{iNifti} = varargin{iNifti}; % path to load
     end
     [x, imageInput{iNifti}] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, path2load{iNifti}, fieldNamesPLD{iNifti}, fieldNamesLD{iNifti}, fieldNamesTE{iNifti});
 end
@@ -86,7 +87,7 @@ end
 % imageInput = {ASL4D PWI4D PWI3D Control4D Control3D}
 % imageOutput = {PWI PWI3D PWI4D Control Control3D Control4D}
 
-% [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubtractionAveraging(x, ASL4D [, PWI4D, PWI3D, Control4D, Control3D])
+% [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubtractionAveraging(x, ASL4D [, PWI4D, PWI3D, Control4D, Control3D]);
 [imageOutput{1}, imageOutput{2}, imageOutput{3}, x, imageOutput{4}, imageOutput{5}, imageOutput{6}] = xASL_im_ASLSubtractionAveraging(x, imageInput{1}, imageInput{2}, imageInput{3}, imageInput{4}, imageInput{5});
  
 
@@ -97,7 +98,7 @@ fieldNamesLD  = {'LabelingDuration_PWI' 'LabelingDuration_PWI3D' 'LabelingDurati
 fieldNamesTE  = {'EchoTime_PWI'         'EchoTime_PWI3D'         'EchoTime_PWI4D'           'EchoTime_Control'          'EchoTime_Control3D'            'EchoTime_Control4D'};
 
 for iNifti=1:size(saveWhichNifti, 1)
-    n2save = saveWhichNifti{iNifti,1};
+    n2save = saveWhichNifti{iNifti,1}; % which NIfTI to save
     xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, saveWhichNifti{iNifti,2}, imageOutput{n2save}, fieldNamesPLD{n2save}, fieldNamesLD{n2save}, fieldNamesTE{n2save}, bCopyOrigJson);
 end
 
@@ -111,6 +112,13 @@ end
 %% ========================================================================================
 function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, path_Nifti, fieldNamePLD, fieldNameLD, fieldNameTE)
 %xASL_io_ASLSubtractionAveraging_sub_LoadJSON Load NIfTI image matrix & sidecar JSON
+%
+%  x               - structure containing fields with all information required to run this function (REQUIRED)
+% path_Nifti      - path to NIfTI file (STRING, REQUIRED)
+% fieldNamePLD    - field name for PostLabelingDelay (NUMERIC, REQUIRED)
+% fieldNameLD     - field name for LabelingDuration (NUMERIC, REQUIRED)
+% fieldNameTE     - field name for EchoTime (NUMERIC, REQUIRED)
+% imageOut        - NIfTI image matrix
 
     imageOut = []; % default
 
@@ -168,6 +176,14 @@ end
 %% ========================================================================================
 function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2save, fieldNamePLD, fieldNameLD, fieldNameTE, bCopyOrigJson)
 %xASL_io_ASLSubtractionAveraging_sub_LoadJSON Load NIfTI image matrix & sidecar JSON
+%
+% x               - structure containing fields with all information required to run this function (REQUIRED)
+% path2save       - path to save NIfTI file (STRING, REQUIRED)
+% image2save      - NIfTI image matrix (REQUIRED)
+% fieldNamePLD    - field name for PostLabeling Delay (NUMERIC, REQUIRED)
+% fieldNameLD     - field name for LabelingDuration (NUMERIC, REQUIRED)
+% fieldNameTE     - field name for EchoTime (NUMERIC, REQUIRED)
+% bCopyOrigJson   - boolean stating if the original JSON contents are copied as well
 
     if ~isempty(image2save)
         % Also save parameter vectors
