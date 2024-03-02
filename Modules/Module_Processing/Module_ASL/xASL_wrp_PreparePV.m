@@ -46,7 +46,7 @@ if ~bStandardSpace
 end
 
 % Use either original or motion estimated ASL4D
-% Use despiked ASL only if spikes were detected and new file has been createdcsf
+% Use despiked ASL only if spikes were detected and new file has been created
 % Otherwise, despiked_raw_asl = same as original file
 if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
@@ -58,12 +58,16 @@ if ~xASL_im_CompareNIfTIResolutionXYZ(x.P.Path_c1T1, x.P.Path_c2T1)
     warning('pGM & pWM dont have same resolution!');
 else
     if xASL_im_CompareNIfTIResolutionXYZ(x.P.Path_c1T1, x.P.Path_despiked_ASL4D) && xASL_im_CompareNIfTIResolutionXYZ(x.P.Path_c2T1, x.P.Path_despiked_ASL4D)
+        fprintf('Identical T1 & ASL resolutions, copying PV maps\n');
+        
         % copy the PV maps rather than smooth/downsample them to the ASL
         % resolution, if the resolutions are identical
         xASL_Copy(x.P.Path_c1T1, x.P.Path_PVgm, true);
         xASL_Copy(x.P.Path_c2T1, x.P.Path_PVwm, true);
 		if xASL_exist(x.P.Path_c3T1)
             xASL_Copy(x.P.Path_c3T1, x.P.Path_PVcsf, true);
+        else
+            warning('CSF segmentation missing, we need this for several pipeline steps');
 		end
 		
 		if xASL_exist(x.P.Path_WMH_SEGM)
@@ -80,9 +84,9 @@ else
 		
 		if xASL_exist(x.P.Path_rWMH_SEGM)
             xASL_Copy(x.P.Path_rWMH_SEGM, x.P.Pop_Path_PV_WMH_SEGM, true);
-		end
+        end
+
         % then skip the rest of the function
-        fprintf('Indentical T1 & ASL resolutions, copying PV maps\n');
         return;
     end
 end
@@ -92,8 +96,9 @@ if bStandardSpace
     %% ------------------------------------------------------------------------------------------
     %% 1)   Create dummy upsampled ASL scan, for registration
     % Assumes isotropic 1.5 mm resolution    
-	xASL_im_Upsample(x.P.Path_PWI, x.P.Path_rPWI, [1.5 1.5 1.5],0,[50 50 50]); % adding 25 voxels at each side for each dimension, to avoid too small FoV ASL dim resulting in wrong smoothing
+	xASL_im_Upsample(x.P.Path_PWI, x.P.Path_rPWI, [1.5 1.5 1.5], 0, [50 50 50]); % adding 25 voxels at each side for each dimension, to avoid too small FoV ASL dim resulting in wrong smoothing
 	
+
 	%% ------------------------------------------------------------------------------------------
 	%% 2) Reslice pGM & pWM to hi-res ASL
 	% We just put it to the ASL grid, but we don't apply the non-linear transformation to the ASL,
@@ -102,14 +107,18 @@ if bStandardSpace
 	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], [],[], x.settings.Quality);
 	if xASL_exist(x.P.Path_c3T1)
 		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c3T1 ',1'], [],[], x.settings.Quality);
+    else
+        warning('CSF segmentation missing, we need this for several pipeline steps');
 	end
 	if xASL_exist(x.P.Path_WMH_SEGM)
 		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_WMH_SEGM ',1'], [],[], x.settings.Quality);
 	end
 	
+
     %% ------------------------------------------------------------------------------------------
     % 3)    Define effective spatial resolution of ASL
     x = xASL_adm_DefineASLResolution(x);
+
 
     %% ------------------------------------------------------------------------------------------
     % 4)    Smooth pGM & pWM to this spatial resolution
@@ -122,6 +131,7 @@ if bStandardSpace
 		xASL_spm_smooth(x.P.Path_rWMH_SEGM, x.S.optimFWHM_mm, x.P.Path_rWMH_SEGM);
 	end
 	
+
 	%% ------------------------------------------------------------------------------------------
 	% 5)    Move smoothed tissue posteriors to MNI space
 	InputList = {x.P.Path_rc1T1,x.P.Path_rc2T1};
@@ -155,6 +165,7 @@ else
     x = xASL_adm_DefineASLResolution(x); % use default effective spatial resolution
 end
 
+
 %% ------------------------------------------------------------------------------------------
 % 6     Prepare pGM and pWM in the ASL native space
 % by presmoothing before downsampling to ASL space
@@ -163,7 +174,7 @@ xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c2T1, x.P.Path_PVwm,x.S.optimFWHM_Res_mm
 xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVgm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVgm);
 xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwm);
 
-if xASL_exist(x.P.Path_c3T1) % for backward compatibility, where c3T1 wasnt always available
+if xASL_exist(x.P.Path_c3T1)
 	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c3T1,x.P.Path_PVcsf,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVcsf, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVcsf);
 end
