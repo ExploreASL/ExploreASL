@@ -108,12 +108,16 @@ pWM = xASL_io_Nifti2Im(x.P.Path_PVwm);
 pCSF = xASL_io_Nifti2Im(x.P.Path_PVcsf);
 
 MaskVascularNative = ~NegativeMaskNative & ~PositiveMaskNative;
-BrainMask = (pGM+pWM)>0.4;
-MaskVascularNative(~BrainMask) = 0; % Remove extracranial (same setting as in ROI module)
-MaskVascularNative(pWM>0.8) = 1; % Remove WM vascular spots
-MaskVascularNative(pCSF>0.8) = 1; % Remove WM vascular spots
 
-% Obtain brain mask for image processing (e.g., BASIL)
+% this is the parenchyma brain mask, this used to be
+% (GMim+WMim)>0.5 for rc1T1 & rc2T1
+% We want to be inclusive, so we do (GMim+WMim)>CSFim
+BrainMask = (pGM+pWM)>pCSF;
+MaskVascularNative(~BrainMask) = 0; % Remove extracranial (same setting as in ROI module)
+MaskVascularNative(pWM>(0.8*max(pWM))) = 1; % Remove WM vascular spots
+MaskVascularNative(pCSF>(0.8*max(pCSF(:)))) = 1; % Remove WM vascular spots
+
+% Obtain cranial mask for image processing (e.g., BASIL)
 BrainMaskProcessingNativeSpace = (pGM+pWM+pCSF)>0.08;
 
 %% 3B. Brainmasking & FoV-masking standard space
@@ -123,10 +127,15 @@ pCSF = xASL_io_Nifti2Im(x.P.Pop_Path_PV_pCSF);
 FoVim = xASL_io_Nifti2Im(x.P.Pop_Path_FoV);
 
 MaskVascularMNI = ~NegativeMaskMNI & ~PositiveMaskMNI;
-BrainMask = (pGM+pWM)>0.4 & FoVim; % -> same setting as used in ROI analysis
+
+% this is the parenchyma brain mask, this used to be
+% (GMim+WMim)>0.5 for rc1T1 & rc2T1
+% We want to be inclusive, so we do (GMim+WMim)>CSFim
+BrainMask = (pGM+pWM)>pCSF;
+BrainMask = BrainMask & FoVim; % -> same setting as used in ROI analysis
 MaskVascularMNI(~BrainMask) = 0; % Remove extracranial & FoVim
-MaskVascularMNI(pWM>0.9) = 1; % Remove WM vascular spots
-MaskVascularMNI(pCSF>0.9) = 1; % Remove CSF vascular spots
+MaskVascularMNI(pWM>(0.9*max(pWM(:)))) = 1; % Remove WM vascular spots
+MaskVascularMNI(pCSF>(0.9*max(pCSF(:)))) = 1; % Remove CSF vascular spots
 
 % Obtain brain mask for image processing (e.g., BASIL)
 BrainMaskProcessingStandardSpace = (pGM+pWM+pCSF)>0.08 & FoVim;
