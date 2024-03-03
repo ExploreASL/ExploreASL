@@ -1,4 +1,4 @@
-function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, brainCentralityMap, LowThreshold)
+function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, pvCSF, brainCentralityMap, LowThreshold)
 %xASL_im_M0ErodeSmoothExtrapolate M0 image processing
 %
 % FORMAT: [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, brainCentralityMap[, LowThreshold])
@@ -7,8 +7,9 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %   ImIn - unprocessed M0 image, as 3D image or path (REQUIRED)
 %   DirOutput - sring path to output folder, used to be x.D.M0regASLdir (REQUIRED)
 %   NameOutput - string for filename in ['M0_im_proc_' NameOutput '.jpg'] (REQUIRED)
-%   pvGM  - unprocessed pvGM image (3D image or path, same space as M0 image (REQUIRED)
-%   pvWM  - unprocessed pvWM image (3D image or path, same space as M0 image (REQUIRED)
+%   pvGM  - unprocessed pvGM image  (3D image or path, same space as M0 image (REQUIRED)
+%   pvWM  - unprocessed pvWM image  (3D image or path, same space as M0 image (REQUIRED)
+%   pvCSF - unprocessed pvCSF image (3D image or path, same space as M0 image (REQUIRED)
 %   brainCentralityMap - brain mask probability map multiplied by centrality map, as 3D image or path (REQUIRED)
 %   LowThreshold - numerical value between 0 and 1 for percentile sorted images values that will define the inclusion mask (mask>LowThreshold)
 %                   (OPTIONAL, DEFAULT=0.7)
@@ -47,9 +48,9 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %               7.  Scale back to the GM M0
 %               8.  Print visual QC figure
 %
-% EXAMPLE: as used in ExploreASL (xASL_wrp_ProcessM0): [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_rc1T1, x.P.Pop_Path_rc2T1, path_BrainCentralityMap)
+% EXAMPLE: as used in ExploreASL (xASL_wrp_ProcessM0): [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_PV_pGM, x.P.Pop_Path_PV_PWM, path_BrainCentralityMap)
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------
@@ -61,12 +62,14 @@ elseif nargin < 2 || isempty(DirOutput)
 elseif nargin < 3 || isempty(NameOutput)
 	error('Please specify the output name');
 elseif nargin < 4 || isempty(pvGM)
-	error('Please specify the pvGM');
+	error('Please specify pvGM');
 elseif nargin < 5 || isempty(pvWM)
-	error('Please specify the pvWM');
-elseif nargin < 6 || isempty(brainCentralityMap)
+	error('Please specify pvWM');
+elseif nargin < 6 || isempty(pvCSF)
+	error('Please specify pvCSF');    
+elseif nargin < 7 || isempty(brainCentralityMap)
 	error('Please specify the brainCentralityMap');
-elseif nargin < 7 || isempty(LowThreshold)
+elseif nargin < 8 || isempty(LowThreshold)
     LowThreshold = 0.7;
 elseif ~isnumeric(LowThreshold)
     error('Invalid LowThreshold input parameter, should be numerical');
@@ -83,14 +86,24 @@ ImIn = xASL_io_Nifti2Im(ImIn);
 % Here, we load the partial volume maps for the first mask
 GMim = xASL_io_Nifti2Im(pvGM);
 WMim = xASL_io_Nifti2Im(pvWM);
+CSFim = xASL_io_Nifti2Im(pvCSF);
 
 if xASL_stat_SumNan(GMim(:))==0
     error('Empty GM partial volume map, cannot process the M0');
 elseif xASL_stat_SumNan(WMim(:))==0
     error('Empty WM partial volume map, cannot process the M0');
+elseif xASL_stat_SumNan(CSFim(:))==0
+    error('Empty CSF partial volume map, cannot process the M0');
 else
-    GMmask = GMim>0.7;
-    Mask1 = (GMim+WMim)>0.5;
+    % This was 0.7 for rc1T1 in standard space,
+    % to keep some robustness, we now take pvGM*1.2*(pvWM+pvCSF)
+    GMmask = GMim>( 1.2.*(WMim+CSFim) );
+
+    % this is the parenchyma mask, this used to be
+    % (GMim+WMim)>0.5 for rc1T1 & rc2T1
+    % For robustness, we do (GMim+WMim)>CSFim
+    % now for pvGM & pvWM
+    Mask1 = (GMim+WMim)>(1.5.*CSFim);
     fprintf('\n%s', 'Processing M0 image: ');
 end
 

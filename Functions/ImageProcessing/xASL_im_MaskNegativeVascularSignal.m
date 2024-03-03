@@ -8,8 +8,8 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
 %   x                   - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging (REQUIRED)
 %   x.P.Path_PWI        - path to PWI image
 % & x.P.Pop_Path_PWI
-%   x.P.Path_c1T1       - path to GM segmentation map
-% & x.P.Pop_Path_rc1T1
+%   x.P.Path_PVgm       - path to GM segmentation map
+% & x.P.Pop_Path_PV_pGM
 %   IsSpace             - 1 for native ASL space, 2 for standard space (REQUIRED)
 %
 % OUTPUT:
@@ -42,7 +42,7 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: NegativeMask = xASL_im_MaskNegativeVascularSignal(x);
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
  
     if nargin<2 || isempty(IsSpace)
         warning('Didnt know space to calculate negative mask in, skipping');
@@ -54,9 +54,13 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
     if IsSpace==1 % native space
         PWIpath = x.P.Path_PWI;
         GMpath = x.P.Path_PVgm;
+        WMpath = x.P.Path_PVwm;
+        CSFpath = x.P.Path_PVcsf;
     elseif IsSpace==2 % standard space
         PWIpath = x.P.Pop_Path_PWI;
-        GMpath = x.P.Pop_Path_rc1T1;
+        GMpath = x.P.Pop_Path_PV_pGM;
+        WMpath = x.P.Pop_Path_PV_pWM;
+        CSFpath = x.P.Pop_Path_PV_pCSF;
         % no need to reslice
     end
     
@@ -66,8 +70,17 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
     elseif ~xASL_exist(GMpath, 'file')
         warning([GMpath ' missing, skipping']);
         return;
+    elseif ~xASL_exist(WMpath, 'file')
+        warning([WMpath ' missing, skipping']);
+        return;
+    elseif ~xASL_exist(CSFpath, 'file')
+        warning([CSFpath ' missing, skipping']);
+        return;
     end
         
+    GMim = xASL_io_Nifti2Im(GMpath);
+    WMim = xASL_io_Nifti2Im(WMpath);
+    CSFim = xASL_io_Nifti2Im(CSFpath);
  
     %% 1. Obtain mask of negative voxels within pGM>0.5 mask
     % Create GMmask in ASL space from SPM
@@ -75,7 +88,10 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
     if size(PWIim,4)>1
         PWIim = xASL_stat_MeanNan(PWIim,4);
     end
-    GMmask = xASL_io_Nifti2Im(GMpath)>0.5;
+    GMmask = GMim>(WMim+CSFim);
+    % This used to be rc1T1>0.5, now this is pvGM (on ASL resolution)>0.5
+    % Because of transformations and smoothing, the value 0.5 changes
+    % But pGM>(pWM+pCSF) should stay roughly the same
     
     if ~isequal(size(PWIim),size(GMmask))
         warning('Sizes of PWI and GM images differed');
@@ -136,6 +152,5 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
  
     xASL_TrackProgress(1,1);
     fprintf('\n');
-    
     
 end

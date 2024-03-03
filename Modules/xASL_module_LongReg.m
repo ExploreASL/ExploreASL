@@ -188,6 +188,7 @@ if  strcmp(x.P.SubjectID,CurrentSub{1}) && length(VolumeN)>1 % only perform if t
                 OtherList{1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, [x.P.STRUCT '.nii']);
                 OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, ['c1' x.P.STRUCT '.nii']);
                 OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, ['c2' x.P.STRUCT '.nii']);
+				OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, ['c3' x.P.STRUCT '.nii']);
                 OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, [x.P.FLAIR '.nii']);
                 OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, [x.P.WMH_SEGM '.nii']);
 				OtherList{end+1,1} = fullfile(x.dir.xASLDerivatives,CurrentSub{iV}, [x.P.T1c '.nii']);
