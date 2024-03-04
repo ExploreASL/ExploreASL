@@ -1,4 +1,4 @@
-function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS)
+function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite)
 % Save a file to a Nifti format, while taking the parameters from another file
 %
 % FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields])
@@ -23,6 +23,9 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %   bLegacy2BIDS   Convert saved JSON from Legacy to BIDS. This only applies to the JsonFields passed on the input. The JSON read from 
 %                  the origNifti is in BIDS already and is never converted. This means that the saved JSON is always in BIDS, this only 
 %                  solves the problem if the input is in Legacy or already in BIDS (OPTIONAL, DEFAULT = true)
+%   bOverwrite     Vector with 3 Booleans for overwriting the following pre-existing destination files:
+%                  1) NIfTI file, 2) JSON file, 3) mat-orientation motion file (for 4D NIfTIs) (OPTIONAL, DEFAULT = [1 1 1]
+%
 % JSON saving options are:
 % 1. bCopyOrigJson = false & JsonFields = empty  -> we don't save a new JSON sidecar
 % 2. bCopyOrigJson = true  & JsonFields = empty  -> we copy the original JSON sidecar only
@@ -40,8 +43,7 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %              3. Create new NIfTI
 %              4. Remove redundant .mat orientation files
 %              5. Manage scale slopes
-%              6. Manage new filename
-%              7. Delete any pre-existing NIfTI files with the same name
+%              6. Save new NIfTI
 %
 % EXAMPLE: xASL_io_SaveNifti('c:\User\path\old.nii', 'c:\User\path\new.nii', im)
 %          xASL_io_SaveNifti('c:\User\path\old.nii', 'c:\User\path\new.nii', im, [], 0)
@@ -85,6 +87,10 @@ end
 
 if nargin < 9 || isempty(bLegacy2BIDS)
 	bLegacy2BIDS = true;
+end
+
+if nargin < 10 || isempty(bOverwrite)
+	bOverwrite = [true true true];
 end
 
 % JSON saving, see detailed explanation above.
@@ -229,7 +235,16 @@ newNifti.dat(:,:,:,:,:) = imNew;
 %% 4. Remove redundant .mat orientation files
 % Start with removing any pre-existing destination .mat files
 % Even if we don't create a new one, we don't want the wrong .mat motion orientation file with a new NIfTI
-xASL_delete(newMat);
+
+if exist(newMat, 'file')
+    if bOverwrite(3)
+        xASL_delete(newMat);
+    elseif ~bOverwrite(3)
+        % don't do anything
+    else
+        warning('Pre-existing -mat-file')
+    end
+end
 
 if size(imNew,4)==1
     xASL_delete(tempMat);
@@ -259,41 +274,45 @@ end
 
 
 %% ====================================================================================
-%% 6. Manage new filename
-xASL_Move(tempName,pathNewNifti,1,0);
+%% 6. Save NIfTI (& -mat sidecar)
+% Remove existing NIfTI
+if xASL_exist(pathNewNifti)
+    if bOverwrite(1)
+        xASL_delete(pathNewNifti);
+    elseif ~bOverwrite(1)
+        % don't do anything
+    else
+        warning('Destination NIfTI file already existed');
+    end
+end
+
+if bOverwrite(1) || ~xASL_exist(pathNewNifti, 'file')
+    % if we want to overwrite an existing NIfTI-file (or none existed)
+    xASL_Move(tempName, pathNewNifti, 1, 0);
+end
 
 if exist(tempMat, 'file')
-    xASL_Move(tempMat, newMat, 1, 0);
+    % if a mat-file exists that we need
+    if bOverwrite(3) || ~exist(newMat, 'file')
+        % if we want to overwrite an existing mat-file (or none existed)
+        xASL_Move(tempMat, newMat, 1, 0);
+    end
 end
 
 
 %% ====================================================================================
-%% 7. Delete any pre-existing NIfTI files with the same name
-% Always avoid having two of the same files, of which one copy is zipped
-% E.g. in a rerun
-
-% PM: this can be replaced by removing the output path if exists, at the
-% start of this function, when we remove the first input argument
-if exist([pathNewNifti '.gz'], 'file')
-    delete([pathNewNifti '.gz']);
-end
-
-if bGZip
-    xASL_adm_GzipNifti(pathNewNifti);
-end
-
-if strcmp(pathNewNifti(end-3:end),'.nii') && exist(pathNewNifti,'file') && exist([pathNewNifti '.gz'],'file')
-    delete([pathNewNifti '.gz']);
-end
-
-
-%% ====================================================================================
-%% 8. Create JSON sidecar
+%% 7. Create JSON-sidecar
 % 0. Remove JSON sidecar if it already exists
 % Even if we don't save a new one, then we still don't want the wrong sidecar to a new NIfTI
 % But don't delete the NewJson in case the new and reference file are equivalent
 if ~strcmp(pathNewNifti, pathOrigNifti)
-	xASL_delete(pathNewJson);
+	if bOverwrite(2)
+        xASL_delete(pathNewJson);
+    elseif ~bOverwrite(2)
+        % don't do anything
+    else
+        warning('Destination JSON file already existed');
+    end
 end
 
 if bSaveJson
@@ -319,8 +338,9 @@ if bSaveJson
     end
 
     % d. Fourth, we save the JSON
-    xASL_io_WriteJson(pathNewJson, json, 1);
-    % careful, this will overwrite (that is what the NIfTIs also do in this function)
+    if bOverwrite(2) || ~xASL_exist(pathNewJson, 'file')
+        xASL_io_WriteJson(pathNewJson, json, 1);
+    end
 end
 
 

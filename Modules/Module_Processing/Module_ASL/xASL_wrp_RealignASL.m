@@ -526,7 +526,7 @@ if bENABLE || bSpikeRemoval
 			jsonFields.Q.LabelingDuration = x.Q.LabelingDuration(~exclusion);
 		end
 
-        xASL_io_SaveNifti(x.P.Path_ASL4D, x.P.Path_despiked_ASL4D, NewIm, 32, 0, [], 1, jsonFields, true);
+        xASL_io_SaveNifti(x.P.Path_ASL4D, x.P.Path_despiked_ASL4D, NewIm, 32, 0, [], 1, jsonFields, true, [true true, false]);
     end
     
 else
