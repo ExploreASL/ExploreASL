@@ -119,9 +119,10 @@ fprintf('%s\n','Loading PWI4D & M0 images');
 [~, jsonASL] = xASL_io_Nifti2Im(PWI4D_Path, [], [], true); % Load CBF nifti and convert JSON to Legacy
 
 if isempty(jsonASL)
-    % If jsonASL is missing, we have to throw an error. Because all x.Q.PLD are for the raw unsubtracted images.
-	% We could have recalculated the correct PLD vectors, but that should not really be done here but in the 
-	% previous functions.
+    % If jsonASL is missing, this could mean either:
+	% A. this is old derivatives data, where we didn't use json sidecars yet
+	% B. Somebody changed the PWI4D.nii but accidentally removed the json sidecar
+	% In both cases, we have to throw an error. Because what we have in x.Q cannot be used, this is a leftover from the start of the pipeline (from the rawdata unsubtracted volumes).
 	error(['JSON file missing for: ' PWI4D_Path]);
 end
 
