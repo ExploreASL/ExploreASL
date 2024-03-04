@@ -147,14 +147,27 @@ else
 		nSlices = size(M0IM,3);
 
 		if  x.M0_usesASLtiming
-			% in this case, the M0 readout has the exact same timing as the ASL readout
-			% this is the case e.g. for Siemens 2D EPI
-			if isfield(x.modules.asl, 'bTimeEncoded') && x.modules.asl.bTimeEncoded == 1
-				% For Time-Encoded, we can't take the longest PLD, but the longest PLD in PWI4D. 
-				% This is by definition the last PLD in the vector, as typically the first corresponds to the control image and can be ignored
-				NetTR = x.Q.LabelingDuration(end) + x.Q.Initial_PLD(end) + SliceReadoutTime(SliceIM);
+			% in this case, the M0 readout has the exact same timing as the ASL readout. This is the case e.g. for Siemens 2D EPI
+
+			% We try to load the newly subtracted images after despiking and outlier exclusion and check the potentially updated parameters
+			if xASL_exist(x.P.Path_PWI4D, 'file')
+				[~, ~, jsonPWI4D] = xASL_io_ReadNifti(x.P.Path_PWI4D);
 			else
-				NetTR = max(x.Q.LabelingDuration) + max(x.Q.Initial_PLD) + SliceReadoutTime(SliceIM);
+				jsonPWI4D = [];
+			end
+
+			if isempty(jsonPWI4D)
+				% In case we could not read updated parameters, we use the basic ones
+				if isfield(x.modules.asl, 'bTimeEncoded') && x.modules.asl.bTimeEncoded == 1
+					% For Time-Encoded, we can't take the longest PLD, but the longest PLD in PWI4D.
+					% This is by definition the last PLD in the vector, as typically the first corresponds to the control image and can be ignored
+					NetTR = x.Q.LabelingDuration(end) + x.Q.Initial_PLD(end) + SliceReadoutTime(SliceIM);
+				else
+					NetTR = max(x.Q.LabelingDuration) + max(x.Q.Initial_PLD) + SliceReadoutTime(SliceIM);
+				end
+			else
+				% In case updated parameters exist, we use the updated ones from the PWI4D.json
+				NetTR = max(jsonPWI4D.Q.LabelingDuration) + max(jsonPWI4D.Q.Initial_PLD) + SliceReadoutTime(SliceIM);
 			end
 
 			fprintf('%s\n','2D sliceWise M0 readout assumed, same timing as ASL slices readout used');
