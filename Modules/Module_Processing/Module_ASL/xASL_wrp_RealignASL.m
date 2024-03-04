@@ -366,6 +366,8 @@ elseif bENABLE
     mintValuePlot(mintValue+1:end)=min(tValue);
 end
 
+xASL_adm_DeleteFilePair(rInputPath, 'json'); % delete temporary image
+
 
 %% ----------------------------------------------------------------------------------------
 %% 4. Set volumes to exclude
@@ -535,7 +537,6 @@ else
     MinimumtValue = 0;
 end
 
-xASL_adm_DeleteFilePair(rInputPath, 'json'); % delete temporary image
 
 %% ----------------------------------------------------------------------------------------
 %% 9. Save motion statistics before excluding motion spikes
