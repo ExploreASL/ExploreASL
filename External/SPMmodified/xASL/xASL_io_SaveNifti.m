@@ -1,7 +1,7 @@
 function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite)
 % Save a file to a Nifti format, while taking the parameters from another file
 %
-% FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields])
+% FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite])
 %
 % INPUT:
 %   pathOrigNifti  Path to the original Nifti file to take parameters from (REQUIRED)
@@ -24,7 +24,9 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %                  the origNifti is in BIDS already and is never converted. This means that the saved JSON is always in BIDS, this only 
 %                  solves the problem if the input is in Legacy or already in BIDS (OPTIONAL, DEFAULT = true)
 %   bOverwrite     Vector with 3 Booleans for overwriting the following pre-existing destination files:
-%                  1) NIfTI file, 2) JSON file, 3) mat-orientation motion file (for 4D NIfTIs) (OPTIONAL, DEFAULT = [1 1 1]
+%                  1) NIfTI file, 2) JSON file, 3) mat-orientation motion file (for 4D NIfTIs) (OPTIONAL, DEFAULT = [1 1 1]; 
+%                  1 -> [1 1 1] and 0 -> [0 0 0] and creates a warning; [1 0] - error
+%                  
 %
 % JSON saving options are:
 % 1. bCopyOrigJson = false & JsonFields = empty  -> we don't save a new JSON sidecar
@@ -91,6 +93,13 @@ end
 
 if nargin < 10 || isempty(bOverwrite)
 	bOverwrite = [true true true];
+elseif sum(isinf(bOverwrite)) > 0 || sum(isnan(bOverwrite)) > 0
+	error('bOverwrite should not contain INF or NaN');
+elseif length(bOverwrite) == 1
+	bOverwrite(1,[2,3]) = bOverwrite(1);
+	warning('bOverwrite should have a length of 3');
+elseif length(bOverwrite) == 2
+	error('bOverwrite should have a length of 3');
 end
 
 % JSON saving, see detailed explanation above.
@@ -237,13 +246,9 @@ newNifti.dat(:,:,:,:,:) = imNew;
 % Even if we don't create a new one, we don't want the wrong .mat motion orientation file with a new NIfTI
 
 if exist(newMat, 'file')
-    if bOverwrite(3)
+	if bOverwrite(3)
         xASL_delete(newMat);
-    elseif ~bOverwrite(3)
-        % don't do anything
-    else
-        warning('Pre-existing -mat-file')
-    end
+	end % Otherwise don't do anything
 end
 
 if size(imNew,4)==1
@@ -277,13 +282,9 @@ end
 %% 6. Save NIfTI (& -mat sidecar)
 % Remove existing NIfTI
 if xASL_exist(pathNewNifti)
-    if bOverwrite(1)
+	if bOverwrite(1)
         xASL_delete(pathNewNifti);
-    elseif ~bOverwrite(1)
-        % don't do anything
-    else
-        warning('Destination NIfTI file already existed');
-    end
+	end % Otherwise don't do anything
 end
 
 if bOverwrite(1) || ~xASL_exist(pathNewNifti, 'file')
@@ -308,16 +309,12 @@ end
 if ~strcmp(pathNewNifti, pathOrigNifti)
 	if bOverwrite(2)
         xASL_delete(pathNewJson);
-    elseif ~bOverwrite(2)
-        % don't do anything
-    else
-        warning('Destination JSON file already existed');
-    end
+	end % Otherwise don't do anything
 end
 
 if bSaveJson
     % a. First, we load the reference sidecar JSON file, if it exists
-    if bCopyOrigJson && xASL_exist(pathOrigJson, 'file')
+	if bCopyOrigJson && xASL_exist(pathOrigJson, 'file')
         json = xASL_io_ReadJson(pathOrigJson);
     elseif bCopyOrigJson
         warning([pathOrigJson ' did not exist']);
