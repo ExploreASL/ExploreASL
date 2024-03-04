@@ -90,7 +90,7 @@ if ~StructuralDerivativesExist
 		% We don't have the structural images and the DummyMNI mode wasn't activated
         fprintf('also, there are no structural scans present in rawdata\n');
 		fprintf('Consider enabling "x.modules.asl.bUseMNIasDummyStructural" to run the ASL module without structural images\n');
-    end
+	end
     error('Skipping ASL module');
 end
 
@@ -429,20 +429,16 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     end
     
 	% allow 4D quantification as well, storing CBF4D. This is currently not implemented for multi-PLD/multi-TE (BASIL/FABBER)
-	if isfield(x.modules.asl, 'SaveCBF4D') && x.modules.asl.SaveCBF4D
-        if x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQuantifyMultiTE
-            warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, skipping');
+	if x.modules.asl.SaveCBF4D && x.Q.nUniqueInitial_PLD == 1 && x.modules.asl.bQuantifyMultiTE == false
+		if size(xASL_io_Nifti2Im(path_PWI4D), 4) == 1
+			warning('x.modules.asl.SaveCBF4D was requested but only one volume exists, skipping');
 		else
-            if size(xASL_io_Nifti2Im(path_PWI4D), 4) == 1
-                warning('x.modules.asl.SaveCBF4D was requested but only one volume exists, skipping');
-            else
-                fprintf('%s\n','Quantifying CBF4D in native space');
-                xASL_wrp_Quantify(x, path_PWI4D, x.P.Path_CBF4D, x.P.Path_rM0, x.P.Path_SliceGradient, true);
-    
-                fprintf('%s\n','Quantifying CBF4D in standard space');
-                xASL_wrp_Quantify(x, path_PWI4D_Pop, x.P.Pop_Path_qCBF4D, [], [], true);
-            end
-        end
+			fprintf('%s\n','Quantifying CBF4D in native space');
+			xASL_wrp_Quantify(x, path_PWI4D, x.P.Path_CBF4D, x.P.Path_rM0, x.P.Path_SliceGradient, true);
+
+			fprintf('%s\n','Quantifying CBF4D in standard space');
+			xASL_wrp_Quantify(x, path_PWI4D_Pop, x.P.Pop_Path_qCBF4D, [], [], true);
+		end
 	end
 	
 	if x.modules.asl.bPVCNativeSpace
@@ -822,6 +818,14 @@ if ~isfield(x.modules.asl, 'bUseBasilQuantification') || isempty(x.modules.asl.b
     if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
         x.modules.asl.bUseBasilQuantification = true;
     end
+end
+
+% Saving of CBF4D is only possible for single TE, single PLD sequences
+if ~isfield(x.modules.asl, 'SaveCBF4D') || isempty(x.modules.asl.SaveCBF4D)
+	x.modules.asl.SaveCBF4D = false;
+elseif x.modules.asl.SaveCBF4D && (x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQuantifyMultiTE)
+	warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, setting SaveCBF4D = false');
+	x.modules.asl.SaveCBF4D = false;
 end
 
 % Manage absent M0
