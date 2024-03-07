@@ -134,12 +134,13 @@ if nVolumes>10
     if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
         % If segmented files exist, then the PVgm should already be prepared previously
 
-        if ~xASL_exist(x.P.Path_PWI4D, 'file')
+        if ~isfield(x.P, 'Path_PWI4D_used') || ~xASL_exist(x.P.Path_PWI4D_used, 'file')
             [ControlIM, LabelIM] = xASL_quant_GetControlLabelOrder(xASL_io_Nifti2Im(x.P.Path_ASL4D));
-            xASL_io_SaveNifti(x.P.Path_ASL4D, x.P.Path_PWI4D, ControlIM-LabelIM);
+			x.P.Path_PWI4D_used = x.P.Path_PWI4D;
+            xASL_io_SaveNifti(x.P.Path_ASL4D, x.P.Path_PWI4D_used, ControlIM-LabelIM);
         end
 
-        TempASL = xASL_qc_temporalSNR(x.P.Path_PWI4D,{x.P.Path_PVgm x.P.Path_PVwm});
+        TempASL = xASL_qc_temporalSNR(x.P.Path_PWI4D_used,{x.P.Path_PVgm x.P.Path_PVwm});
         if ~isempty(TempASL)
             ASLFields = fields(TempASL);
             for iA=1:length(ASLFields)
