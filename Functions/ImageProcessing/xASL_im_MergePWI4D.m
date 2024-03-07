@@ -60,16 +60,15 @@ for iSpace = 1:2
 
 		if iSession == 1
 			% For the first session, we take both JSON and NII as they are
-			imPWI4DConcatenated = imPWI4Dcurrent; 
+			% And apply the scaling, which is by default 1
+			imPWI4DConcatenated = imPWI4Dcurrent / x.modules.asl.sessionsToMergeScaling(iSession); 
 
 			% Note that we don't convert to Legacy and work with BIDS format directly
 			jsonPWI4DConcatenated = struct();
 		else	
 			% For following sessions, concatenate NII and JSON
-            % Check if x.Q.M0Scaling exists (should be a double [1, 1.27] e.g.)
-            if isfield(x.modules.asl, 'SessionMergingPWIScaling')
-	            imPWI4Dcurrent = imPWI4Dcurrent/(x.modules.asl.SessionMergingPWIScaling(iSession));
-            end
+            % And apply the scaling, which is by default 1
+			imPWI4Dcurrent = imPWI4Dcurrent / x.modules.asl.sessionsToMergeScaling(iSession);
 
 			% Check dimensions
 			if isequal(size(imPWI4Dcurrent, 1:3), size(imPWI4DConcatenated, 1:3))
