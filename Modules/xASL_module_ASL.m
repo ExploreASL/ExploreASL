@@ -409,35 +409,35 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
 	%% Run merging if requested as first function before any quantification, as quantification itself should disregard the data source
 	if x.modules.asl.bMergingSessions
-		[path_PWI4D, path_PWI4D_Pop] = xASL_im_MergePWI4D(x);
+		[x.P.Path_PWI4D_used, x.P.Pop_Path_PWI4D_used] = xASL_im_MergePWI4D(x);
 	else
 		% Use default non-merged paths
-		path_PWI4D = x.P.Path_PWI4D;
-		path_PWI4D_Pop = x.P.Pop_Path_PWI4D;
+		x.P.Path_PWI4D_used = x.P.Path_PWI4D;
+		x.P.Pop_Path_PWI4D_used = x.P.Pop_Path_PWI4D;
 	end
 
     fprintf('%s\n','Quantifying ASL:   ');
     % If BASIL quantification will be performed, only native space analysis is possible
     if isfield(x.modules.asl, 'bUseBasilQuantification') && x.modules.asl.bUseBasilQuantification
         % Quantification in native space only for BASIL
-        xASL_wrp_Quantify(x, path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
+        xASL_wrp_Quantify(x, x.P.Path_PWI4D_used, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
     else
         % Quantification in standard space:
-        xASL_wrp_Quantify(x, path_PWI4D_Pop);
+        xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D_used);
         % Quantification in native space:
-        xASL_wrp_Quantify(x, path_PWI4D, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
+        xASL_wrp_Quantify(x, x.P.Path_PWI4D_used, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
     end
     
 	% allow 4D quantification as well, storing CBF4D. This is currently not implemented for multi-PLD/multi-TE (BASIL/FABBER)
 	if x.modules.asl.SaveCBF4D && x.Q.nUniqueInitial_PLD == 1 && x.modules.asl.bQuantifyMultiTE == false
-		if size(xASL_io_Nifti2Im(path_PWI4D), 4) == 1
+		if size(xASL_io_Nifti2Im(x.P.Path_PWI4D_used), 4) == 1
 			warning('x.modules.asl.SaveCBF4D was requested but only one volume exists, skipping');
 		else
 			fprintf('%s\n','Quantifying CBF4D in native space');
-			xASL_wrp_Quantify(x, path_PWI4D, x.P.Path_CBF4D, x.P.Path_rM0, x.P.Path_SliceGradient, true);
+			xASL_wrp_Quantify(x, x.P.Path_PWI4D_used, x.P.Path_CBF4D, x.P.Path_rM0, x.P.Path_SliceGradient, true);
 
 			fprintf('%s\n','Quantifying CBF4D in standard space');
-			xASL_wrp_Quantify(x, path_PWI4D_Pop, x.P.Pop_Path_qCBF4D, [], [], true);
+			xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D_used, x.P.Pop_Path_qCBF4D, [], [], true);
 		end
 	end
 	
