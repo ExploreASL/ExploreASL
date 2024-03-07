@@ -755,18 +755,47 @@ else
     fprintf('\n%s', ['-> Detected ' xASL_num2str(nLists) ' list(s) for concatenating sessions']);
 end
 
+% Read and check a corresponding list with merging scalings
+if ~isfield(x.modules.asl, 'SessionMergingScaling')
+	% By default set as empty
+	x.modules.asl.SessionMergingScaling = {};
+else
+	% The parameter should be a list of lists, so like for SessionMerginList - we need to convert it if needed
+	if ~isempty(x.modules.asl.SessionMergingScaling) && ~iscell(x.modules.asl.SessionMergingScaling)
+		x.modules.asl.SessionMergingScaling = {x.modules.asl.SessionMergingScaling};
+	end
+end
+
+if ~isempty(x.modules.asl.SessionMergingList) && isempty(x.modules.asl.SessionMergingScaling)
+	% If the merging list is not empty, but scaling list is, then fill with all 1s in a field of the same length
+	for iMergingList = 1:length(x.modules.asl.SessionMergingList)
+		x.modules.asl.SessionMergingScaling{iMergingList} = ones(1, length(x.modules.asl.SessionMergingList{iMergingList}));
+	end
+end
+
+% Compare the two lists and report an error if the lengths do not correspond
+if ~isempty(x.modules.asl.SessionMergingList) 
+	if numel(x.modules.asl.SessionMergingList) ~= numel(x.modules.asl.SessionMergingScaling)
+		error('Number of lists does not match between SessionMergingList and SessionMergingScaling');
+	end
+	for iMergingList = 1:length(x.modules.asl.SessionMergingList)
+		if length(x.modules.asl.SessionMergingList{iMergingList}) ~= length(x.modules.asl.SessionMergingScaling{iMergingList})
+			error('Sublist lenghts do not match between SessionMergingList and SessionMergingScaling');
+		end
+	end
+end
+
 x.modules.asl.bMergingSessions = 0; % By default, we do not merge any sessions
 % sessionsToMerge = session list that we will concatenate for this specific session & run of xASL_module_ASL
 % e.g., if we want to concatenate ASL_1 & ASL_2, this will only contain both sessions for the xASL_module_ASL iteration of ASL_2
 x.modules.asl.sessionsToMerge = {};
-
+x.modules.asl.sessionsToMergeScaling = [];
 
 % Find the lists containing the current session and identify if we are 
 % Note that these can be multiple lists
-x.modules.asl.sessionsToMerge = {}; % Set the list of sessions to merge at empty
 for iList=1:nLists
 	if ~isempty(x.modules.asl.SessionMergingList{iList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iList}))
-		currentSortedList = sort(x.modules.asl.SessionMergingList{iList});
+		[currentSortedList, indexSorted] = sort(x.modules.asl.SessionMergingList{iList});
 
         if length(currentSortedList) > 1 && strcmp(x.SESSION, currentSortedList{end})
             % If the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
@@ -778,6 +807,8 @@ for iList=1:nLists
 				% We have to assign the list again, because it is possible that sessionsToMerge was already initialized to a list that contained the current session, but that was not ending it
 				x.modules.asl.sessionsToMerge = currentSortedList;                      
 				x.modules.asl.bMergingSessions = 1;
+				x.modules.asl.sessionsToMergeScaling = x.modules.asl.SessionMergingScaling{iList};
+				x.modules.asl.sessionsToMergeScaling = x.modules.asl.sessionsToMergeScaling(indexSorted);
 			end
         end
 	end
