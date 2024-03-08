@@ -688,20 +688,37 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 		if xASL_exist(fullfile(Fpath,[Ffile '.json']), 'file')
 			currentJSON = xASL_io_ReadJson(fullfile(Fpath,[Ffile '.json']));
 			
+			% Duplicity check 
+			fieldsDuplicityCheck = {'GELabelingDuration','InversionTime','LabelingDuration'};
+			for iField = 1:length(fieldsDuplicityCheck)
+				if isfield(outputJSON, fieldsDuplicityCheck{iField}) && isfield(currentJSON, fieldsDuplicityCheck{iField})
+					if ~isequal(outputJSON.(fieldsDuplicityCheck{iField}), currentJSON.(fieldsDuplicityCheck{iField}))
+						warning('Difference in field %s between merged JSONs', fieldsDuplicityCheck{iField});
+					end
+				end
+			end
+
 			% Go through all fields
 			listFieldNames = fieldnames(currentJSON);
 			for iFieldName = 1:length(listFieldNames)
 				% Overwrite fields as we are reading JSONs with increasing priority
-				fieldsDuplicityCheck = {'GELabelingDuration','InversionTime','LabelingDuration'};
-				for iField = 1:length(fieldsDuplicityCheck)
-					if isfield(outputJSON, fieldsDuplicityCheck{iField}) && isfield(currentJSON, fieldsDuplicityCheck{iField})
-						if ~isequal(outputJSON.(fieldsDuplicityCheck{iField}), currentJSON.(fieldsDuplicityCheck{iField}))
-							warning('Difference in field %s between merged JSONs', fieldsDuplicityCheck{iField});
+				bExportVector = 0;
+				% For certain parameters - gather the fields from merged JSONs as a vector
+				fieldsExportVector = {'PostLabelDelay'};
+				for iField = 1:length(fieldsExportVector)
+					if strcmp(listFieldNames{iFieldName}, fieldsExportVector{iField}) && isfield(currentJSON, listFieldNames{iFieldName})
+						if numel(currentJSON.(fieldsExportVector{iField})) == 1
+							bExportVector = 1;
 						end
 					end
 				end
-				
-				outputJSON.(listFieldNames{iFieldName}) = currentJSON.(listFieldNames{iFieldName});
+
+				if bExportVector
+					outputJSON.(listFieldNames{iFieldName})(priorityListIndex(iJSON)) = currentJSON.(listFieldNames{iFieldName});
+					outputJSON.(listFieldNames{iFieldName})(end+1:length(NiftiPaths)) = 0;
+				else
+					outputJSON.(listFieldNames{iFieldName}) = currentJSON.(listFieldNames{iFieldName});
+				end
 			end
 		else
 			warning('While merging NIfTI files, there was a JSON file missing: %s', fullfile(Fpath,[Ffile '.json']));
