@@ -50,8 +50,6 @@ function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D_Path, M0_im, im
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
 
-%% #1543 In case we save as CBF4D or bUseBasil then we don't average. Otherwise, for non-basil non-cbf4D, we have to average PWI4D before quantification - perhaps in this subfunction.
-
 %% Admin
 fprintf('%s\n', 'Performing quantification');
 
