@@ -31,9 +31,7 @@ function xASL_wrp_ResampleASL(x)
 %
 % EXAMPLE: xASL_wrp_ResampleASL(x);
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL
-
-
+% Copyright (C) 2015-2024 ExploreASL
 
 %% ------------------------------------------------------------------------------------------
 % 0. Administration
@@ -110,7 +108,6 @@ else
     x.P.Path_rdespiked_ASL4D = x.P.Path_despiked_ASL4D;
 end
 
-
 %% ------------------------------------------------------------------------------------------
 % 5. Bilateral filter (currently disabled)
     if x.settings.BILAT_FILTER>0
@@ -131,8 +128,6 @@ end
 %             xASL_io_SaveNifti( x.P.Path_rtemp_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, ovol,32,0 ); % store in file
 %         end
 %     end
-
-
 
 %% ------------------------------------------------------------------------------------------
 % 6. Create mean control image, if available, in native & standard space
@@ -156,11 +151,8 @@ else
     fprintf('%s\n', 'Creation mean control image was skipped, because there was only 1 volume');
 end
 
-
 %% ------------------------------------------------------------------------------------------
 % 7. Clone mean control image to be used as pseudo-M0 (if
-% x.Q.M0==UseControlAsM0) -> %%%%% #1543 check if the 4d value doesnt break this
-
 % If x.Q.M0 is set as UseControlAsM0, this mean control NIfTI will be
 % cloned to an M0 NIfTI (and processed in the M0 submodule)
 if strcmpi(x.Q.M0, 'UseControlAsM0')
@@ -207,7 +199,6 @@ if strcmpi(x.Q.M0, 'UseControlAsM0')
     end
 end
 
-
 %% ------------------------------------------------------------------------------------------
 % 8. Pair-wise control-label subtraction
 % for both native & standard space
@@ -237,7 +228,6 @@ for iSpace=1:2
     saveWhichNifti = {1, PathPWI{iSpace}; 2, PathPWI3D{iSpace}; 3, PathPWI4D{iSpace}};
     xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, 0, PathASL4D{iSpace});
 end
-
 
 %% ------------------------------------------------------------------------------------------
 % 9. Save PWI NIfTI & time-series-related maps (SD, SNR)
