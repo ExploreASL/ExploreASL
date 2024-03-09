@@ -415,6 +415,8 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 		x.P.Path_PWI4D_used = x.P.Path_PWI4D;
 		x.P.Pop_Path_PWI4D_used = x.P.Pop_Path_PWI4D;
 	end
+	% Note: The paths Path_PWI4D_used can differ from a simple subtraction as it can point out to version that has some outlying volumes excluded.
+	% That's why we save this actual path used so that the correct version can be reused for xASL_wrp_VisualQC
 
     fprintf('%s\n','Quantifying ASL:   ');
     % If BASIL quantification will be performed, only native space analysis is possible
@@ -429,7 +431,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     end
     
 	% allow 4D quantification as well, storing CBF4D. This is currently not implemented for multi-PLD/multi-TE (BASIL/FABBER)
-	if x.modules.asl.SaveCBF4D && x.Q.nUniqueInitial_PLD == 1 && x.modules.asl.bQuantifyMultiTE == false
+	if x.modules.asl.SaveCBF4D
 		if size(xASL_io_Nifti2Im(x.P.Path_PWI4D_used), 4) == 1
 			warning('x.modules.asl.SaveCBF4D was requested but only one volume exists, skipping');
 		else
