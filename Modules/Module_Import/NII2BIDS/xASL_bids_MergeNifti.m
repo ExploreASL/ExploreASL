@@ -55,7 +55,7 @@ end
 if nargin < 2 || isempty(seqType)
 	error('Files type need to be provided as M0 or ASL');
 else
-	if ~strcmp(seqType, 'M0') && ~strcmp(seqType, 'ASL')
+	if ~strcmpi(seqType, 'M0') && ~strcmpi(seqType, 'ASL')
 		error('seqType must be either M0 or ASL');
 	end
 end
@@ -689,6 +689,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 			currentJSON = xASL_io_ReadJson(fullfile(Fpath,[Ffile '.json']));
 			
 			% Duplicity check 
+			% Goes through several fields and check if they are consistent across the merged JSONs
 			fieldsDuplicityCheck = {'GELabelingDuration','InversionTime','LabelingDuration'};
 			for iField = 1:length(fieldsDuplicityCheck)
 				if isfield(outputJSON, fieldsDuplicityCheck{iField}) && isfield(currentJSON, fieldsDuplicityCheck{iField})
@@ -703,10 +704,12 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 			for iFieldName = 1:length(listFieldNames)
 				% Overwrite fields as we are reading JSONs with increasing priority
 				bExportVector = 0;
-				% For certain parameters - gather the fields from merged JSONs as a vector
+				% For certain parameters, gather the fields from merged JSONs as a vector rather than a scalar
+				% Here we identify if certain field should be exported as a vector
 				fieldsExportVector = {'PostLabelDelay'};
 				for iField = 1:length(fieldsExportVector)
-					if strcmp(listFieldNames{iFieldName}, fieldsExportVector{iField}) && isfield(currentJSON, listFieldNames{iFieldName})
+					% The condition is that it's in the list, it exists and that in each JSON, it's given as a scalar
+					if strcmpi(listFieldNames{iFieldName}, fieldsExportVector{iField}) && isfield(currentJSON, listFieldNames{iFieldName})
 						if numel(currentJSON.(fieldsExportVector{iField})) == 1
 							bExportVector = 1;
 						end
@@ -714,9 +717,11 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 				end
 
 				if bExportVector
+					% Gather parameters across JSONs to a vector
 					outputJSON.(listFieldNames{iFieldName})(priorityListIndex(iJSON)) = currentJSON.(listFieldNames{iFieldName});
 					outputJSON.(listFieldNames{iFieldName})(end+1:length(NiftiPaths)) = 0;
 				else
+					% Take the scalar with overwritting the last value
 					outputJSON.(listFieldNames{iFieldName}) = currentJSON.(listFieldNames{iFieldName});
 				end
 			end
