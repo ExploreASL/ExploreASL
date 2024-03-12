@@ -132,14 +132,7 @@ end
 %  Run this part only if we have > 10 time points
 if nVolumes>10
     if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
-        % If segmented files exist, then the PVgm should already be prepared previously
-
-        if ~isfield(x.P, 'Path_PWI4D_used') || ~xASL_exist(x.P.Path_PWI4D_used, 'file')
-            [ControlIM, LabelIM] = xASL_quant_GetControlLabelOrder(xASL_io_Nifti2Im(x.P.Path_ASL4D));
-			x.P.Path_PWI4D_used = x.P.Path_PWI4D;
-            xASL_io_SaveNifti(x.P.Path_ASL4D, x.P.Path_PWI4D_used, ControlIM-LabelIM);
-        end
-
+        % Calculate SNR in GM and WM. As a note: if segmented files exist, then the native-space PVgm map should already be prepared previously in ASL module
         TempASL = xASL_qc_temporalSNR(x.P.Path_PWI4D_used,{x.P.Path_PVgm x.P.Path_PVwm});
         if ~isempty(TempASL)
             ASLFields = fields(TempASL);
