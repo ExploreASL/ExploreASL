@@ -415,8 +415,9 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 		x.P.Path_PWI4D_used = x.P.Path_PWI4D;
 		x.P.Pop_Path_PWI4D_used = x.P.Pop_Path_PWI4D;
 	end
-	% Note: The paths Path_PWI4D_used can differ from a simple subtraction as it can point out to version that has some outlying volumes excluded.
-	% That's why we save this actual path used so that the correct version can be reused for xASL_wrp_VisualQC
+	% Note: The paths x.P.(Pop_)Path_PWI4D_used can differ from a PWI4D obtained from a simple subtraction as we may have merged sessions, 
+	% and the user or ExploreASL may have removed volumes from PWI4D. That's why we save and use x.P.(Pop_)Path_PWI4D_used in memory, such 
+	% that the correct NIfTI will be used later in the pipeline (e.g., in xASL_wrp_VisualQC)
 
     fprintf('%s\n','Quantifying ASL:   ');
     % If BASIL quantification will be performed, only native space analysis is possible
@@ -757,7 +758,7 @@ else
     fprintf('\n%s', ['-> Detected ' xASL_num2str(nLists) ' list(s) for concatenating sessions']);
 end
 
-% Read and check a corresponding list with merging scalings
+% Read and check a corresponding list with merging scalings - it is also a list of lists like SessionMergingList and it should have the same structure
 if ~isfield(x.modules.asl, 'SessionMergingScaling')
 	% By default set as empty
 	x.modules.asl.SessionMergingScaling = {};
