@@ -27,7 +27,7 @@ function [resFWHM, resSigma, resErr, imSmo, imMask] = xASL_im_EstimateResolution
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [resFWHM, resSigma, resErr, imSmo, imMask] = xASL_im_EstimateResolution(imCBF, imGM, imWM, [], {'gaussian' 'gaussian' 'gaussian'}, 5);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 %% Parameter admin
 if nargin < 3 || isempty(imCBF) || isempty(imGM) || isempty(imWM)
@@ -102,12 +102,12 @@ imMask = imMask.*(imResidual < (meanErr + 2*stdErr));
 %% Run several iterations of pseudoCBF intensity check and smoothing
 for i=1:3
     % Re-run Bspline PVEC with presmoothed imPV according to the last
-    % estimate
-    [imGMSmo,~,~,~] = xASL_im_Smooth3D(imGM,optimSigma,PSFtype);
-    [imWMSmo,~,~,~] = xASL_im_Smooth3D(imWM,optimSigma,PSFtype);
+    % estimate. optimSigma is provided in voxels, not in mm
+    [imGMSmo,~,~,~] = xASL_im_Smooth3D(imGM, optimSigma, PSFtype);
+    [imWMSmo,~,~,~] = xASL_im_Smooth3D(imWM, optimSigma, PSFtype);
     imPVSmo(:,:,:,1) = imGMSmo;
     imPVSmo(:,:,:,2) = imWMSmo;
-    [imPVEC,~,~,~] = xASL_im_PVCbspline(imCBF,imPVSmo,[9 9 9]);
+    [imPVEC,~,~,~] = xASL_im_PVCbspline(imCBF, imPVSmo, [9 9 9]);
     
     % Reset the pseudoCBF image according to locally adjusted GM/WM-CBF
     % contrast obtained from PVEc
@@ -120,17 +120,18 @@ for i=1:3
     
     % The pseudoCBF image with the currently estimated GM/WM-CBF is
     % smoothed to match the CBF image
-    minFuncLoc = @(sigma)minFunc(sigma,imPseudoCBF,imCBF,PSFtype,imMask);
-    [optimSigma,optimErr] = fminsearch(minFuncLoc,optimSigma,opt);
+    minFuncLoc = @(sigma)minFunc(sigma, imPseudoCBF, imCBF, PSFtype, imMask);
+    [optimSigma,optimErr] = fminsearch(minFuncLoc, optimSigma, opt);
 end
 
 %% Calculate resolution, smoothed image and so on
-[imSmo,imGauss{1},imGauss{2},imGauss{3}] = xASL_im_Smooth3D(imPseudoCBF,optimSigma,PSFtype);
+[imSmo,imGauss{1},imGauss{2},imGauss{3}] = xASL_im_Smooth3D(imPseudoCBF, optimSigma, PSFtype);
 
 imGauss{1} = imGauss{1}(:);
 imGauss{2} = imGauss{2}(:);
 imGauss{3} = imGauss{3}(:);
 
+% The parameter optimSigma is standard deviation in voxels. Here we recalculate the FWHM for the given kernel again in voxels
 resFWHM = zeros(1,length(PSFType));
 for tp = 1:length(PSFtype)
 	switch (PSFtype{tp})

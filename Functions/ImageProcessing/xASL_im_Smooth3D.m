@@ -4,7 +4,7 @@ function [imSmo, imGaussX, imGaussY, imGaussZ] = xASL_im_Smooth3D(imIn, sigma, P
 % FORMAT:       [imSmo, imGaussX, imGaussY, imGaussZ] = xASL_im_Smooth3D(imIn, sigma[, PSFtype])
 % 
 % INPUT:        imIn    - input 3D image (REQUIRED)
-%               sigma   - SD or other parameter of the 3D smoothing (vector 3x1, REQUIRED)
+%               sigma   - Standard deviation (not FWHM) or other parameter of the 3D smoothing in voxels (vector 3x1, REQUIRED)
 %               PSFtype - Point spread function in all dimensions, can be different in all dimensions and specified
 %                         as 'gaussian','sinc','lorentzian', or 'flat' (OPTIONAL, DEFAULT = {'gaussian','gaussian','gaussian'}
 %
@@ -15,11 +15,13 @@ function [imSmo, imGaussX, imGaussY, imGaussZ] = xASL_im_Smooth3D(imIn, sigma, P
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: It smooths the 3D image with a 3D kernels that has defined the shape and SD of the smoothing separably in three dimension.
+%              There is just an image matrix provided, without any information about voxel size in mm. Therefore all inputs (including the sigma parameter)
+%              are in voxels.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [imSmo,~,~,~] = xASL_im_Smooth3D(imIn, [3 5 4], {'gaussian','gaussian','flat'})
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 %% Admin
 if nargin < 1 || isempty(imIn)
