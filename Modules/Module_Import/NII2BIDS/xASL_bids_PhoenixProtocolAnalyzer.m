@@ -81,6 +81,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 	sourcePar = addParToList('sWipMemBlock.alFree[18]',sourcePar, parIndex);parIndex = parIndex+1;
 	sourcePar = addParToList('sWipMemBlock.alFree[19]',sourcePar, parIndex);parIndex = parIndex+1;
 	sourcePar = addParToList('sWipMemBlock.alFree[20]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.alFree[30]',sourcePar, parIndex);parIndex = parIndex+1;
 	sourcePar = addParToList('sWipMemBlock.alFree[31]',sourcePar, parIndex);parIndex = parIndex+1;
 	sourcePar = addParToList('sWipMemBlock.alFree[32]',sourcePar, parIndex);parIndex = parIndex+1;
 	sourcePar = addParToList('sWipMemBlock.alFree[33]',sourcePar, parIndex);parIndex = parIndex+1;
@@ -95,10 +96,17 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     sourcePar = addParToList('sWipMemBlock.adFree.__attribute__.size',sourcePar, parIndex);parIndex = parIndex+1;
 	sourcePar = addParToList('sWipMemBlock.adFree[0]',sourcePar, parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('sWipMemBlock.adFree[1]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.adFree[2]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.adFree[3]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.adFree[4]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.adFree[5]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.adFree[6]',sourcePar, parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('sWipMemBlock.adFree[7]',sourcePar, parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('sWipMemBlock.adFree[8]',sourcePar, parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('sWipMemBlock.adFree[9]',sourcePar,parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('sWipMemBlock.adFree[10]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.adFree[11]',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sWipMemBlock.adFree[12]',sourcePar, parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('sWipMemBlock.adFree[13]',sourcePar, parIndex);parIndex = parIndex+1;
 
     % Get the predefined parameters
@@ -145,12 +153,15 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 
 	%% 3. Reading sequence VEPCASL
 	if ~bSequenceIdentified && ~isempty(regexp(sourcePar.tSequenceFileName,'VEPCASL', 'once'))
+		% Basic check that the PCASL tag is checked
+		if isempty(sourcePar.sWipMemBlockalFree0) || sourcePar.sWipMemBlockalFree0 ~= 1
+			error('VEPCASL sequence without PCASL activated');
+		end
 		% 2D-EPI VEPCASL
 		if ~isempty(regexp(sourcePar.tSequenceFileName,'o_ep2d_VEPCASL', 'once'))
 			% Basic check
 			if ~isempty(sourcePar.sWipMemBlockalFree9) &&  ~isempty(sourcePar.sWipMemBlockalFree11) 
 				% All basic passes checked, we can proceed to parameter parsing
-				bSequenceIdentified = true;
 
 				% Load the required parameters
 				bidsPar.LabelingDuration = sourcePar.sWipMemBlockalFree9 / 1000;
@@ -161,6 +172,15 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 				while iPLD <= 10 && ~isempty(sourcePar.(['sWipMemBlockalFree' num2str(iPLD+10)]))
 					bidsPar.PostLabelingDelay(iPLD) = sourcePar.(['sWipMemBlockalFree' num2str(iPLD+10)]) / 1000;
 					iPLD = iPLD + 1;
+				end
+
+				% Check if all control and label images are acquired and saved
+				if sourcePar.sWipMemBlockalFree2 == 4
+					% If more than 1 PLD is given, we have to double that for control and labels
+					if length(bidsPar.PostLabelingDelay) > 1
+						bidsPar.PostLabelingDelay = [bidsPar.PostLabelingDelay;bidsPar.PostLabelingDelay];
+						bidsPar.PostLabelingDelay = bidsPar.PostLabelingDelay(:)';
+					end
 				end
 				
 				% Background suppression
@@ -188,17 +208,25 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			% Basic check
 			if ~isempty(sourcePar.sWipMemBlockalFree10) &&  ~isempty(sourcePar.sWipMemBlockalFree31) 
 				% All basic passes checked, we can proceed to parameter parsing
-				bSequenceIdentified = true;
 
 				% Load the required parameters
 				bidsPar.LabelingDuration = sourcePar.sWipMemBlockalFree10 / 1000;
 
 				% For 3D GRASE, PLDs are in alFree31 till alFree40
-				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockalFree31 / 1000;
+				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockalFree30 / 1000;
 				iPLD = 2;
-				while iPLD <= 10 && ~isempty(sourcePar.(['sWipMemBlockalFree' num2str(iPLD+30)]))
-					bidsPar.PostLabelingDelay(iPLD) = sourcePar.(['sWipMemBlockalFree' num2str(iPLD+30)]) / 1000;
+				while iPLD <= 10 && ~isempty(sourcePar.(['sWipMemBlockalFree' num2str(iPLD+29)]))
+					bidsPar.PostLabelingDelay(iPLD) = sourcePar.(['sWipMemBlockalFree' num2str(iPLD+29)]) / 1000;
 					iPLD = iPLD + 1;
+				end
+
+				% Check if all control and label images are acquired and saved
+				if sourcePar.sWipMemBlockalFree4 == 4
+					% If more than 1 PLD is given, we have to double that for control and labels
+					if length(bidsPar.PostLabelingDelay) > 1
+						bidsPar.PostLabelingDelay = [bidsPar.PostLabelingDelay;bidsPar.PostLabelingDelay];
+						bidsPar.PostLabelingDelay = bidsPar.PostLabelingDelay(:)';
+					end
 				end
 				
 				% Background suppression
@@ -223,8 +251,10 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			end	
 		else
 			% An unknown version detected, skipping to the default
-			warning('An unknown version of Siemens VEPCASL sequence detected');
+			error('An unknown version of Siemens VEPCASL sequence detected');
 		end
+
+		bSequenceIdentified = true;
 
 		% Common parameters for all VEPCASL implementations
 		if ~isempty(sourcePar.sWipMemBlockalFree0) && sourcePar.sWipMemBlockalFree0 == 1
@@ -240,7 +270,54 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 		end
 	end
 
-	%% 4. Reading a default sequence
+	%% 4. Reading the _VE11C sequences from DJJ Wang
+	if ~bSequenceIdentified && ~isempty(regexpi(sourcePar.tSequenceFileName,'pcasl_ve11c', 'once'))
+
+		if ~isempty(regexpi(sourcePar.tSequenceFileName,'ep2d_pcasl_ve11c|gse_pcasl_ve11c', 'once'))
+			% 2DEPI VE11C PCASL
+			if ~isempty(sourcePar.sWipMemBlockadFree2)
+				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockadFree2 / 1000000.0;
+			end
+
+		elseif ~isempty(regexpi(sourcePar.tSequenceFileName,'gse_pcasl_ve11c', 'once'))
+			% 3DGRASE VE11C PCASL
+			if ~isempty(sourcePar.sWipMemBlockadFree2)
+				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockadFree2 / 1000000.0;
+			end
+
+			if ~isempty(sourcePar.sWipMemBlockalFree13) && sourcePar.sWipMemBlockalFree13 == 1
+				bidsPar.BackgroundSuppression = true;
+			else
+				bidsPar.BackgroundSuppression = false;
+			end
+
+		else
+			error('Unknown variant of PCASL_VE11C');
+		end
+
+		if ~isempty(sourcePar.sWipMemBlockadFree1)
+			bidsPar.LabelingDistance = sourcePar.sWipMemBlockadFree1;
+		end
+
+		bSequenceIdentified = true;
+		bidsPar.ArterialSpinLabelingType = 'PCASL';
+
+		if ~isempty(sourcePar.sWipMemBlockadFree10)
+			bidsPar.LabelingPulseAverageGradient = sourcePar.sWipMemBlockadFree10 / 10.0; % MeanGz x 10 mT/m
+		end
+
+		%sourcePar.sWipMemBlockadFree4 is RFGap in micro seconds (typically 360)
+		%sourcePar.sWipMemBlockadFree11 is PhiAdjust 100
+		%sourcePar.sWipMemBlockadFree11 T1 in usec
+
+		if ~isempty(sourcePar.sWipMemBlockadFree3)
+			%  Number of 20 RF pulses (each block is 18.4ms, recommend 82 for total labeling duration of 1.5s
+			bidsPar.LabelingDuration = sourcePar.sWipMemBlockadFree3 * 18.4 / 1000.0;
+		end
+
+	end
+	
+	%% 5. Reading a default sequence
 	if ~bSequenceIdentified
 		% TODO
 		% Saw this option also in QUIPSSII
@@ -280,23 +357,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 		%if isfield(sourcePar,'Slab_thickness_mm') && ~isempty(sourcePar.Slab_thickness_mm)
 		%	bidsPar.LabelingSlabThickness = sourcePar.Slab_thickness_mm;
 		%end
-
-		if isfield(sourcePar,'alTE0') && ~isempty(sourcePar.alTE0)
-			bidsPar.EchoTime = sourcePar.alTE0 / 1000 / 1000;
-			lastEchoTime = bidsPar.EchoTime;
-			lastEchoTimeCount = 1;
-			while lastEchoTime > 0
-				lastEchoTimeCount = lastEchoTimeCount + 1;
-				echoTimePar = getPhoenixParameters({['alTE[' num2str(lastEchoTimeCount) ']']},parameterList,0);
-				if isempty(echoTimePar{2})
-					lastEchoTime = 0;
-				else
-					lastEchoTime = str2num(echoTimePar{2})/1000/1000;
-					bidsPar.EchoTime(lastEchoTimeCount) = lastEchoTime;
-				end
-			end
-
-		end
 
 		% If the labeling type is recognized, then proceed to labeling timing information extraction
 		if isfield(bidsPar,'ArterialSpinLabelingType')
@@ -339,6 +399,23 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 						bidsPar.PostLabelingDelay = (sourcePar.alTI2-sourcePar.alTI0) / 1000 / 1000;
 					end
 				end
+			end
+		end
+	end
+
+	%% 6. Reading TE vector and TR vector
+	if isfield(sourcePar,'alTE0') && ~isempty(sourcePar.alTE0)
+		bidsPar.EchoTime = sourcePar.alTE0 / 1000 / 1000;
+		lastEchoTime = bidsPar.EchoTime;
+		lastEchoTimeCount = 1;
+		while lastEchoTime > 0
+			lastEchoTimeCount = lastEchoTimeCount + 1;
+			echoTimePar = getPhoenixParameters({['alTE[' num2str(lastEchoTimeCount) ']']},parameterList,0);
+			if isempty(echoTimePar{2})
+				lastEchoTime = 0;
+			else
+				lastEchoTime = str2num(echoTimePar{2})/1000/1000;
+				bidsPar.EchoTime(lastEchoTimeCount) = lastEchoTime;
 			end
 		end
 	end

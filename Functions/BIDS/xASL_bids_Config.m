@@ -19,7 +19,7 @@ function bidsPar = xASL_bids_Config()
 %
 % EXAMPLE:     n/a
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 % BIDS version is hard-coded
 bidsPar.BIDSVersion = '1.6.0';
@@ -42,7 +42,7 @@ bidsPar.listFieldsRemoveGeneral = {'ProcedureStepDescription' 'SeriesDescription
 bidsPar.listFieldsRemoveASL = {'SliceReadoutTime','RepetitionTime','InversionTime','LabelOffset','PostLabelDelay','NumRFBlocks', 'GELabelingDuration','RFGap','MeanGzx10','PhiAdjust','M0','LabelingType',...
 	'ScanType','SequenceType', 'TagRFFlipAngle', 'TagRFDuration', 'TagRFSeparation', 'MeanTagGradient', 'TagGradientAmplitude', 'TagDuration', 'MaximumT1Opt', 'sWipMemBlockAdFree3', 'sWipMemBlockAdFree4',...
 	'sWipMemBlockAdFree5', 'sWipMemBlockAdFree6', 'sWipMemBlockAdFree7', 'sWipMemBlockAdFree8', 'sWipMemBlockAdFree9', 'sWipMemBlockAdFree10', 'TagPlaneDThickness', 'TagPlaneUlShape', 'TagPlaneSPositionDTra', ...
-	'TagPlaneSNormalDTra'};
+	'TagPlaneSNormalDTra' 'Tag0'};
 
 % A list of fields to remove the M0.json files as the field is not defined in ASL-BIDS
 bidsPar.listFieldsRemoveM0 = {'TotalAcquiredPairs', 'ArterialSpinLabelingType','LabelingDuration','PostLabelingDelay','LabelingLocationDescription','LabelingOrientation','LabelingDistance','BackgroundSuppression','BackgroundSuppressionNumberPulses','BackgroundSuppressionPulseTime',...

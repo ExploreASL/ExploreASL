@@ -28,15 +28,15 @@ function jsonOut = xASL_bids_BIDSifyASLJSON(jsonIn, studyPar, headerASL)
 % 9. Background suppression check
 % 10. SliceTiming check
 % 11. Check for Look-Locker TR
-% 12. Check if length of vector fields match the number of volumes
-% 13. Reformat ASLcontext field
+% 12. Reformat ASLcontext field
+% 13. Check if length of vector fields match the number of volumes and ASLcontext
 % 14. Verify TotalAcquiredPairs against ASLContext
 % 15. Final field check
 %
 % EXAMPLE: n/a
 %
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 
 %% 0. Admin
 if nargin < 1 || isempty(jsonIn)
@@ -432,20 +432,7 @@ if isfield(jsonOut, 'LookLocker') && jsonOut.LookLocker
 	end
 end
 
-%% 12. Check if length of vector fields match the number of volumes
-% If Post-labeling delay or labeling duration, and other fields, is longer than 1, but shorter then number of volumes then repeat it
-listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration','VascularCrushingVENC','FlipAngle','RepetitionTimePreparation'};
-for iRepeat = 1:length(listFieldsRepeat)
-	if isfield(jsonOut,(listFieldsRepeat{iRepeat})) && (length(jsonOut.(listFieldsRepeat{iRepeat})) > 1) && (dimASL(4) ~= length(jsonOut.(listFieldsRepeat{iRepeat})))
-		if mod(dimASL(4),length(jsonOut.(listFieldsRepeat{iRepeat})))
-			error('The length of the vector %s nor its multiple match the number of the NIFTI volumes: %s\n', listFieldsRepeat{iRepeat}, xASL_num2str(dimASL(4)));
-		else
-			jsonOut.(listFieldsRepeat{iRepeat}) = repmat(jsonOut.(listFieldsRepeat{iRepeat})(:),[dimASL(4)/length(jsonOut.(listFieldsRepeat{iRepeat})) 1]);
-		end
-	end
-end
-
-%% 13. Reformat ASLcontext field
+%% 12. Reformat ASLcontext field
 % Remove ',' and ';' at the end
 if ~isfield(jsonOut, 'ASLContext')
     error('Missing JSON field: ASLContext');
@@ -517,9 +504,21 @@ if dimASL(4) ~= lengthASLContext
 end
 jsonOut.ASLContext = sprintf('%s\n',jsonOut.ASLContext);
 
-% If Post-labeling delay or labeling duration is longer than 1 then we need to verify this against
-% the ASLContext - these fields should be 0 for m0scans
-listFieldsZero = {'PostLabelingDelay', 'LabelingDuration'};
+%% 13. Check if length of vector fields match the number of volumes and ASLcontext
+% If fields have a length higher than 1, but shorter then number of volumes then repeat it to fit
+listFieldsRepeat = {'VascularCrushingVENC','FlipAngle','RepetitionTimePreparation'};
+for iRepeat = 1:length(listFieldsRepeat)
+	if isfield(jsonOut,(listFieldsRepeat{iRepeat})) && (length(jsonOut.(listFieldsRepeat{iRepeat})) > 1) && (dimASL(4) ~= length(jsonOut.(listFieldsRepeat{iRepeat})))
+		if mod(dimASL(4),length(jsonOut.(listFieldsRepeat{iRepeat})))
+			error('The length of the vector %s nor its multiple match the number of the NIFTI volumes: %s\n', listFieldsRepeat{iRepeat}, xASL_num2str(dimASL(4)));
+		else
+			jsonOut.(listFieldsRepeat{iRepeat}) = repmat(jsonOut.(listFieldsRepeat{iRepeat})(:),[dimASL(4)/length(jsonOut.(listFieldsRepeat{iRepeat})) 1]);
+		end
+	end
+end
+
+% For certain fields, we don't only check if they repeat enough times to match the ASL number of volumes, but we also set those fields to 0 for M0scans
+% Also, when we need to repeat them and find out that the number of repetitions is not possible, we repeat again, but skipping M0s
 
 % Find m0scans indices in ASLContext
 ASLContextCell = strsplit(jsonOut.ASLContext,'\n'); % Split to cells by line-end
@@ -527,16 +526,30 @@ ASLContextM0Index = regexp(ASLContextCell,'^m0scan'); % Find m0scans
 ASLContextM0Index = cellfun(@(x)~isempty(x),ASLContextM0Index); % Create a vector out of it
 ASLContextM0Index = ASLContextM0Index(1:dimASL(4)); % Remove the last empty field
 
+% If Post-labeling delay or labeling duration is longer than 1 then we need to verify this against
+% the ASLContext - these fields should be 0 for m0scans
+listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration'};
+
 % Go through all variables, check those that have length bigger than 1
-for iRepeat = 1:length(listFieldsZero)
-	if isfield(jsonOut,listFieldsZero{iRepeat}) && length(jsonOut.(listFieldsZero{iRepeat})) > 1
+for iRepeat = 1:length(listFieldsRepeat)
+	if isfield(jsonOut,listFieldsRepeat{iRepeat}) && length(jsonOut.(listFieldsRepeat{iRepeat})) > 1
+		% Try to repeat the vector to fit the number of volumes
+		if mod(dimASL(4),length(jsonOut.(listFieldsRepeat{iRepeat}))) == 0
+			jsonOut.(listFieldsRepeat{iRepeat}) = repmat(jsonOut.(listFieldsRepeat{iRepeat})(:),[dimASL(4)/length(jsonOut.(listFieldsRepeat{iRepeat})) 1]);
+		elseif mod(dimASL(4)-sum(ASLContextM0Index),length(jsonOut.(listFieldsRepeat{iRepeat}))) == 0
+			% If this doesn't work, then try to fit the parameter vector to non-m0 fields only
+			jsonOut.(listFieldsRepeat{iRepeat})(~ASLContextM0Index) = repmat(jsonOut.(listFieldsRepeat{iRepeat})(:),[(dimASL(4)-sum(ASLContextM0Index))/length(jsonOut.(listFieldsRepeat{iRepeat})) 1]);
+		else
+			error('The length of the vector %s nor its multiple match the number of the NIFTI volumes: %s, even when considering %s M0 images\n', listFieldsRepeat{iRepeat}, xASL_num2str(dimASL(4)), xASL_num2str(sum(ASLContextM0Index)));
+		end
+		
 		% Make sure the vector is a row vector
-		jsonOut.(listFieldsZero{iRepeat}) = jsonOut.(listFieldsZero{iRepeat})(:)';
+		jsonOut.(listFieldsRepeat{iRepeat}) = jsonOut.(listFieldsRepeat{iRepeat})(:)';
 		% Check the all m0scans have zeros
-		if sum(ASLContextM0Index .* (jsonOut.(listFieldsZero{iRepeat})~=0))
+		if sum(ASLContextM0Index .* (jsonOut.(listFieldsRepeat{iRepeat})~=0))
 			% If not, then set to zeros and report a warning
-			jsonOut.(listFieldsZero{iRepeat})(ASLContextM0Index) = 0;
-			warning(['Had to set non-zero values for m0scan to zero in ' listFieldsZero{iRepeat}]);
+			jsonOut.(listFieldsRepeat{iRepeat})(ASLContextM0Index) = 0;
+			warning(['Had to set non-zero values for m0scan to zero in ' listFieldsRepeat{iRepeat}]);
 		end
 	end
 end
