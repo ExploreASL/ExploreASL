@@ -767,9 +767,16 @@ if ~isfield(x.modules.asl, 'SessionMergingScaling')
 	x.modules.asl.SessionMergingScaling = {};
 else
 	% The parameter should be a list of lists, so like for SessionMerginList - we need to convert it if needed
-	if ~isempty(x.modules.asl.SessionMergingScaling) && ~iscell(x.modules.asl.SessionMergingScaling)
-		x.modules.asl.SessionMergingScaling = {x.modules.asl.SessionMergingScaling};
+	if  isnumeric(x.modules.asl.SessionMergingScaling)
+		% A numeric array is simply converted into a cell-array
+		if size(x.modules.asl.SessionMergingScaling, 2) == 1
+			x.modules.asl.SessionMergingScaling = num2cell(x.modules.asl.SessionMergingScaling, 1);
+		else
+			x.modules.asl.SessionMergingScaling = num2cell(x.modules.asl.SessionMergingScaling, 2);
+		end
 	end
+	% This captures all possibilities when an array is provided instead of a list of lists. In case this is not true (a cell array is given with lists of uneven sizes), the parameter is already a cell
+
 end
 
 if ~isempty(x.modules.asl.SessionMergingList) && isempty(x.modules.asl.SessionMergingScaling)
