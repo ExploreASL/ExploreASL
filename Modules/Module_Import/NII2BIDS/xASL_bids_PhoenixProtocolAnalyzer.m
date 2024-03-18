@@ -280,7 +280,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockadFree2 / 1000000.0;
 			end
 
-		elseif ~isempty(regexpi(sourcePar.tSequenceFileName,'gse_pcasl_ve11c', 'once'))
+		elseif ~isempty(regexpi(sourcePar.tSequenceFileName,'tgse_pcasl_ve11c', 'once'))
 			% 3DGRASE VE11C PCASL
 			if ~isempty(sourcePar.sWipMemBlockadFree2)
 				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockadFree2 / 1000000.0;
