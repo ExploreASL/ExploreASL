@@ -112,7 +112,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     sourcePar = addParToList('sWipMemBlock.adFree[13]',sourcePar, parIndex);parIndex = parIndex+1;
 
     % Get the predefined parameters
-    sourcePar = xASL_bids_PhoenixProtocolAnalyzer_convertCellArrayToStruct(sourcePar,parameterList,false);
+    sourcePar = xASL_bids_PhoenixProtocolAnalyzer_getPhoenixParameters(sourcePar,parameterList,false);
     
     % Get xASL parameters
     sourcePar = xASL_bids_PhoenixProtocolAnalyzer_convertCellArrayToStruct(sourcePar);
@@ -274,7 +274,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 	%% 4. Reading the _VE11C sequences from DJJ Wang
 	if ~bSequenceIdentified && ~isempty(regexpi(sourcePar.tSequenceFileName,'pcasl_ve11c', 'once'))
 
-		if ~isempty(regexpi(sourcePar.tSequenceFileName,'ep2d_pcasl_ve11c|tgse_pcasl_ve11c', 'once'))
+		if ~isempty(regexpi(sourcePar.tSequenceFileName,'ep2d_pcasl_ve11c', 'once'))
 			% 2DEPI VE11C PCASL
 			if ~isempty(sourcePar.sWipMemBlockadFree2)
 				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockadFree2 / 1000000.0;
@@ -411,7 +411,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 		lastEchoTimeCount = 1;
 		while lastEchoTime > 0
 			lastEchoTimeCount = lastEchoTimeCount + 1;
-			echoTimePar = xASL_bids_PhoenixProtocolAnalyzer_convertCellArrayToStruct({['alTE[' num2str(lastEchoTimeCount) ']']},parameterList,0);
+			echoTimePar = xASL_bids_PhoenixProtocolAnalyzer_getPhoenixParameters({['alTE[' num2str(lastEchoTimeCount) ']']},parameterList,0);
 			if isempty(echoTimePar{2})
 				lastEchoTime = 0;
 			else
@@ -458,7 +458,7 @@ end
 %% --------------------------------------------------------------------------------------------------------
 %% Get ID of parameter name
 %% --------------------------------------------------------------------------------------------------------
-function parameters = xASL_bids_PhoenixProtocolAnalyzer_convertCellArrayToStruct(parameters,phoenixParameterList,debugMode)
+function parameters = xASL_bids_PhoenixProtocolAnalyzer_getPhoenixParameters(parameters,phoenixParameterList,debugMode)
 
     % Get number of parameters
     parameterNames = parameters(:,1);
