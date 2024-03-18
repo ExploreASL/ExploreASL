@@ -38,14 +38,12 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
     startOfProtocol = '### ASCCONV BEGIN';
     endOfProtocol = '### ASCCONV END';
     
+	% Remove tabs
+	rawPhoenixProtocol = strrep(rawPhoenixProtocol,sprintf('\t'),'');
+
     % Phoenix protocol in cell array format
     phoenixProtocol = [strsplit(rawPhoenixProtocol,'\n')]';
-
-    % Remove tabs
-    for line=1:numel(phoenixProtocol)
-        phoenixProtocol{line,1} = strrep(phoenixProtocol{line,1},'\t','');
-    end
-    
+   
     % Remove empty lines
     try
         for line=1:numel(phoenixProtocol)

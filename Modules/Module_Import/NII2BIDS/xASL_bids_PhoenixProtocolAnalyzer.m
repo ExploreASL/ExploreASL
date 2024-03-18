@@ -17,7 +17,9 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 % 1. Extract parameters from Phoenix
 % 2. Obtain basic information about the sequence
 % 3. Reading sequence VEPCASL
-% 4. Reading a default sequence
+% 4. Reading the _VE11C sequences from DJJ Wang
+% 5. Reading a default sequence
+% 6. Reading TE vector and TR vector
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList);
@@ -110,10 +112,10 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     sourcePar = addParToList('sWipMemBlock.adFree[13]',sourcePar, parIndex);parIndex = parIndex+1;
 
     % Get the predefined parameters
-    sourcePar = getPhoenixParameters(sourcePar,parameterList,false);
+    sourcePar = xASL_bids_PhoenixProtocolAnalyzer_convertCellArrayToStruct(sourcePar,parameterList,false);
     
     % Get xASL parameters
-    sourcePar = convertCellArrayToStruct(sourcePar);
+    sourcePar = xASL_bids_PhoenixProtocolAnalyzer_convertCellArrayToStruct(sourcePar);
 
 	%% 2. Obtain basic information about the sequence
 	bidsPar = struct();
@@ -153,15 +155,15 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 
 	%% 3. Reading sequence VEPCASL
 	if ~bSequenceIdentified && ~isempty(regexp(sourcePar.tSequenceFileName,'VEPCASL', 'once'))
-		% Basic check that the PCASL tag is checked
+		% Check that the PCASL tag is filled as ON (==1)
 		if isempty(sourcePar.sWipMemBlockalFree0) || sourcePar.sWipMemBlockalFree0 ~= 1
 			error('VEPCASL sequence without PCASL activated');
 		end
 		% 2D-EPI VEPCASL
-		if ~isempty(regexp(sourcePar.tSequenceFileName,'o_ep2d_VEPCASL', 'once'))
-			% Basic check
+		if ~isempty(regexp(sourcePar.tSequenceFileName,'to_ep2d_VEPCASL', 'once'))
+			% Check that PLD and LabelingDuration tags are provided
 			if ~isempty(sourcePar.sWipMemBlockalFree9) &&  ~isempty(sourcePar.sWipMemBlockalFree11) 
-				% All basic passes checked, we can proceed to parameter parsing
+				% Proceed to parameter parsing
 
 				% Load the required parameters
 				bidsPar.LabelingDuration = sourcePar.sWipMemBlockalFree9 / 1000;
@@ -205,9 +207,8 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			end
 
 		elseif ~isempty(regexp(sourcePar.tSequenceFileName, 'jw_tgse_VEPCASL', 'once'))
-			% Basic check
+			% Check that PLD and LabelingDuration tags are provided
 			if ~isempty(sourcePar.sWipMemBlockalFree10) &&  ~isempty(sourcePar.sWipMemBlockalFree31) 
-				% All basic passes checked, we can proceed to parameter parsing
 
 				% Load the required parameters
 				bidsPar.LabelingDuration = sourcePar.sWipMemBlockalFree10 / 1000;
@@ -273,7 +274,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 	%% 4. Reading the _VE11C sequences from DJJ Wang
 	if ~bSequenceIdentified && ~isempty(regexpi(sourcePar.tSequenceFileName,'pcasl_ve11c', 'once'))
 
-		if ~isempty(regexpi(sourcePar.tSequenceFileName,'ep2d_pcasl_ve11c|gse_pcasl_ve11c', 'once'))
+		if ~isempty(regexpi(sourcePar.tSequenceFileName,'ep2d_pcasl_ve11c|tgse_pcasl_ve11c', 'once'))
 			% 2DEPI VE11C PCASL
 			if ~isempty(sourcePar.sWipMemBlockadFree2)
 				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockadFree2 / 1000000.0;
@@ -410,7 +411,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 		lastEchoTimeCount = 1;
 		while lastEchoTime > 0
 			lastEchoTimeCount = lastEchoTimeCount + 1;
-			echoTimePar = getPhoenixParameters({['alTE[' num2str(lastEchoTimeCount) ']']},parameterList,0);
+			echoTimePar = xASL_bids_PhoenixProtocolAnalyzer_convertCellArrayToStruct({['alTE[' num2str(lastEchoTimeCount) ']']},parameterList,0);
 			if isempty(echoTimePar{2})
 				lastEchoTime = 0;
 			else
@@ -421,9 +422,10 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 	end
 
 end
-
+%% --------------------------------------------------------------------------------------------------------
 %% Get individual phoenix parameter
-function value = getPhoePar(sourcePar,curParToExtract)
+%% --------------------------------------------------------------------------------------------------------
+function value = xASL_bids_PhoenixProtocolAnalyzer_getPhoePar(sourcePar,curParToExtract)
     % Get cell ID
     IndexC = strfind(sourcePar,curParToExtract);
     cellID = find(not(cellfun('isempty',IndexC)));
@@ -435,8 +437,10 @@ function value = getPhoePar(sourcePar,curParToExtract)
     end
 end
 
+%% --------------------------------------------------------------------------------------------------------
 %% Convert cell array to struct
-function parameterStruct = convertCellArrayToStruct(parameters)
+%% --------------------------------------------------------------------------------------------------------
+function parameterStruct = xASL_bids_PhoenixProtocolAnalyzer_convertCellArrayToStruct(parameters)
     % Create struct
     parameterStruct = struct;
     % Get number of parameters
@@ -445,14 +449,16 @@ function parameterStruct = convertCellArrayToStruct(parameters)
     % Convert each line to a field
     for curParameter=1:numberOfParameters
         curParToExtract = parameters{curParameter,1};
-        value = getPhoePar(parameters,curParToExtract);
+        value = xASL_bids_PhoenixProtocolAnalyzer_getPhoePar(parameters,curParToExtract);
         validFieldName = matlab.lang.makeValidName(curParToExtract,'ReplacementStyle','delete');
         parameterStruct.(validFieldName) = value;        
     end
 end
 
+%% --------------------------------------------------------------------------------------------------------
 %% Get ID of parameter name
-function parameters = getPhoenixParameters(parameters,phoenixParameterList,debugMode)
+%% --------------------------------------------------------------------------------------------------------
+function parameters = xASL_bids_PhoenixProtocolAnalyzer_convertCellArrayToStruct(parameters,phoenixParameterList,debugMode)
 
     % Get number of parameters
     parameterNames = parameters(:,1);
