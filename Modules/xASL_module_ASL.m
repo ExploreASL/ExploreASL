@@ -108,9 +108,9 @@ StateName{ 9} = '090_VisualQC_ASL';
 StateName{10} = '100_WADQC';
 
 if ~x.mutex.HasState('999_ready')
-    bO = true; % generate output, some processing has and some has not been yet done
+    bOutput = true; % generate output, some processing has and some has not been yet done
 else
-    bO = false; % skip output, as all processing has been performed
+    bOutput = false; % skip output, as all processing has been performed
 end
 
 
@@ -131,7 +131,7 @@ x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
 x = xASL_qc_CleanOldQC(x, bCompleteRerun);
 
 %% D. ASL processing & quantification parameters
-x = xASL_module_ASL_ParseParameters(x, bO, nVolumes);
+x = xASL_module_ASL_ParseParameters(x, bOutput, nVolumes);
 
 %% E. Backward and forward compatibility of filenames
 if ~xASL_exist(x.P.Path_M0, 'file')
@@ -226,9 +226,9 @@ if xASL_exist(x.P.Path_M0,'file') && ~isempty(Path_RevPE)
         else
             warning('TopUp failed, may affect results rest of pipeline');
         end
-    elseif bO; fprintf('%s\n',[StateName{iState} 'has already been performed, skipping...']);
+    elseif bOutput; fprintf('%s\n',[StateName{iState} 'has already been performed, skipping...']);
     end
-elseif bO; fprintf('%s\n','No TopUp scans available, skipping...');
+elseif bOutput; fprintf('%s\n','No TopUp scans available, skipping...');
 end
 
 
@@ -236,7 +236,7 @@ end
 %% 2    Motion correction ASL (& center of mass registration)
 iState = 2;
 if ~x.modules.asl.motionCorrection
-    if bO; fprintf('%s\n','Motion correction was disabled, skipping'); end
+    if bOutput; fprintf('%s\n','Motion correction was disabled, skipping'); end
     x.mutex.AddState(StateName{iState});
 elseif ~x.mutex.HasState(StateName{iState})
 
@@ -276,7 +276,7 @@ elseif ~x.mutex.HasState(StateName{iState})
         x.mutex.DelState(StateName{iState+1});
 else
     xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-    if bO; fprintf('%s\n',[StateName{iState} ' session has already been performed, skipping...']); end
+    if bOutput; fprintf('%s\n',[StateName{iState} ' session has already been performed, skipping...']); end
 end
 
 
@@ -296,7 +296,7 @@ if ~x.mutex.HasState(StateName{iState})
     x.mutex.DelState(StateName{iState+2}); % also dependent on ASL registration
 else
 	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-	if  bO
+	if  bOutput
 		fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);
 	end
 end
@@ -318,7 +318,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-1})
     x.mutex.DelState(StateName{iState+5});
 else
 	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-	if  bO
+	if  bOutput
 		fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);
 	end
 end
@@ -343,9 +343,9 @@ if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
 
 	else
 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-		if  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
+		if  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
     end
-elseif  bO; fprintf('%s\n',['there were no pGM/pWM, skipping ' StateName{iState} '...']);
+elseif  bOutput; fprintf('%s\n',['there were no pGM/pWM, skipping ' StateName{iState} '...']);
     x = xASL_adm_DefineASLResolution(x);
 end
 
@@ -368,11 +368,11 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
             xASL_adm_CompareDataSets([], [], x); % unit testing
             x.mutex.DelState(StateName{iState+1});
 			x.mutex.DelState(StateName{iState+2});
-        elseif  bO; fprintf('%s\n',[StateName{iState} ' skipped, because no M0 available']);
+        elseif  bOutput; fprintf('%s\n',[StateName{iState} ' skipped, because no M0 available']);
         end
 elseif  xASL_exist(x.P.Path_M0,'file')
 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-elseif  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);
+elseif  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);
 end
 
 
@@ -390,11 +390,11 @@ if ~x.mutex.HasState(StateName{iState})
             xASL_adm_CompareDataSets([], [], x); % unit testing
         end
     else
-        if  bO;fprintf('%s\n',['T1w-related images missing, skipping ' StateName{iState}]);end
+        if  bOutput;fprintf('%s\n',['T1w-related images missing, skipping ' StateName{iState}]);end
     end
 else
     xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-    if  bO;fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);end
+    if  bOutput;fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);end
 end
 
 
@@ -405,9 +405,10 @@ end
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
 % Including PVC
 iState = 8;
-if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 
-	%% Run merging if requested as first function before any quantification, as quantification itself should disregard the data source
+% Create x.Path_PWI4D_used variable even when the quantification was done, but the entire pipeline wasn't finished (e.g. when the ASL module crashed after the quantification)
+if x.mutex.HasState(StateName{iState-4}) && (~x.mutex.HasState(StateName{iState}) || bOutput)
+		% Run merging if requested as first function before any quantification, as quantification itself should disregard the data source
 	if x.modules.asl.bMergingSessions
 		[x.P.Path_PWI4D_used, x.P.Pop_Path_PWI4D_used] = xASL_im_MergePWI4D(x);
 	else
@@ -418,7 +419,9 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 	% Note: The paths x.P.(Pop_)Path_PWI4D_used can differ from a PWI4D obtained from a simple subtraction as we may have merged sessions, 
 	% and the user or ExploreASL may have removed volumes from PWI4D. That's why we save and use x.P.(Pop_)Path_PWI4D_used in memory, such 
 	% that the correct NIfTI will be used later in the pipeline (e.g., in xASL_wrp_VisualQC)
+end
 
+if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     fprintf('%s\n','Quantifying ASL:   ');
     % If BASIL quantification will be performed, only native space analysis is possible
     if isfield(x.modules.asl, 'bUseBasilQuantification') && x.modules.asl.bUseBasilQuantification
@@ -459,7 +462,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     x.mutex.DelState(StateName{iState+2});
 else
 	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
-	if  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
+	if  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
 end
 
 
@@ -470,7 +473,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-2})
 	xASL_wrp_VisualQC_ASL(x);
 	x.mutex.AddState(StateName{iState});
 else
-	if  bO; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
+	if  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
 end
 
 
@@ -480,7 +483,7 @@ iState = 10;
 if ~x.mutex.HasState(StateName{iState}) && x.DoWADQCDC
     xASL_qc_WADQCDC(x, x.iSubject, 'ASL');
     x.mutex.AddState(StateName{iState});
-elseif x.mutex.HasState(StateName{iState}) && bO
+elseif x.mutex.HasState(StateName{iState}) && bOutput
     fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);
 end
 
@@ -538,7 +541,7 @@ end
 
 %% ========================================================================================================================
 %% =============================================================================================
-function [x] = xASL_module_ASL_ParseParameters(x, bO, nVolumes)
+function [x] = xASL_module_ASL_ParseParameters(x, bOutput, nVolumes)
 %% xASL_module_ASL_ParseParameters Manage ASL-specific quantification and processing parameters
 % 1. Load ASL parameters (inheritance principle)
 % 2. Default ASL processing settings in the x.modules.asl field
@@ -550,7 +553,7 @@ function [x] = xASL_module_ASL_ParseParameters(x, bO, nVolumes)
 
 
 %% 1. Load ASL parameters (inheritance principle)
-[~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bO);
+[~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bOutput);
 
 
 %% 2. Default ASL processing settings in the x.modules.asl field
@@ -879,7 +882,7 @@ end
 
 
 %% 7. Define sequence (educated guess based on the Q field)
-x = xASL_adm_DefineASLSequence(x, bO);
+x = xASL_adm_DefineASLSequence(x, bOutput);
 
 
 end
