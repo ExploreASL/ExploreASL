@@ -35,9 +35,14 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 %% ----------------------------------------------------------------------------------------
 %% Admin
 tIM = xASL_io_ReadNifti(PathASL);
+[fPath, fName] = xASL_fileparts(PathASL);
+tJson = xASL_io_ReadJson([fullfile(fPath, fName) '.json']);
+tJson = xASL_bids_parms2BIDS([], tJson, 0);
 NativeResolution = tIM.hdr.pixdim(2:4);
-if ~isfield(x.Q,'Sequence')
-    warning(['Setting x.Q.Sequence missing, skipping']);
+if ~isempty(tJson) && isfield(tJson.Q, 'Sequence')
+	x.Q.Sequence = tJson.Q.Sequence;
+elseif ~isfield(x.Q, 'Sequence') 
+    warning('Setting x.Q.Sequence missing, skipping');
     return;
 end
 
