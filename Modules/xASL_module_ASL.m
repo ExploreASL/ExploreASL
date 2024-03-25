@@ -407,14 +407,16 @@ iState = 8;
 x.P.Path_PWI4D_used = x.P.Path_PWI4D;
 x.P.Pop_Path_PWI4D_used = x.P.Pop_Path_PWI4D;
 
-if x.modules.asl.bMergingSessions
-    % only if we merged sessions, we use custom paths
-	[x.P.Path_PWI4D_used, x.P.Pop_Path_PWI4D_used] = xASL_im_MergePWI4D(x);
-	% Note: The paths x.P.(Pop_)Path_PWI4D_used can differ from a PWI4D obtained from a simple subtraction as we may have merged sessions, 
-	% and the user or ExploreASL may have removed volumes from PWI4D. That's why we save and use x.P.(Pop_)Path_PWI4D_used in memory, such 
-	% that the correct NIfTI will be used later in the pipeline (e.g., in xASL_wrp_VisualQC)
+if (x.mutex.HasState(StateName{iState-4}) && (~x.mutex.HasState(StateName{iState}))) ||...
+    (~x.mutex.HasState(StateName{iState+2}) && x.DoWADQCDC) || (~x.mutex.HasState(StateName{iState+1}))
+	if x.modules.asl.bMergingSessions
+		% only if we merged sessions, we use custom paths
+		[x.P.Path_PWI4D_used, x.P.Pop_Path_PWI4D_used] = xASL_im_MergePWI4D(x);
+		% Note: The paths x.P.(Pop_)Path_PWI4D_used can differ from a PWI4D obtained from a simple subtraction as we may have merged sessions,
+		% and the user or ExploreASL may have removed volumes from PWI4D. That's why we save and use x.P.(Pop_)Path_PWI4D_used in memory, such
+		% that the correct NIfTI will be used later in the pipeline (e.g., in xASL_wrp_VisualQC)
+	end
 end
-
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
 % Including PVC
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
