@@ -18,8 +18,9 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 % 2. Obtain basic information about the sequence
 % 3. Reading sequence VEPCASL
 % 4. Reading the _VE11C sequences from DJJ Wang
-% 5. Reading a default sequence
-% 6. Reading TE vector and TR vector
+% 5. Reading the CSL_818 sequences
+% 6. Reading a default sequence
+% 7. Reading TE vector and TR vector
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % EXAMPLE:          [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList);
@@ -151,6 +152,10 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
         bidsPar.ScanType = 'M0';
 	end
     
+	if isfield(sourcePar,'sProtConsistencyInfotBaselineString') && ~isempty(sourcePar.sProtConsistencyInfotBaselineString)
+		bidsPar.SoftwareVersions = strrep(sourcePar.sProtConsistencyInfotBaselineString,'"','');
+	end
+
 	bSequenceIdentified = false; % Try to identify different sequences and in case this doesn't work we rollback to the defaults
 
 	%% 3. Reading sequence VEPCASL
@@ -315,10 +320,36 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			%  Number of 20 RF pulses (each block is 18.4ms, recommend 82 for total labeling duration of 1.5s
 			bidsPar.LabelingDuration = sourcePar.sWipMemBlockadFree3 * 18.4 / 1000.0;
 		end
-
+		
+		% M0 TR for this sequence is 2.0s by default
+		bidsPar.RepetitionTimePreparationM0 = 2.0;
 	end
 	
-	%% 5. Reading a default sequence
+	%% 5. Reading the CSL_818 sequences
+	if ~bSequenceIdentified && ~isempty(regexpi(sourcePar.tSequenceFileName, 'csl_818', 'once'))
+		if ~bSequenceIdentified && ~isempty(regexpi(sourcePar.tSequenceFileName, 'csl_818', 'once'))
+			if ~isempty(sourcePar.sWipMemBlockadFree13)
+				bidsPar.LabelingPulseFlipAngle = sourcePar.sWipMemBlockadFree13;
+			end
+
+			if ~isempty(sourcePar.alTI0)
+				bidsPar.LabelingDuration = sourcePar.alTI0 / 1000 / 1000;
+				if ~isempty(sourcePar.alTI2)
+					bidsPar.PostLabelingDelay = (sourcePar.alTI2-sourcePar.alTI0) / 1000 / 1000;
+				end
+			end
+
+			% The repetitiontime of M0
+			bidsPar.RepetitionTimePreparationM0 = sourcePar.sWipMemBlockalFree2 / 1000;
+
+			% The normal repetition time
+			bidsPar.RepetitionTimePreparation = sourcePar.alTR0 / 1000 / 1000;
+		else
+			error('Unknown variant of CSL_818');
+		end
+		bSequenceIdentified = true;
+	end
+	%% 6. Reading a default sequence
 	if ~bSequenceIdentified
 		% TODO
 		% Saw this option also in QUIPSSII
@@ -336,9 +367,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			end
 		end
 
-		if isfield(sourcePar,'sProtConsistencyInfotBaselineString') && ~isempty(sourcePar.sProtConsistencyInfotBaselineString)
-			bidsPar.SoftwareVersions = strrep(sourcePar.sProtConsistencyInfotBaselineString,'"','');
-		end
+
 
 		% N4_VD13D and N4_VE11C have also slab_thickness_mm parameter defined and it is unclear if this is imaging FOV or labeling slab thickness...
 		if isfield(bidsPar,'SoftwareVersions') &&...
@@ -404,7 +433,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 		end
 	end
 
-	%% 6. Reading TE vector and TR vector
+	%% 7. Reading TE vector and TR vector
 	if isfield(sourcePar,'alTE0') && ~isempty(sourcePar.alTE0)
 		bidsPar.EchoTime = sourcePar.alTE0 / 1000 / 1000;
 		lastEchoTime = bidsPar.EchoTime;

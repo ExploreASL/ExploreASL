@@ -232,8 +232,6 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 		end
 	end
 
-
-
     %% 6. Save all ASL files (JSON, NIFTI, CONTEXT) to the BIDS directory
     jsonASL = xASL_bids_BIDSifyASLNII(jsonASL, bidsPar, fullfile(inSessionPath,[aslLegacyLabel '.nii']), aslOutLabel);
     jsonASL = xASL_bids_VendorFieldCheck(jsonASL);

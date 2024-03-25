@@ -93,7 +93,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	DcmComplexFieldFirst = {'PulseSequenceName' 'GELabelingType'  'SiemensSliceTime' 'PhoenixProtocol' 'InPlanePhaseEncodingDirection'};
 	DcmComplexFieldAll = {'ComplexImageComponent' 'AcquisitionContrast' 'ImageType' 'PhilipsLabelControl'};
 	
-	DcmFieldList = {'RepetitionTime', 'NumberOfAverages', 'RescaleSlope', ...
+	DcmFieldList = {'NumberOfAverages', 'RescaleSlope', 'RepetitionTime', ...
 					'RescaleSlopeOriginal', 'MRScaleSlope', 'RescaleIntercept', 'AcquisitionTime', ...
 					'AcquisitionMatrix', 'Rows', 'Columns', 'NumberOfAverages', 'NumberOfTemporalPositions', ...
                     'RWVIntercept', 'RWVSlope'};
@@ -515,11 +515,14 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			% The more complex fields - strings and arrays are saved in cell
 			for iField=1:length(DcmComplexFieldAll)
 				if isfield(c_all_parms{parmsIndex},DcmComplexFieldAll{iField})
-					listEmptyFields = find(cellfun(@isempty,c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField})));
-					if ~isempty(listEmptyFields)
+					% Select only fields that are not empty
+					listNonEmptyFields = find(~cellfun(@isempty,c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField})));
+					if isempty(listNonEmptyFields)
+						% If all are empty, then skip this field
 						fprintf('\nField %s contains empty fields, skipping... \n',DcmComplexFieldAll{iField});
 					else
-						c_all_unique = unique(c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField}));
+						% If there are fields that are not empty, then extract those that are not empty and save
+						c_all_unique = unique(c_all_parms{parmsIndex}.(DcmComplexFieldAll{iField})(listNonEmptyFields));
 						if length(c_all_unique) == 1
 							parms{parmsIndex}.(DcmComplexFieldAll{iField}) = c_all_unique;
 						else

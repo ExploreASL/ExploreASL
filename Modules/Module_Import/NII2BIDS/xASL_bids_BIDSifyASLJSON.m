@@ -526,9 +526,15 @@ ASLContextM0Index = regexp(ASLContextCell,'^m0scan'); % Find m0scans
 ASLContextM0Index = cellfun(@(x)~isempty(x),ASLContextM0Index); % Create a vector out of it
 ASLContextM0Index = ASLContextM0Index(1:dimASL(4)); % Remove the last empty field
 
+% If ASLContext contains M0-scans, and repetitionTimePreparation vector is a scalar, and RepetitionTimeM0 is defined, then we create a repetitionTimePreparation vector
+if sum(ASLContextM0Index) && length(jsonOut.RepetitionTimePreparation) == 1 && isfield(jsonOut, 'RepetitionTimePreparationM0') && ~isempty(jsonOut.RepetitionTimePreparationM0)
+	jsonOut.RepetitionTimePreparation = ones(size(ASLContextM0Index)) * jsonOut.RepetitionTimePreparation; % Fill with normal TR
+	jsonOut.RepetitionTimePreparation(ASLContextM0Index) = jsonOut.RepetitionTimePreparationM0;
+end
+
 % If Post-labeling delay or labeling duration is longer than 1 then we need to verify this against
 % the ASLContext - these fields should be 0 for m0scans
-listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration'};
+listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration', 'RepetitionTimePreparation'};
 
 % Go through all variables, check those that have length bigger than 1
 for iRepeat = 1:length(listFieldsRepeat)
@@ -545,11 +551,13 @@ for iRepeat = 1:length(listFieldsRepeat)
 		
 		% Make sure the vector is a row vector
 		jsonOut.(listFieldsRepeat{iRepeat}) = jsonOut.(listFieldsRepeat{iRepeat})(:)';
-		% Check the all m0scans have zeros
-		if sum(ASLContextM0Index .* (jsonOut.(listFieldsRepeat{iRepeat})~=0))
-			% If not, then set to zeros and report a warning
-			jsonOut.(listFieldsRepeat{iRepeat})(ASLContextM0Index) = 0;
-			warning(['Had to set non-zero values for m0scan to zero in ' listFieldsRepeat{iRepeat}]);
+		% Check the all m0scans have zeros - only for LabDur and PLD, not TR
+		if strcmpi(listFieldsRepeat{iRepeat}, 'PostLabelingDelay') || strcmpi(listFieldsRepeat{iRepeat}, 'LabelingDuration')
+			if sum(ASLContextM0Index .* (jsonOut.(listFieldsRepeat{iRepeat})~=0))
+				% If not, then set to zeros and report a warning
+				jsonOut.(listFieldsRepeat{iRepeat})(ASLContextM0Index) = 0;
+				warning(['Had to set non-zero values for m0scan to zero in ' listFieldsRepeat{iRepeat}]);
+			end
 		end
 	end
 end
