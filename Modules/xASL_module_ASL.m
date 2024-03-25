@@ -400,27 +400,23 @@ end
 
 %% ========================================================================================================================
 %% 8    Quantification
-
-%% % Use either original or motion estimated ASL4D
-% Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
-% Including PVC
 iState = 8;
 
-% Create x.Path_PWI4D_used variable even when the quantification was done, but the entire pipeline wasn't finished (e.g. when the ASL module crashed after the quantification)
-if x.mutex.HasState(StateName{iState-4}) && (~x.mutex.HasState(StateName{iState}) || bOutput)
-		% Run merging if requested as first function before any quantification, as quantification itself should disregard the data source
-	if x.modules.asl.bMergingSessions
-		[x.P.Path_PWI4D_used, x.P.Pop_Path_PWI4D_used] = xASL_im_MergePWI4D(x);
-	else
-		% Use default non-merged paths
-		x.P.Path_PWI4D_used = x.P.Path_PWI4D;
-		x.P.Pop_Path_PWI4D_used = x.P.Pop_Path_PWI4D;
-	end
+% Before we continue, we define the variable x.Path_PWI4D_used
+% We need this variable for any part after here, i.e. quantification, visualization & QC
+x.P.Path_PWI4D_used = x.P.Path_PWI4D;
+x.P.Pop_Path_PWI4D_used = x.P.Pop_Path_PWI4D;
+
+if x.modules.asl.bMergingSessions
+    % only if we merged sessions, we use custom paths
+	[x.P.Path_PWI4D_used, x.P.Pop_Path_PWI4D_used] = xASL_im_MergePWI4D(x);
 	% Note: The paths x.P.(Pop_)Path_PWI4D_used can differ from a PWI4D obtained from a simple subtraction as we may have merged sessions, 
 	% and the user or ExploreASL may have removed volumes from PWI4D. That's why we save and use x.P.(Pop_)Path_PWI4D_used in memory, such 
 	% that the correct NIfTI will be used later in the pipeline (e.g., in xASL_wrp_VisualQC)
 end
 
+% Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
+% Including PVC
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     fprintf('%s\n','Quantifying ASL:   ');
     % If BASIL quantification will be performed, only native space analysis is possible
