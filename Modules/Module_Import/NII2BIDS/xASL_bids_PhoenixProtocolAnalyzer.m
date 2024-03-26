@@ -50,6 +50,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     sourcePar = addParToList('alTI.__attribute__.size',sourcePar,parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('acFlowComp[0]',sourcePar, parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('lRepetitions',sourcePar, parIndex);parIndex = parIndex+1;
+	sourcePar = addParToList('sFastImaging.lSegments',sourcePar, parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('lAverages',sourcePar, parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('lScanTimeSec',sourcePar, parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('CBFUpperLimit',sourcePar,parIndex);parIndex = parIndex+1;
@@ -339,6 +340,16 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 				end
 			end
 
+			% Number of control/label pairs
+			if ~isempty(sourcePar.lRepetitions)
+				bidsPar.NumberOfAverages = sourcePar.lRepetitions + 1;
+			end
+
+			% Number of segments in the 3D GRASE readout
+			if ~isempty(sourcePar.sFastImaginglSegments)
+				bidsPar.NumberSegments = sourcePar.sFastImaginglSegments;
+			end
+ 
 			% The repetitiontime of M0
 			bidsPar.RepetitionTimePreparationM0 = sourcePar.sWipMemBlockalFree2 / 1000;
 
