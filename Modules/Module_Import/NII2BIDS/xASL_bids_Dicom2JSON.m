@@ -279,26 +279,44 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				currentImageType = '';
 			end
 			
-			% First find the first matching seriesNumber
-			parmsIndex = length(instanceNumberList);
-			for iInst = length(instanceNumberList):-1:1
-				if (currentSeriesNumber == seriesNumberList(iInst))
-					parmsIndex = iInst;
-				end
+			% First the matching seriesNumber
+			parmsIndexSeries = (currentSeriesNumber == seriesNumberList);
+			
+			% If none matches, then accept all
+			if sum(parmsIndexSeries) == 0
+				parmsIndexSeries = ones(size(parmsIndexSeries));
 			end
 			
-			% And then the last matching instanceNumber with the correct seriesNumber
-			for iInst = 1:length(instanceNumberList)
-				if (currentInstanceNumber >= instanceNumberList(iInst)) && currentInstanceNumber>0 && currentSeriesNumber==seriesNumberList(iInst)
-					parmsIndex = iInst;
-				end
+			% Find the matching instanceNumber
+			parmsIndexInstance = (currentInstanceNumber >= instanceNumberList);
+
+			% If none matches, then accept all
+			if sum(parmsIndexInstance) == 0
+				parmsIndexInstance = ones(size(parmsIndexInstance));
 			end
 
 			% If there is a unique way to match the ImageType - then choose that
 			imageTypeMatch = regexpi(imageTypeList, currentImageType);
-			imageTypeMatch = ~cellfun(@isempty,imageTypeMatch);
-			if sum(imageTypeMatch) == 1
-				parmsIndex = find(imageTypeMatch == 1);
+			parmsIndexImageType = ~cellfun(@isempty,imageTypeMatch);
+			
+			% If none matches, then accept all
+			if sum(parmsIndexImageType ) == 0
+				parmsIndexImageType  = ones(size(parmsIndexImageType ));
+			end
+
+			% Find all matching volumes
+			parmsIndex = parmsIndexSeries & parmsIndexInstance & parmsIndexImageType;
+
+			% Take the best matching index
+			if sum(parmsIndex) == 1
+				% Single matching index
+				parmsIndex = find(parmsIndex);
+			elseif sum(parmsIndex) == 0
+				% No matching indices -> take the last
+				parmsIndex = length(instanceNumberList);
+			else
+				% Severalmatching indices -> take the highest
+				parmsIndex = find(parmsIndex, 1, 'last');
 			end
 			
 			%% -----------------------------------------------------------------------------
