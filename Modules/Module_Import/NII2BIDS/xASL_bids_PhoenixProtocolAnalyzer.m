@@ -25,11 +25,10 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 %
 % EXAMPLE:          [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList);
 %
-% REFERENCES:       ...
 % __________________________________
 % Copyright @ 2015-2024 ExploreASL
 
-    %% 1. Extract parameters from Phoenix
+    %% 1. Extract parameters from Phoenix - create a list of parameters
 	parIndex = 1;
     sourcePar = addParToList('tSequenceFileName',{}, parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('UserScaleFactor',sourcePar,parIndex);parIndex = parIndex+1;
@@ -153,6 +152,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
         bidsPar.ScanType = 'M0';
 	end
     
+	% Read the software version
 	if isfield(sourcePar,'sProtConsistencyInfotBaselineString') && ~isempty(sourcePar.sProtConsistencyInfotBaselineString)
 		bidsPar.SoftwareVersions = strrep(sourcePar.sProtConsistencyInfotBaselineString,'"','');
 	end
@@ -327,12 +327,15 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 	end
 	
 	%% 5. Reading the CSL_818 sequences
+	% Identify the sequence
 	if ~bSequenceIdentified && ~isempty(regexpi(sourcePar.tSequenceFileName, 'csl_818', 'once'))
 		if ~bSequenceIdentified && ~isempty(regexpi(sourcePar.tSequenceFileName, 'csl_818', 'once'))
+			% Read Flip angle of the labeling pulse
 			if ~isempty(sourcePar.sWipMemBlockadFree13)
 				bidsPar.LabelingPulseFlipAngle = sourcePar.sWipMemBlockadFree13;
 			end
 
+			% Read PLD and LabDur from the common Phoenix fields
 			if ~isempty(sourcePar.alTI0)
 				bidsPar.LabelingDuration = sourcePar.alTI0 / 1000 / 1000;
 				if ~isempty(sourcePar.alTI2)
@@ -377,8 +380,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 				bidsPar.ScanType = 'PseudoM0';
 			end
 		end
-
-
 
 		% N4_VD13D and N4_VE11C have also slab_thickness_mm parameter defined and it is unclear if this is imaging FOV or labeling slab thickness...
 		if isfield(bidsPar,'SoftwareVersions') &&...
