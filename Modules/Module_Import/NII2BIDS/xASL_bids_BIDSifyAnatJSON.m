@@ -36,7 +36,7 @@ function jsonOut = xASL_bids_BIDSifyAnatJSON(jsonIn,studyPar)
 		else
 		
 			% If RepetitionTimePreparation is equal to RepetitionTime, then remove RepetitionTimePreparation
-			if isnear(jsonIn.RepetitionTime,jsonIn.RepetitionTimePreparation)
+			if xASL_stat_Isnear(jsonIn.RepetitionTime, jsonIn.RepetitionTimePreparation)
 				jsonOut = rmfield(jsonOut,'RepetitionTimePreparation');
 			end
 

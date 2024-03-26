@@ -210,7 +210,7 @@ if strcmpi(x.Q.M0,'separate_scan')
     if  ~isempty(ASLshortestTE) && ~isempty(M0shortestTE)
         
 		% Check equality of TE, but allow them to be 1% different, % Throw error if TE of ASL and M0 are not exactly the same!
-		if max(~isnear(ASLshortestTE, M0shortestTE, 0.05*abs(ASLshortestTE)))
+		if max(~xASL_stat_Isnear(ASLshortestTE, M0shortestTE, 0.05*abs(ASLshortestTE)))
 			% Here we allow for a 5% difference in TE, before giving the warning, which equals to 0.75 ms on 14 ms
 			warning('TE of ASL and M0 are unequal. Check geometric distortion...');
 		end
