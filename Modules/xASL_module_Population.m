@@ -254,9 +254,16 @@ if ~x.mutex.HasState(StateName{8})
                 warning(['Unknown atlas: ' x.S.Atlases{iAtlas} ', skipping']);
             else
                 x.S.InputAtlasPath = x.P.Atlas.(x.S.Atlases{iAtlas});
-    
-                % ROI statistics (default: standard space)
-                x.S.InputNativeSpace = 0;
+            end
+
+            % ROI statistics (default: standard space)
+            x.S.InputNativeSpace = 0;
+			x.S.bSubjectSpecificAtlas = false;
+            xASL_wrp_GetROIstatistics(x);
+            % ROI statistics (optional: native space)
+            if x.modules.population.bNativeSpaceAnalysis
+                x.S.InputNativeSpace = 1;
+                x.S.InputAtlasNativeName = [x.S.Atlases{iAtlas} '_Atlas'];
                 xASL_wrp_GetROIstatistics(x);
                 % ROI statistics (optional: native space)
                 if x.modules.population.bNativeSpaceAnalysis
@@ -281,9 +288,10 @@ if ~x.mutex.HasState(StateName{8})
 		LesionUniqueROIList = unique(LesionROIList);
 
         x.S.InputNativeSpace = 0;
+		x.S.bSubjectSpecificAtlas = true;
         for iAtlas = 1:length(LesionUniqueROIList)
             x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iAtlas});
-            xASL_wrp_GetROIstatistics(x, 1);
+            xASL_wrp_GetROIstatistics(x);
         end
     end
 
