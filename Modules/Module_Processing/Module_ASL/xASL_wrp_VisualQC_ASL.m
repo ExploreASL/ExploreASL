@@ -24,11 +24,11 @@ function xASL_wrp_VisualQC_ASL(x)
 % 7. Compute overlap (intersection) with templates
 % 8. Summarize ASL orientation & check for left-right flips
 % 9. Collect several other parameters & store all in PDF overview
+% 10. Integrate results as PDF into a DICOM using WAD-QC
 %
 % EXAMPLE: xASL_wrp_VisualQC_ASL(x);
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL
-
+% Copyright (C) 2015-2024 ExploreASL
 
 
 %% 1. Admin
@@ -78,8 +78,10 @@ if isfield(x.modules.asl,'bMakeNIfTI4DICOM') && x.modules.asl.bMakeNIfTI4DICOM
     xASL_io_MakeNifti4DICOM(x.P.Path_CBF, x, 'UINT16', x.P.Path_ASL4D, InputASLOripath); 
 end
 
+
 %% 3. Perform several visualizations
 x = xASL_qc_VisualCheckCollective_ASL(x);
+
 
 %% 4. Visualization TopUp results (quick & dirty)
 PathPopB0 = fullfile(x.D.PopDir, ['rASL_B0_' x.P.SubjectID '_' x.P.SessionID '.nii']);
@@ -92,6 +94,7 @@ if xASL_exist(PathPopB0,'file') && xASL_exist(PathPopUnwarped,'file')% if we hav
     xASL_delete(PathPopB0);
     xASL_delete(PathPopUnwarped);
 end
+
 
 %% 5. Visualize SliceGradient
 % Here we create a Figure that shows the ASL slices/FoV with respect to standard space/
@@ -127,6 +130,7 @@ else
         xASL_vis_Imwrite(Parms.IM,OutputFile);
     end
 end
+
 
 %%  6. Temporal QC parameters, based on SPM Univariate+ Toolbox
 %  Run this part only if we have > 10 time points
@@ -181,11 +185,19 @@ end
 xASL_qc_PrintOrientation(x.P.Path_ASL4D, x.dir.SESSIONDIR, 'RigidRegASL');
 % This function summarizes the T1w orientation. Especially check the determinant, for left-right flips
 
+
 %% 9. Collect several other parameters & store all in PDF overview
 x = xASL_qc_CollectParameters(x, x.iSubject, 'ASL', x.iSession); % Quick & Dirty solution, 0 == skip structural part
 
 xASL_adm_SaveX(x); % future: do this in each xWrapper
 xASL_qc_CreatePDF(x, x.iSubject);
+
+
+%% 10. Integrate results as PDF into a DICOM using WAD-QC
+if x.DoWADQCDC
+    xASL_qc_WADQCDC(x, x.iSubject, 'ASL');
+end
+
 
 end
 
@@ -350,5 +362,6 @@ for iN=1:nRows
 end
 
 fprintf('\n');
-   
+
+
 end

@@ -37,7 +37,6 @@ function [result, x] = xASL_module_ASL(x)
 % - `070_CreateAnalysisMask` - Create mask using FoV, vascular outliers & susceptibility atlas
 % - `080_Quantification`     - CBF quantification
 % - `090_VisualQC_ASL`       - Generate QC parameters & images
-% - `100_WADQC`              - QC for WAD-QC DICOM server (OPTIONAL)
 %
 % EXAMPLE: [~, x] = xASL_module_ASL(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -105,7 +104,6 @@ StateName{ 6} = '060_ProcessM0';
 StateName{ 7} = '070_CreateAnalysisMask';
 StateName{ 8} = '080_Quantification';
 StateName{ 9} = '090_VisualQC_ASL';
-StateName{10} = '100_WADQC';
 
 if ~x.mutex.HasState('999_ready')
     bOutput = true; % generate output, some processing has and some has not been yet done
@@ -407,10 +405,11 @@ iState = 8;
 x.P.Path_PWI4D_used = x.P.Path_PWI4D;
 x.P.Pop_Path_PWI4D_used = x.P.Pop_Path_PWI4D;
 
-if (x.mutex.HasState(StateName{iState-4}) && (~x.mutex.HasState(StateName{iState}))) ||...
-    (~x.mutex.HasState(StateName{iState+2}) && x.DoWADQCDC) || (~x.mutex.HasState(StateName{iState+1}))
+if ~x.mutex.HasState(StateName{iState}) || ~x.mutex.HasState(StateName{iState+1})
+    % To reduce overhead for ASL sessions that were already ran, we do this check
+
 	if x.modules.asl.bMergingSessions
-		% only if we merged sessions, we use custom paths
+		% only if we merge sessions, we use custom paths
 		[x.P.Path_PWI4D_used, x.P.Pop_Path_PWI4D_used] = xASL_im_MergePWI4D(x);
 		% Note: The paths x.P.(Pop_)Path_PWI4D_used can differ from a PWI4D obtained from a simple subtraction as we may have merged sessions,
 		% and the user or ExploreASL may have removed volumes from PWI4D. That's why we save and use x.P.(Pop_)Path_PWI4D_used in memory, such
@@ -474,16 +473,6 @@ else
 	if  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
 end
 
-
-%% ========================================================================================================================
-%% 10    WAD-QC
-iState = 10;
-if ~x.mutex.HasState(StateName{iState}) && x.DoWADQCDC
-    xASL_qc_WADQCDC(x, x.iSubject, 'ASL');
-    x.mutex.AddState(StateName{iState});
-elseif x.mutex.HasState(StateName{iState}) && bOutput
-    fprintf('%s\n', [StateName{iState} ' has already been performed, skipping...']);
-end
 
 
 %% ========================================================================================================================
