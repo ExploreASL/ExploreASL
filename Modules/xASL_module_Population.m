@@ -256,6 +256,7 @@ if ~x.mutex.HasState(StateName{8})
 
             % ROI statistics (default: standard space)
             x.S.InputNativeSpace = 0;
+			x.S.bSubjectSpecificAtlas = false;
             xASL_wrp_GetROIstatistics(x);
             % ROI statistics (optional: native space)
             if x.modules.population.bNativeSpaceAnalysis
@@ -265,25 +266,25 @@ if ~x.mutex.HasState(StateName{8})
             end
         end
     
-        % Check if we should do the same for Lesion or ROI masks (i.e.
-        % individual "atlases") -> NB not yet developed/tested in native space
-        LesionROIList = xASL_adm_GetFileList(x.D.PopDir, '(?i)^r(Lesion|ROI).*\.nii$', 'FPList', [0 Inf]);
+        % Check if we should do the same for Lesion or ROI masks (i.e. individual "atlases")
+		% PM: not yet developed/tested in native space
+        
+		% Read the names of the lesion files
+		LesionROIList = xASL_adm_GetFileList(x.D.PopDir, '(?i)^r(Lesion|ROI).*\.nii$', 'List', [0 Inf]);
+		% Go through the lesions and remove the subject names
+		for iLesion = 1:length(LesionROIList)
+			[iStart, iEnd] = regexp(LesionROIList{iLesion}, '^.*(rLesion|rROI)_(T1|FLAIR|T2)_\d*_');
+			LesionROIList{iLesion} = LesionROIList{iLesion}(iStart:iEnd);
+		end
+		% Obtain a unique list of lesion names without the subject name
+		LesionUniqueROIList = unique(LesionROIList);
+
         x.S.InputNativeSpace = 0;
-        for iAtlas = 1:length(LesionROIList)
-            x.S.InputAtlasPath = LesionROIList{iAtlas};
+		x.S.bSubjectSpecificAtlas = true;
+        for iAtlas = 1:length(LesionUniqueROIList)
+            x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iAtlas});
             xASL_wrp_GetROIstatistics(x);
         end
-
-        % % Do the same for volumetrics
-        % x.S.IsASL = false;
-        % x.S.IsVolume = true;
-        % x.S.InputDataStr = 'mrc1T1'; % GM volume
-        % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'HOcort_CONN.nii');
-        % xASL_wrp_GetROIstatistics(x);
-        % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'HOsub_CONN.nii');
-        % xASL_wrp_GetROIstatistics(x);
-        % x.S.InputAtlasPath = fullfile(x.D.AtlasDir,'Hammers.nii');
-        % xASL_wrp_GetROIstatistics(x);
     end
 
     x.mutex.AddState(StateName{8});
