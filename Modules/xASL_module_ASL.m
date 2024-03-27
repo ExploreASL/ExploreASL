@@ -85,12 +85,13 @@ if ~StructuralDerivativesExist
 		% Either the Structural images are there, but the population module wasn't run
 		fprintf('though structural scans are present in rawdata\n');
         fprintf('Please run the structural module first\n');
+        error('Skipping ASL module');
 	elseif ~x.modules.asl.bUseMNIasDummyStructural
 		% We don't have the structural images and the DummyMNI mode wasn't activated
         fprintf('also, there are no structural scans present in rawdata\n');
 		fprintf('Consider enabling "x.modules.asl.bUseMNIasDummyStructural" to run the ASL module without structural images\n');
-	end
-    error('Skipping ASL module');
+        error('Skipping ASL module');
+    end
 end
 
 
