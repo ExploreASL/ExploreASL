@@ -97,6 +97,23 @@ if ~x.S.bSubjectSpecificAtlas
 	% check them, check their ROI names, and make them ready for use below
 
 	% Skip atlas loading here for subject-specific atlases
+else
+	% In case of a subject specific atlas, load the subject-specific atlas for any random existing subject to be able to create the ROI names
+	% Save the Path without subject to a temporary variable
+	tempPath = x.S.InputAtlasPath;
+
+	% Find any fitting atlas
+	[~, pathAtlasName] = fileparts(x.S.InputAtlasPath);
+
+	atlasList = xASL_adm_GetFileList(x.D.PopDir, [pathAtlasName '.*\.nii$'], 'FPList', [0 Inf]);
+
+	if ~isempty(atlasList)
+		x.S.InputAtlasPath = atlasList{1};
+		% Load the atlas
+		x = xASL_stat_AtlasForStats(x);
+	end
+	% Restore the path without subject name
+	x.S.InputAtlasPath = tempPath;
 end
 
 %% ------------------------------------------------------------------------------------------------------------

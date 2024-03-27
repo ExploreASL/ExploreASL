@@ -79,14 +79,13 @@ function [x] = xASL_stat_GetROIstatistics(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      x = xASL_stat_GetROIstatistics(x);
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------------------
 %% 0 Administration
 
 [nSessions, bSessionsMissing, listSessions] = xASL_adm_GetPopulationSessions(x); % obtain sessions & number of sessions
-
 
 if x.S.InputNativeSpace
 	% Native space
@@ -178,7 +177,9 @@ if x.S.InputNativeSpace
 	end
 
 else
-	x.S.InputMasks = logical(x.S.InputMasks);
+	if ~x.S.bSubjectSpecificAtlas
+		x.S.InputMasks = logical(x.S.InputMasks);
+	end
 end
 
 
@@ -228,7 +229,20 @@ bDoOnceROILR    = 1;
 bDoOnceROIStart = 1;
 
 for iSubject=1:x.dataset.nSubjects
-    
+
+	% For subject-specific atlases, a new atlas is loaded for each subject
+	if x.S.bSubjectSpecificAtlas
+		% Save the Path without subject to a temporary variable
+		tempPath = x.S.InputAtlasPath;
+		% Add subject name to the atlas path to create a subject-specific atlas
+		x.S.InputAtlasPath = [x.S.InputAtlasPath x.SUBJECTS{iSubject} '.nii'];
+		% Load the atlas
+		x = xASL_stat_AtlasForStats(x);
+		x.S.InputMasks = logical(x.S.InputMasks);
+		% Restore the path without subject name
+		x.S.InputAtlasPath = tempPath;
+	end
+
 	for iSess=1:nSessions
         
 		% ID (which name, group etc), all for identification

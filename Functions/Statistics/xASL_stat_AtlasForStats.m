@@ -198,7 +198,7 @@ if ~AtlasIsColumns
     end
     fprintf('\n');
 else
-    x.S.InputMasks = InputAtlasIM;
+	x.S.InputMasks = InputAtlasIM;
 end
 
 %% Create dummy ROI names, if we don't have them
