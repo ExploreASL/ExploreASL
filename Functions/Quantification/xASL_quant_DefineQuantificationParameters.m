@@ -64,7 +64,7 @@ if ~isfield(x.Q,'BloodT1') || isempty(x.Q.BloodT1)
     % T1 relaxation time of arterial blood
     % There are 3 options for x.Q.BloodT1:
     % A) users have provided x.Q.BloodT1
-    % B) users have provided x.Hematocrit which is converted to x.Q.BloodT1 above
+    % B) users have provided x.Hematocrit (in any of the forms defined in xASL_wrp_Quantify 3.a-c), which is converted to x.Q.BloodT1 there
     % C) it doesn't exist and is defaulted here based on MagneticFieldStrength
     switch(x.MagneticFieldStrength)
 	    case 0.2 

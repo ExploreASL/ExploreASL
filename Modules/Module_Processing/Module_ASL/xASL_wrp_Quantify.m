@@ -181,15 +181,33 @@ end
 % Below, at the quantification section, this is only taken into account
 % when x.Q.BloodT1 exists, otherwise default Blood T1 values are used based
 % on MagneticFieldStrength.
-if isfield(x, 'hematocrit') && isfield(x, 'Hematocrit') % eventually this should be x.Q.Hematocrit, or x.S.SetsID from participants.tsv
-    warning('Two hematocrit fields, not sure which one to use, please provide one only!');
+
+% a. We prioritize x.S.SetsID > x.Hematocrit
+indexSetsName = find(strcmpi(x.S.SetsName, 'hematocrit'));
+if ~isempty(indexSetsName) && isfield(x, 'Hematocrit')
+    warning('Found hematocrit values in participants.tsv & in x.Hematocrit, using the first');
+    x.Hematocrit = x.S.SetsID(:,indexSetsName);
+elseif ~isempty(indexSetsName)
+    x.Hematocrit = x.S.SetsID(:,indexSetsName);
+end
+
+% b. We prioritze x.Hematocrit > x.hematocrit
+if isfield(x, 'hematocrit') && isfield(x, 'Hematocrit')
+    warning('Two hematocrit fields, ignoring x.hematocrit');
+    x = rmfield(x, 'hematocrit');
 elseif isfield(x, 'hematocrit')
     x.Hematocrit = x.hematocrit;
 	x = rmfield(x, 'hematocrit');
 end
+
+% c. We convert x.Hematocrit -> x.Q.BloodT1
 if isfield(x,'Hematocrit')
     x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Hematocrit, [], x.MagneticFieldStrength);
 end
+
+% d. If we do not have a x.Q.BloodT1, we use a default value - that is done in xASL_quant_DefineQuantificationParameters called in section 0 here
+% PM: model hematocrit based on age, sex, ethnicity
+% See xASL_quant_AgeSex2Hct & improve this function with population-based stats
 
 %% ------------------------------------------------------------------------------------------------
 %% 4)   ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
