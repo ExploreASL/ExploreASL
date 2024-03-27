@@ -110,8 +110,8 @@ BloodT1 = BloodT1*1000;
 %% ---------------------------------------------------------
 %% 5) Print what we did
 if bVerbose
-    fprintf('%s\n', ['Calculated blood T1 ' num2str(BloodT1) 'ms from Hct ' num2str(Hematocrit)]);
-    fprintf('%s\n', ['Assuming field strength ' xASL_num2str(B0) ', arterial O2 saturation ' xASL_num2str(Y)]);
+    fprintf('%s\n', ['Calculated blood T1 ' num2str(BloodT1) ' ms from Hct ' num2str(Hematocrit)]);
+    fprintf('%s\n', ['Assuming field strength ' xASL_num2str(B0) 'T, arterial O2 saturation ' xASL_num2str(Y)]);
 end
 
 
