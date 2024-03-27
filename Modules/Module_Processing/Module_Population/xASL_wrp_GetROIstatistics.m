@@ -11,6 +11,7 @@ function xASL_wrp_GetROIstatistics(x)
 %                                  name), to specify which data to compute ROI
 %                                  statistics for (e.g. 'qCBF', 'M0' 'mrc1T1') (REQUIRED)
 %   x.S.InputAtlasPath           - path to NIfTI file containing atlas to load (REQUIRED)
+%   x.S.bSubjectSpecificAtlas    - boolean if the atlas is subject specific (REQUIRED)
 %   x.S.output_ID                - name of data that is analyzed, to be
 %                                  used in the created TSV summary file
 %                                  (e.g. CBF, pGM, mean_control) (REQUIRED)
@@ -41,7 +42,7 @@ function xASL_wrp_GetROIstatistics(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_wrp_GetROIstatistics(x);
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------------------------------
@@ -60,6 +61,10 @@ end
 
 if ~isfield(x.S,'InputNativeSpace') || isempty(x.S.InputNativeSpace)
 	x.S.InputNativeSpace = 0;
+end
+
+if ~isfield(x.S, 'bSubjectSpecificAtlas') || isempty(x.S.bSubjectSpecificAtlas)
+	x.S.bSubjectSpecificAtlas = false;
 end
 
 x.S.CheckMasksDir = fullfile(x.S.StatsDir,'CheckMasksVisually');
@@ -87,10 +92,12 @@ end
 
 %% ------------------------------------------------------------------------------------------------------------
 %% 1) Load the atlas
-x = xASL_stat_AtlasForStats(x); % check all atlases that are requested (see InputAtlasPath above)
-% check them, check their ROI names, and make them ready for use below
+if ~x.S.bSubjectSpecificAtlas
+	x = xASL_stat_AtlasForStats(x); % check all atlases that are requested (see InputAtlasPath above)
+	% check them, check their ROI names, and make them ready for use below
 
-
+	% Skip atlas loading here for subject-specific atlases
+end
 
 %% ------------------------------------------------------------------------------------------------------------
 %% 2) Organize TSV output name
