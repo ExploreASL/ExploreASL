@@ -36,7 +36,7 @@ function [x] = xASL_im_CreateGroupAnalysisMask(x, Threshold)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        xASL_im_CreateGroupAnalysisMask(x);
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 
 
 %% Admin
@@ -48,8 +48,6 @@ end
 if x.dataset.nSubjects * x.dataset.nSessions < 16
     % With too small datasets, created templated are not reliable
     fprintf('\n\n%s\n\n', ['Only n=' xASL_num2str(x.dataset.nSubjects * x.dataset.nSessions) ' subject*runs, population-based analysis mask may not be useful']);
-    % x.S.MaskSusceptibility = xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask);
-    % x.S.VBAmask = x.S.MaskSusceptibility;
 end
 
 % Here, we run a subfunction to avoid redundant code repetition
@@ -61,12 +59,10 @@ bSkipStandard = false;
 
 [PathT1, bSkipStandard] = xASL_sub_CheckTemplatePath('^T1', x, bSkipStandard);
 
-
 % Not sure if this is the same for the NativeSpaceAnalysis, this still has to be fixed by Jan.
 if bSkipStandard && ~x.modules.population.bNativeSpaceAnalysis
     return;
 end
-
 
 if ~bSkipStandard
     % PM: these fallbacks for anatomical templates could be removed,
@@ -90,7 +86,6 @@ if ~bSkipStandard
 	MaskVascular = xASL_io_Nifti2Im(PathVascularMask)>=Threshold;
     MaskFoV = xASL_io_Nifti2Im(PathFoV)>=Threshold;
     
-
     % Legacy Susceptibility Masking
     MaskSusceptibility = xASL_io_Nifti2Im(PathTemplateSusceptibilityMask);
     susceptibilitySortedIntensities = sort(MaskSusceptibility(isfinite(MaskSusceptibility)));
@@ -225,7 +220,6 @@ ImSusceptibility = 1-xASL_io_Nifti2Im(PathTemplateSusceptibilityMask);
 ImSusceptibility(ImSusceptibility<(1-ThresholdSuscept)) = 1-ThresholdSuscept;
 ImSusceptibility = ImSusceptibility-(1-ThresholdSuscept);
 
-
 ImOut{2} = xASL_vis_CreateVisualFig(x, {PathT1 ImSusceptibility}, [], IntScale, [], ColorMap, bClip, MasksAre, bWhite);
 
 % 3) Resulting analysis mask
@@ -234,31 +228,10 @@ ImOut{3} = xASL_vis_CreateVisualFig(x, {PathT1 MaskAnalysis}, [], IntScale, [], 
 % 5) Save image
 xASL_vis_Imwrite([ImOut{1},ImOut{2},ImOut{3}], fullfile(x.S.StatsDir,'AnalysisMaskCreation.jpg'),[], false);
 
-%     figure(1);  imshow([ImOut{1},ImOut{2},ImOut{3}],'border','tight','InitialMagnification',400)
-
 %% Reset visualization settings
 x.S.TraSlices = x.S.slicesLarge;
 x.S.CorSlices = [];
 x.S.SagSlices = [];
-
-% %% Create the colorbars
-% MaxValue = [0.5 0.75];
-% ColorMap = ColorMap{2};
-% for iBar=1:length(MaxValue)
-%     if isfinite(MaxValue(iBar))
-%         DummyIm = repmat([0:0.01:1].*MaxValue(iBar),[101 1]);
-%         figure(iBar); imshow(DummyIm,[],'colormap',ColorMap,'InitialMagnification',400);
-%         colorbar;
-%     end
-% end
-
-
-%     Unused T1 mask
-%     T1mask = xASL_io_Nifti2Im(PathT1);
-%     SortInt = sort(T1mask(:));
-%     Thr = SortInt(round(0.5*length(SortInt)));
-%     T1mask = T1mask>Thr;
-
 
 end
 
