@@ -157,7 +157,7 @@ elseif length(x.Q.SliceReadoutTime) == nSlices
 					% Try to reconstruct the pattern of MultiBand and check if that is really the case
 					SliceTimingPattern = (0:(MultiBandFactor-1))*SliceTimingDiffUnique(1);
 					SliceTimingPattern = repmat(SliceTimingPattern,[1 length(SliceTiming)/MultiBandFactor])';
-					if ~sum(xASL_stat_Isnear(SliceTiming', SliceTimingPattern', 5)==0)
+					if ~sum(xASL_stat_IsEqualTol(SliceTiming', SliceTimingPattern', 5)==0)
 						bIsMultiBand = true;
 					end
 				end

@@ -73,13 +73,13 @@ if isfield(parms,'RWVSlope')
 		end
 		
 		if ~isempty(parms.RWVSlope)
-			if ~xASL_stat_Isnear(parms.RWVSlope, rescaleSlopeNifti, parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
+			if ~xASL_stat_IsEqualTol(parms.RWVSlope, rescaleSlopeNifti, parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
 				fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and NIfTI slope (' xASL_num2str(rescaleSlopeNifti) ') differ, using RWVSlope']);
 			end
-			if isfield(parms,'RescaleSlopeOriginal') && ~xASL_stat_Isnear(parms.RWVSlope, parms.RescaleSlopeOriginal, parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
+			if isfield(parms,'RescaleSlopeOriginal') && ~xASL_stat_IsEqualTol(parms.RWVSlope, parms.RescaleSlopeOriginal, parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
 				fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ') differ, using RWVSlope']);
 			end
-			if isfield(parms,'RescaleSlope') && ~xASL_stat_Isnear(parms.RWVSlope, parms.RescaleSlope, parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
+			if isfield(parms,'RescaleSlope') && ~xASL_stat_IsEqualTol(parms.RWVSlope, parms.RescaleSlope, parms.RWVSlope/100) && (rescaleSlopeNifti ~= 1)
 				fprintf('%s\n', ['RWVSlope (' xASL_num2str(parms.RWVSlope) ') and RescaleSlope (' xASL_num2str(parms.RescaleSlope) ') differ, using RWVSlope']);
 			end
 		else
@@ -113,7 +113,7 @@ else
 	end
 	
 	if isfield(parms, 'RescaleSlopeOriginal') && (parms.RescaleSlopeOriginal ~= 1)
-		if (scaleFactor ~= 1) && ~xASL_stat_Isnear(scaleFactor, parms.RescaleSlopeOriginal, scaleFactor/100)
+		if (scaleFactor ~= 1) && ~xASL_stat_IsEqualTol(scaleFactor, parms.RescaleSlopeOriginal, scaleFactor/100)
 			warning('%s\n%s\n',...
 				['Discrepancy in RescaleSlopeOriginal (' xASL_num2str(parms.RescaleSlopeOriginal) ') and NIFTI Slopes (' xASL_num2str(rescaleSlopeNifti) ')'],...
 				'Using RescaleSlopeOriginal');
@@ -122,8 +122,8 @@ else
 	end
 	
 	if isfield(parms, 'RescaleSlope') && (parms.RescaleSlope ~= 1)
-		if (scaleFactor ~= 1) && ~xASL_stat_Isnear(scaleFactor, parms.RescaleSlope, scaleFactor/100)
-			if (rescaleSlopeNifti ~= 1) && ~xASL_stat_Isnear(rescaleSlopeNifti, parms.RescaleSlope, scaleFactor/100)
+		if (scaleFactor ~= 1) && ~xASL_stat_IsEqualTol(scaleFactor, parms.RescaleSlope, scaleFactor/100)
+			if (rescaleSlopeNifti ~= 1) && ~xASL_stat_IsEqualTol(rescaleSlopeNifti, parms.RescaleSlope, scaleFactor/100)
 				warning('%s\n%s\n',...
 				['Discrepancy in RescaleSlope (' xASL_num2str(parms.RescaleSlope) ') and NIFTI Slopes (' xASL_num2str(rescaleSlopeNifti) ')'],...
 				'Using RescaleSlope');

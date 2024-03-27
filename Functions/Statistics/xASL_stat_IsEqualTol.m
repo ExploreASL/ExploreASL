@@ -1,7 +1,7 @@
-function bIsnear = xASL_stat_Isnear(x, y, tol)
+function bIsnear = xASL_stat_IsEqualTol(x, y, tol)
 % Verifies if two numerical arrays are nearly equal
 %
-% FORMAT: bIsnear = xASL_stat_Isnear(x, y[, tol])
+% FORMAT: bIsnear = xASL_stat_IsEqualTol(x, y[, tol])
 %
 % INPUT:
 %   x 	    - the first input scalar/vector/matrix (REQUIRED)
@@ -15,10 +15,10 @@ function bIsnear = xASL_stat_Isnear(x, y, tol)
 %              of scalars and matrices can be given on the input given that the matrices are equal in size.
 %
 % EXAMPLE: 
-%    bIsnear = xASL_stat_Isnear(1, 2, 3)
-%    bIsnear = xASL_stat_Isnear(1, [2,3,4], 0.1)
-%    bIsnear = xASL_stat_Isnear([1,2;3 4], [1,2;3,4], 0.1)
-%    bIsnear = xASL_stat_Isnear(1, 2)
+%    bIsnear = xASL_stat_IsEqualTol(1, 2, 3)
+%    bIsnear = xASL_stat_IsEqualTol(1, [2,3,4], 0.1)
+%    bIsnear = xASL_stat_IsEqualTol([1,2;3 4], [1,2;3,4], 0.1)
+%    bIsnear = xASL_stat_IsEqualTol(1, 2)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
@@ -32,7 +32,7 @@ end
 
 % Default tolerance
 if nargin < 3 || isempty(tol)
-   tol=1e-8;
+   tol = 1e-8;
 end
 
 % Check that all inputs are numerical arrays
