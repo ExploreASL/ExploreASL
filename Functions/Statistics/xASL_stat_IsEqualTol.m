@@ -47,7 +47,7 @@ end
 
 % Check if tol is a scalar or has the same size as X and Y
 if numel(tol) > 1 && ( (numel(x) > 1 && ~isequal(size(tol), size(x))) || (numel(y) > 1 && ~isequal(size(tol), size(y))) )
-	error('Input TOL must have the same size as X or Y or be a scalar');
+	error('Input TOL must be a scalar or have the same size as X or Y');
 end
 
 % Check if the difference is smaller than tolerance
