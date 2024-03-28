@@ -1,3 +1,18 @@
+
+================================================ CITATION ========================================
+When using this atlas, please cite (in addition to ExploreASL):
+
+1.      Desikan RS, Segonne F, Fischl B, Quinn BT, Dickerson BC, Blacker D, et al. An automated labeling system for subdividing 
+        the human cerebral cortex on MRI scans into gyral based regions of interest. Neuroimage 2006; 31(3):968-980.
+2.      Mazziotta J, Toga A, Evans A, Fox P, Lancaster J, Zilles K, et al. A probabilistic atlas and reference system for the human brain: 
+        International Consortium for Brain Mapping (ICBM). Philos Trans R Soc Lond B Biol Sci 2001; 356(1412):1293-1322.
+3.      Diedrichsen J, Balsters JH, Flavell J, Cussans E, Ramnani N. A probabilistic MR atlas of the human cerebellum. Neuroimage 2009; 46(1):39-46.
+
+Also, note that this atlas is ONLY FREE FOR NON-COMMERCIAL USE. For commercial use, please contact the creators to obtain a commercial license.
+
+================================================ LICENSE ========================================
+
+
 License according to FSL:
 
 FMRIB Software Library, Release 6.0 (c) 2018, The University of Oxford
@@ -93,3 +108,6 @@ particular purpose or for use under any specific conditions.
 Furthermore, the University disclaims all responsibility for the use
 which is made of the Software. It further disclaims any liability for
 the outcomes arising from using the Software.
+
+
+=================================================================================================
