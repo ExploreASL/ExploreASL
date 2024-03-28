@@ -346,6 +346,10 @@ if ~bOutBids
     outParms = xASL_io_CheckDeprecatedFieldsX(outParms);
 end
 
+% If we convert to legacy, we make sure to properly initialize the field Q.Sequence
+if ~bOutBids
+	outParms.Q = xASL_adm_DefineASLSequence(outParms.Q);
+end
 
 end
 
@@ -368,11 +372,6 @@ function inXasl = xASL_wrp_Quantify_FlattenX(inXasl)
             % Remove current substruct
             inXasl = rmfield(inXasl,firstLevelStructs{iStruct});
         end
-    end
-
+	end
 
 end
-
-
-
-

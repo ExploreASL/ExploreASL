@@ -874,9 +874,4 @@ if strcmp(x.Q.M0, 'Absent')
     end
 end
 
-
-%% 7. Define sequence (educated guess based on the Q field)
-x = xASL_adm_DefineASLSequence(x, bOutput);
-
-
 end
