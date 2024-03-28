@@ -30,15 +30,23 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES: Petr, 2018 MAGMA; Vidorreta 2013 Neuroimage
 %
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 %% ----------------------------------------------------------------------------------------
 %% Admin
-tIM = xASL_io_ReadNifti(PathASL);
+[tIM, tJSON] = xASL_io_ReadNifti(PathASL);
 NativeResolution = tIM.hdr.pixdim(2:4);
-if ~isfield(x.Q,'Sequence')
-    warning(['Setting x.Q.Sequence missing, skipping']);
+
+% Obtain the x.Q.Sequence field from the json
+if ~isempty(tJson) && isfield(tJson, 'Q') && isfield(tJson.Q, 'Sequence')
+	x.Q.Sequence = tJson.Q.Sequence;
+end
+
+% If sequence is still missing we skip this function
+if ~isfield(x.Q, 'Sequence') 
+    warning('Setting x.Q.Sequence missing, skipping');
     return;
+
 end
 
 
