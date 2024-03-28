@@ -30,18 +30,38 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES: Petr, 2018 MAGMA; Vidorreta 2013 Neuroimage
 %
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 %% ----------------------------------------------------------------------------------------
 %% Admin
 tIM = xASL_io_ReadNifti(PathASL);
 [fPath, fName] = xASL_fileparts(PathASL);
+
+% Read JSON of the ASL scan
 tJson = xASL_io_ReadJson([fullfile(fPath, fName) '.json']);
 tJson = xASL_bids_parms2BIDS([], tJson, 0);
+
+% Obtain the resolution based on the image matrix
 NativeResolution = tIM.hdr.pixdim(2:4);
-if ~isempty(tJson) && isfield(tJson.Q, 'Sequence')
-	x.Q.Sequence = tJson.Q.Sequence;
-elseif ~isfield(x.Q, 'Sequence') 
+
+% Load the x.Q fields from the JSON
+if ~isempty(tJson) && isfield(tJson, 'Q')
+	if isfield(tJson.Q, 'Vendor')
+		x.Q.Vendor = tJson.Q.Vendor;
+	end
+	if isfield(tJson.Q, 'Sequence')
+		x.Q.Sequence = tJson.Q.Sequence;
+	end
+	if isfield(tJson.Q, 'readoutDim')
+		x.Q.readoutDim = tJson.Q.readoutDim;
+	end
+end
+
+% Verify the x.Q.Sequence and fill in based on Vendor and ReadoutDim
+x = xASL_adm_DefineASLSequence(x, false);
+
+% If sequence is still missing we skip this function
+if ~isfield(x.Q, 'Sequence') 
     warning('Setting x.Q.Sequence missing, skipping');
     return;
 end
