@@ -456,7 +456,6 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     x.mutex.AddState(StateName{iState});
     xASL_adm_CompareDataSets([], [], x); % unit testing
     x.mutex.DelState(StateName{iState+1});
-    x.mutex.DelState(StateName{iState+2});
 else
 	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
 	if  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
