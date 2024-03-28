@@ -1,3 +1,9 @@
+================================================ CITATION ===============================================
+Please cite, in addition to the ExploreASL paper:
+
+Klein, Arno, 2016, "Mindboggle-101 atlases (anatomical labels from a population of brains)", 
+https://doi.org/10.7910/DVN/XCCE9Q, Harvard Dataverse, V1 
+
 ================================================ ATLASES ================================================
 
 Mindboggle-101 atlases (anatomical labels from a population of brains) V1.1

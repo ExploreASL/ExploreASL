@@ -1,4 +1,20 @@
-================================================ LICENSE ================================================
+================================================ CITATION ========================================
+When using this atlas, please cite (in addition to ExploreASL):
+
+1) Hammers A, Allom R, Koepp MJ, Free SL, Myers R, Lemieux L, Mitchell TN, 
+Brooks DJ, Duncan JS. Three-dimensional maximum probability atlas of the human 
+brain, with particular reference to the temporal lobe. Hum Brain Mapp 2003, 19: 
+224-247. 
+(for the region definitions #01-49 including protocols)
+
+2) Gousias IS, Rueckert D, Heckemann RA, Dyet LE, Boardman JP, Edwards AD, 
+Hammers A. Automatic segmentation of brain MRIs of 2-year-olds into 83 regions 
+of interest. Neuroimage 2008 Apr 1;40(2):672-684. 
+(for region names #50-67 and access to protocols: www.brain-development.org)
+
+Also, note that this atlas is ONLY FREE FOR NON-COMMERCIAL USE. For commercial use, please contact the creators to obtain a commercial license.
+
+================================================ LICENSE ========================================
 
 You shall, in any use of the Materials, include an acknowledgement in the form of 
 “(c) Copyright Imperial College of Science, Technology and Medicine 2007. All rights reserved.” 
@@ -13,4 +29,4 @@ These Hammers regions were bilaterally averaged, to accommodate the LeftRight se
 in ExploreASL. The Hammers atlas contains 3 regions that were already bilateral, accumulating to
 (95+3)/2=49 regions in the bilateral Hammers atlas provided here.
 
-=========================================================================================================
+=================================================================================================
