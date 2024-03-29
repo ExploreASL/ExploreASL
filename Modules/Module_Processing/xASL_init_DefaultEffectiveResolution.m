@@ -34,7 +34,7 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 
 %% ----------------------------------------------------------------------------------------
 %% Admin
-[tIM, tJSON] = xASL_io_ReadNifti(PathASL);
+[tIM, ~, tJson] = xASL_io_ReadNifti(PathASL);
 NativeResolution = tIM.hdr.pixdim(2:4);
 
 % Obtain the x.Q.Sequence field from the json
@@ -46,9 +46,7 @@ end
 if ~isfield(x.Q, 'Sequence') 
     warning('Setting x.Q.Sequence missing, skipping');
     return;
-
 end
-
 
 %% ----------------------------------------------------------------------------------------
 %% 1) Educated-guess FWHM

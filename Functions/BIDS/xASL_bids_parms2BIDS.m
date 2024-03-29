@@ -341,12 +341,13 @@ if bOutBids ~= 1
 	end
 end
 
-% If we convert to xASL format, we have to move fields to correct position in the x structure
+% If we convert to xASL Legacy format, we have to move fields to correct position in the outParms structure
+% as some fields belong to x.Q.fields and some to x.fields
 if ~bOutBids
     outParms = xASL_io_CheckDeprecatedFieldsX(outParms);
 end
 
-% If we convert to legacy, we make sure to properly initialize the field Q.Sequence
+% If we convert to Legacy, we make sure to properly initialize the field outParms.Q.Sequence
 if ~bOutBids
 	outParms.Q = xASL_adm_DefineASLSequence(outParms.Q);
 end
