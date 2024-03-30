@@ -33,6 +33,9 @@ function [x] = xASL_im_CreateGroupAnalysisMask(x, Threshold)
 %                 3. Susceptibility 0-50% missing voxels
 %                 4. Analysis mask
 %
+% Please note that if any masking goes wrong, this can be checked using the
+% jpgs and masked stored in /Population/Stats
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        xASL_im_CreateGroupAnalysisMask(x);
 % __________________________________
@@ -58,7 +61,6 @@ bSkipStandard = false;
 [PathTemplateSusceptibilityMask, bSkipStandard] = xASL_sub_CheckTemplatePath('^MaskSusceptibility', x, bSkipStandard);
 [PathFoV, bSkipStandard] = xASL_sub_CheckTemplatePath('^FoV', x, bSkipStandard);
 [PathVascularMask, bSkipStandard] = xASL_sub_CheckTemplatePath('^MaskVascular', x, bSkipStandard);
-
 [PathT1, bSkipStandard] = xASL_sub_CheckTemplatePath('^T1', x, bSkipStandard);
 
 
@@ -90,12 +92,10 @@ if ~bSkipStandard
 	MaskVascular = xASL_io_Nifti2Im(PathVascularMask)>=Threshold;
     MaskFoV = xASL_io_Nifti2Im(PathFoV)>=Threshold;
     
-
-    % Legacy Susceptibility Masking
+    % Susceptibility Masking
     MaskSusceptibility = xASL_io_Nifti2Im(PathTemplateSusceptibilityMask);
-    susceptibilitySortedIntensities = sort(MaskSusceptibility(isfinite(MaskSusceptibility)));
-    indexIs = round(Threshold.*length(susceptibilitySortedIntensities));
-    ThresholdSuscept = susceptibilitySortedIntensities(indexIs);
+    susceptibilitySortedIntensities = MaskSusceptibility(isfinite(MaskSusceptibility));
+    ThresholdSuscept = Threshold.*max(susceptibilitySortedIntensities(:));
     MaskSusceptibility = MaskSusceptibility >= ThresholdSuscept;
 
     % Combine susceptibility & FoV
