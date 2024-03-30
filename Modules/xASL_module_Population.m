@@ -250,18 +250,20 @@ if ~x.mutex.HasState(StateName{8})
         for iAtlas=1:length(x.S.Atlases)        
 
             % Check if atlas name is in path list
-            if isfield(x.P.Atlas,x.S.Atlases{iAtlas})
+            if ~isfield(x.P.Atlas,x.S.Atlases{iAtlas})
+                warning(['Unknown atlas: ' x.S.Atlases{iAtlas} ', skipping']);
+            else
                 x.S.InputAtlasPath = x.P.Atlas.(x.S.Atlases{iAtlas});
-            end
-
-            % ROI statistics (default: standard space)
-            x.S.InputNativeSpace = 0;
-            xASL_wrp_GetROIstatistics(x);
-            % ROI statistics (optional: native space)
-            if x.modules.population.bNativeSpaceAnalysis
-                x.S.InputNativeSpace = 1;
-                x.S.InputAtlasNativeName = [x.S.Atlases{iAtlas} '_Atlas'];
+    
+                % ROI statistics (default: standard space)
+                x.S.InputNativeSpace = 0;
                 xASL_wrp_GetROIstatistics(x);
+                % ROI statistics (optional: native space)
+                if x.modules.population.bNativeSpaceAnalysis
+                    x.S.InputNativeSpace = 1;
+                    x.S.InputAtlasNativeName = [x.S.Atlases{iAtlas} '_Atlas'];
+                    xASL_wrp_GetROIstatistics(x);
+                end
             end
         end
     
