@@ -10,7 +10,7 @@ function [NiftiObject, pathOut, json] = xASL_io_ReadNifti(pathIn, bBIDS2Legacy)
 % OUTPUT:
 %   NiftiObject - Nifti structure of the loaded file.
 %   pathOut     - Modified path to the image in the form that is valid for the current (possibly unzipped) file.
-%   json        - Loaded JSON sidecar, in the original format without any conversion
+%   json        - Loaded JSON sidecar, either converted to legacy or in original (BIDS) format
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Read Nifti file given by the path. Return the NII object. And also return the actual path to the loaded 
