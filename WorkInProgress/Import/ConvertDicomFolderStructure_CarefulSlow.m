@@ -32,8 +32,14 @@ end
             NewDir = fullfile(ROOT,Fname);
             xASL_adm_CreateDir(NewDir);
 
-            [~, Pname] = fileparts(Flist{iL});
-            NewFile = fullfile(NewDir,[Pname '.dcm']);
+            [~, Pname, Pext] = fileparts(Flist{iL});
+            if strcmpi(Pext, '.ima') || strcmpi(Pext, '.dcm')
+                NewFile = Flist{iL}; % don't change the filename
+            else
+                % in the case of a period (.) in the filename, the extension may be
+                % incorrectly detected and we need to append .dcm
+                NewFile = fullfile(NewDir,[Pname Pext '.dcm']);
+            end
 
             if ~strcmp(Flist{iL},NewFile) && exist(Flist{iL},'file') && ~exist(NewFile,'file')
                 xASL_Move(Flist{iL}, NewFile);
