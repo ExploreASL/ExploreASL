@@ -98,7 +98,7 @@ if ~x.S.bSubjectSpecificROI
 
 	% Skip atlas loading here for subject-specific atlases
 else
-	% In case of a subject specific atlas, load the subject-specific atlas for any random existing subject to be able to create the ROI names
+	% In the case of subject specific ROIs/Lesions, load ROI/Lesion to be able to create the ROI names
 	% Save the Path without subject to a temporary variable
 	tempPath = x.S.InputAtlasPath;
 
