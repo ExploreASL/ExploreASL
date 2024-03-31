@@ -177,7 +177,7 @@ if x.S.InputNativeSpace
 	end
 
 else
-	if ~x.S.bSubjectSpecificAtlas
+	if ~x.S.bSubjectSpecificROI
 		x.S.InputMasks = logical(x.S.InputMasks);
 	end
 end
@@ -231,7 +231,7 @@ bDoOnceROIStart = 1;
 for iSubject=1:x.dataset.nSubjects
 
 	% For subject-specific atlases, a new atlas is loaded for each subject
-	if x.S.bSubjectSpecificAtlas
+	if x.S.bSubjectSpecificROI
 		% Save the Path without subject to a temporary variable
 		tempPath = x.S.InputAtlasPath;
 		% Add subject name to the atlas path to create a subject-specific atlas

@@ -258,7 +258,7 @@ if ~x.mutex.HasState(StateName{8})
 
             % ROI statistics (default: standard space)
             x.S.InputNativeSpace = 0;
-			x.S.bSubjectSpecificAtlas = false;
+			x.S.bSubjectSpecificROI = false;
             xASL_wrp_GetROIstatistics(x);
             % ROI statistics (optional: native space)
             if x.modules.population.bNativeSpaceAnalysis
@@ -278,17 +278,17 @@ if ~x.mutex.HasState(StateName{8})
 		% PM: not yet developed/tested in native space
         
 		% Read the names of the lesion files
-		LesionROIList = xASL_adm_GetFileList(x.D.PopDir, '(?i)^r(Lesion|ROI).*\.nii$', 'List', [0 Inf]);
+		LesionROIList = xASL_adm_GetFileList(x.D.PopDir, '(?i)^r(Lesion|ROI)_(T1|FLAIR|T2)_\d*_.*\.nii', 'List', [0 Inf]);
 		% Go through the lesions and remove the subject names
 		for iLesion = 1:length(LesionROIList)
-			[iStart, iEnd] = regexp(LesionROIList{iLesion}, '^.*(rLesion|rROI)_(T1|FLAIR|T2)_\d*_');
-			LesionROIList{iLesion} = LesionROIList{iLesion}(iStart:iEnd);
+			[~, iEnd] = regexp(LesionROIList{iLesion}, '^r(Lesion|ROI)_(T1|FLAIR|T2)_\d*_');
+			LesionROIList{iLesion} = LesionROIList{iLesion}(1:iEnd);
 		end
 		% Obtain a unique list of lesion names without the subject name
 		LesionUniqueROIList = unique(LesionROIList);
 
         x.S.InputNativeSpace = 0;
-		x.S.bSubjectSpecificAtlas = true;
+		x.S.bSubjectSpecificROI = true;
         for iAtlas = 1:length(LesionUniqueROIList)
             x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iAtlas});
             xASL_wrp_GetROIstatistics(x);
