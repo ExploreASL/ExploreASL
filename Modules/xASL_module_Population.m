@@ -280,17 +280,21 @@ if ~x.mutex.HasState(StateName{8})
 		% Read the names of the lesion files
 		LesionROIList = xASL_adm_GetFileList(x.D.PopDir, '(?i)^r(Lesion|ROI)_(T1|FLAIR|T2)_\d*_.*\.nii', 'List', [0 Inf]);
 		% Go through the lesions and remove the subject names
-		for iLesion = 1:length(LesionROIList)
-			[~, iEnd] = regexp(LesionROIList{iLesion}, '^r(Lesion|ROI)_(T1|FLAIR|T2)_\d*_');
-			LesionROIList{iLesion} = LesionROIList{iLesion}(1:iEnd);
+		for iROI = 1:length(LesionROIList)
+			[~, iEnd] = regexpi(LesionROIList{iROI}, '^r(Lesion|ROI)_(T1|FLAIR|T2)_\d*_');
+			if isempty(iEnd)
+				LesionROIList{iROI} = '';
+			else
+				LesionROIList{iROI} = LesionROIList{iROI}(1:iEnd);
+			end
 		end
 		% Obtain a unique list of lesion names without the subject name
 		LesionUniqueROIList = unique(LesionROIList);
 
         x.S.InputNativeSpace = 0;
 		x.S.bSubjectSpecificROI = true;
-        for iAtlas = 1:length(LesionUniqueROIList)
-            x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iAtlas});
+        for iROI = 1:length(LesionUniqueROIList)
+            x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iROI});
             xASL_wrp_GetROIstatistics(x);
         end
     end
