@@ -299,7 +299,7 @@ if isfield(jsonInMerged,'PhoenixAnalyzed') && ~isempty(jsonInMerged.PhoenixAnaly
 			end
 		end
 		% Prioritize the Phoenix field values in the general case
-		if ~(strcmp(fn{1},'EchoTime') && bTimeEncodedFME)
+		if ~(strcmp(fn{1},'EchoTime') && bTimeEncodedFME) && ~isfield(studyPar, 'EchoTime')
 			jsonOut.(fn{1}) = jsonInMerged.PhoenixAnalyzed.(fn{1});
 		end
 	end
