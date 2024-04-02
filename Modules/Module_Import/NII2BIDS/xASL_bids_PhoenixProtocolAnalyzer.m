@@ -135,7 +135,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     end
     
 	% Labeling type
-    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'pasl', 'once'))
+    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'pasl', 'once'))l
         bidsPar.ArterialSpinLabelingType = 'PASL';
     end
     if ~isempty(regexpi(sourcePar.tSequenceFileName, 'casl', 'once'))
@@ -452,8 +452,9 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 		lastEchoTimeCount = 1;
 		while lastEchoTime > 0
 			lastEchoTimeCount = lastEchoTimeCount + 1;
-			echoTimePar = xASL_bids_PhoenixProtocolAnalyzer_getPhoenixParameters({['alTE[' num2str(lastEchoTimeCount) ']']},parameterList,0);
-			if isempty(echoTimePar{2})
+			echoTimePar = xASL_bids_PhoenixProtocolAnalyzer_getPhoenixParameters({['alTE[' num2str(lastEchoTimeCount-1) ']']},parameterList,0);
+			% If the fields are empty or start decreasing, then we stop reading
+			if isempty(echoTimePar{2}) || (lastEchoTime > str2num(echoTimePar{2})/1000/1000)
 				lastEchoTime = 0;
 			else
 				lastEchoTime = str2num(echoTimePar{2})/1000/1000;
