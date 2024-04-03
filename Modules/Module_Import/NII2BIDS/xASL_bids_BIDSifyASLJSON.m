@@ -506,7 +506,7 @@ jsonOut.ASLContext = sprintf('%s\n',jsonOut.ASLContext);
 
 %% 13. Check if length of vector fields match the number of volumes and ASLcontext
 % If fields have a length higher than 1, but shorter then number of volumes then repeat it to fit
-listFieldsRepeat = {'VascularCrushingVENC','FlipAngle','RepetitionTimePreparation'};
+listFieldsRepeat = {'VascularCrushingVENC', 'FlipAngle', 'RepetitionTimePreparation', 'EchoTime'};
 for iRepeat = 1:length(listFieldsRepeat)
 	if isfield(jsonOut,(listFieldsRepeat{iRepeat})) && (length(jsonOut.(listFieldsRepeat{iRepeat})) > 1) && (dimASL(4) ~= length(jsonOut.(listFieldsRepeat{iRepeat})))
 		if mod(dimASL(4),length(jsonOut.(listFieldsRepeat{iRepeat})))

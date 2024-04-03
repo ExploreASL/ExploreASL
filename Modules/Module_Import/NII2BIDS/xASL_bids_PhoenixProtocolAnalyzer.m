@@ -135,7 +135,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     end
     
 	% Labeling type
-    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'pasl', 'once'))l
+    if ~isempty(regexpi(sourcePar.tSequenceFileName, 'pasl', 'once'))
         bidsPar.ArterialSpinLabelingType = 'PASL';
     end
     if ~isempty(regexpi(sourcePar.tSequenceFileName, 'casl', 'once'))
