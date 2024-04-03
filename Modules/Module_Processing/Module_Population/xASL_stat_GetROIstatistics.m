@@ -721,10 +721,10 @@ function [S] = RemoveSuffixes(S)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: S = RemoveSuffixes(S);
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 % Define here which strings to remove
-StrRemove = {'PVEC0' 'PVEC1' 'PVEC2' 'AI' 'paired t-test'};
+StrRemove = {'PVEC0' 'PVEC1' 'PVEC2' 'paired t-test'};
 
 for iStr=1:length(StrRemove)
     INDEXfind = strfind(S.output_ID, StrRemove{iStr} );
