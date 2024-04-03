@@ -154,6 +154,8 @@ bWarnedPVWMH = false;
 namesROIlocal = x.S.NamesROI;
 
 if x.S.InputNativeSpace
+
+    
 	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
 	atlasN = max(inputAtlasTmp(:));
 	x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
@@ -230,6 +232,12 @@ bDoOnceROIStart = 1;
 
 for iSubject=1:x.dataset.nSubjects
 
+
+
+    %% =======================================================================================================
+    %% PM QUICK AND DIRTY SOLUTION TO LOAD SUBJECT-WISE ATLASES, THIS GOES OUT OF THIS CODE IN THE NEAR FUTURE
+    %% =======================================================================================================
+
 	% For subject-specific atlases, a new atlas is loaded for each subject
 	if x.S.bSubjectSpecificROI
 		% Save the Path without subject to a temporary variable
@@ -242,6 +250,12 @@ for iSubject=1:x.dataset.nSubjects
 		% Restore the path without subject name
 		x.S.InputAtlasPath = tempPath;
 	end
+
+    %% =======================================================================================================
+    %% PM QUICK AND DIRTY SOLUTION TO LOAD SUBJECT-WISE ATLASES, THIS GOES OUT OF THIS CODE IN THE NEAR FUTURE
+    %% =======================================================================================================
+
+
 
 	for iSess=1:nSessions
         

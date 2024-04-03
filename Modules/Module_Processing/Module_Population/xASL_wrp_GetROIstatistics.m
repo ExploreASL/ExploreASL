@@ -92,6 +92,11 @@ end
 
 %% ------------------------------------------------------------------------------------------------------------
 %% 1) Load the atlas
+
+    %% =======================================================================================================
+    %% PM QUICK AND DIRTY SOLUTION TO LOAD SUBJECT-WISE ATLASES, THIS GOES OUT OF THIS CODE IN THE NEAR FUTURE
+    %% =======================================================================================================
+
 if ~x.S.bSubjectSpecificROI
 	x = xASL_stat_AtlasForStats(x); % check all atlases that are requested (see InputAtlasPath above)
 	% check them, check their ROI names, and make them ready for use below
@@ -115,6 +120,11 @@ else
 	% Restore the path without subject name
 	x.S.InputAtlasPath = tempPath;
 end
+
+    %% =======================================================================================================
+    %% PM QUICK AND DIRTY SOLUTION TO LOAD SUBJECT-WISE ATLASES, THIS GOES OUT OF THIS CODE IN THE NEAR FUTURE
+    %% =======================================================================================================
+
 
 %% ------------------------------------------------------------------------------------------------------------
 %% 2) Organize TSV output name
