@@ -115,7 +115,7 @@ for iMask=1:6
     LesionImage{iMask} = uint8(zeros(size(LesionIM)));
 end
 
-% 1) Intratumoral
+% 1) Intralesional
 LesionImage{1} = uint8(LesionIM);
 
 % 2) Peri, pGM+pWM
@@ -124,10 +124,10 @@ LesionImage{2}(logical(PeriMask)) = 1;
 % 3) Hemisphere
 LesionImage{3}(logical(Hemisphere) & ~logical(LesionIM)) = 1;
 
-% 4) Contralateral intratumoral
+% 4) Contralateral intralesional
 LesionImage{4}(logical(ContraMask)) = 1;
 
-% 5) Contralateral peritumoral
+% 5) Contralateral perilesional
 LesionImage{5}(logical(ContraPeri)) = 1;
 
 % 6) Contralateral hemisphere
@@ -188,7 +188,7 @@ xASL_io_SaveNifti(LesionPath, LesionPath, LesionIM);
 
 
 %% 5. Create tsv-sidecar containing the names of the ROIs
-ROInames = {'Intratumoral' 'Perimask' 'Ipsilateral_Hemisphere' 'Contralateral_Intratumoral' 'Contralateral_Perimask' 'Contralateral_Hemisphere'};
+ROInames = {'Intralesional' 'Perilesional' 'Ipsilateral_Hemisphere' 'Contralateral_Intralesional' 'Contralateral_Perilesional' 'Contralateral_Hemisphere'};
 PathTSV = fullfile(x.D.PopDir, [Ffile '.tsv']);
 xASL_tsvWrite(ROInames, PathTSV, 1);
 
