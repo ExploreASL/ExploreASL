@@ -616,8 +616,12 @@ for iSubject=1:x.dataset.nSubjects
 				end
 				if x.S.bMasking(1)==0 % no susceptibility mask
                     CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5));
-                else
-                    CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5 & SusceptibilityMask));
+				else
+					if x.S.bSubjectSpecificROI
+						CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),SusceptibilityMask));
+					else
+						CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5 & SusceptibilityMask));
+					end
 				end
 				
 				

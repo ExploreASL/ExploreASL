@@ -38,8 +38,7 @@ function LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_im_Lesion2Mask('/MyStudy/sub-001/Lesion_T1_1.nii.gz', x);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
-
+% Copyright 2015-2024 ExploreASL
 
 %% --------------------------------------------------------
 %% Admin
@@ -63,8 +62,6 @@ else
 	ImageSaveDir = Fpath;
 end
 
-
-
 %% --------------------------------------------------------
 %% 1. If lesion is empty, skip this & delete the file
 LesionIM = xASL_io_Nifti2Im(LesionPath);
@@ -84,16 +81,15 @@ DistanceMap = 1.5 .* DistanceMap; % convert voxels to 1.5 mm
 PeriMask = DistanceMap>0 & DistanceMap<=16.6; % 25 mm
 PeriMask(LesionIM) = 0; % make mutually exclusive
 
-
 %% 2. BrainMasking
 pGM         = xASL_io_Nifti2Im(x.P.Pop_Path_rc1T1);
 pWM         = xASL_io_Nifti2Im(x.P.Pop_Path_rc2T1);
-BrainMask   = (pGM+pWM)>0.5;
+pCSF         = xASL_io_Nifti2Im(x.P.Pop_Path_rc3T1);
+BrainMask   = (pGM + pWM + pCSF) > 0.1;
 PeriMask    = PeriMask.*BrainMask;
 AddMask     = LesionIM+PeriMask;
 ContraMask  = xASL_im_Flip(LesionIM,1).*BrainMask;
 ContraPeri  = xASL_im_Flip(PeriMask,1).*BrainMask;
-
 
 %% 3. Create hemispheres
 LeftHemisphere  = ones(size(BrainMask));
@@ -186,12 +182,10 @@ end
     
 xASL_io_SaveNifti(LesionPath, LesionPath, LesionIM);
 
-
 %% 5. Create tsv-sidecar containing the names of the ROIs
 ROInames = {'Intralesional' 'Perilesional' 'Ipsilateral_Hemisphere' 'Contralateral_Intralesional' 'Contralateral_Perilesional' 'Contralateral_Hemisphere'};
 PathTSV = fullfile(x.D.PopDir, [Ffile '.tsv']);
 xASL_tsvWrite(ROInames, PathTSV, 1);
-
 
 %% 6. Visual QC
 % First create the individual mask overlays with different colors
@@ -214,6 +208,5 @@ end
 
 PathJPG = fullfile(ImageSaveDir, ['Regions_' Ffile '.jpg']);
 xASL_vis_Imwrite(OutImFinal, PathJPG);
-
     
 end
