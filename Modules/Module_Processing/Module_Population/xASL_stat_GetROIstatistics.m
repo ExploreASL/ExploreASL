@@ -179,9 +179,7 @@ if x.S.InputNativeSpace
 	end
 
 else
-	if ~x.S.bSubjectSpecificROI
-		x.S.InputMasks = logical(x.S.InputMasks);
-	end
+	x.S.InputMasks = logical(x.S.InputMasks);
 end
 
 
@@ -244,9 +242,20 @@ for iSubject=1:x.dataset.nSubjects
 		tempPath = x.S.InputAtlasPath;
 		% Add subject name to the atlas path to create a subject-specific atlas
 		x.S.InputAtlasPath = [x.S.InputAtlasPath x.SUBJECTS{iSubject} '.nii'];
-		% Load the atlas
-		x = xASL_stat_AtlasForStats(x);
-		x.S.InputMasks = logical(x.S.InputMasks);
+
+		% In case the subject-specific atlas exists, then load it
+		if xASL_exist(x.S.InputAtlasPath, 'file')
+			% Load the atlas
+			x = xASL_stat_AtlasForStats(x);
+			x.S.InputMasks = logical(x.S.InputMasks);
+			bDoOnceROILR = 1; % We will need to split it to Left/Right/Bilateral again
+		else
+			% We don't need to reload the ROI names as their definition was loaded previously
+			% We only take the standard atlas after IM2Columns and set values to FALSE - FALSE instead of NaN
+			% is used is that mask is logical
+			x.S.InputMasks(:) = false;
+			fprintf('%s %s \n %s','ROI missing for a single subject: ', x.S.InputAtlasPath, 'Using an empty mask');
+		end
 		% Restore the path without subject name
 		x.S.InputAtlasPath = tempPath;
 	end

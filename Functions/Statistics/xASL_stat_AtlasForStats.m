@@ -56,21 +56,10 @@ if ~strcmp(Fext,'dat') && isempty(findstr(Fext,'nii'))
          return;
     end
 elseif ~xASL_exist(x.S.InputAtlasPath, 'file')
-	if x.S.bSubjectSpecificROI
-		% For subject specific atlases, it means that only an individual subject is likely missing
-
-		% We don't need to reload the ROI names as their definition was loaded previously
-		% We only take the standard atlas after IM2Columns and set values to FALSE - FALSE instead of NaN
-		% is used is that mask is logical
-		x.S.InputMasks(:) = false;
-		fprintf('%s %s \n %s','ROI missing for a single subject: ', x.S.InputAtlasPath, 'Using an empty mask');
-		return;
-	else
-		% In case a real atlas is missing, we end the loading
-		warning('incorrect atlas selected, please try again');
-		fprintf('%s\n', x.S.InputAtlasPath);
-		return;
-	end
+	% In case a real atlas is missing, we end the loading
+	warning('incorrect atlas selected, please try again');
+	fprintf('%s\n', x.S.InputAtlasPath);
+	return;
 end
 
 SumMask = sum(x.S.masks.WBmask(:));
