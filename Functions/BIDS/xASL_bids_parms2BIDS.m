@@ -87,54 +87,55 @@ if ~isempty(inXasl)
 		FieldsA = fields(inXasl);
 		for iA = 1:length(FieldsA)
 			
-			% Convert the units for all time fields from ms to s
-			for iT = find(strcmp(FieldsA{iA}, convertTimeFieldsXASL))
-				% Convert only numeric fields
-				% In certain cases (e.g. SliceReadoutTime='shortestTR'), a string is given which is then skipped and not converted
-				if isnumeric(inXasl.(FieldsA{iA}))
-					% For non-zero fields, check if they are within the predefined range
-					if inXasl.(FieldsA{iA}) ~= 0
-						% For SliceTime - compare the difference of the first two fields
-						if strcmpi(FieldsA{iA},'SliceTiming') || strcmpi(FieldsA{iA},'SliceReadoutTime') || strcmpi(FieldsA{iA},'SiemensSliceTime')
-							valueCheck = inXasl.(FieldsA{iA});
-							if length(valueCheck) > 1
-								valueCheck = valueCheck(2) - valueCheck(1);
+			if isfield(inXasl, FieldsA{iA}) % We have to check again as some fields can be removed during the conversion
+				% Convert the units for all time fields from ms to s
+				for iT = find(strcmp(FieldsA{iA}, convertTimeFieldsXASL))
+					% Convert only numeric fields
+					% In certain cases (e.g. SliceReadoutTime='shortestTR'), a string is given which is then skipped and not converted
+					if isnumeric(inXasl.(FieldsA{iA}))
+						% For non-zero fields, check if they are within the predefined range
+						if inXasl.(FieldsA{iA}) ~= 0
+							% For SliceTime - compare the difference of the first two fields
+							if strcmpi(FieldsA{iA},'SliceTiming') || strcmpi(FieldsA{iA},'SliceReadoutTime') || strcmpi(FieldsA{iA},'SiemensSliceTime')
+								valueCheck = inXasl.(FieldsA{iA});
+								if length(valueCheck) > 1
+									valueCheck = valueCheck(2) - valueCheck(1);
+								end
+							else
+								valueCheck = inXasl.(FieldsA{iA});
 							end
-						else
-							valueCheck = inXasl.(FieldsA{iA});
+							% If outside of the recommended range, then still convert, but issue a warning
+							if max(valueCheck < convertTimeFieldsRange(1,iT)) || max(valueCheck > convertTimeFieldsRange(2,iT))
+								warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' xASL_num2str(valueCheck)...
+									', which is outside of the recommended range <'...
+									xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
+							end
 						end
-						% If outside of the recommended range, then still convert, but issue a warning
-						if max(valueCheck < convertTimeFieldsRange(1,iT)) || max(valueCheck > convertTimeFieldsRange(2,iT))
-							warning(['Field ' FieldsA{iA} ' in xASL structure has a value ' xASL_num2str(valueCheck)...
-								', which is outside of the recommended range <'...
-								xASL_num2str(convertTimeFieldsRange(1,iT)) ',' xASL_num2str(convertTimeFieldsRange(2,iT)) '> ms.']);
-						end
+						inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
 					end
-					inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
+				end
+
+				% Rename XASL fields to BIDS field according to the information in changeNamesXASL and changeNamesBIDS
+				for iL = find(strcmp(FieldsA{iA},changeNamesXASL))
+					inXasl.(changeNamesBIDS{iL}) = inXasl.(changeNamesXASL{iL});
+
+					% Remove only if the name was different
+					if ~strcmp(changeNamesBIDS{iL},changeNamesXASL{iL})
+						inXasl = rmfield(inXasl,changeNamesXASL{iL});
+					end
+				end
+
+				if isfield(inXasl,'LabelingType') && strcmpi(inXasl.LabelingType,'PASL') && isfield(inXasl,'LabelingDuration')
+					inXasl.BolusCutOffDelayTime(1) = unique(inXasl.LabelingDuration) / 1000; % Convert and convert units from ms to s
+					inXasl = rmfield(inXasl,'LabelingDuration');
+					inXasl.BolusCutOffFlag = true;
+				end
+
+				if isfield(inXasl,'BackgroundSuppressionNumberPulses') && inXasl.BackgroundSuppressionNumberPulses == 0
+					inXasl.BackgroundSuppression = false;
+					inXasl = rmfield(inXasl,'BackgroundSuppressionNumberPulses');
 				end
 			end
-			
-			% Rename XASL fields to BIDS field according to the information in changeNamesXASL and changeNamesBIDS
-			for iL = find(strcmp(FieldsA{iA},changeNamesXASL))
-				inXasl.(changeNamesBIDS{iL}) = inXasl.(changeNamesXASL{iL});
-				
-				% Remove only if the name was different
-				if ~strcmp(changeNamesBIDS{iL},changeNamesXASL{iL})
-					inXasl = rmfield(inXasl,changeNamesXASL{iL});
-				end
-			end
-			
-			if isfield(inXasl,'LabelingType') && strcmpi(inXasl.LabelingType,'PASL') && isfield(inXasl,'LabelingDuration')
-				inXasl.BolusCutOffDelayTime(1) = inXasl.LabelingDuration;
-				inXasl = rmfield(inXasl,'LabelingDuration');
-				inXasl.BolusCutOffFlag = true;
-			end
-			
-			if isfield(inXasl,'BackgroundSuppressionNumberPulses') && inXasl.BackgroundSuppressionNumberPulses == 0
-				inXasl.BackgroundSuppression = false;
-				inXasl = rmfield(inXasl,'BackgroundSuppressionNumberPulses');
-			end
-			
 		end
 	end
 end
