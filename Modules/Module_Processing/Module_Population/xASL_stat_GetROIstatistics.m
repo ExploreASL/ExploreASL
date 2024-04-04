@@ -269,7 +269,7 @@ for iSubject=1:x.dataset.nSubjects
 		else
 			x.S.SubjectSessionID{SubjSess,1} = [x.SUBJECTS{iSubject} '_' listSessions{iSess}];
             TotalRows = x.dataset.nSubjects * x.dataset.nSessions;
-        end
+		end
         
 		if x.S.IsASL
 			%% ------------------------------------------------------------------------------------------------------------
@@ -477,10 +477,10 @@ for iSubject=1:x.dataset.nSubjects
 		%% 4.c Load data
 		if x.S.InputNativeSpace %% PM: we repeat same code here twice
 			FilePath = fullfile(x.dir.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
-			if xASL_exist(FilePath,'file')
+			if xASL_exist(FilePath, 'file')
 				Data3D = xASL_io_Nifti2Im(FilePath);
 				DataIm = xASL_im_IM2Column(Data3D,x.S.masks.WBmask);
-            end
+			end
 
             if x.S.bMasking(2)==1
                 % Load vascular mask (this is done subject-wise)
@@ -493,10 +493,10 @@ for iSubject=1:x.dataset.nSubjects
             end
 		else
 			FilePath = fullfile(x.D.PopDir, [x.S.InputDataStr '_' x.S.SubjectSessionID{SubjSess,1} '.nii']);
-			if xASL_exist(FilePath,'file')
+			if xASL_exist(FilePath, 'file')
 				Data3D = xASL_io_Nifti2Im(FilePath,[121 145 121]);
 				DataIm = xASL_im_IM2Column(Data3D,x.S.masks.WBmask);
-            end
+			end
 
             if x.S.bMasking(2)==1
                 % Load vascular mask (this is done subject-wise)
@@ -614,16 +614,21 @@ for iSubject=1:x.dataset.nSubjects
                     pWM_here = ones(size(DataIm));
 					bSkipPVC = 1;
 				end
-				if x.S.bMasking(1)==0 % no susceptibility mask
-                    CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5));
-				else
-					if x.S.bSubjectSpecificROI
-						CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),SusceptibilityMask));
-					else
-						CurrentMask = logical(bsxfun(@times,single(SubjectSpecificMasks(:,iROI)),pGM_here>0.5 & SusceptibilityMask));
-					end
+
+				% Skip tissue masking for Lesions, but apply it for ROIs and Atlases
+				if x.S.bSubjectSpecificROI && ~isempty(strfind(x.S.InputAtlasPath, 'rLesion'))
+					pGM_here = ones(size(DataIm));
+                    pWM_here = ones(size(DataIm));
+					bSkipPVC = 1;
 				end
-				
+
+				% Apply tissue-masking (which is turned of for Lesions)
+				CurrentMask = logical(single(SubjectSpecificMasks(:,iROI)) .* (pGM_here>0.5));
+
+				% Apply susceptibility mask
+				if x.S.bMasking(1) 
+                    CurrentMask = logical(CurrentMask .* SusceptibilityMask);
+				end
 				
 				% Initialize output data matrix [subject/session ROI-statistics] with NaNs
                 x.S.DAT_mean_PVC0(SubjSess,iROI) = NaN;
