@@ -69,7 +69,7 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
     %% Check if rawdata exists
@@ -112,7 +112,7 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
     %% Determine structure from temp data

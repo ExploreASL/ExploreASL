@@ -156,7 +156,6 @@ function [result, x] = xASL_module_Import(x)
         fprintf('DCM2NIIX was run before...   \n');
     end
 
-    
     %% 2. Run NIfTI to ASL-BIDS
     iState = 2;
     if x.opts.bImport(2) && ~x.mutex.HasState(StateName{2})
@@ -166,7 +165,7 @@ function [result, x] = xASL_module_Import(x)
         fprintf('NIIX to ASL-BIDS was run before...   \n');
 	end
     
-	%% 3. Run DCM2NIIX
+	%% 3. Run DEFACE
     iState = 3;
     if x.opts.bImport(3) && ~x.mutex.HasState(StateName{3})
         xASL_wrp_Deface(x);

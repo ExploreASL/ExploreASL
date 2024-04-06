@@ -103,7 +103,7 @@ function xASL_imp_PrintOverview(x)
         overviewFields = fieldnames(x.importOverview);
         for iField=1:numel(overviewFields)
             thisSubject = overviewFields{iField};
-            if ~isempty(regexpi(thisSubject, 'subject_'))
+            if ~isempty(regexpi(thisSubject, 'subject_', 'once'))
                 xASL_imp_PrintSubject(x, thisSubject);
             end
         end
@@ -125,7 +125,7 @@ function xASL_imp_PrintSubject(x,thisSubject)
     subjectLevelFields = fieldnames(x.importOverview.(thisSubject));
     for iSubjectField=1:numel(subjectLevelFields)
         thisSession = subjectLevelFields{iSubjectField};
-        if ~isempty(regexpi(thisSession, 'visit_'))
+        if ~isempty(regexpi(thisSession, 'visit_', 'once'))
             xASL_imp_PrintSession(x, thisSubject, thisSession);
         end
     end
@@ -145,7 +145,7 @@ function xASL_imp_PrintSession(x, thisSubject, thisSession)
     sessionLevelFields = fieldnames(x.importOverview.(thisSubject).(thisSession));
     for iSessionField=1:numel(sessionLevelFields)
         thisRun = sessionLevelFields{iSessionField};
-        if ~isempty(regexpi(thisRun,'run_'))
+        if ~isempty(regexpi(thisRun, 'run_', 'once'))
             xASL_imp_PrintRun(x,thisSubject, thisSession, thisRun);
         end
     end
@@ -224,6 +224,7 @@ function x = xASL_imp_AddVisit(x, sFieldName, vSubjectIDs, thisVisit, iVisit)
     
     % Sort by output
     if length(x.importOverview.(sFieldName).visitIDs)>1
+		IDrow = zeros(1, numel(x.importOverview.(sFieldName).visitIDs));
 		for iV=1:numel(x.importOverview.(sFieldName).visitIDs)
           	idVisit = cellfun(@(y) regexp(y, x.importOverview.(sFieldName).visitIDs{iV}), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
 			idVisit = find(cellfun(@(y) ~isempty(y), idVisit));
@@ -280,9 +281,10 @@ function x = xASL_imp_AddVisitNames(x, sFieldName)
 
     if isempty(x.modules.import.imPar.visitNames)
         if isempty(x.importOverview.(sFieldName).visitIDs)
+			% In case that visit names are not filled, we name the visit by their number
             x.modules.import.imPar.visitNames = cell(x.importOverview.(sFieldName).nVisits,1);
             for iVisit=1:x.importOverview.(sFieldName).nVisits
-                x.modules.import.imPar.visitNames{iVisit} = sprintf('ASL_%g', iVisit);
+                x.modules.import.imPar.visitNames{iVisit} = sprintf('%g', iVisit);
             end
         else
             for iVisit=1:numel(x.importOverview.(sFieldName).visitIDs)
@@ -296,16 +298,7 @@ function x = xASL_imp_AddVisitNames(x, sFieldName)
 				end
 
 				% Resolve the new name of the visit
-				nameVisit = x.modules.import.imPar.tokenVisitAliases{idVisit, 2};
-				
-				% Extract the number of the visit
-				numberVisit = regexp(nameVisit, '\d+');
-				if ~isempty(numberVisit)
-					numberVisit = nameVisit(numberVisit:end);
-				else
-					numberVisit = sprintf('%g', idVisit);
-				end
-				x.modules.import.imPar.visitNames{iVisit} = sprintf('ASL_%s', numberVisit);
+				x.modules.import.imPar.visitNames{iVisit} = x.modules.import.imPar.tokenVisitAliases{idVisit, 2};
             end
         end
     end
@@ -390,7 +383,7 @@ function x = xASL_imp_AddSessions(x,sFieldName,vFieldName)
             % Iterate over session names
             for iSession=1:numel(x.importOverview.(sFieldName).(vFieldName).sessions)
                 currentID = x.importOverview.(sFieldName).(vFieldName).sessions{iSession};
-                if ~isempty(regexpi(currentID,currentToken))
+                if ~isempty(regexpi(currentID, currentToken, 'once'))
                     % Check if session (=run) already exists
                     if isempty(tokenTable{iToken,3})
                         numOfSessions = numOfSessions+1;
@@ -459,7 +452,7 @@ for iID=1:size(scanSessionTable,1)
 	% Iterate over the sessions of this run
 	for iSession=1:numel(x.importOverview.(sFieldName).(vFieldName).sessions)
 		currentID = x.importOverview.(sFieldName).(vFieldName).sessions{iSession};
-		if ~isempty(regexpi(currentID, thisRegExp)) && strcmp(currentID, thisToken)
+		if ~isempty(regexpi(currentID, thisRegExp, 'once')) && strcmp(currentID, thisToken)
 			x.importOverview.(sFieldName).(vFieldName).(vSessionName).scanIDs{iSessionNew} = thisScanID;
 			x.importOverview.(sFieldName).(vFieldName).(vSessionName).ids{iSessionNew} = currentID;
 			iSessionNew = iSessionNew + 1;

@@ -19,9 +19,9 @@ function [x] = xASL_init_SubStructs(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 
-    if nargin < 1 || isempty(x)
+	if nargin < 1 || isempty(x)
 		x = struct;
 	end
     

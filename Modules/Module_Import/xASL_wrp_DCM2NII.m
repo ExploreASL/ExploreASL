@@ -23,7 +23,7 @@ function x = xASL_wrp_DCM2NII(x)
 % EXAMPLE:     x = xASL_wrp_DCM2NII(x);
 %
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 
     
     %% 1. Initialize defaults of dcm2nii
@@ -58,8 +58,6 @@ function x = xASL_wrp_DCM2NII(x)
     
     %% 5. Clean-Up
     xASL_imp_DCM2NII_CleanUp(x, dcm2niiCatchedErrors);
-    
-    
 end
 
 
@@ -84,9 +82,4 @@ function xASL_imp_DCM2NII_CleanUp(x, dcm2niiCatchedErrors)
     end
     
     fprintf('\n');
-
-
 end
-
-
-

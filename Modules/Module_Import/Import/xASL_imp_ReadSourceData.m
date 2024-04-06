@@ -47,7 +47,7 @@ function x = xASL_imp_ReadSourceData(x)
         x.modules.import.imPar.RawRoot, x.modules.import.imPar.folderHierarchy, 'StripRoot', true, 'Match', strLookFor,'IgnoreCase',true);
     
     % Print feedback if there are no matching files
-    if isempty(x.modules.import.matches)
+	if isempty(x.modules.import.matches)
         % This error means that there is probably something wrong with your sourceStructure.json
         fprintf(2,'Please check your sourceStructure.json file and read the import <a href="https://exploreasl.github.io/Documentation/" rel="nofollow">documentation</a>...\n');
         error('Import of sourcedata failed (no matching files)...');
@@ -86,12 +86,12 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x) % PM: this should be re
     if x.modules.import.imPar.bMatchDirectories
         % Check that there is no extension in the last folderHierachy element
         % This extension should only be there if bMatchDirectories is set to false
-        if ~isempty(regexpi(lastElement,conditionFile))
+        if ~isempty(regexpi(lastElement, conditionFile, 'once'))
            warning('folderHierarchy includes a file extension but bMatchDirectories was set to true');
         end
-    elseif isempty(regexpi(lastElement,conditionFile))
+    elseif isempty(regexpi(lastElement, conditionFile, 'once'))
         % Check for extension in last folder hierachy element
-           if ~isempty(regexpi(lastElement,conditionExtension))
+           if ~isempty(regexpi(lastElement, conditionExtension, 'once'))
               warning('Unknown extension in the last element of the folder hierarchy (%s)...',lastElement);
            else
               warning('No extension used in the last element of the folder hierarchy (%s)...',lastElement);

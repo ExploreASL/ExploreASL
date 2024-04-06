@@ -25,7 +25,7 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, matches, dcm2niiCatchedErrors);
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
     %% 1. Run DCM2NII for one individual subject
@@ -43,21 +43,14 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
     % Check subjectID
     thisSubject.subjectExport = xASL_imp_SubjectName(subjectID);
     
+	x.modules.import.imPar.visitNames = thisSubject.visitIDs;
+
     %% 2. Iterate over visits
     for iVisit=1:thisSubject.nVisits
         
         % Get the current visit and the visit ID
         vFieldName = ['visit_' num2str(iVisit,'%03.f')];
         thisVisit = thisSubject.(vFieldName);
-        visitID = thisSubject.visitIDs{iVisit};
-
-        % Convert visit ID to a suitable name
-        if size(x.modules.import.imPar.tokenVisitAliases,2)==2
-            iAlias = find(~cellfun(@isempty,regexp(thisSubject.visitIDs{iVisit},x.modules.import.imPar.tokenVisitAliases(:,1),'once')));
-            if ~isempty(iAlias)
-                x.modules.import.imPar.visitNames{iVisit} = x.modules.import.imPar.tokenVisitAliases{iAlias,2};
-            end
-        end
         
         % Determine the subject directory
         x.modules.import.SubjDir = xASL_imp_GetSubjDir(x, thisSubject.subjectExport, iVisit);
@@ -68,15 +61,10 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
             % false (default)
             continue
         end
-
-        % Pad missing '_' if needed
-        if ~strcmp(x.modules.import.imPar.visitNames{iVisit}(1), '_')
-            x.modules.import.imPar.visitNames{iVisit} = ['_' x.modules.import.imPar.visitNames{iVisit}];
-        end
         
         % Display subject-visit ID and add lock dir
 		xASL_adm_BreakString('');
-        fprintf('Importing subject = %s:   \n', [thisSubject.subjectExport x.modules.import.imPar.visitNames{iVisit}]);
+        fprintf('Importing subject = %s:   \n', [thisSubject.subjectExport '_' x.modules.import.imPar.visitNames{iVisit}]);
 
         %% 3. Loop over all sessions
         
@@ -115,7 +103,7 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
                 scanFields.runID = thisRun.ids{iScan};
                 % Pack other scan related fields
                 scanFields.subjectID = subjectID;
-                scanFields.visitID = visitID;
+                scanFields.visitID = thisSubject.visitIDs{iVisit};
                 scanFields.iSubject = iSubject;
                 scanFields.iVisit = iVisit;
                 scanFields.iSession = iSession;
