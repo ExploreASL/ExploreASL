@@ -24,7 +24,7 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 
 
     %% Check if imPar exists

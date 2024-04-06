@@ -16,7 +16,7 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
     %% Read sourcedata
@@ -38,6 +38,14 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
         x.modules.import.settings.bUseVisits = true;
         % vVisitIDs: cell vector with extracted session IDs (for all subjects, sessions and scans)
         x.modules.import.listsIDs.vVisitIDs = x.modules.import.tokens(:, x.modules.import.imPar.tokenOrdering(2));
+		% Check if tokenVisitAliases were defined
+		if isempty(x.modules.import.imPar.tokenVisitAliases)
+			% In case the aliases are not defined, we take the sessions as they are without any renaming
+			x.modules.import.imPar.tokenVisitAliases = unique(x.modules.import.listsIDs.vVisitIDs);
+
+			% However, we do remove all non-alphanumerical entries
+			x.modules.import.imPar.tokenVisitAliases(:,2) = cellfun(@(y) xASL_adm_CorrectName(y, 2), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false );
+		end
     end
     
     %% SESSIONS
@@ -216,7 +224,7 @@ function x = xASL_imp_AddVisit(x, sFieldName, vSubjectIDs, thisVisit, iVisit)
     
     % Sort by output
     if length(x.importOverview.(sFieldName).visitIDs)>1
-        for iV=1:numel(x.importOverview.(sFieldName).visitIDs)
+		for iV=1:numel(x.importOverview.(sFieldName).visitIDs)
           	idVisit = cellfun(@(y) regexp(y, x.importOverview.(sFieldName).visitIDs{iV}), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
 			idVisit = find(cellfun(@(y) ~isempty(y), idVisit));
 			if isempty(idVisit)
@@ -224,8 +232,7 @@ function x = xASL_imp_AddVisit(x, sFieldName, vSubjectIDs, thisVisit, iVisit)
 			else
 				IDrow(iV) = idVisit(1);
 			end
-        end
-        %x.importOverview.(sFieldName).listsIDs.visitIDs = x.importOverview.(sFieldName).visitIDs(IDrow);
+		end
 		x.importOverview.(sFieldName).listsIDs.visitIDs = x.modules.import.imPar.tokenVisitAliases(IDrow,1);
     end
     

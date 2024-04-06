@@ -116,7 +116,7 @@ function [result, x] = xASL_module_Import(x)
 %
 % EXAMPLE: [~, x] = xASL_init_Iteration(x,'xASL_module_Import');
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
     %% Import Module

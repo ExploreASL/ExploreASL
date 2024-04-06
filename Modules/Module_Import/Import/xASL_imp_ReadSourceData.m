@@ -17,7 +17,7 @@ function x = xASL_imp_ReadSourceData(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
     %% Here we try to fix backwards compatibility
