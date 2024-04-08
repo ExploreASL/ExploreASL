@@ -26,7 +26,6 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
 
-
     %% Check if imPar exists
     imParCondition = isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar);
 
@@ -43,13 +42,10 @@ function x = xASL_imp_DetermineSubjectStructure(x)
         % Determine structure from rawdata
         warning('Loading subject-list from rawdata for defacing, this may differ from subjects in sourcedata');
         x = xASL_imp_DetermineStructureFromRawdata(x);
-
     end
     
     % SESSIONS DUMMY
     x.SESSIONS = {''};
-
-
 end
 
 function [x] = xASL_imp_DetermineStructureFromRawdata(x)
@@ -71,7 +67,6 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
 % __________________________________
 % Copyright 2015-2024 ExploreASL
 
-
     %% Check if rawdata exists
     if xASL_exist(x.dir.RawData,'dir')
         
@@ -84,15 +79,12 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
                 x.SUBJECTS{iSubject} = x.SUBJECTS{iSubject}(length('sub-')+1:end);
             end 
         end
-
-    else
+   else
         % Maybe a user does not have a BIDS sourcedata or rawdata directory
         % and only runs the ExploreASL workflow on derivatives data.
         % Maybe BIDS2Legacy is turned on, but it actually shouldn't be.
         fprintf(2,'There is no rawdata directory, skipping defacing...\n');
     end
-
-
 end
 
 function [x] = xASL_imp_DetermineStructureFromTempdata(x)
@@ -113,7 +105,6 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright 2015-2024 ExploreASL
-
 
     %% Determine structure from temp data
 
@@ -172,8 +163,4 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 		end
 	end
     
-
-
 end
-
-

@@ -30,8 +30,7 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
 % EXAMPLE:        x = xASL_module_BIDS2Legacy(x);
 %
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL
-
+% Copyright (c) 2015-2024 ExploreASL
 
     %% 0. Initialization
     if nargin<3 || isempty(bVerbose)
@@ -68,8 +67,6 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         %% 1. Get subjectID & sessionID from x.modules.bids2legacy.BIDS
 
         %   !!!!! NOTE THAT SESSION (BIDS) IS A VISIT (LEGACY) HERE, NOT A RUN (BIDS) !!!!!
-
-
         iSubjSess = find(strcmp(x.SUBJECTS, x.SUBJECT));
         
         % each index in x.modules.bids2legacy.BIDS.subjects has its unique subject-visit combination
@@ -83,18 +80,20 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         % x.modules.bids2legacy.BIDS.subjects(1).perf(1) -> filename: 'sub-10015124_ses-1_run-1_asl.nii.gz'
         % x.modules.bids2legacy.BIDS.subjects(1).perf(2) -> filename: 'sub-10015124_ses-1_run-2_asl.nii.gz'
         % x.modules.bids2legacy.BIDS.subjects(1).perf(3) -> filename: 'sub-10015124_ses-1_run-1_m0scan.nii.gz'
-        % x.modules.bids2legacy.BIDS.subjects(1).perf(4) -> filename: 'sub-10015124_ses-1_run-2_m0scan.nii.gz'            
+        % x.modules.bids2legacy.BIDS.subjects(1).perf(4) -> filename: 'sub-10015124_ses-1_run-2_m0scan.nii.gz'  
+		%
+		% Finally note that visits can now be any name, number, data, or a string and are always treated as a string
 
         % Subject ID
         SubjectID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).name;
         SessionID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).session;
         if isempty(SessionID)
-            iVisit = 1; % we default to a single visit
+            SessionID = '1';
         else
-            iVisit = str2num(SessionID(5:end));
+            SessionID = SessionID(5:end);
         end
 
-        SubjectVisit = [SubjectID '_' xASL_num2str(iVisit)]; % this is the legacy name
+        SubjectVisit = [SubjectID '_' SessionID]; % this is the legacy name
 
         if ~strcmp(SubjectVisit, x.SUBJECT)
             error(['xASL_init_BIDS2Legacy ' x.SUBJECT ' should match with xASL_module_BIDS2Legacy ' SubjectVisit]);

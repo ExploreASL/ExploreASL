@@ -91,11 +91,11 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
     % Print overview
     xASL_imp_PrintOverview(x);
 
-
 end
 
-
+% -----------------------------------------------------------------
 %% Print overview
+% -----------------------------------------------------------------
 function xASL_imp_PrintOverview(x)
 
     if isfield(x,'importOverview')
@@ -112,6 +112,10 @@ function xASL_imp_PrintOverview(x)
     fprintf('\n');
 
 end
+
+% -----------------------------------------------------------------
+%% Print subject
+% -----------------------------------------------------------------
 function xASL_imp_PrintSubject(x,thisSubject)
 
     % Print each individual subject
@@ -131,6 +135,10 @@ function xASL_imp_PrintSubject(x,thisSubject)
     end
 
 end
+
+% -----------------------------------------------------------------
+%% Print Session
+% -----------------------------------------------------------------
 function xASL_imp_PrintSession(x, thisSubject, thisSession)
 
     % Print each individual session (=visits in legacy terminology)
@@ -151,6 +159,10 @@ function xASL_imp_PrintSession(x, thisSubject, thisSession)
     end
 
 end
+
+% -----------------------------------------------------------------
+%% Print run
+% -----------------------------------------------------------------
 function xASL_imp_PrintRun(x,thisSubject,thisVisit,thisRun)
 
     % Print each individual run (= session in legacy terminology)
@@ -163,20 +175,20 @@ function xASL_imp_PrintRun(x,thisSubject,thisVisit,thisRun)
 
 end
 
-
-
+% -----------------------------------------------------------------
 %% Add subjects to overview
+% -----------------------------------------------------------------
 function x = xASL_imp_AddSubjectOverview(x)
     
     for iSubject=1:numel(x.modules.import.listsIDs.subjectIDs)
         thisSubject = x.modules.import.listsIDs.subjectIDs{iSubject};
         x = xASL_imp_AddSubject(x, thisSubject, iSubject);
     end
-
 end
 
-
+% -----------------------------------------------------------------
 %% Add single subject to overview
+% -----------------------------------------------------------------
 function x = xASL_imp_AddSubject(x,thisSubject,iSubject)
 
     % Add subject name
@@ -196,15 +208,13 @@ function x = xASL_imp_AddSubject(x,thisSubject,iSubject)
         thisVisit = currentVisitList{iVisit};
         x = xASL_imp_AddVisit(x,subjectFieldName,vSubjectIDs,thisVisit,iVisit);
     end
-    
 
 end
 
-
-
+% -----------------------------------------------------------------
 %% Add single visit to overview
+% -----------------------------------------------------------------
 function x = xASL_imp_AddVisit(x, sFieldName, vSubjectIDs, thisVisit, iVisit)
-
 
     %% Add basic visit fields
 
@@ -248,35 +258,30 @@ function x = xASL_imp_AddVisit(x, sFieldName, vSubjectIDs, thisVisit, iVisit)
     %% Preallocate space for (global) counts
     [x.importOverview.(sFieldName),x.importOverview.(sFieldName).(vFieldName)] = ...
         xASL_imp_PreallocateGlobalCounts(x.modules.import.nSubjects,x.importOverview.(sFieldName),x.importOverview.(sFieldName).(vFieldName));
-    
 
 end
 
-
+% -----------------------------------------------------------------
 %% Add fields of this subject/visit
+% -----------------------------------------------------------------
 function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
-
 
     % Visits (= sessions in BIDS)
     x = xASL_imp_AddVisitNames(x,sFieldName);
-    
-    
+   
     % Sessions (= run in BIDS)
     x = xASL_imp_AddSessionNames(x,sFieldName,vFieldName,vVisitIDs);
     
-    
     % Scans (= actual DICOM data)
     x = xASL_imp_AddScanNames(x,sFieldName,vFieldName,vVisitIDs);
-    
 
     % Sessions (= runs in BIDS)
     x = xASL_imp_AddSessions(x,sFieldName,vFieldName);
-
-
 end
 
-
+% -----------------------------------------------------------------
 %% Add visit names
+% -----------------------------------------------------------------
 function x = xASL_imp_AddVisitNames(x, sFieldName)
 
     if isempty(x.modules.import.imPar.visitNames)
@@ -302,11 +307,11 @@ function x = xASL_imp_AddVisitNames(x, sFieldName)
             end
         end
     end
-
 end
 
-
+% -----------------------------------------------------------------
 %% Add session names
+% -----------------------------------------------------------------
 function x = xASL_imp_AddSessionNames(x,sFieldName,vFieldName,vVisitIDs)
 
     % Get number of session IDs, number of sessions, scan IDs, number of scans
@@ -328,8 +333,9 @@ function x = xASL_imp_AddSessionNames(x,sFieldName,vFieldName,vVisitIDs)
 
 end
 
-
+% -----------------------------------------------------------------
 %% Add scan names
+% -----------------------------------------------------------------
 function x = xASL_imp_AddScanNames(x,sFieldName,vFieldName,vVisitIDs)
 
     % Add scan IDs and number of scans
@@ -340,8 +346,9 @@ function x = xASL_imp_AddScanNames(x,sFieldName,vFieldName,vVisitIDs)
 
 end
 
-
+% -----------------------------------------------------------------
 %% Add sessions
+% -----------------------------------------------------------------
 function x = xASL_imp_AddSessions(x,sFieldName,vFieldName)
 
     % Add runs fields
@@ -406,13 +413,12 @@ function x = xASL_imp_AddSessions(x,sFieldName,vFieldName)
         % Assign x field
         x.importOverview.(sFieldName).(vFieldName).nSessions = numOfSessions;
     end
-    
 
 end
 
-
-
+% -----------------------------------------------------------------
 %% Add runs to overview
+% -----------------------------------------------------------------
 function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession,thisRegExp)
 
     % Check if there was a regexp and token
@@ -437,28 +443,28 @@ function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession,thisRe
 	else
 		x = xASL_imp_AddSessionIDListAndScansOfRun(x, sFieldName, vFieldName, vSessionName, thisSession);
     end
-
-
 end
 
+% -----------------------------------------------------------------
+%% Add session ID List and scans of run
+% -----------------------------------------------------------------
 function x = xASL_imp_AddSessionIDListAndScansOfRun(x, sFieldName, vFieldName, vSessionName, thisRegExp)
-% Iterate over scan IDs
-x.importOverview.(sFieldName).(vFieldName).(vSessionName).scanIDs = {};
-scanSessionTable = x.importOverview.(sFieldName).(vFieldName).scanSessionTable;
-iSessionNew = 1;
-for iID=1:size(scanSessionTable,1)
-	thisToken = scanSessionTable{iID,1};
-	thisScanID = scanSessionTable{iID,2};
-	% Iterate over the sessions of this run
-	for iSession=1:numel(x.importOverview.(sFieldName).(vFieldName).sessions)
-		currentID = x.importOverview.(sFieldName).(vFieldName).sessions{iSession};
-		if ~isempty(regexpi(currentID, thisRegExp, 'once')) && strcmp(currentID, thisToken)
-			x.importOverview.(sFieldName).(vFieldName).(vSessionName).scanIDs{iSessionNew} = thisScanID;
-			x.importOverview.(sFieldName).(vFieldName).(vSessionName).ids{iSessionNew} = currentID;
-			iSessionNew = iSessionNew + 1;
-			continue;
+    % Iterate over scan IDs
+	x.importOverview.(sFieldName).(vFieldName).(vSessionName).scanIDs = {};
+	scanSessionTable = x.importOverview.(sFieldName).(vFieldName).scanSessionTable;
+	iSessionNew = 1;
+	for iID=1:size(scanSessionTable,1)
+		thisToken = scanSessionTable{iID,1};
+		thisScanID = scanSessionTable{iID,2};
+		% Iterate over the sessions of this run
+		for iSession=1:numel(x.importOverview.(sFieldName).(vFieldName).sessions)
+			currentID = x.importOverview.(sFieldName).(vFieldName).sessions{iSession};
+			if ~isempty(regexpi(currentID, thisRegExp, 'once')) && strcmp(currentID, thisToken)
+				x.importOverview.(sFieldName).(vFieldName).(vSessionName).scanIDs{iSessionNew} = thisScanID;
+				x.importOverview.(sFieldName).(vFieldName).(vSessionName).ids{iSessionNew} = currentID;
+				iSessionNew = iSessionNew + 1;
+				continue;
+			end
 		end
 	end
-end
-
 end

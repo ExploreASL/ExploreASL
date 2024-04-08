@@ -66,8 +66,7 @@ function [x] = ExploreASL_Process(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL
-
+% Copyright (c) 2015-2024 ExploreASL
 
     %% 0. Workflow for initialization of data loading and processing
     
@@ -75,8 +74,6 @@ function [x] = ExploreASL_Process(x)
 	x = xASL_init_LoadDataPar(x); % Load/create dataPar.json & its settings
     x = xASL_init_SubjectList(x); % create subject list for loading data from rawdata (BIDS2Legacy) or from derivatives (legacy)
     x = xASL_init_Parallelization(x); % choose which subjects this worker processes
-
-    
 
     if x.opts.nWorkers==1
         % Remove lock dirs from previous runs that might still exist if the pipeline crashed.
