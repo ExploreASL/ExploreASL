@@ -21,7 +21,7 @@ function x = xASL_wrp_NII2BIDS(x)
 % EXAMPLE:     xASL_wrp_NII2BIDS(x);
 %
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
     %% Run the NII2BIDS conversion
@@ -85,7 +85,7 @@ function x = xASL_wrp_NII2BIDS(x)
 	listSubjectsSessions = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],false,[],true);
     for iSubjectSession = 1:length(listSubjectsSessions)
         % Only run it for the current subject (maybe we can do this more elegantly in the future)
-        if ~isempty(regexpi(listSubjectsSessions{iSubjectSession},subjectName))
+        if ~isempty(regexpi(listSubjectsSessions{iSubjectSession}, subjectName, 'once'))
             x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, listSubjectsSessions{iSubjectSession});
         end
     end
@@ -97,7 +97,7 @@ function x = xASL_wrp_NII2BIDS(x)
     if ~isempty(allLogFiles)
         for importFile=1:size(allLogFiles,1)
             % Check for subject name - only move them when they have not been moved already
-            if ~isempty(regexpi(allLogFiles{importFile},subjectName))
+            if ~isempty(regexpi(allLogFiles{importFile}, subjectName, 'once'))
                 [~,thisFileMeta,thisExtensionMeta] = xASL_fileparts(allLogFiles{importFile,1});
                 xASL_Move(allLogFiles{importFile,1},fullfile(x.modules.import.imPar.DerivativesRoot,'ExploreASL',[thisFileMeta thisExtensionMeta]),1);
             end
@@ -107,7 +107,7 @@ function x = xASL_wrp_NII2BIDS(x)
     % Delete temp folder of all the subjects that might be there
     tempDirs = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],[],[],true);
     for iTempDir=1:numel(tempDirs)
-        if ~isempty(regexpi(tempDirs{iTempDir},subjectName))
+        if ~isempty(regexpi(tempDirs{iTempDir}, subjectName, 'once'))
             xASL_delete(fullfile(tempDirs{iTempDir}), true);
         end
     end

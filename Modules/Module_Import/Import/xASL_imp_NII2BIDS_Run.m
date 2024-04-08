@@ -25,7 +25,7 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
     %% Print the run that is being converted
     xASL_adm_BreakString('CONVERT RUN');
@@ -61,7 +61,6 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
         outSessionPath = fullfile(x.modules.import.imPar.BidsRoot, ['sub-' bidsLabel.subject]);
     end
 
-
     %% 2. Convert structural and ASL runs
 	subjectSessionLabel = [bidsLabel.subject sessionLabel];
 	try
@@ -70,7 +69,7 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 		end
 	catch loggingEntry
 		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-		xASL_imp_NII2BIDS_RunIssueWarning(x,loggingEntry, 'anatomical', subjectSessionLabel, iRun);
+		xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'anatomical', subjectSessionLabel, iRun);
 	end
 		
 	%% Perfusion files
@@ -78,21 +77,21 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 		xASL_imp_NII2BIDS_RunPerf(x.modules.import.imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
 	catch loggingEntry
 		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
-		xASL_imp_NII2BIDS_RunIssueWarning(x,loggingEntry, 'perfusion', subjectSessionLabel, iRun);
+		xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'perfusion', subjectSessionLabel, iRun);
 	end
 
 end
 
+%% -------------------------------------------------------------
 %% Issue failed run as a warning
-function xASL_imp_NII2BIDS_RunIssueWarning(x,loggingEntry, Scantype, subjectSessionLabel, iRun)
+%% -------------------------------------------------------------
+function xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, Scantype, subjectSessionLabel, iRun)
 
     xASL_adm_BreakString('');
-    fprintf(2,'NII2BIDS failed for %s image of %s_run-%s\n',Scantype,subjectSessionLabel,xASL_num2str(iRun));
+    fprintf(2,'NII2BIDS failed for %s image of %s_run-%s\n', Scantype, subjectSessionLabel, xASL_num2str(iRun));
     if size(loggingEntry.stack,1)>0
-        fprintf(2,'Message: %s\n%s, line %d...\n',loggingEntry.message,loggingEntry.stack(1).name,loggingEntry.stack(1).line);
+        fprintf(2,'Message: %s\n%s, line %d...\n', loggingEntry.message, loggingEntry.stack(1).name, loggingEntry.stack(1).line);
     end
     fprintf(2,'Continuing...\n');
     
 end
-
-

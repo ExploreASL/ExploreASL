@@ -158,7 +158,7 @@ function [result, x] = xASL_module_Import(x)
 
     %% 2. Run NIfTI to ASL-BIDS
     iState = 2;
-    if x.opts.bImport(2) && ~x.mutex.HasState(StateName{2})
+	if x.opts.bImport(2) && ~x.mutex.HasState(StateName{2})
         x = xASL_wrp_NII2BIDS(x);
         x.mutex.AddState(StateName{iState});
     elseif x.opts.bImport(2) && x.mutex.HasState(StateName{2})

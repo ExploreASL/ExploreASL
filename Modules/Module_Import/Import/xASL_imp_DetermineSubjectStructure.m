@@ -120,29 +120,33 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
     % Get subject/session list
     listSubjectsSessions = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],false,[],true);
     
+	% Initialize an empty list of sessions
+	listSessions = {};
+
     % Get subjects from list
     if numel(listSubjectsSessions)>0
         for iSubSes=1:numel(listSubjectsSessions)
             % Get current subject/session name
             curSubSes = listSubjectsSessions{iSubSes};
             % Determine subject name
-            if ~isempty(regexp(curSubSes,'_','all')) && ~(numel(regexp(curSubSes,'_','all'))>1)
-                % Multi-session notation
-                x.SUBJECTS{iSubSes} = curSubSes(1:regexp(curSubSes,'_')-1);
-            elseif isempty(regexp(curSubSes,'_','all'))
+			indexSeparator = regexp(curSubSes, '_', 'all');
+            if isempty(indexSeparator)
                 % Single-session exceptions
                 x.SUBJECTS{iSubSes} = curSubSes;
-            else
-                warning('It was not possible to determine the subject name from the temp data...');
-                if numel(regexp(curSubSes,'_','all'))>1
-                    warning('Multiple underscores in subject/session name...');
-                end
+				listSessions{iSubSes} = '';
+			elseif numel(indexSeparator) == 1
+                % Multi-session notation
+                x.SUBJECTS{iSubSes} = curSubSes(1:indexSeparator-1);
+				listSessions{iSubSes} = curSubSes(indexSeparator+1:end);
+			else
+				% Multiple separators
+                warning('It was not possible to determine the subject name from the temp data because there are multiple underscores in subject/session name');
             end
         end
     end
     
     % Unique the list
-    if isfield(x,'SUBJECTS')
+    if isfield(x, 'SUBJECTS')
         % Get the unique subjects
         x.SUBJECTS = unique(x.SUBJECTS);
         % Check if list is  empty
@@ -153,7 +157,20 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
         warning('x.SUBJECTS is undefined, data loading is going to fail...');
     end
     
+	% If tokenVisitAliases is not provided, we assume visits are not renamed and create a dummy tokenVisitAliases list
+	if ~isfield(x.modules.import.imPar, 'tokenVisitAliases') || isempty(x.modules.import.imPar.tokenVisitAliases)
+		% Create a unique list of sessions
+		listSessions = unique(listSessions);
 
+		% Exclude empty session names
+		listSessions = listSessions(~ismember(listSessions,''));
+		
+		% Create a list of unique session names
+		if ~isempty(listSessions)
+			x.modules.import.imPar.tokenVisitAliases = listSessions(:);
+			x.modules.import.imPar.tokenVisitAliases(:,2) = listSessions;
+		end
+	end
     
 
 

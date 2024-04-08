@@ -25,7 +25,7 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubject);
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
     %% 1. Initialize
     bidsLabel = xASL_imp_CheckForAliasInVisit(x.modules.import.imPar,nameSubjectSession);
@@ -33,7 +33,6 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
     % Make a subject directory
     subjectDirectory = fullfile(x.modules.import.imPar.BidsRoot,['sub-' bidsLabel.subject]);
     xASL_adm_CreateDir(subjectDirectory);
-    
     
     %% 2. Process the anat & perfusion files
     % Subsequent code is based on having data per ASL scan, so we "fool" it
@@ -58,13 +57,12 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
 		
         x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyParSpecificSubjVisitSess, listRuns, nameSubjectSession, bidsLabel, iRun);
     end
-    
 end
 
-
-
+%% -------------------------------------------------------------
 %% Check if there is a visit alias within the subject/visit name
-function bidsLabel = xASL_imp_CheckForAliasInVisit(imPar,nameSubjectSession)
+%% -------------------------------------------------------------
+function bidsLabel = xASL_imp_CheckForAliasInVisit(imPar, nameSubjectSession)
 
     % Get visitAliases from imPar
     if isfield(imPar,'tokenVisitAliases') && ~isempty(imPar.tokenVisitAliases) && size(imPar.tokenVisitAliases,2)>1
@@ -90,7 +88,7 @@ function bidsLabel = xASL_imp_CheckForAliasInVisit(imPar,nameSubjectSession)
 					checkExpression = regexp(nameSubjectSession, [separator visitAliases{iAlias,1} '$'], 'once');
 				end
 				if ~isempty(checkExpression) % nameSubject should end in the visit alias
-					visitName = nameSubjectSession(checkExpression:end);
+					visitName = nameSubjectSession(checkExpression+1:end);
 					subjectName = nameSubjectSession(1:checkExpression-1);
 				end
 			end
@@ -99,8 +97,4 @@ function bidsLabel = xASL_imp_CheckForAliasInVisit(imPar,nameSubjectSession)
     
     bidsLabel.subject = xASL_adm_CorrectName(subjectName,2);
     bidsLabel.visit = xASL_adm_CorrectName(visitName,2);
-
-
 end
-
-
