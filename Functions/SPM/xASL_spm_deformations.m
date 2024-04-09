@@ -5,12 +5,12 @@ function xASL_spm_deformations(x, PathIn, PathOut, Interpolation, InverseSpace, 
 % FORMAT: xASL_spm_deformations([x,] PathIn, PathOut[, Interpolation, InverseSpace, AffineTrans, DeformationPath])
 % 
 % INPUT:
+%   x                   - ExploreASL structure containing fields with global information about the pipeline environment
+%                         and settings (e.g. x.settings.Quality), useful when you want this script to copy the options of an ExploreASL pipeline run (OPTIONAL)
 %   PathIn              - path or cell containing list of paths of images to transform/warp (REQUIRED)
 %                         can be either .nii or .nii.gz
 %   PathOut             - path to cell containing list of paths of output names. Needs to be same numel as PathIn (REQUIRED)
 %                         can be either .nii or .nii.gz
-%   x                   - ExploreASL structure containing fields with global information about the pipeline environment
-%                         and settings (e.g. x.settings.Quality), useful when you want this script to copy the options of an ExploreASL pipeline run (OPTIONAL)
 %   Interpolation       - interpolation setting used by warping, options:
 %                         0) Nearest Neighbor, 1) Trilinear, 2-7) 2nd-7th degree B-spline (OPTIONAL, DEFAULT=2)
 %   InverseSpace        - path to space that you want to warp to, inversily applying the transformation field (e.g. when warping an MNI map to
@@ -118,6 +118,8 @@ end
 if ~xASL_exist(DeformationPath, 'file')
     if isfield(x.P,'Path_y_ASL') && strcmp(DeformationPath, x.P.Path_y_ASL)
         xASL_im_CreateASLDeformationField(x); % backwards compatibility
+    elseif isempty(DeformationPath)
+        warning([DeformationPath ' was empty, skipping...']);
     else
         warning([DeformationPath ' didnt exist, skipping...']);
         return;
