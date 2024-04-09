@@ -99,9 +99,9 @@ elseif sum(isinf(bOverwrite)) > 0 || sum(isnan(bOverwrite)) > 0
 	error('bOverwrite should not contain INF or NaN');
 elseif length(bOverwrite) == 1
 	bOverwrite(1,[2,3]) = bOverwrite(1);
-	warning('bOverwrite should have a length of 3');
+	warning('bOverwrite should contain 3 elements for [.nii .json .mat] files');
 elseif length(bOverwrite) == 2
-	error('bOverwrite should have a length of 3');
+	error('bOverwrite should contain 3 elements for [.nii .json .mat] files');
 end
 
 if nargin < 11 || isempty(changeMat0)

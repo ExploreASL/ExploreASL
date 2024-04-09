@@ -6,8 +6,8 @@ function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT, bQ
 % INPUT:
 %   refPath   - path to reference space (NifTI image) you want to register the source image to (REQUIRED)
 %   srcPath   - path to source image (NifTI image) you want to register (REQUIRED)
-%   fwhmSrc   - Gaussian smoothing to be applied to the source image before estimating the affine registration, in FWHM (mm) (REQUIRED)
-%   fwhmRef   - Gaussian smoothing to be applied to the reference image before estimating the affine registration, in FWHM (mm) (REQUIRED)
+%   fwhmSrc   - Gaussian smoothing to be applied to the source image before estimating the affine registration, in FWHM (mm) (OPTIONAL, SPM DEFAULT = 8)
+%   fwhmRef   - Gaussian smoothing to be applied to the reference image before estimating the affine registration, in FWHM (mm) (OPTIONAL, , SPM DEFAULT = 0)
 %   otherList - a list of NIFTIs to which should this registration be applied (OPTIONAL, default EMPTY)
 %   bDCT      - boolean specifying to perform the low-degree Discrete Cosine Transform (DCT) (OTIONAL, default FALSE)
 %   bQuality  - boolean for quality mode, changing the number of DCT coefficients for DCT (TRUE=16, high quality, FALSE=4, low quality) (OPTIONAL, default TRUE)
@@ -49,7 +49,7 @@ end
 if ~isempty(otherList) && bDCT
 	% It can happen that the list is a cell and it contains only a first empty string - that is effectively empty though not captured as empty by isempty
 	if ~iscell(otherList) || numel(otherList) > 1 || ~isempty(otherList{1,1})
-		warning('otherList not empty and bDCT==1. DCT produces a _sn.mat file with transformation parameters. The files in the files in the otherList are not touched');
+		warning('otherList not empty and bDCT==1. DCT produces a _sn.mat file with transformation parameters. The files in the otherList are not touched (they do not get the transformation applied)');
 	end
 end
 
