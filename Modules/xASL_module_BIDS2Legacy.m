@@ -90,7 +90,7 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         if isempty(SessionID)
             SessionID = '1';
         else
-            SessionID = SessionID(5:end);
+            SessionID = xASL_adm_CorrectName(SessionID(5:end), 2);
         end
 
         SubjectVisit = [SubjectID '_' SessionID]; % this is the legacy name
