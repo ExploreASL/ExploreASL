@@ -49,7 +49,7 @@ function [x] = xASL_io_ReadDataPar(pathDataPar, bStudyPar)
 % 				"LabelingDuration": 1800,
 % 				"SliceReadoutTime": 30,
 % 				"Vendor": "Philips",
-% 				"readoutDim": "2D",
+% 				"MRAcquisitionType": "2D",
 % 				"M0": "UseControlAsM0"
 % 			},
 % 			"settings":
@@ -78,7 +78,7 @@ function [x] = xASL_io_ReadDataPar(pathDataPar, bStudyPar)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 %% Input Check
 if nargin < 2 || isempty(bStudyPar)

@@ -276,7 +276,7 @@ else
 
     %% ------------------------------------------------------------------------------------------------
     %% 5    Load SliceGradient
-    if  strcmpi(x.Q.readoutDim,'2D')
+    if  strcmpi(x.Q.MRAcquisitionType, '2D')
         SliceGradient = xASL_io_Nifti2Im(SliceGradientPath);
     else
         SliceGradient = [];
@@ -318,15 +318,15 @@ else
 		% otherwise, Bsup is either not defined or BSup == true
 	elseif ~isfield(x.Q,'BackgroundSuppressionNumberPulses') || isempty(x.Q.BackgroundSuppressionNumberPulses)
 		% number of pulses or presence of BSup is not specified, then assign defaults
-        if strcmpi(x.Q.readoutDim, '3d') && strcmpi(x.Q.Vendor, 'ge')
+        if strcmpi(x.Q.MRAcquisitionType, '3d') && strcmpi(x.Q.Vendor, 'ge')
             warning('Unknown number of background suppression pulses, assuming 5 pulses for this GE 3D sequence (including the pre-pulse)');
 			x.Q.BackgroundSuppression = true; % We can set to TRUE since we know that this is either empty or TRUE already
             x.Q.BackgroundSuppressionNumberPulses = 5;
-        elseif strcmpi(x.Q.readoutDim, '3d') && strcmpi(x.Q.Vendor, 'philips')
+        elseif strcmpi(x.Q.MRAcquisitionType, '3d') && strcmpi(x.Q.Vendor, 'philips')
             warning('Unknown number of background suppression pulses, assuming 4 pulses for this Philips 3D sequence');
 			x.Q.BackgroundSuppression = true; % We can set to TRUE since we know that this is either empty or TRUE already
             x.Q.BackgroundSuppressionNumberPulses = 4;
-        elseif strcmpi(x.Q.readoutDim, '3d') && strcmpi(x.Q.Vendor, 'siemens')
+        elseif strcmpi(x.Q.MRAcquisitionType, '3d') && strcmpi(x.Q.Vendor, 'siemens')
             warning('Unknown number of background suppression pulses, assuming 4 pulses for this Siemens 3D sequence');
 			x.Q.BackgroundSuppression = true; % We can set to TRUE since we know that this is either empty or TRUE already
             x.Q.BackgroundSuppressionNumberPulses = 4;

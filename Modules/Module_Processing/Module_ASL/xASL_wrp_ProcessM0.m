@@ -56,7 +56,7 @@ function xASL_wrp_ProcessM0(x)
 %
 % EXAMPLE: xASL_wrp_ProcessM0(x);
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 
 
 
@@ -83,7 +83,7 @@ end
 if ~isfield(x.modules.asl,'M0_conventionalProcessing')
        x.modules.asl.M0_conventionalProcessing   = 0;
        % by default, conventional processing is off, since our new method outperforms in most cases
-elseif x.modules.asl.M0_conventionalProcessing == 1 && strcmpi(x.Q.readoutDim,'3D')
+elseif x.modules.asl.M0_conventionalProcessing == 1 && strcmpi(x.Q.MRAcquisitionType, '3D')
        x.modules.asl.M0_conventionalProcessing = 0;
        warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
 end

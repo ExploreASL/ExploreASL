@@ -133,7 +133,7 @@ else
     % For BASIL the x.Q.SliceReadoutTime is used internally, otherwise
     % x.Q.SliceReadoutTime is added to ScaleImage
     
-    switch lower(x.Q.readoutDim)
+    switch lower(x.Q.MRAcquisitionType)
         case '3d'
             fprintf('%s\n','3D sequence, not accounting for SliceReadoutTime (homogeneous PLD for complete volume)');
             x.Q.SliceReadoutTime = 0;
@@ -172,7 +172,7 @@ else
 			end
             
         otherwise
-            error('Wrong x.Q.readoutDim value!');
+            error('Wrong x.Q.MRAcquisitionType value!');
     end
 
     if xASL_stat_SumNan(ScaleImage(:))==0
@@ -363,7 +363,7 @@ if x.modules.asl.ApplyQuantification(3)
 			fprintf('Labeling duration and/or PLD undefined...');
 	end
 
-	if max(SliceReadoutTime)>0 && strcmpi(x.Q.readoutDim,'2D')
+	if max(SliceReadoutTime)>0 && strcmpi(x.Q.MRAcquisitionType, '2D')
 		fprintf('%s\n',[' + ' xASL_num2str(SliceReadoutTime(2)-SliceReadoutTime(1)) ' ms*(slice-1).']);
     else
         fprintf('.\n');

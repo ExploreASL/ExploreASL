@@ -352,7 +352,8 @@ if ~bOutBids
 	outParms.Q = xASL_adm_DefineASLSequence(outParms.Q);
 end
 
-% If we convert to BIDS, we check and correctly rename the discontinued Legacy fields (this is done only for backwards compatibility, and won't be done on BIDS2Legacy)
+% If we convert to BIDS, we check and correctly rename the discontinued Legacy fields that require a more complicated conversion than is done using xASL_io_CheckDeprecatedFieldsX
+% (this is done only for backwards compatibility, and won't be done on BIDS2Legacy)
 if bOutBids
 	% Sequence is now split to MRAcquisitionType and PulseSequenceType
 	if isfield(outParms, 'Sequence') 
@@ -377,18 +378,6 @@ if bOutBids
 		end
 
 		outParms = rmfield(outParms, 'Sequence');
-	end
-
-	% readoutDim is now called MRAcquisitionType in both BIDS and Legacy
-	if isfield(outParms, 'readoutDim')
-		if ~isfield(outParms, 'MRAcquisitionType') || isempty(outParms.MRAcquisitionType)
-			if strcmpi(outParms.readoutDim, '2D')
-				outParms.MRAcquisitionType = '2D';
-			elseif strcmpi(outParms.readoutDim, '3D')
-				outParms.MRAcquisitionType = '3D';
-			end
-		end
-		outParms = rmfield(outParms, 'readoutDim');
 	end
 end
 

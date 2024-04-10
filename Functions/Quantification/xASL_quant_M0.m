@@ -132,10 +132,10 @@ else
 
     %% ------------------------------------------------------------------------------------------------------
     % 6. Quantify the M0, either for single 3D volume or slice-wise
-    if strcmpi(x.Q.readoutDim,'3D') % for 3D readout, we assume the M0 readout is at the end of the TR
+    if strcmpi(x.Q.MRAcquisitionType, '3D') % for 3D readout, we assume the M0 readout is at the end of the TR
 		NetTR = TR;
 		fprintf('%s\n','Single 3D M0 readout assumed');
-    elseif  strcmpi(x.Q.readoutDim,'2D') % for 2D readouts, there are slice timing differences
+    elseif  strcmpi(x.Q.MRAcquisitionType, '2D') % for 2D readouts, there are slice timing differences
 
 		% Calculate SliceReadoutTime as a vector
 		SliceReadoutTime = xASL_quant_SliceTiming(x,inputM0);
@@ -182,7 +182,7 @@ else
 		end
 
     else
-        error('Unknown x.Q.readoutDim specified');
+        error('Unknown x.Q.MRAcquisitionType specified');
     end
 
     corr_T1 = 1 ./ (1-exp(-NetTR/x.Q.TissueT1));
@@ -420,7 +420,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 	end
 
     fprintf('\n');
-    if strcmp(x.Q.readoutDim, '2D')
+    if strcmp(x.Q.MRAcquisitionType, '2D')
         fprintf('For the average slice: ');
     end
     fprintf('Control image divided by ');

@@ -15,7 +15,7 @@ function SliceTiming = xASL_quant_SliceTiming(x, inputIm)
 % DESCRIPTION: This function takes the x.Q.SliceReadoutTime and returns the SliceTiming parameter.              
 %              The function creates a vector (of the relatives timings for each slices) out of it with the correct 
 %              length corresponding to the number of slices in the inputIm 
-%              corresponding to the BIDS definition. It also checks the x.Q.readoutDim, and for 3D readouts it returns 0.
+%              corresponding to the BIDS definition. It also checks the x.Q.MRAcquisitionType, and for 3D readouts it returns 0.
 %              It loads the image from inputIm and calculates the SliceTiming according to the number of slices in the third dimension
 %              If a path is given, it also checks if it can find a JSON sidecar, then it loads the JSON sidecar, and looks for SliceTiming inside it. If
 %              SliceTiming/SliceReadoutTime is found in the JSON sidecar, it prioritize it over the value in the x-struct
@@ -90,20 +90,20 @@ else
 	nSlices = size(inputIm, 3);
 end
 
-% The readoutDim needs to be provided
-if ~isfield(x.Q, 'readoutDim')
-	error('x.Q.readoutDim field is missing');
+% The MRAcquisitionType needs to be provided
+if ~isfield(x.Q, 'MRAcquisitionType')
+	error('x.Q.MRAcquisitionType field is missing');
 end
 
-if strcmpi(x.Q.readoutDim, '3D')
+if strcmpi(x.Q.MRAcquisitionType, '3D')
 	% For 3D sequences, zero is returned
 	SliceTiming = 0;
 	return;
 end
 
-if ~strcmpi(x.Q.readoutDim, '2D') 
+if ~strcmpi(x.Q.MRAcquisitionType, '2D') 
 	% It only works with 2D and 3D
-	error(['Unknown x.Q.readoutDim value:' x.Q.readoutDim]);
+	error(['Unknown x.Q.MRAcquisitionType value:' x.Q.MRAcquisitionType]);
 end
 
 % The SliceReadoutTime needs to be provided

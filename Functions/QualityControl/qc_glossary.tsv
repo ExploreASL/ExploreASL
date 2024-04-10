@@ -54,7 +54,7 @@ nRMSE_Perc	nRMSE	nRMSE (normalized Root Mean Square Error) within ASL template	%
 nUniqueEchoTime				
 NumberOfAverages				
 PeakSNR_Ratio		"Assuming an individual ASL image can be interpreted as a noise version of an ASL template, this parameter is the dynamic range compared to the mean squared difference of the individual and template ASL images. Dynamic range is calculate here as MaxIntesity-MinIntensity (higher = better)"		
-readoutDim				
+MRAcquisitionType				
 RescaledSlope		Scale factor used by Philips		
 RigidBody2Anat_mm		Registration offset between ASL and 3D-T1W 	mm	
 RMSE_Perc	RMSE	RMSE (Root Mean Square Error) with ASL Template	%	
