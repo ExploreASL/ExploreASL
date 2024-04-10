@@ -69,16 +69,16 @@ end
 xASL_spm_deformations(x, x.P.Path_FoV, x.P.Pop_Path_FoV, 0, [], AffineTransfPath, x.P.Path_y_ASL);
 
 %% Deal with different readouts
-switch lower(x.Q.Sequence)
-    case '2d_epi'
+switch lower(x.Q.PulseSequenceType)
+    case 'epi'
         Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
         ClipThresholdValue = 3; % 3 MAD above median
         DoSusceptibility = true;
-    case '3d_grase'
+    case 'grase'
         Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
         ClipThresholdValue = 3; % 3 MAD above median
         DoSusceptibility = true;
-    case '3d_spiral'
+    case 'spiral'
         DoSusceptibility = false;
         ClipThresholdValue = 5; % more homogeneous image        
     otherwise
@@ -176,10 +176,10 @@ if DoSusceptibility
      
      % Change pTemplate based on sequence (thanks to Khazar for checking
      % this for 3D GRASE in the BioFinder study)
-     switch lower(x.Q.Sequence)
-         case '2d_epi'
+     switch lower(x.Q.PulseSequenceType)
+         case 'epi'
              SusceptibilityThreshold = 0.95;
-         case '3d_grase'
+         case 'grase'
              SusceptibilityThreshold = 0.6;
          otherwise
              warning('Unknown sequence for susceptibility thresholding, skipping');

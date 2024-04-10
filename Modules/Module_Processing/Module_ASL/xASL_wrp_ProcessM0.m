@@ -146,7 +146,7 @@ xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field 
 
 if isfield(x.modules.asl, 'bRegisterM02ASL') && ~x.modules.asl.bRegisterM02ASL
     fprintf('M0 registration (to ASL or T1w) is skipped upon request\n');
-elseif ~strcmpi(x.Q.M0, 'UseControlAsM0') && isempty(regexpi(x.Q.Sequence, 'spiral'))
+elseif ~strcmpi(x.Q.M0, 'UseControlAsM0') && isempty(regexpi(x.Q.PulseSequenceType, 'spiral', 'once'))
     % only register if the M0 and mean control are not identical
     % Which they are when there is no separate M0, but ASL was
     % acquired without background suppression & the mean control image

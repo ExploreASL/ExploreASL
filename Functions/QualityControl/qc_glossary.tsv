@@ -61,7 +61,7 @@ RMSE_Perc	RMSE	RMSE (Root Mean Square Error) with ASL Template	%
 ScaleSlope		Scale factor used by Philips		
 SD_AI_Perc	SD of Asymmetry Index	SD of voxel-wise asymmetry index	%	
 SD_Wmref	SD in the WMref	SD in the WM reference region	ml/100g/min	
-Sequence				
+PulseSequenceType				
 SliceReadoutTime_ms				
 SNR_GM_Ratio		Mean GM / SD_WMref		
 SoftwareVersions				

@@ -281,7 +281,7 @@
                 {
                     "category": "content",
                     "type": "QCValues",
-                    "parameter": "Sequence",
+                    "parameter": "PulseSequenceType",
                     "module": "ASL"
                 },
                 {

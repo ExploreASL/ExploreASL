@@ -69,7 +69,8 @@ xASL_io_SaveNifti(PathM0,Path_SliceGradient,SGim,8,0);
 %% 3) Obtain the PWI image by running xASL_wrp_Quantify in reverse
 xASL_Copy(PathCBF, PathPWI);
 xASL_Copy(PathCBF,x.P.Path_ASL4D);
-x.Q.Sequence = '2D_EPI';
+x.Q.PulseSequenceType = 'EPI';
+x.Q.MRAcquisitionType = '2D';
 x.P.SubjectID = 'Sub-001';
 x.P.SessionID = 'ASL_1';
 xASL_wrp_Quantify(x, PathPWI, PathCBF2, PathM0, Path_SliceGradient);

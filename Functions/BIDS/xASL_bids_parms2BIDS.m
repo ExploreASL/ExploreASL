@@ -352,35 +352,60 @@ if ~bOutBids
 	outParms.Q = xASL_adm_DefineASLSequence(outParms.Q);
 end
 
-% If we convert to BIDS, we check and correctly rename the discontinued Legacy fields that require a more complicated conversion than is done using xASL_io_CheckDeprecatedFieldsX
-% (this is done only for backwards compatibility, and won't be done on BIDS2Legacy)
-if bOutBids
-	% Sequence is now split to MRAcquisitionType and PulseSequenceType
-	if isfield(outParms, 'Sequence') 
-		% Splitting to MRAcquisitionType
-		if ~isfield(outParms, 'MRAcquisitionType') || isempty(outParms.MRAcquisitionType)
-			if regexpi(outParms.Sequence, '^2D')
-				outParms.MRAcquisitionType = '2D';
-			elseif strcmpi(outParms.Sequence, '^3D')
-				outParms.MRAcquisitionType = '3D';
-			end
-		end
-
-		% Splitting to PulseSequenceType
-		if ~isfield(outParms, 'PulseSequenceType') || isempty(outParms.PulseSequenceType)
-			if regexpi(outParms.Sequence, 'epi')
-				outParms.PulseSequenceType = 'EPI';
-			elseif strcmpi(outParms.Sequence, 'spiral')
-				outParms.PulseSequenceType = 'spiral';
-			elseif strcmpi(outParms.Sequence, 'GRASE')
-				outParms.PulseSequenceType = 'GRASE';				
-			end
-		end
-
-		outParms = rmfield(outParms, 'Sequence');
+% We check and correctly rename the discontinued Legacy fields that require a more complicated conversion than is done using xASL_io_CheckDeprecatedFieldsX
+% (this is done only for backwards compatibility, and won't be done on BIDS2Legacy, just in Legacy2BIDS and Legacy2Legacy)
+if (bOutBids && isfield(outParms, 'Sequence')) || (~bOutBids && isfield(outParms.Q, 'Sequence'))
+	
+	% We run this both for Legacy and BIDS outputs
+	if bOutBids
+		outParmsTemp = outParms;
+	else
+		outParmsTemp = outParms.Q;
 	end
-end
 
+	% Sequence is now split to MRAcquisitionType and PulseSequenceType
+	% Splitting to MRAcquisitionType
+	if ~isfield(outParmsTemp, 'MRAcquisitionType') || isempty(outParmsTemp.MRAcquisitionType)
+		if regexpi(outParmsTemp.Sequence, '^2D')
+			outParmsTemp.MRAcquisitionType = '2D';
+		elseif strcmpi(outParmsTemp.Sequence, '^3D')
+			outParmsTemp.MRAcquisitionType = '3D';
+		end
+	end
+
+	% Splitting to PulseSequenceType
+	if ~isfield(outParmsTemp, 'PulseSequenceType') || isempty(outParmsTemp.PulseSequenceType)
+		if regexpi(outParmsTemp.Sequence, 'epi')
+			outParmsTemp.PulseSequenceType = 'EPI';
+		elseif strcmpi(outParmsTemp.Sequence, 'spiral')
+			outParmsTemp.PulseSequenceType = 'spiral';
+		elseif strcmpi(outParmsTemp.Sequence, 'GRASE')
+			outParmsTemp.PulseSequenceType = 'GRASE';
+		end
+	end
+
+	% Put it to the correct field
+	if bOutBids
+		outParms = rmfield(outParms, 'Sequence');
+		if isfield(outParmsTemp, 'PulseSequenceType')
+			outParms.PulseSequenceType = outParmsTemp.PulseSequenceType;
+		end
+
+		if isfield(outParmsTemp, 'MRAcquisitionType')
+			outParms.MRAcquisitionType = outParmsTemp.MRAcquisitionType;
+		end
+	else
+		outParms.Q = rmfield(outParms.Q, 'Sequence');
+		if isfield(outParmsTemp, 'PulseSequenceType')
+			outParms.Q.PulseSequenceType = outParmsTemp.PulseSequenceType;
+		end
+
+		if isfield(outParmsTemp, 'MRAcquisitionType')
+			outParms.Q.MRAcquisitionType = outParmsTemp.MRAcquisitionType;
+		end
+	end
+
+end
 end
 
 

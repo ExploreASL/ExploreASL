@@ -235,7 +235,7 @@ if strcmpi(x.Q.M0,'separate_scan')
 		end
 		
         % Correction factor and name for 3D spiral sequences
-        if strcmpi(x.Q.Sequence,'3D_spiral')
+        if strcmpi(x.Q.PulseSequenceType, 'spiral')
 			CorrFactor = x.Q.T2;
 			CorrName = 'T2';
         else % assume T2* signal decay 2D_EPI or 3D GRASE
@@ -259,7 +259,7 @@ if strcmpi(x.Q.M0,'separate_scan')
 				M0_im = M0_im.*ScalingM0./ScalingASL;
 				fprintf('Delta TE between ASL %s ms & M0 %s ms, for %s, assuming %s decay of arterial blood, factor applied to M0: %s\n', ...
 					num2str(ASLshortestTE),num2str(M0shortestTE),...
-					x.Q.Sequence, CorrName, num2str(ScalingM0/ScalingASL));
+					x.Q.PulseSequenceType, CorrName, num2str(ScalingM0/ScalingASL));
 			end
         end
         
@@ -306,7 +306,7 @@ else
 
 	if ~isfield(x.Q,'LabelingType')
            error('Unknown LabelingType, needed for quantification');
-    elseif isempty(regexpi(x.Q.LabelingType, '^(PC|P|C)ASL$'))
+    elseif isempty(regexpi(x.Q.LabelingType, '^(PC|P|C)ASL$', 'once'))
            error('x.Q.LabelingType was invalid, should be PASL|CASL|PCASL');
     elseif strcmpi(x.Q.LabelingType,'PCASL')
            x.Q.LabelingType = 'CASL';

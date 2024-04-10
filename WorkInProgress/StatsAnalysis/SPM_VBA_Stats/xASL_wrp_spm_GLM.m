@@ -64,7 +64,7 @@ else % do memory mapping first
 
     % Skip smoothing for 3D sequence:
     for iS=1:length(x.S.SetsName)
-        if  strcmp(x.S.SetsName{iS},'Sequence')
+        if  strcmp(x.S.SetsName{iS},'PulseSequenceType')
             SeqID   = iS;
         end
     end
@@ -90,7 +90,7 @@ else % do memory mapping first
                     % don't smooth, image is already smooth
                     bSmooth     = 0;
                 elseif exist('SeqID','var') % multi-sequence study that has a "sequence" variable
-                       if  strcmp(x.S.SetsOptions{SeqID}{x.S.SetsID(iSS,SeqID)},'3D_spiral')
+                       if  strcmp(x.S.SetsOptions{SeqID}{x.S.SetsID(iSS,SeqID)},'spiral')
                            % don't smooth, image is already smooth
                            bSmooth  = 0;
                        else
