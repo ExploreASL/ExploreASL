@@ -61,7 +61,7 @@ convertTimeFieldsRange =       [0.5        0.5              5                0  
 convertTimeFieldsAllowOutliers=[0          0                0                1             1                  1                    0               0                  0         0    0          0                  0]; % For multiple values, don't print a warning if mean value is within the range
 					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
-xASLqFields = {'EchoTime' 'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LookLocker' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1'...
+xASLqFields = {'EchoTime' 'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LookLocker' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1' 'MRAcquisitionType' 'PulseSequenceType' ...
 	           'BackgroundSuppressionPulseTime' 'BackgroundSuppressionNumberPulses' 'TimeEncodedMatrixSize' 'nUniqueEchoTime' 'TimeEncodedMatrixType' 'SoftwareVersions' 'TimeEncodedMatrix'};
 
 % Some JSON fields need to be updated to fit the BIDS definition
@@ -71,8 +71,8 @@ updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'    
 
 % These fields have different names in xASL and in BIDS
 % They are therefore renamed depending on the type of output
-changeNamesXASL = {'Vendor'       'readoutDim'        'Initial_PLD'         'LabelingType'              'RepetitionTime'            'NumberOfAverages'     'SliceReadoutTime' 'Sequence'};
-changeNamesBIDS = {'Manufacturer' 'MRAcquisitionType' 'PostLabelingDelay'   'ArterialSpinLabelingType'  'RepetitionTimePreparation' 'TotalAcquiredPairs'   'SliceTiming'      'PulseSequenceType'};
+changeNamesXASL = {'Vendor'       'Initial_PLD'         'LabelingType'              'RepetitionTime'            'NumberOfAverages'     'SliceReadoutTime'};
+changeNamesBIDS = {'Manufacturer' 'PostLabelingDelay'   'ArterialSpinLabelingType'  'RepetitionTimePreparation' 'TotalAcquiredPairs'   'SliceTiming'     };
 
 %% ----------------------------------------------------------------------
 %% 2) Convert XASL fields to the output format (BIDS or XASL legacy)
@@ -347,9 +347,49 @@ if ~bOutBids
     outParms = xASL_io_CheckDeprecatedFieldsX(outParms);
 end
 
-% If we convert to Legacy, we make sure to properly initialize the field outParms.Q.Sequence
+% If we convert to Legacy, we make sure to properly initialize the field outParms.Q.PulseSequenceType
 if ~bOutBids
 	outParms.Q = xASL_adm_DefineASLSequence(outParms.Q);
+end
+
+% If we convert to BIDS, we check and correctly rename the discontinued Legacy fields (this is done only for backwards compatibility, and won't be done on BIDS2Legacy)
+if bOutBids
+	% Sequence is now split to MRAcquisitionType and PulseSequenceType
+	if isfield(outParms, 'Sequence') 
+		% Splitting to MRAcquisitionType
+		if ~isfield(outParms, 'MRAcquisitionType') || isempty(outParms.MRAcquisitionType)
+			if regexpi(outParms.Sequence, '^2D')
+				outParms.MRAcquisitionType = '2D';
+			elseif strcmpi(outParms.Sequence, '^3D')
+				outParms.MRAcquisitionType = '3D';
+			end
+		end
+
+		% Splitting to PulseSequenceType
+		if ~isfield(outParms, 'PulseSequenceType') || isempty(outParms.PulseSequenceType)
+			if regexpi(outParms.Sequence, 'epi')
+				outParms.PulseSequenceType = 'EPI';
+			elseif strcmpi(outParms.Sequence, 'spiral')
+				outParms.PulseSequenceType = 'spiral';
+			elseif strcmpi(outParms.Sequence, 'GRASE')
+				outParms.PulseSequenceType = 'GRASE';				
+			end
+		end
+
+		outParms = rmfield(outParms, 'Sequence');
+	end
+
+	% readoutDim is now called MRAcquisitionType in both BIDS and Legacy
+	if isfield(outParms, 'readoutDim')
+		if ~isfield(outParms, 'MRAcquisitionType') || isempty(outParms.MRAcquisitionType)
+			if strcmpi(outParms.readoutDim, '2D')
+				outParms.MRAcquisitionType = '2D';
+			elseif strcmpi(outParms.readoutDim, '3D')
+				outParms.MRAcquisitionType = '3D';
+			end
+		end
+		outParms = rmfield(outParms, 'readoutDim');
+	end
 end
 
 end

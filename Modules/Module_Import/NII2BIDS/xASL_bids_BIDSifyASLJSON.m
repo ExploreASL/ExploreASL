@@ -280,7 +280,7 @@ end
 	
 %% 8. Merge data from the Phoenix protocol
 % Check if the Phoenix protocol is present and parse it
-if isfield(jsonInMerged,'PhoenixProtocol') && ~isempty(regexpi(jsonInMerged.Manufacturer,'Siemens'))
+if isfield(jsonInMerged, 'PhoenixProtocol') && ~isempty(regexpi(jsonInMerged.Manufacturer, 'Siemens', 'once'))
 	PhoenixParsed = xASL_bids_PhoenixProtocolReader(jsonInMerged.PhoenixProtocol);
 	jsonInMerged.PhoenixAnalyzed = xASL_bids_PhoenixProtocolAnalyzer(PhoenixParsed);
 end
