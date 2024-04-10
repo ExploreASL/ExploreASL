@@ -265,12 +265,12 @@ if ~isfield(jsonOut,'MRAcquisitionType')
 end
 
 if strcmpi(jsonOut.MRAcquisitionType,'2D')
-	jsonOut.PulseSequenceType = '2D_EPI';
+	jsonOut.PulseSequenceType = 'EPI';
 else
 	if strcmpi(jsonOut.Manufacturer,'GE') || strcmpi(jsonOut.Manufacturer,'GE_WIP') || strcmpi(jsonOut.Manufacturer,'GE_product')
-		jsonOut.PulseSequenceType = '3D_spiral';
+		jsonOut.PulseSequenceType = 'spiral';
 	else
-		jsonOut.PulseSequenceType = '3D_GRASE';
+		jsonOut.PulseSequenceType = 'GRASE';
 	end
 end
     
@@ -321,14 +321,14 @@ if ~isfield(jsonOut,'BackgroundSuppression')
 			fprintf('%s\n', 'BackgroundSuppressionNumberPulses == 0 field detected, setting BackgroundSuppression to false');
 			jsonOut.BackgroundSuppression = false;
 		end
-    elseif strcmp(jsonOut.MRAcquisitionType, '3D') || ~isempty(strfind(jsonOut.PulseSequenceType, '3D'))
+    elseif strcmp(jsonOut.MRAcquisitionType, '3D')
 		fprintf('%s\n', '3D acquisition detected, setting BackgroundSuppression to true');
 		jsonOut.BackgroundSuppression = true;        
     else
 		fprintf('%s\n', 'Setting BackgroundSuppression to false');
 		jsonOut.BackgroundSuppression = false;
 	end
-elseif strcmp(jsonOut.MRAcquisitionType, '3D') || ~isempty(strfind(jsonOut.PulseSequenceType, '3D'))
+elseif strcmp(jsonOut.MRAcquisitionType, '3D')
     if ~jsonOut.BackgroundSuppression
         warning('BackgroundSuppression set to off, which is unlikely for a 3D acquisition');
     end

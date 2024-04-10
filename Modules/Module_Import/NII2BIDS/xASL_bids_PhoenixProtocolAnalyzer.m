@@ -129,9 +129,11 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     
 	% Readout 2D or 3D
     if ~isempty(regexpi(sourcePar.tSequenceFileName, 'ep2d', 'once'))
-        bidsPar.PulseSequenceType = '2D_EPI'; 
+        bidsPar.PulseSequenceType = 'EPI'; 
+		bidsPar.MRAcquisitionType = '2D';
     elseif ~isempty(regexpi(sourcePar.tSequenceFileName, '(gse|grs3d', 'once'))
-        bidsPar.PulseSequenceType = '3D_GRASE'; 
+        bidsPar.PulseSequenceType = 'GRASE'; 
+		bidsPar.MRAcquisitionType = '3D';
     end
     
 	% Labeling type
