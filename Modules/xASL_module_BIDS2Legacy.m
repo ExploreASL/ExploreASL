@@ -82,7 +82,7 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         % x.modules.bids2legacy.BIDS.subjects(1).perf(3) -> filename: 'sub-10015124_ses-1_run-1_m0scan.nii.gz'
         % x.modules.bids2legacy.BIDS.subjects(1).perf(4) -> filename: 'sub-10015124_ses-1_run-2_m0scan.nii.gz'  
 		%
-		% Finally note that visits can now be any name, number, data, or a string and are always treated as a string
+		% Also note that visits can now be any name, number, data, or a string and are always treated as a string
 
         % Subject ID
         SubjectID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).name;

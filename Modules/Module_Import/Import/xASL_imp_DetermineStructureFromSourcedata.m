@@ -36,15 +36,15 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
         x.modules.import.imPar.tokenVisitAliases = {'^1$', '_1'};
     else
         x.modules.import.settings.bUseVisits = true;
-        % vVisitIDs: cell vector with extracted session IDs (for all subjects, sessions and scans)
+        % vVisitIDs: cell vector with extracted Visit IDs (for all subjects, sessions and scans)
         x.modules.import.listsIDs.vVisitIDs = x.modules.import.tokens(:, x.modules.import.imPar.tokenOrdering(2));
 		% Check if tokenVisitAliases were defined
 		if isempty(x.modules.import.imPar.tokenVisitAliases)
-			% In case the aliases are not defined, we take the sessions as they are without any renaming
+			% In case the aliases are not defined, we take the visit as they are without any renaming
 			x.modules.import.imPar.tokenVisitAliases = unique(x.modules.import.listsIDs.vVisitIDs);
 
 			% However, we do remove all non-alphanumerical entries
-			x.modules.import.imPar.tokenVisitAliases(:,2) = cellfun(@(y) xASL_adm_CorrectName(y, 2), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false );
+			x.modules.import.imPar.tokenVisitAliases(:,2) = cellfun(@(y) xASL_adm_CorrectName(y, 2), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
 		end
     end
     

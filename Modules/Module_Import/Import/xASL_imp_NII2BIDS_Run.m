@@ -88,10 +88,10 @@ end
 function xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, Scantype, subjectSessionLabel, iRun)
 
     xASL_adm_BreakString('');
-    fprintf(2,'NII2BIDS failed for %s image of %s_run-%s\n', Scantype, subjectSessionLabel, xASL_num2str(iRun));
+    fprintf(2, 'NII2BIDS failed for %s image of %s_run-%s\n', Scantype, subjectSessionLabel, xASL_num2str(iRun));
     if size(loggingEntry.stack,1)>0
-        fprintf(2,'Message: %s\n%s, line %d...\n', loggingEntry.message, loggingEntry.stack(1).name, loggingEntry.stack(1).line);
+        fprintf(2, 'Message: %s\n%s, line %d...\n', loggingEntry.message, loggingEntry.stack(1).name, loggingEntry.stack(1).line);
     end
-    fprintf(2,'Continuing...\n');
+    fprintf(2, 'Continuing...\n');
     
 end

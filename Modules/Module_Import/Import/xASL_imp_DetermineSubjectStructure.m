@@ -131,7 +131,7 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 				listSessions{iSubSes} = curSubSes(indexSeparator+1:end);
 			else
 				% Multiple separators
-                warning('It was not possible to determine the subject name from the temp data because there are multiple underscores in subject/session name');
+                warning('It was not possible to determine the subject (or session) name from temporary data, note that underscores in subject or session values are illegal.');
             end
         end
     end
