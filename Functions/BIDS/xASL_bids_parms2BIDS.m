@@ -354,54 +354,58 @@ end
 
 % We check and correctly rename the discontinued Legacy fields that require a more complicated conversion than is done using xASL_io_CheckDeprecatedFieldsX
 % (this is done only for backwards compatibility, and won't be done on BIDS2Legacy, just in Legacy2BIDS and Legacy2Legacy)
-if (bOutBids && isfield(outParms, 'Sequence')) || (~bOutBids && isfield(outParms.Q, 'Sequence'))
+if (bOutBids && (isfield(outParms, 'PulseSequenceType') || isfield(outParms, 'Sequence'))) || (~bOutBids && isfield(outParms.Q, 'PulseSequenceType'))
 	
 	% We run this both for Legacy and BIDS outputs
 	if bOutBids
+		if isfield(outParms, 'Sequence')
+			outParms.PulseSequenceType = outParms.Sequence;
+			outParms = rmfield(outParms, 'Sequence');
+		end
 		outParmsTemp = outParms;
 	else
+		if isfield(outParms.Q, 'Sequence')
+			outParms.Q.PulseSequenceType = outParms.Q.Sequence;
+			outParms.Q = rmfield(outParms.Q, 'Sequence');
+		end
 		outParmsTemp = outParms.Q;
 	end
 
 	% Sequence is now split to MRAcquisitionType and PulseSequenceType
 	% Splitting to MRAcquisitionType
 	if ~isfield(outParmsTemp, 'MRAcquisitionType') || isempty(outParmsTemp.MRAcquisitionType)
-		if regexpi(outParmsTemp.Sequence, '^2D')
+		if regexpi(outParmsTemp.PulseSequenceType, '^2D')
 			outParmsTemp.MRAcquisitionType = '2D';
-		elseif strcmpi(outParmsTemp.Sequence, '^3D')
+		elseif strcmpi(outParmsTemp.PulseSequenceType, '^3D')
 			outParmsTemp.MRAcquisitionType = '3D';
 		end
 	end
 
 	% Splitting to PulseSequenceType
-	if ~isfield(outParmsTemp, 'PulseSequenceType') || isempty(outParmsTemp.PulseSequenceType)
-		if regexpi(outParmsTemp.Sequence, 'epi')
+	if isfield(outParmsTemp, 'PulseSequenceType')
+		if ~isempty(regexpi(outParmsTemp.PulseSequenceType, 'epi'))
 			outParmsTemp.PulseSequenceType = 'EPI';
-		elseif strcmpi(outParmsTemp.Sequence, 'spiral')
+		elseif ~isempty(regexpi(outParmsTemp.PulseSequenceType, 'spiral'))
 			outParmsTemp.PulseSequenceType = 'spiral';
-		elseif strcmpi(outParmsTemp.Sequence, 'GRASE')
+		elseif ~isempty(regexpi(outParmsTemp.PulseSequenceType, 'GRASE'))
 			outParmsTemp.PulseSequenceType = 'GRASE';
 		end
 	end
 
 	% Put it to the correct field
 	if bOutBids
-		outParms = rmfield(outParms, 'Sequence');
-		if isfield(outParmsTemp, 'PulseSequenceType')
-			outParms.PulseSequenceType = outParmsTemp.PulseSequenceType;
-		end
-
 		if isfield(outParmsTemp, 'MRAcquisitionType')
 			outParms.MRAcquisitionType = outParmsTemp.MRAcquisitionType;
 		end
-	else
-		outParms.Q = rmfield(outParms.Q, 'Sequence');
 		if isfield(outParmsTemp, 'PulseSequenceType')
-			outParms.Q.PulseSequenceType = outParmsTemp.PulseSequenceType;
+			outParms.PulseSequenceType = outParmsTemp.PulseSequenceType;
 		end
-
+	else
 		if isfield(outParmsTemp, 'MRAcquisitionType')
 			outParms.Q.MRAcquisitionType = outParmsTemp.MRAcquisitionType;
+		end
+		if isfield(outParmsTemp, 'PulseSequenceType')
+			outParms.Q.PulseSequenceType = outParmsTemp.PulseSequenceType;
 		end
 	end
 
