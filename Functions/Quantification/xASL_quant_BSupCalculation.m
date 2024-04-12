@@ -31,7 +31,7 @@ function SignalPercentage = xASL_quant_BSupCalculation(BackgroundSuppressionPuls
 % EXAMPLE: signalPercentage = xASL_quant_BSupCalculation([2200 2600], 2700, 1, 1240, [0 30 50 70], '/home/test/graph.jpg')
 %
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
  
 % Admin
 if nargin < 1 || isempty(BackgroundSuppressionPulseTime)
@@ -98,14 +98,15 @@ end
  
 % First phase calculation for a graph visual output
 if ~isempty(PathGraph)
+	% This part is used for visualization only and not for calculation the signal reduction
     % Preallocate (sum is required if multiPLD and therefore multiple ReadoutTime is present)
 	SignalPercentageVector = zeros(round(ReadoutTime + max(SliceTime)), 1);
 	
 	if PresaturationTime
-		SignalPercentageVector(1:PresaturationTime,1) = 1;
-		SignalPercentageVector(PresaturationTime+1:BackgroundSuppressionPulseTime(1),1) = 1 - (1 - 0)*exp(-(1:(BackgroundSuppressionPulseTime(1)-PresaturationTime))/T1Time);
+		SignalPercentageVector(1:round(PresaturationTime), 1) = 1;
+		SignalPercentageVector(round(PresaturationTime+1):round(BackgroundSuppressionPulseTime(1)), 1) = 1 - (1 - 0)*exp(-(1:(BackgroundSuppressionPulseTime(1)-PresaturationTime))/T1Time);
 	else
-		SignalPercentageVector(1:BackgroundSuppressionPulseTime(1),1) = 1;
+		SignalPercentageVector(1:round(BackgroundSuppressionPulseTime(1)), 1) = 1;
 	end
 end
  
@@ -125,19 +126,20 @@ for iBSup = 1:length(BackgroundSuppressionPulseTime)
     
     % Repeat the same in a 1ms interval for a graphical output
     if ~isempty(PathGraph)
+		% This part is used for visualization only and not for calculation the signal reduction
         % First invert the signal by the BSuppulse
-        SignalPercentageVector(BackgroundSuppressionPulseTime(iBSup)) = -SignalPercentageVector(BackgroundSuppressionPulseTime(iBSup));
+        SignalPercentageVector(round(BackgroundSuppressionPulseTime(iBSup))) = -SignalPercentageVector(round(BackgroundSuppressionPulseTime(iBSup)));
         
         % Then it relaxes
         if iBSup == length(BackgroundSuppressionPulseTime)
             % either until the readout
-            SignalPercentageVector(BackgroundSuppressionPulseTime(iBSup)+1:ReadoutTime) =...
-                1 - (1 - SignalPercentageVector(BackgroundSuppressionPulseTime(iBSup)))*...
+            SignalPercentageVector(round(BackgroundSuppressionPulseTime(iBSup)+1):round(ReadoutTime)) =...
+                1 - (1 - SignalPercentageVector(round(BackgroundSuppressionPulseTime(iBSup))))*...
                 exp(-(1:ReadoutTime-BackgroundSuppressionPulseTime(iBSup))/T1Time);
         else
             % or until the next BSup pulse
-            SignalPercentageVector(BackgroundSuppressionPulseTime(iBSup)+1:BackgroundSuppressionPulseTime(iBSup+1)) =...
-                1 - (1 - SignalPercentageVector(BackgroundSuppressionPulseTime(iBSup)))*...
+            SignalPercentageVector(round(BackgroundSuppressionPulseTime(iBSup)+1):round(BackgroundSuppressionPulseTime(iBSup+1))) =...
+                1 - (1 - SignalPercentageVector(round(BackgroundSuppressionPulseTime(iBSup))))*...
                 exp(-(1:BackgroundSuppressionPulseTime(iBSup+1)-BackgroundSuppressionPulseTime(iBSup))/T1Time);
         end
     end
@@ -150,13 +152,15 @@ SignalPercentage = 1 - (1 - SignalPercentageInitial(end))*exp(-(SliceTime)/T1Tim
  
 % Repeat the same in a 1ms interval for a graphical output
 if ~isempty(PathGraph)
-    SignalPercentageVector(ReadoutTime+(1:round(max(SliceTime)))) = ...
-        1 - (1 - SignalPercentageVector(ReadoutTime))*...
+	% This part is used for visualization only and not for calculation the signal reduction
+    SignalPercentageVector(round(ReadoutTime)+(1:round(max(SliceTime)))) = ...
+        1 - (1 - SignalPercentageVector(round(ReadoutTime)))*...
         exp(-(1:round(max(SliceTime)))/T1Time);
 end
  
 % Plot the visualization
 if ~isempty(PathGraph)
+	% This part is used for visualization only and not for calculation the signal reduction
     % Create a figure without displaying it
     if ~bFigureExists
         figureHandle = figure('visible','off');
@@ -217,6 +221,4 @@ if ~isempty(PathGraph)
     end
 end
  
-
 end
-
