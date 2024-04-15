@@ -43,10 +43,21 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
 			% In case the aliases are not defined, we take the visit as they are without any renaming
 			x.modules.import.imPar.tokenVisitAliases = unique(x.modules.import.listsIDs.vVisitIDs);
 
+			% We remove all empty tokens
+			visitEmpty = true(size(x.modules.import.imPar.tokenVisitAliases));
+			for iVisit = 1:length(x.modules.import.imPar.tokenVisitAliases)
+				visitEmpty(iVisit) = ~isempty(x.modules.import.imPar.tokenVisitAliases{iVisit});
+			end
+			x.modules.import.imPar.tokenVisitAliases = x.modules.import.imPar.tokenVisitAliases(visitEmpty);
+			
 			% However, we do remove all non-alphanumerical entries
 			x.modules.import.imPar.tokenVisitAliases(:,2) = cellfun(@(y) xASL_adm_CorrectName(y, 2), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
 		end
-    end
+	end
+
+	% We add an empty session
+	x.modules.import.imPar.tokenVisitAliases{end+1, 1} = '';
+	x.modules.import.imPar.tokenVisitAliases{end,   2} = 'missingSessionValue';
     
     %% SESSIONS
     if x.modules.import.imPar.tokenOrdering(3)==0
@@ -236,12 +247,15 @@ function x = xASL_imp_AddVisit(x, sFieldName, vSubjectIDs, thisVisit, iVisit)
     if length(x.importOverview.(sFieldName).visitIDs)>1
 		IDrow = zeros(1, numel(x.importOverview.(sFieldName).visitIDs));
 		for iV=1:numel(x.importOverview.(sFieldName).visitIDs)
-          	idVisit = cellfun(@(y) regexp(y, x.importOverview.(sFieldName).visitIDs{iV}), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
-			idVisit = find(cellfun(@(y) ~isempty(y), idVisit));
+          	idVisit = cellfun(@(y) strcmp(y, x.importOverview.(sFieldName).visitIDs{iV}), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
+			idVisit = find(cellfun(@(y) ~isequal(y,0), idVisit));
 			if isempty(idVisit)
 				error('Visit not identified');
 			else
 				IDrow(iV) = idVisit(1);
+				if isempty(x.modules.import.imPar.tokenVisitAliases{idVisit,1})
+					warning(['Subject ' x.importOverview.(sFieldName).name ' is missing a session identificator for one session - renaming it to missingSessionValue']);
+				end
 			end
 		end
 		x.importOverview.(sFieldName).listsIDs.visitIDs = x.modules.import.imPar.tokenVisitAliases(IDrow,1);
@@ -294,8 +308,8 @@ function x = xASL_imp_AddVisitNames(x, sFieldName)
         else
             for iVisit=1:numel(x.importOverview.(sFieldName).visitIDs)
 				% Find the name id of the visit according to its number
-				idVisit = cellfun(@(y) regexp(y, x.importOverview.(sFieldName).visitIDs{iVisit}), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
-				idVisit = find(cellfun(@(y) ~isempty(y), idVisit));
+				idVisit = cellfun(@(y) strcmp(y, x.importOverview.(sFieldName).visitIDs{iVisit}), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
+				idVisit = find(cellfun(@(y) ~isequal(y,0), idVisit));
 				if isempty(idVisit)
 					error('Visit not identified');
 				else

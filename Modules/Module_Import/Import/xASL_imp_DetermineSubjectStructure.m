@@ -10,7 +10,7 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 %   x        - Struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:    Determine subject/session/run structure from sourcedata or temp data.
+% DESCRIPTION:    Determine subject/visit/session structure from sourcedata or temp data.
 %         
 %          The main goal is to create a sub-structure of x called x.importOverview.
 %          x.importOverview does include a separate field for each subject.
@@ -131,7 +131,7 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 				listVisits{iSubVis} = curSubVis(indexSeparator+1:end);
 			else
 				% Multiple separators
-                warning('It was not possible to determine the subject (or session) name from temporary data, note that underscores in subject or session values are illegal.');
+                warning('In BIDS, subject and session names shouold not contain hyphens (-) or underscores (_) as these are used as separators. Removing them in the final BIDS values/names');
             end
         end
     end
@@ -150,13 +150,13 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
     
 	% If tokenVisitAliases is not provided, we assume visits are not renamed and create a dummy tokenVisitAliases list
 	if ~isfield(x.modules.import.imPar, 'tokenVisitAliases') || isempty(x.modules.import.imPar.tokenVisitAliases)
-		% Create a unique list of sessions
+		% Create a unique list of visits
 		listVisits = unique(listVisits);
 
-		% Exclude empty session names
+		% Exclude empty visits names
 		listVisits = listVisits(~ismember(listVisits,''));
 		
-		% Create a list of unique session names
+		% Create a list of unique visits names
 		if ~isempty(listVisits)
 			x.modules.import.imPar.tokenVisitAliases = listVisits(:);
 			x.modules.import.imPar.tokenVisitAliases(:,2) = listVisits;

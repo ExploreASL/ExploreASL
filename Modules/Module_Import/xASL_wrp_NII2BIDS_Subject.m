@@ -23,12 +23,12 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
 % - 3. Iterate over runs
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubject);
+% EXAMPLE:     x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSession);
 % __________________________________
 % Copyright 2015-2024 ExploreASL
 
     %% 1. Initialize
-    bidsLabel = xASL_imp_CheckForAliasInVisit(x.modules.import.imPar,nameSubjectSession);
+    bidsLabel = xASL_imp_CheckForAliasInSession(x.modules.import.imPar,nameSubjectSession);
     
     % Make a subject directory
     subjectDirectory = fullfile(x.modules.import.imPar.BidsRoot,['sub-' bidsLabel.subject]);
@@ -45,7 +45,7 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
     
     % Go through all (ASL) runs
     for iRun = 1:length(listRuns)
-		% Get the correct studyPar for a specific subject/visit/run
+		% Get the correct studyPar for a specific subject/session/run
 		runName = listRuns{iRun};
 		iName = find(runName=='_');
 		if isempty(iName)
@@ -53,42 +53,42 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
 		else
 			runName = runName((iName(1)+1):end);
 		end
-		studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll, bidsLabel.subject, bidsLabel.visit, runName, true);
+		studyParSpecificSubjSessionRun = xASL_imp_StudyParPriority(studyParAll, bidsLabel.subject, bidsLabel.visit, runName, true);
 		
-        x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyParSpecificSubjVisitSess, listRuns, nameSubjectSession, bidsLabel, iRun);
+        x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyParSpecificSubjSessionRun, listRuns, nameSubjectSession, bidsLabel, iRun);
     end
 end
 
 %% -------------------------------------------------------------
-%% Check if there is a visit alias within the subject/visit name
+%% Check if there is a session alias within the subject/session name
 %% -------------------------------------------------------------
-function bidsLabel = xASL_imp_CheckForAliasInVisit(imPar, nameSubjectSession)
+function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
 
-    % Get visitAliases from imPar
+    % Get sessionAliases from imPar
     if isfield(imPar,'tokenVisitAliases') && ~isempty(imPar.tokenVisitAliases) && size(imPar.tokenVisitAliases,2)>1
-        visitAliases = imPar.tokenVisitAliases(:,2);
+        sessionAliases = imPar.tokenVisitAliases(:,2);
     else
-        visitAliases = [];
+        sessionAliases = [];
     end
     
-    % Separator subject/visit
+    % Separator subject/session
     separator = '_';
 
     % Default
     subjectName = nameSubjectSession;
-    visitName = '';
+    sessionName = '';
 
     % Iterate over aliases
-    if ~isempty(visitAliases)
-        for iAlias = 1:numel(visitAliases)
-			if ~isempty(visitAliases{iAlias,1})
-				if visitAliases{iAlias,1}(1) == separator
-					checkExpression = regexp(nameSubjectSession, [visitAliases{iAlias,1} '$'], 'once');
+    if ~isempty(sessionAliases)
+        for iAlias = 1:numel(sessionAliases)
+			if ~isempty(sessionAliases{iAlias,1})
+				if sessionAliases{iAlias,1}(1) == separator
+					checkExpression = regexp(nameSubjectSession, [sessionAliases{iAlias,1} '$'], 'once');
 				else
-					checkExpression = regexp(nameSubjectSession, [separator visitAliases{iAlias,1} '$'], 'once');
+					checkExpression = regexp(nameSubjectSession, [separator sessionAliases{iAlias,1} '$'], 'once');
 				end
 				if ~isempty(checkExpression) % nameSubject should end in the visit alias
-					visitName = nameSubjectSession(checkExpression+1:end);
+					sessionName = nameSubjectSession(checkExpression+1:end);
 					subjectName = nameSubjectSession(1:checkExpression-1);
 				end
 			end
@@ -96,12 +96,12 @@ function bidsLabel = xASL_imp_CheckForAliasInVisit(imPar, nameSubjectSession)
     end
     
     bidsLabel.subject = xASL_adm_CorrectName(subjectName, 2);
-	if isempty(visitName)
+	if isempty(sessionName)
 		bidsLabel.visit = 'missingSessionValue';
 	else
-		bidsLabel.visit = xASL_adm_CorrectName(visitName, 2);
-		if ~strcmp(visitName, bidsLabel.visit)
-			warning(['Changed visit name from: ' visitName ' into ' bidsLabel.visit]);
+		bidsLabel.visit = xASL_adm_CorrectName(sessionName, 2);
+		if ~strcmp(sessionName, bidsLabel.visit)
+			warning(['Changed visit name from: ' sessionName ' into ' bidsLabel.visit]);
 		end
 	end
 end
