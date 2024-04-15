@@ -289,7 +289,7 @@ function x = xASL_imp_AddVisitNames(x, sFieldName)
 			% In case that visit names are not filled, we name the visit by their number
             x.modules.import.imPar.visitNames = cell(x.importOverview.(sFieldName).nVisits,1);
             for iVisit=1:x.importOverview.(sFieldName).nVisits
-                x.modules.import.imPar.visitNames{iVisit} = sprintf('%g', iVisit);
+                x.modules.import.imPar.visitNames{iVisit} = xASL_num2str(iVisit);
             end
         else
             for iVisit=1:numel(x.importOverview.(sFieldName).visitIDs)

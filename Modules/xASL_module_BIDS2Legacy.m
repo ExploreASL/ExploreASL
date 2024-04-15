@@ -69,20 +69,20 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         %   !!!!! NOTE THAT SESSION (BIDS) IS A VISIT (LEGACY) HERE, NOT A RUN (BIDS) !!!!!
         iSubjSess = find(strcmp(x.SUBJECTS, x.SUBJECT));
         
-        % each index in x.modules.bids2legacy.BIDS.subjects has its unique subject-visit combination
+        % each index in x.modules.bids2legacy.BIDS.subjects has its unique subject-session combination
         % which is identical to the order in ExploreASL legacy x.SUBJECTS
         % which is defined in xASL_init_BIDS2Legacy, e.g.,
         % x.modules.bids2legacy.BIDS.subjects(1) -> name = sub-10015124 session = ses-1, legacy sub-10015124_1
         % x.modules.bids2legacy.BIDS.subjects(2) -> name = sub-10015124 session = ses-2, legacy sub-10015124_2
         % x.modules.bids2legacy.BIDS.subjects(3) -> name = sub-10015125 session = ses-1, legacy sub-10015125_1
         %
-        % Note that a subject-visit combination can have multiple runs, e.g.,
+        % Note that a subject-session combination can have multiple runs, e.g.,
         % x.modules.bids2legacy.BIDS.subjects(1).perf(1) -> filename: 'sub-10015124_ses-1_run-1_asl.nii.gz'
         % x.modules.bids2legacy.BIDS.subjects(1).perf(2) -> filename: 'sub-10015124_ses-1_run-2_asl.nii.gz'
         % x.modules.bids2legacy.BIDS.subjects(1).perf(3) -> filename: 'sub-10015124_ses-1_run-1_m0scan.nii.gz'
         % x.modules.bids2legacy.BIDS.subjects(1).perf(4) -> filename: 'sub-10015124_ses-1_run-2_m0scan.nii.gz'  
 		%
-		% Also note that visits can now be any name, number, data, or a string and are always treated as a string
+		% Also note that sessions can now be any name, number, data, or a string and are always treated as a string
 
         % Subject ID
         SubjectID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).name;
@@ -93,28 +93,28 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
             SessionID = xASL_adm_CorrectName(SessionID(5:end), 2);
         end
 
-        SubjectVisit = [SubjectID '_' SessionID]; % this is the legacy name
+        SubjectSession = [SubjectID '_' SessionID]; % this is the legacy name
 
-        if ~strcmp(SubjectVisit, x.SUBJECT)
-            error(['xASL_init_BIDS2Legacy ' x.SUBJECT ' should match with xASL_module_BIDS2Legacy ' SubjectVisit]);
+        if ~strcmp(SubjectSession, x.SUBJECT)
+            error(['xASL_init_BIDS2Legacy ' x.SUBJECT ' should match with xASL_module_BIDS2Legacy ' SubjectSession]);
         else
 
             %% 2. Parse modality
             
-            pathLegacy_SubjectVisit = fullfile(x.dir.xASLDerivatives, SubjectVisit);
+            pathLegacy_SubjectSession = fullfile(x.dir.xASLDerivatives, SubjectSession);
             
             % Create subject/session directory (to enable reruns for pre-imported or crashed datasets, we need a subject level here/above!)
-            xASL_adm_CreateDir(pathLegacy_SubjectVisit);
+            xASL_adm_CreateDir(pathLegacy_SubjectSession);
 
             % Modalities - the BIDS scantypes
             ModalitiesUnique = unique(x.modules.bids2legacy.bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
             nModalities = length(ModalitiesUnique);
-            xASL_bids_BIDS2Legacy_ParseModality(x.modules.bids2legacy.BIDS, x.modules.bids2legacy.bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectVisit);
+            xASL_bids_BIDS2Legacy_ParseModality(x.modules.bids2legacy.BIDS, x.modules.bids2legacy.bidsPar, SubjectSession, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectSession);
         end
 
 
         %% 3. Parse M0s
-        ListASL4D = xASL_adm_GetFileList(pathLegacy_SubjectVisit, '^ASL4D\.nii$', 'FPListRec');
+        ListASL4D = xASL_adm_GetFileList(pathLegacy_SubjectSession, '^ASL4D\.nii$', 'FPListRec');
         if bVerbose && isempty(ListASL4D)
             warning(['When parsing M0: no ASL4D.nii found for ' SubjectID 'in ' x.dir.xASLDerivatives '...']);
         end

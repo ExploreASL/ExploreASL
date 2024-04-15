@@ -108,27 +108,27 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 
     %% Determine structure from temp data
 
-    % Get subject/session list
-    listSubjectsSessions = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],false,[],true);
+    % Get subject/visits list
+    listSubjectsVisits = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],false,[],true);
     
-	% Initialize an empty list of sessions
-	listSessions = {};
+	% Initialize an empty list of visits
+	listVisits = {};
 
     % Get subjects from list
-    if numel(listSubjectsSessions)>0
-        for iSubSes=1:numel(listSubjectsSessions)
-            % Get current subject/session name
-            curSubSes = listSubjectsSessions{iSubSes};
+    if numel(listSubjectsVisits)>0
+        for iSubVis=1:numel(listSubjectsVisits)
+            % Get current subject/visit name
+            curSubVis = listSubjectsVisits{iSubVis};
             % Determine subject name
-			indexSeparator = regexp(curSubSes, '_', 'all');
+			indexSeparator = regexp(curSubVis, '_', 'all');
             if isempty(indexSeparator)
-                % Single-session exceptions
-                x.SUBJECTS{iSubSes} = curSubSes;
-				listSessions{iSubSes} = '';
+                % Single-visit exceptions
+                x.SUBJECTS{iSubVis} = curSubVis;
+				listVisits{iSubVis} = '';
 			elseif numel(indexSeparator) == 1
-                % Multi-session notation
-                x.SUBJECTS{iSubSes} = curSubSes(1:indexSeparator-1);
-				listSessions{iSubSes} = curSubSes(indexSeparator+1:end);
+                % Multi-visit notation
+                x.SUBJECTS{iSubVis} = curSubVis(1:indexSeparator-1);
+				listVisits{iSubVis} = curSubVis(indexSeparator+1:end);
 			else
 				% Multiple separators
                 warning('It was not possible to determine the subject (or session) name from temporary data, note that underscores in subject or session values are illegal.');
@@ -151,15 +151,15 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 	% If tokenVisitAliases is not provided, we assume visits are not renamed and create a dummy tokenVisitAliases list
 	if ~isfield(x.modules.import.imPar, 'tokenVisitAliases') || isempty(x.modules.import.imPar.tokenVisitAliases)
 		% Create a unique list of sessions
-		listSessions = unique(listSessions);
+		listVisits = unique(listVisits);
 
 		% Exclude empty session names
-		listSessions = listSessions(~ismember(listSessions,''));
+		listVisits = listVisits(~ismember(listVisits,''));
 		
 		% Create a list of unique session names
-		if ~isempty(listSessions)
-			x.modules.import.imPar.tokenVisitAliases = listSessions(:);
-			x.modules.import.imPar.tokenVisitAliases(:,2) = listSessions;
+		if ~isempty(listVisits)
+			x.modules.import.imPar.tokenVisitAliases = listVisits(:);
+			x.modules.import.imPar.tokenVisitAliases(:,2) = listVisits;
 		end
 	end
     

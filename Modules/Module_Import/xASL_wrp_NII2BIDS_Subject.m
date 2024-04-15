@@ -95,6 +95,13 @@ function bidsLabel = xASL_imp_CheckForAliasInVisit(imPar, nameSubjectSession)
         end
     end
     
-    bidsLabel.subject = xASL_adm_CorrectName(subjectName,2);
-    bidsLabel.visit = xASL_adm_CorrectName(visitName,2);
+    bidsLabel.subject = xASL_adm_CorrectName(subjectName, 2);
+	if isempty(visitName)
+		bidsLabel.visit = 'missingSessionValue';
+	else
+		bidsLabel.visit = xASL_adm_CorrectName(visitName, 2);
+		if ~strcmp(visitName, bidsLabel.visit)
+			warning(['Changed visit name from: ' visitName ' into ' bidsLabel.visit]);
+		end
+	end
 end
