@@ -36,13 +36,15 @@ if x.ResolutionEstimation
     % Here we choose a range of GM-WM CBF ratios to search along
     % but they can be surprising, so lets give each sequence the same range
 
-    if      strcmpi(x.Q.PulseSequenceType, 'spiral')
+    if      strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D')
             relPSF = [2.6667 2.6667 2.3750];
             % This assumes the inplane interpolation of GE from [4 4 4] to [2 2 4]
-    elseif  strcmpi(x.Q.PulseSequenceType, 'EPI')
+    elseif  strcmpi(x.Q.PulseSequenceType, 'EPI') && strcmpi(x.Q.MRAcquisitionType, '2D')
             relPSF = [1.2167 1.2167 1.0857];
-    elseif  strcmpi(x.Q.PulseSequenceType, 'GRASE')
+    elseif  strcmpi(x.Q.PulseSequenceType, 'GRASE') && strcmpi(x.Q.MRAcquisitionType, '3D')
             relPSF = [1.9417 1.9417 1.7304]; % average of 2D EPI & 3D spiral
+	else
+		error(['Unknown sequence resolution for ' x.Q.MRAcquisitionType ' ' x.Q.PulseSequenceType]);
     end
 
     x.S.ExpectedFWHM_res = NativeRes.*relPSF;

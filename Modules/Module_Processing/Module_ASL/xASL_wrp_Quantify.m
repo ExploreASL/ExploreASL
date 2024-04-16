@@ -235,7 +235,7 @@ if strcmpi(x.Q.M0,'separate_scan')
 		end
 		
         % Correction factor and name for 3D spiral sequences
-        if strcmpi(x.Q.PulseSequenceType, 'spiral')
+        if strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D')
 			CorrFactor = x.Q.T2;
 			CorrName = 'T2';
         else % assume T2* signal decay 2D_EPI or 3D GRASE

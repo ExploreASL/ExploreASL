@@ -157,12 +157,12 @@ x.D.PathMask = fullfile(x.dir.SESSIONDIR, 'MaskASL.nii');
 x.D.Path_PseudoTissue = fullfile(x.dir.SESSIONDIR, 'PseudoTissue.nii');
 
 % Differs between sequences
-if      strcmpi(x.Q.PulseSequenceType, 'EPI') && ~isempty(regexpi(x.Q.Vendor, 'Philips', 'once'))
+if      strcmpi(x.Q.PulseSequenceType, 'EPI') && strcmpi(x.Q.MRAcquisitionType, '2D') && ~isempty(regexpi(x.Q.Vendor, 'Philips', 'once'))
         x.D.Mean_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_CBF.nii');
         x.D.Mask_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_Bsup_QC_mask.nii');
         x.D.raw_MNI = fullfile(x.D.TemplateDir,'Philips_2DEPI_noBsup_Control.nii');
 
-elseif  strcmpi(x.Q.PulseSequenceType, 'EPI') && ~isempty(regexpi(x.Q.Vendor, '(Siemens|GE)', 'once'))
+elseif  strcmpi(x.Q.PulseSequenceType, 'EPI') && strcmpi(x.Q.MRAcquisitionType, '2D') && ~isempty(regexpi(x.Q.Vendor, '(Siemens|GE)', 'once'))
         %% PM: quicky & dirty fix to run GE 2D EPI with the Siemens 2D EPI template
         % though the template choice may not have a significant effect, as
         % opposed to the inter-individual differences in geometric
@@ -182,11 +182,11 @@ elseif  strcmpi(x.Q.PulseSequenceType, 'EPI') && ~isempty(regexpi(x.Q.Vendor, '(
         % this GE sequence usually is provided without separate
         % control-label images
 
-elseif  strcmpi(x.Q.PulseSequenceType, 'GRASE')
+elseif  strcmpi(x.Q.PulseSequenceType, 'GRASE') && strcmpi(x.Q.MRAcquisitionType, '3D')
         x.D.raw_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PCASL_Control_BiasfieldCorr_MoodStudy.nii');
         x.D.Mean_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PASL_CBF.nii');
         x.D.Mask_MNI = fullfile(x.D.TemplateDir,'Siemens_3DGRASE_PASL_QC_mask.nii');
-elseif  strcmpi(x.Q.PulseSequenceType, 'spiral')
+elseif  strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D')
         x.D.Mean_MNI = fullfile(x.D.TemplateDir,'GE_3Dspiral_Product_CBF.nii');
         x.D.Mask_MNI = fullfile(x.D.MapsSPMmodifiedDir,'ParenchymNarrow.nii');
 else

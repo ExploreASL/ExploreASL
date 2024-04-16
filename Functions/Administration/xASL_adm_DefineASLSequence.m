@@ -36,10 +36,9 @@ end
 % Check for illegal sequence definitions
 if isfield(xQ, 'PulseSequenceType')
     if isempty(regexpi(xQ.PulseSequenceType, '(epi|grase|spiral)', 'once'))
-        warning(['Unknown ASL sequence: ' xASL_num2str(xQ.PulseSequenceType)]);
+        warning(['Unknown ASL readout PulseSequenceType: ' xASL_num2str(xQ.PulseSequenceType)]);
         fprintf('%s\n', 'Trying to fix this');
         xQ = rmfield(xQ, 'PulseSequenceType');
-
     end
 end
 
@@ -48,7 +47,7 @@ end
 % (though this is tricky for special cases, Siemens and Philips are both working on a 3D spiral)
 if isfield(xQ, 'PulseSequenceType') && (~isfield(xQ, 'Vendor') || isempty(xQ.Vendor))
     if strcmpi(xQ.PulseSequenceType,'spiral')
-        warning('xQ.Vendor missing but 3D spiral sequence detected, assuming vendor GE');
+        warning('xQ.Vendor missing but spiral sequence detected, assuming vendor GE');
         xQ.Vendor = 'GE';
     end
 end
@@ -94,22 +93,11 @@ if ~isfield(xQ, 'PulseSequenceType') && isfield(xQ, 'MRAcquisitionType')
 	end
 end
 
-%% Warn if we couldn't detect a sequence, default to 3D spiral
-% We default to 3D spiral because this sequence has whole-brain coverage
-% and negligible geometric distortion, so we don't do any special
-% readout-specific image processing for this sequence
-if ~isfield(xQ, 'PulseSequenceType') || isempty(xQ.PulseSequenceType)
-    warning('No xQ.PulseSequenceType defined');
-    fprintf('If there are multiple sequence types, this needs to be implemented yet here\n');
-    fprintf('Otherwise, please define xQ.PulseSequenceType\n');
-    fprintf('Setting xQ.PulseSequenceType=3D spiral to fool the pipeline here\n');
-    fprintf('As this sequence doesnt have any susceptibility masks\n');
-    fprintf('Note that this disables any masking of susceptibility signal dropout areas\n');
-    xQ.PulseSequenceType = 'spiral';
-    xQ.MRAcquisitionType = '3D';
+%% Warn if we couldn't detect a sequence
+if ~isfield(xQ, 'PulseSequenceType') || isempty(xQ.PulseSequenceType) || ~isfield(xQ, 'MRAcquisitionType') || isempty(xQ.MRAcquisitionType)
+    error('We cannot detect the PulseSequenceType and/or MRAcquisitionType')
 else
     if bVerbose; fprintf('%s\n', [xQ.PulseSequenceType ' sequence detected']); end
 end
-
 
 end

@@ -115,17 +115,17 @@ end
 %
 %             % Determine estimated FWHM to convert native image resolution to
 %             % effective resolution
-%             if      strcmpi(x.Q.PulseSequenceType, 'EPI')
+%             if      strcmpi(x.Q.PulseSequenceType, 'EPI') && strcmpi(x.Q.MRAcquisitionType, '2D')
 %                     EstimatedEffectiveResolution    = [(3.7+3.6)/2 (3.7+3.6)/2 7.6]; % Paper Jan Petr, 3.7 & 3.6 where X Y, which should be similar
 %                     BasedOnResolution               = [3 3 7];
 %                     Estimated_FWHM                  = EstimatedEffectiveResolution./BasedOnResolution;
 %
-%             elseif  strcmpi(x.Q.PulseSequenceType, 'spiral')
+%             elseif  strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D')
 %                     EstimatedEffectiveResolution    = [(4.9+5.1)/2 (4.9+5.1)/2 9.5]; % Paper Jan Petr, 4.9 & 5.1 where X Y, which should be similar
 %                     BasedOnResolution               = [1.875 1.875 4];
 %                     Estimated_FWHM                  = EstimatedEffectiveResolution./BasedOnResolution;
 %
-%             elseif  strcmpi(x.Q.PulseSequenceType, 'GRASE')
+%             elseif  strcmpi(x.Q.PulseSequenceType, 'GRASE') && strcmpi(x.Q.MRAcquisitionType, '3D')
 %                     Estimated_FWHM                  = ([1.2167 1.2167 1.0857] + [2.6667 2.6667 2.3750]) ./2;
 %                     % This is a rough educated guess, FWHM of 3D GRASE should
 %                     % be in between 3D spiral & 2D EPI.

@@ -69,25 +69,20 @@ end
 xASL_spm_deformations(x, x.P.Path_FoV, x.P.Pop_Path_FoV, 0, [], AffineTransfPath, x.P.Path_y_ASL);
 
 %% Deal with different readouts
-switch lower(x.Q.PulseSequenceType)
-    case 'epi'
-        Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
-        ClipThresholdValue = 3; % 3 MAD above median
-        DoSusceptibility = true;
-    case 'grase'
-        Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
-        ClipThresholdValue = 3; % 3 MAD above median
-        DoSusceptibility = true;
-    case 'spiral'
-        DoSusceptibility = false;
-        ClipThresholdValue = 5; % more homogeneous image        
-    otherwise
+if  strcmpi(x.Q.PulseSequenceType, 'EPI') && strcmpi(x.Q.MRAcquisitionType, '2D')
+	Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
+	ClipThresholdValue = 3; % 3 MAD above median
+	DoSusceptibility = true;
+elseif  strcmpi(x.Q.PulseSequenceType, 'GRASE') && strcmpi(x.Q.MRAcquisitionType, '3D')
+	Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_3D_GRASE.nii');
+	ClipThresholdValue = 3; % 3 MAD above median
+	DoSusceptibility = true;
+elseif strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D')
+	DoSusceptibility = false;
+	ClipThresholdValue = 5; % more homogeneous image
+else
         error('Unknown ASL sequence!');
 end
-
-
-
-
 
 %% 1. Negative vascular signal
 NegativeMaskNative = xASL_im_MaskNegativeVascularSignal(x, 1); % native space
