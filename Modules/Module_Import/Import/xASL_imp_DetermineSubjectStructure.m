@@ -1,5 +1,5 @@
 function x = xASL_imp_DetermineSubjectStructure(x)
-%xASL_imp_DetermineSubjectStructure Determine subject/session/run structure from sourcedata or temp data
+%xASL_imp_DetermineSubjectStructure Determine subject/visit/session structure from sourcedata or temp data
 %
 % FORMAT: x = xASL_imp_DetermineSubjectStructure(x)
 %
@@ -159,8 +159,10 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 		% Create a list of unique visits names
 		if ~isempty(listVisits)
 			x.modules.import.imPar.tokenVisitAliases = listVisits(:);
-			x.modules.import.imPar.tokenVisitAliases(:,2) = listVisits;
+			x.modules.import.imPar.tokenVisitAliases(:,2) = x.modules.import.imPar.tokenVisitAliases(:,1);
 		end
 	end
+	x.modules.import.imPar.tokenVisitAliases{end+1, 1} = '';
+	x.modules.import.imPar.tokenVisitAliases{end,   2} = '';
     
 end

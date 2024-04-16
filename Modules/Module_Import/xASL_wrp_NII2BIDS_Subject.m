@@ -66,7 +66,7 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
 
     % Get sessionAliases from imPar
     if isfield(imPar,'tokenVisitAliases') && ~isempty(imPar.tokenVisitAliases) && size(imPar.tokenVisitAliases,2)>1
-        sessionAliases = imPar.tokenVisitAliases(:,2);
+        sessionAliases = imPar.tokenVisitAliases;
     else
         sessionAliases = [];
     end
@@ -80,28 +80,26 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
 
     % Iterate over aliases
     if ~isempty(sessionAliases)
-        for iAlias = 1:numel(sessionAliases)
-			if ~isempty(sessionAliases{iAlias,1})
-				if sessionAliases{iAlias,1}(1) == separator
-					checkExpression = regexp(nameSubjectSession, [sessionAliases{iAlias,1} '$'], 'once');
-				else
-					checkExpression = regexp(nameSubjectSession, [separator sessionAliases{iAlias,1} '$'], 'once');
-				end
-				if ~isempty(checkExpression) % nameSubject should end in the visit alias
-					sessionName = nameSubjectSession(checkExpression+1:end);
-					subjectName = nameSubjectSession(1:checkExpression-1);
-				end
+        for iAlias = 1:size(sessionAliases,1)
+			checkExpression = regexp(nameSubjectSession, [separator sessionAliases{iAlias, 1} '$'], 'once');
+			
+			if ~isempty(checkExpression) % nameSubject should end in the visit alias
+				sessionName = nameSubjectSession(checkExpression+1:end);
+				subjectName = nameSubjectSession(1:checkExpression-1);
 			end
         end
     end
     
     bidsLabel.subject = xASL_adm_CorrectName(subjectName, 2);
 	if isempty(sessionName)
+		% Empty session names are changed to missingSessionValue
 		bidsLabel.visit = 'missingSessionValue';
+		warning(['Subject ' subjectName ', missing session name changed to missingSessionValue']);
 	else
+		% The session name is corrected for special characters
 		bidsLabel.visit = xASL_adm_CorrectName(sessionName, 2);
 		if ~strcmp(sessionName, bidsLabel.visit)
-			warning(['Changed visit name from: ' sessionName ' into ' bidsLabel.visit]);
+			warning(['Subject ' subjectName ', changed visit name from: ' sessionName ' into ' bidsLabel.visit]);
 		end
 	end
 end
