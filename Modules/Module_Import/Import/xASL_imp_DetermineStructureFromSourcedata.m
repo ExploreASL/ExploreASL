@@ -42,15 +42,9 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
 		if isempty(x.modules.import.imPar.tokenVisitAliases)
 			% In case the aliases are not defined, we take the visit as they are without any renaming
 			x.modules.import.imPar.tokenVisitAliases = unique(x.modules.import.listsIDs.vVisitIDs);
-
-			% We remove all empty tokens
-			x.modules.import.imPar.tokenVisitAliases = x.modules.import.imPar.tokenVisitAliases(~ismember(x.modules.import.imPar.tokenVisitAliases,''));
+			x.modules.import.imPar.tokenVisitAliases(:,2) = x.modules.import.imPar.tokenVisitAliases(:,1);
 		end
 	end
-
-	% We add an empty session
-	x.modules.import.imPar.tokenVisitAliases{end+1, 1} = '';
-	x.modules.import.imPar.tokenVisitAliases{end,   2} = '';
     
     %% SESSIONS
     if x.modules.import.imPar.tokenOrdering(3)==0
@@ -322,7 +316,7 @@ function x = xASL_imp_AddVisitNames(x, sFieldName)
 				end
 
 				% Resolve the new name of the visit
-				x.modules.import.imPar.visitNames{iVisit} = x.modules.import.imPar.tokenVisitAliases{idVisit, 2};
+				x.modules.import.imPar.visitNames{iVisit} = x.modules.import.imPar.tokenVisitAliases{idVisit, 1};
             end
         end
     end
