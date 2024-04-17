@@ -77,13 +77,16 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
     % Default
     subjectName = nameSubjectSession;
     sessionName = '';
+	bUnknownSessionValue = false; % By default, we assume an empty session value as sessions are not defined
 
     % Iterate over aliases
     if ~isempty(sessionAliases)
+		bUnknownSessionValue = true; % Session aliases are defined, so we are set to find the session name
         for iAlias = 1:size(sessionAliases,1)
 			checkExpression = regexp(nameSubjectSession, [separator sessionAliases{iAlias, 1} '$'], 'once');
 			
-			if ~isempty(checkExpression) % nameSubject should end in the visit alias
+			if ~isempty(checkExpression) % nameSubject should end in the session alias
+				bUnknownSessionValue = false; % We found a session name - empty or not
 				sessionName = nameSubjectSession(checkExpression+1:end);
 				subjectName = nameSubjectSession(1:checkExpression-1);
 			end
@@ -91,12 +94,15 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
     end
     
     bidsLabel.subject = xASL_adm_CorrectName(subjectName, 2);
-	if isempty(sessionName)
-		% Empty session names are changed to missingSessionValue
+	if isempty(sessionName) && ~isempty(sessionAliases) && bUnknownSessionValue
+		% There is no session name, we were looking for the name, and nothing was found - a warning is reported
+		warning(['Session name cannot be identified for a subject_session ' nameSubjectSession]);
+	elseif isempty(sessionName) && ~isempty(sessionAliases)
+		% There is no session name, we were looking for the name, and found an empty token - we rename the session name to missingSessionValue
 		bidsLabel.visit = 'missingSessionValue';
 		warning(['Subject ' subjectName ', missing session name changed to missingSessionValue']);
 	else
-		% The session name is corrected for special characters
+		% The session name is OK. We correct it for special characters
 		bidsLabel.visit = xASL_adm_CorrectName(sessionName, 2);
 		if ~strcmp(sessionName, bidsLabel.visit)
 			warning(['Subject ' subjectName ', changed visit name from: ' sessionName ' into ' bidsLabel.visit]);

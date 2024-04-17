@@ -272,9 +272,6 @@ end
 % -----------------------------------------------------------------
 function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
 
-    % Visits (= sessions in BIDS)
-    x = xASL_imp_AddVisitNames(x,sFieldName);
-   
     % Sessions (= run in BIDS)
     x = xASL_imp_AddSessionNames(x,sFieldName,vFieldName,vVisitIDs);
     
@@ -283,43 +280,6 @@ function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
 
     % Sessions (= runs in BIDS)
     x = xASL_imp_AddSessions(x,sFieldName,vFieldName);
-end
-
-% -----------------------------------------------------------------
-%% Add visit names
-% -----------------------------------------------------------------
-function x = xASL_imp_AddVisitNames(x, sFieldName)
-
-    if isempty(x.modules.import.imPar.visitNames)
-        if isempty(x.importOverview.(sFieldName).visitIDs)
-			% In case that visit names are not filled, we name the visit by their number
-            x.modules.import.imPar.visitNames = cell(x.importOverview.(sFieldName).nVisits,1);
-            for iVisit=1:x.importOverview.(sFieldName).nVisits
-                x.modules.import.imPar.visitNames{iVisit} = xASL_num2str(iVisit);
-            end
-        else
-            for iVisit=1:numel(x.importOverview.(sFieldName).visitIDs)
-				% Find the name id of the visit according to its name
-				idVisit = cellfun(@(y) regexp(y, x.importOverview.(sFieldName).visitIDs{iVisit}), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
-				idVisit = find(cellfun(@(y) ~isempty(y), idVisit));
-
-				% In case it doesn't find it, it tries string comparison that works also with empty strings unlike regexp
-				if isempty(idVisit)
-					idVisit = cellfun(@(y) strcmp(y, x.importOverview.(sFieldName).visitIDs{iVisit}), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
-					idVisit = find(cellfun(@(y) ~isequal(y,0), idVisit));
-				end
-
-				if isempty(idVisit)
-					error('Visit not identified');
-				else
-					idVisit = idVisit(1);
-				end
-
-				% Resolve the new name of the visit
-				x.modules.import.imPar.visitNames{iVisit} = x.modules.import.imPar.tokenVisitAliases{idVisit, 1};
-            end
-        end
-    end
 end
 
 % -----------------------------------------------------------------
