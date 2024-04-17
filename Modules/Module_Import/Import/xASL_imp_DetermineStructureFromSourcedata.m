@@ -229,33 +229,9 @@ function x = xASL_imp_AddVisit(x, sFieldName, vSubjectIDs, thisVisit, iVisit)
     
     % Get number of visits
     x.importOverview.(sFieldName).nVisits = length(x.importOverview.(sFieldName).visitIDs);
-    
-    % Sort by output
-    if length(x.importOverview.(sFieldName).visitIDs)>1
-		IDrow = zeros(1, numel(x.importOverview.(sFieldName).visitIDs));
-		for iV=1:numel(x.importOverview.(sFieldName).visitIDs)
-			% Look for a regular expression match
-          	idVisit = cellfun(@(y) regexp(y, x.importOverview.(sFieldName).visitIDs{iV}), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
-			idVisit = find(cellfun(@(y) ~isempty(y), idVisit));
-
-			% Look again using a normal string comparison - this resolves the cases where empty strings are used
-			if isempty(idVisit)
-				idVisit = cellfun(@(y) strcmp(y, x.importOverview.(sFieldName).visitIDs{iV}), x.modules.import.imPar.tokenVisitAliases(:,1), 'UniformOutput', false);
-				idVisit = find(cellfun(@(y) ~isequal(y, 0), idVisit));
-			end
-
-			if isempty(idVisit)
-				error('Visit not identified');
-			else
-				IDrow(iV) = idVisit(1);
-			end
-		end
-		x.importOverview.(sFieldName).listsIDs.visitIDs = x.modules.import.imPar.tokenVisitAliases(IDrow,1);
-    end
-    
+        
     % Add additional fields
     x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName);
-    
     
     %% Sanity check for missing elements
     xASL_imp_DCM2NII_SanityChecks(x,x.importOverview.(sFieldName),x.importOverview.(sFieldName).(vFieldName));
