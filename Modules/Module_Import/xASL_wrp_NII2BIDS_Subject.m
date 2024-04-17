@@ -93,7 +93,11 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
         end
     end
     
-    bidsLabel.subject = xASL_adm_CorrectName(subjectName, 2);
+    [bidsLabel.subject, bCorrected] = xASL_adm_CorrectName(subjectName, 2);
+	if bCorrected
+		warning(['Subject ' subjectName ' was renamed to ' bidsLabel.subject]);
+	end
+
 	if isempty(sessionName) && ~isempty(sessionAliases) && bUnknownSessionValue
 		% There is no session name, we were looking for the name, and nothing was found - a warning is reported
 		warning(['Session name cannot be identified for a subject_session ' nameSubjectSession]);
@@ -103,8 +107,8 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
 		warning(['Subject ' subjectName ', missing session name changed to missingSessionValue']);
 	else
 		% The session name is OK. We correct it for special characters
-		bidsLabel.visit = xASL_adm_CorrectName(sessionName, 2);
-		if ~strcmp(sessionName, bidsLabel.visit)
+		[bidsLabel.visit, bCorrected] = xASL_adm_CorrectName(sessionName, 2);
+		if bCorrected
 			warning(['Subject ' subjectName ', changed visit name from: ' sessionName ' into ' bidsLabel.visit]);
 		end
 	end

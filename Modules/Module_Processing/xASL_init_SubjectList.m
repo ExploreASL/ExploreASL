@@ -74,7 +74,7 @@ elseif x.opts.bReadRawdata
         elseif ~strcmp(visitName(1:4), 'ses-')
             warning(['Illegal BIDS session definition for ' subjectName '_' visitName]);
         else
-            visitName = xASL_adm_CorrectName(visitName(5:end), 2); % if we find a BIDS session, we add it as visit suffix in ExploreASL legacy format
+            visitName = visitName(5:end); % if we find a BIDS session, we add it as visit suffix in ExploreASL legacy format
         end
         
         x.dataset.TotalSubjects{iSubj} = [subjectName '_' visitName];

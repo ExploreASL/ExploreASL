@@ -1,4 +1,4 @@
-function strOut = xASL_adm_CorrectName(strIn, bOption, strExclude)
+function [strOut, bCorrected] = xASL_adm_CorrectName(strIn, bOption, strExclude)
 % Go through a string and remove all non-word characters
 %
 % FORMAT: strOut = xASL_adm_CorrectName(strIn[, bOption, strExclude])
@@ -13,6 +13,7 @@ function strOut = xASL_adm_CorrectName(strIn, bOption, strExclude)
 %
 % OUTPUT:
 %   strOut     - corrected output string
+%   bCorrected - boolean that is true when the strIn was corrected and false when strIn == strOut
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Finds and replaces all non-word characters either by empty space or by an underscore.
@@ -29,7 +30,7 @@ function strOut = xASL_adm_CorrectName(strIn, bOption, strExclude)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright (c) 2015-2021 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 
     %% Admin
     % By default use Option 1
@@ -41,6 +42,9 @@ function strOut = xASL_adm_CorrectName(strIn, bOption, strExclude)
     if nargin < 3
         strExclude = [];
     end
+
+	% By default, nothing is corrected
+	bCorrected = false;
 
     % Don't take more than three input arguments
     if nargin > 3
@@ -105,6 +109,9 @@ function strOut = xASL_adm_CorrectName(strIn, bOption, strExclude)
         strOut = strrep(strOut,'_','-');
     end
     
-    
+	% Report when the string was modified
+    if ~strcmp(strIn, strOut)
+		bCorrected = true;
+	end
 end
 
