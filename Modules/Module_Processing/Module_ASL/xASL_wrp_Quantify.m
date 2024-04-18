@@ -202,7 +202,8 @@ end
 
 % c. We convert x.Hematocrit -> x.Q.BloodT1
 if isfield(x,'Hematocrit')
-    x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Hematocrit, [], x.MagneticFieldStrength);
+    x.Q.Hematocrit = x.Hematocrit(x.iSubjectSession);
+    x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Q.Hematocrit, [], x.MagneticFieldStrength);
 end
 
 % d. If we do not have a x.Q.BloodT1, we use a default value - that is done in xASL_quant_DefineQuantificationParameters called in section 0 here
