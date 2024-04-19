@@ -391,7 +391,20 @@ else
     DataColumn = 2;
 end
 
+% D) Remove leading and trailing "
+warning('off', 'MATLAB:strrep:InvalidInputType');
+VarContent = cellfun(@(y) strrep(y, '"', ''), VarContent, 'UniformOutput', false);
+warning('on', 'MATLAB:strrep:InvalidInputType');
 
+% E) Convert data to numerical if possible
+% We work here with xASL_str2num, which returns NaN for string input
+% (or for what was already NaN, which in that case doesn't need converting)
+% so only the nonnans from xASL_str2num need converting from string to numeric here
+NumericalVarContent = xASL_str2num(VarContent);
+NaNVarContent = isnan(NumericalVarContent);
+NumericalVarContent = num2cell(NumericalVarContent);
+
+VarContent(~NaNVarContent) = NumericalVarContent(~NaNVarContent);
 
 
 %% ------------------------------------------------------------------------------------------------------------
