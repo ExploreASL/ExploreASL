@@ -349,7 +349,7 @@ end
 
 % If we convert to Legacy, we make sure to properly initialize the field outParms.Q.PulseSequenceType
 if ~bOutBids
-	outParms.Q = xASL_adm_DefineASLSequence(outParms.Q);
+	outParms.Q = xASL_adm_DefineASLReadout(outParms.Q);
 end
 
 % We check and correctly rename the discontinued Legacy fields that require a more complicated conversion than is done using xASL_io_CheckDeprecatedFieldsX
