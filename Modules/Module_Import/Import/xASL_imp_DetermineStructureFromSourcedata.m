@@ -32,8 +32,7 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
         % a zero means: no visits applicable
         x.modules.import.settings.bUseVisits = false;
         % vVisitIDs: each subject has a single visit
-        x.modules.import.listsIDs.vVisitIDs = cellfun(@(y) '1', x.modules.import.listsIDs.vSubjectIDs, 'UniformOutput', false);
-        x.modules.import.imPar.tokenVisitAliases = {'^1$', '_1'};
+        x.modules.import.listsIDs.vVisitIDs = cellfun(@(y) '', x.modules.import.listsIDs.vSubjectIDs, 'UniformOutput', false);
     else
         x.modules.import.settings.bUseVisits = true;
         % vVisitIDs: cell vector with extracted Visit IDs (for all subjects, sessions and scans)
