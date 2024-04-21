@@ -217,7 +217,21 @@ function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2sa
     
         if isfield(x.Q, fieldNameTE)
             jsonFields.EchoTime = x.Q.(fieldNameTE);
-        end
+		end
+
+		% Even if we don't copy all orig-json, we save certain basic parameters
+		listFields2Save = {'Vendor' 'MagneticFieldStrength' 'PulseSequenceType' 'MRAcquisitionType' 'LabelingType'};
+
+		% We check the existence of all these fields in both x or x.Q
+		for iField = 1:length(listFields2Save)
+			if isfield(x.Q, listFields2Save{iField})
+				jsonFields.(listFields2Save{iField}) = x.Q.(listFields2Save{iField});
+			end
+
+			if isfield(x, listFields2Save{iField})
+				jsonFields.(listFields2Save{iField}) = x.(listFields2Save{iField});
+			end
+		end
     
         xASL_io_SaveNifti(pathReference, path2save, image2save, 32, 0, [], bCopyOrigJson, jsonFields, true);
     end
