@@ -39,30 +39,25 @@ end
 NiftiObject = [];
 json = [];
 
-[fPath, fFile] = xASL_fileparts(pathIn);
-pathUnzipped = fullfile(fPath, [fFile '.nii']);
-pathJson = fullfile(fPath, [fFile '.json']);
-
 if iscell(pathIn)
 	if length(pathIn)==1
 		pathIn = pathIn{1};
 	else
-		error('NiftiPath is a cell with more than one element, not a character string.');
+		error('NiftiPath is a cell with more than one element, not a character string');
 	end
 end
 
-% remove SPM image extension
-IndexComma  = strfind(pathIn,',');
-if ~isempty(IndexComma)
-	ImExt       = pathIn(IndexComma:end);
-	pathIn   = pathIn(1:IndexComma-1);
-else
-	ImExt       = '';
-end
-    
-if ~xASL_exist(pathIn,'file')
+[fPath, fFile, fExt, ImExt] = xASL_fileparts(pathIn);
+pathUnzipped = fullfile(fPath, [fFile '.nii']);
+pathJson = fullfile(fPath, [fFile '.json']);
+
+pathIn = fullfile(fPath, [fFile fExt]);
+
+if ~xASL_exist(pathIn, 'file')
 	error([pathIn ' does not exist as .nii[.gz]']);
 end
+
+
 
 %% Checking whether .nii & .nii.gz are equal (if both exist)
 xASL_adm_UnzipNifti(pathUnzipped);
