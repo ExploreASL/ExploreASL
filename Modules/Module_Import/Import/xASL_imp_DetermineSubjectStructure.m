@@ -113,6 +113,7 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
     
 	% Initialize an empty list of visits
 	listVisits = {};
+	bVisitsDetected = false; % Set to true once at least a single visit is detected
 
     % Get subjects from list
     if numel(listSubjectsVisits)>0
@@ -129,6 +130,7 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
                 % Multi-visit notation
                 x.SUBJECTS{iSubVis} = curSubVis(1:indexSeparator-1);
 				listVisits{iSubVis} = curSubVis(indexSeparator+1:end);
+				bVisitsDetected = true; % a true visit (with an empty or non-empty name was detected)
 			else
 				% Multiple separators
                 warning('In BIDS, subject and session names shouold not contain hyphens (-) or underscores (_) as these are used as separators. Removing them in the final BIDS values/names');
@@ -150,13 +152,19 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
     
 	% If tokenVisitAliases is not provided, we assume visits are not renamed and create a dummy tokenVisitAliases list
 	if ~isfield(x.modules.import.imPar, 'tokenVisitAliases') || isempty(x.modules.import.imPar.tokenVisitAliases)
-		% Create a unique list of visits
-		listVisits = unique(listVisits);
-	
-		% Create a list of unique visits names
-		if ~isempty(listVisits)
-			x.modules.import.imPar.tokenVisitAliases = listVisits(:);
-			x.modules.import.imPar.tokenVisitAliases(:,2) = x.modules.import.imPar.tokenVisitAliases(:,1);
+		if bVisitsDetected
+			% Create a unique list of visits
+			listVisits = unique(listVisits);
+
+			% Create a list of unique visits names
+			if ~isempty(listVisits)
+				x.modules.import.imPar.tokenVisitAliases = listVisits(:);
+				x.modules.import.imPar.tokenVisitAliases(:,2) = x.modules.import.imPar.tokenVisitAliases(:,1);
+			end
+		else
+			% In case we haven't detected any visit, we set them to empty
+			% This mostly applies to the case where no visit separator was found anywhere
+			x.modules.import.imPar.tokenVisitAliases = [];
 		end
 	end
   

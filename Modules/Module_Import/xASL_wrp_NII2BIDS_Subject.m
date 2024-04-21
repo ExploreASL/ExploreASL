@@ -109,7 +109,7 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
 		% The session name is OK. We correct it for special characters
 		[bidsLabel.visit, bCorrected] = xASL_adm_CorrectName(sessionName, 2);
 		if bCorrected
-			warning(['Subject ' subjectName ', changed visit name from: ' sessionName ' into ' bidsLabel.visit]);
+			warning(['Subject ' subjectName ', changed visit name from: ' sessionName ', into: ' bidsLabel.visit]);
 		end
 	end
 end
