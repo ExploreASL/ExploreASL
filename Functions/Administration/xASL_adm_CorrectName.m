@@ -109,12 +109,10 @@ function [strOut, bCorrected] = xASL_adm_CorrectName(strIn, bOption, strExclude)
         strOut = strrep(strOut,'_','-');
     end
     
-	% Report when the string was modified
-    if ~strcmp(strIn, strOut) 
-		% strcmp doesn't work properly when both strings have zero length, so we have to rule out this option before reporting a change
-		if numel(strIn) || numel(strOut)
-			bCorrected = true;
-		end
+	% Report when the string was modified (difference between strIn and strOut). 
+	% Though note that strcmp doesn't work properly when both strings have zero length, so we have to rule out this option before reporting a change
+	if ~strcmp(strIn, strOut) && (numel(strIn) || numel(strOut))
+		bCorrected = true;
 	end
 end
 

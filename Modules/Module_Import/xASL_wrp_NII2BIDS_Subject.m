@@ -76,17 +76,17 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
 
     % Default
     subjectName = nameSubjectSession;
-    sessionName = '';
-	bUnknownSessionValue = false; % By default, we assume an empty session value as sessions are not defined
+    sessionName = ''; % By default, we assume an empty session name
 
     % Iterate over aliases
     if ~isempty(sessionAliases)
-		bUnknownSessionValue = true; % Session aliases are defined, so we are set to find the session name
+		% Session aliases are defined, so we are set to find the session name
+		bSessionValueDetected = false; % By default, we expect no sessions were found
         for iAlias = 1:size(sessionAliases,1)
 			checkExpression = regexp(nameSubjectSession, [separator sessionAliases{iAlias, 1} '$'], 'once');
 			
 			if ~isempty(checkExpression) % nameSubject should end in the session alias
-				bUnknownSessionValue = false; % We found a session name - empty or not
+				bSessionValueDetected = true; % We found a session name - empty or not
 				sessionName = nameSubjectSession(checkExpression+1:end);
 				subjectName = nameSubjectSession(1:checkExpression-1);
 			end
@@ -98,18 +98,22 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
 		warning(['Subject ' subjectName ' was renamed to ' bidsLabel.subject]);
 	end
 
-	if isempty(sessionName) && ~isempty(sessionAliases) && bUnknownSessionValue
-		% There is no session name, we were looking for the name, and nothing was found - a warning is reported
-		warning(['Session name cannot be identified for a subject_session ' nameSubjectSession]);
-	elseif isempty(sessionName) && ~isempty(sessionAliases)
-		% There is no session name, we were looking for the name, and found an empty token - we rename the session name to missingSessionValue
-		bidsLabel.visit = 'missingSessionValue';
-		warning(['Subject ' subjectName ', missing session name changed to missingSessionValue']);
+	if isempty(sessionName) && ~isempty(sessionAliases)
+		% In case the session name is empty, but there is a list of session aliases to check, we need to find out 
+		% if session name is truly empty or if session name was not detected at all
+		if bSessionValueDetected
+			% There is no session name, we were looking for the name, and found an empty token - we rename the session name to missingSessionValue
+			bidsLabel.visit = 'missingSessionValue';
+			warning([subjectName ', missing session name changed to missingSessionValue']);
+		else
+			% There is no session name, we were looking for the name, and nothing was found - a warning is reported
+			error(['Session name cannot be identified for a subject_session ' nameSubjectSession]);
+		end
 	else
-		% The session name is OK. We correct it for special characters
+		% The session name is OK - empty or not, it is according to the expected pattern. We correct it for special characters
 		[bidsLabel.visit, bCorrected] = xASL_adm_CorrectName(sessionName, 2);
 		if bCorrected
-			warning(['Subject ' subjectName ', changed visit name from: ' sessionName ', into: ' bidsLabel.visit]);
+			warning([subjectName ', changed visit name: ' sessionName ' -> ' bidsLabel.visit]);
 		end
 	end
 end
