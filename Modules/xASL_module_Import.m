@@ -58,10 +58,10 @@ function [result, x] = xASL_module_Import(x)
 %    from the folder and/or file names. This function doesn't yet read the DICOM headers
 %    For a quick and dirty (but actually slow) function that converts a
 %    DICOM folder/file structure into readable format, first run
-%    ConvertDicomFolderStructure_CarefulSlow.m. This will read each DICOM
+%    xASL_adm_SortDicomToFolders. This will read each DICOM
 %    individually, and put it in a folder with the name identical to the
-%    DICOMs SeriesName/ProtocolName.
-% 3. Once you have all DICOMs in folderstructure with identifyable names
+%    DICOMs SeriesName/ProtocolName/SeriesNumber.
+% 3. Once you have all DICOMs in folderstructure with identifiable names
 %    inside `//MyDisk/MyStudy/sourcedata`, set up the folderstructure in
 %    ExploreASL_ImportConfig.m. This setup uses the SPM form of regular
 %    expressions, which can be daunting at first, but are very flexible.
