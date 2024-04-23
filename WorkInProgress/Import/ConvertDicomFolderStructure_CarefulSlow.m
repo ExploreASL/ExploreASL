@@ -16,7 +16,14 @@ end
         clear tDcm Fname NewDir NewFile Ppath Pfile Pext
         
         try
-            tDcm = ReadTheDicom(bUseDCMTK, Flist{iL});
+			tDcm = xASL_io_DcmtkRead(Flist{iL}, false, bUseDCMTK);
+
+			if isempty(tDcm.EchoTime) || isempty(tDcm.RepetitionTime) || isempty(ItDcm.ImageType)
+				warning(['Incomplete DICOM header: ' DicomPath]);
+			end
+
+
+
 
             try
                 if ~strcmp(tDcm.ProtocolName,tDcm.SeriesDescription)
@@ -55,45 +62,4 @@ end
             end
         end
     end
-end
-
-
-
-%% =============================================================================================================================                
-%% =============================================================================================================================
-function [Info] = ReadTheDicom(bUseDCMTK, DicomPath)
-%ReadTheDicom Wrapper around DICOMTK & dicominfo for reading the dicom fields
-
-% If bUseDCMTK, then we first try using the DCMTK compilation by Jan Petr,
-% if this fails, we try dicominfo
-
-warning('off','images:dicominfo:fileVRDoesNotMatchDictionary');
-
-if bUseDCMTK
-    TryDICOMinfo = false;
-    try
-        Info = xASL_io_DcmtkRead(DicomPath);
-
-        if isempty(Info.EchoTime) || isempty(Info.RepetitionTime) || isempty(Info.ImageType)
-            warning(['Incomplete DCMTK output: ' DicomPath]);
-            TryDICOMinfo = true;
-        end
-    catch ME
-        fprintf('%s\n','Warning, xASL_io_DcmtkRead failed with following warning:');
-        warning(ME.message);
-        TryDICOMinfo = true;
-    end
-end
-if ~bUseDCMTK || TryDICOMinfo
-    try
-        Info = dicominfo(DicomPath);
-        if ~isfield(Info,'EchoTime') || ~isfield(Info,'RepetitionTime') || ~isfield(Info,'ImageType')
-            warning(['Incomplete dicominfo output: ' DicomPath]);
-        end
-    catch ME
-        fprintf('%s\n','Warning, dicominfo failed with following warning:');
-        warning(ME.message);            
-    end
-end
-
 end

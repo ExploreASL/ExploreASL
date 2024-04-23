@@ -1,12 +1,13 @@
-function header = xASL_io_DcmtkRead(filepath, bPixel)
+function header = xASL_io_DcmtkRead(filepath, bPixel, bTryDCMTK)
 % ------------------------------------------------------------------------------------------------------------------------------------------------------
 % SHORT DESCRIPTION: Reads DICOM headers using DCMTK
 %
-% FORMAT: header = xASL_io_DcmtkRead(filepath, bPixel)
+% FORMAT: header = xASL_io_DcmtkRead(filepath[, bPixel, bTryDCMTK])
 %
 % INPUT:
-%         filepath (string) - full path to the DICOM file
-%         bPixel (bool) - read pixel data, default 0
+%         filepath   - full path to the DICOM file (REQUIRED, STRING)
+%         bPixel     - read pixel data (OPTIONAL, BOOLEAN, DEFAULT = false)
+%         bTryDCMTK  - try using DCMTK, if false then directly use SPM (OPTIONAL, BOOLEAN, DEFAULT = true)
 % OUTPUT:
 %         header (structure) - structure containing parsed DICOM header
 %
@@ -16,21 +17,32 @@ function header = xASL_io_DcmtkRead(filepath, bPixel)
 %               This function also corrects formating of certain parameters.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:      ...
+% EXAMPLE:      header = xASL_io_DcmtkRead('/tmp/file.dcm', [], 1);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
-if nargin == 1
-	bPixel = 0;
+if nargin < 2 || isempty(bPixel)
+	bPixel = false;
 end
 
-try
-	% Read using DCMTK
-	header = xASL_mex_DcmtkRead(filepath, bPixel);
-catch
+if nargin < 3 || isempty(bTryDCMTK)
+	bTryDCMTK = true;
+end
+
+if bTryDCMTK
+	try
+		% Read using DCMTK
+		header = xASL_mex_DcmtkRead(filepath, bPixel);
+	catch ME
+        fprintf('%s%s\n','Warning, xASL_io_DcmtkRead failed with following warning: ', ME.message);
+		% Read using SPM routines
+		header = spm_dicom_headers(filepath);
+		header = xASL_io_DcmtkRead_TrimSPM(header{1});
+	end
+else
 	% Read using SPM routines
 	header = spm_dicom_headers(filepath);
 	header = xASL_io_DcmtkRead_TrimSPM(header{1});
