@@ -209,52 +209,52 @@ end
 
 %% Philips fields
 if isfield(header, 'PerFrameFunctionalGroupsSequence')
-	privatItem = [];
+	privateItem = [];
 	if iscell(header.PerFrameFunctionalGroupsSequence)
 		echoItem   = header.PerFrameFunctionalGroupsSequence{1}.MREchoSequence{1};
 		pixelItem  = header.PerFrameFunctionalGroupsSequence{1}.PixelValueTransformationSequence{1};
 		if isfield(header.PerFrameFunctionalGroupsSequence{1}, 'Private_2005_140f')
-			privatItem = header.PerFrameFunctionalGroupsSequence{1}.Private_2005_140f{1};
+			privateItem = header.PerFrameFunctionalGroupsSequence{1}.Private_2005_140f{1};
 		end
 	else
 		echoItem   = header.PerFrameFunctionalGroupsSequence.Item_1.MREchoSequence.Item_1;
 		pixelItem  = header.PerFrameFunctionalGroupsSequence.Item_1.PixelValueTransformationSequence.Item_1;
 		if isfield(header.PerFrameFunctionalGroupsSequence.Item_1, 'Private_2005_140f')
-			privatItem = header.PerFrameFunctionalGroupsSequence.Item_1.Private_2005_140f.Item_1;
+			privateItem = header.PerFrameFunctionalGroupsSequence.Item_1.Private_2005_140f.Item_1;
 		end
 	end
-	if isfield(echoItem,'EffectiveEchoTime')
+	if isfield(echoItem, 'EffectiveEchoTime')
 		header.EchoTime = echoItem.EffectiveEchoTime;
 	end
 		
-	if isfield(pixelItem,'RescaleSlope')
+	if isfield(pixelItem, 'RescaleSlope')
 		header.RescaleSlope = pixelItem.RescaleSlope;
 	end
-	if isfield(pixelItem,'RescaleIntercept')
+	if isfield(pixelItem, 'RescaleIntercept')
 		header.RescaleIntercept = pixelItem.RescaleIntercept;
 	end
 		
-	if ~isempty(privatItem)
-		if isfield(privatItem,'NumberOfTemporalPositions')
-			header.NumberOfTemporalPositions = privatItem.NumberOfTemporalPositions;
+	if ~isempty(privateItem)
+		if isfield(privateItem, 'NumberOfTemporalPositions')
+			header.NumberOfTemporalPositions = privateItem.NumberOfTemporalPositions;
 		end
-		if isfield(privatItem,'TemporalPositionIdentifier')
-			header.TemporalPositionIdentifier = privatItem.TemporalPositionIdentifier;
+		if isfield(privateItem, 'TemporalPositionIdentifier')
+			header.TemporalPositionIdentifier = privateItem.TemporalPositionIdentifier;
 		end
-		if isfield(privatItem,'PhilipsNumberTemporalScans')
-			header.PhilipsNumberTemporalScans = privatItem.PhilipsNumberTemporalScans;
+		if isfield(privateItem, 'PhilipsNumberTemporalScans')
+			header.PhilipsNumberTemporalScans = privateItem.PhilipsNumberTemporalScans;
 		end
-		if isfield(privatItem,'PhilipsLabelControl')
-			header.PhilipsLabelControl = privatItem.PhilipsLabelControl;
+		if isfield(privateItem, 'PhilipsLabelControl')
+			header.PhilipsLabelControl = privateItem.PhilipsLabelControl;
 		end
-		if isfield(privatItem,'RescaleSlopeOriginal')
-			header.RescaleSlopeOriginal = privatItem.RescaleSlopeOriginal;
+		if isfield(privateItem, 'RescaleSlopeOriginal')
+			header.RescaleSlopeOriginal = privateItem.RescaleSlopeOriginal;
 		end
-		if isfield(privatItem,'MRScaleSlope')
-			header.MRScaleSlope = privatItem.MRScaleSlope;
+		if isfield(privateItem, 'MRScaleSlope')
+			header.MRScaleSlope = privateItem.MRScaleSlope;
 		end
-		if isfield(privatItem,'NumberOfAverages')
-			header.NumberOfAverages = privatItem.NumberOfAverages;
+		if isfield(privateItem, 'NumberOfAverages')
+			header.NumberOfAverages = privateItem.NumberOfAverages;
 		end
 	end
 end
