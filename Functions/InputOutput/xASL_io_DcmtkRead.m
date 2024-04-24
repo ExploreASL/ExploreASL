@@ -37,7 +37,7 @@ if bTryDCMTK
 		% Read using DCMTK
 		header = xASL_mex_DcmtkRead(filepath, bPixel);
 	catch ME
-        fprintf('%s%s\n','Warning, xASL_io_DcmtkRead failed with following warning: ', ME.message);
+        fprintf('%s%s\n','Warning, reading a DICOM with DCMTK failed. Will continue with SPM. Warning message: ', ME.message);
 		% Read using SPM routines
 		header = spm_dicom_headers(filepath);
 		header = xASL_io_DcmtkRead_TrimSPM(header{1});
