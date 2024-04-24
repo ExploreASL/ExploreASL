@@ -104,7 +104,7 @@ if ~isempty(PathGraph)
 	
 	if PresaturationTime
 		SignalPercentageVector(1:round(PresaturationTime), 1) = 1;
-		SignalPercentageVector(round(PresaturationTime+1):round(BackgroundSuppressionPulseTime(1)), 1) = 1 - (1 - 0)*exp(-(1:(BackgroundSuppressionPulseTime(1)-PresaturationTime))/T1Time);
+		SignalPercentageVector(round(PresaturationTime+1):round(BackgroundSuppressionPulseTime(1)), 1) = 1 - (1 - 0)*exp(-(1:round(BackgroundSuppressionPulseTime(1)-PresaturationTime))/T1Time);
 	else
 		SignalPercentageVector(1:round(BackgroundSuppressionPulseTime(1)), 1) = 1;
 	end
@@ -135,12 +135,12 @@ for iBSup = 1:length(BackgroundSuppressionPulseTime)
             % either until the readout
             SignalPercentageVector(round(BackgroundSuppressionPulseTime(iBSup)+1):round(ReadoutTime)) =...
                 1 - (1 - SignalPercentageVector(round(BackgroundSuppressionPulseTime(iBSup))))*...
-                exp(-(1:ReadoutTime-BackgroundSuppressionPulseTime(iBSup))/T1Time);
+                exp(-(1:round(ReadoutTime-BackgroundSuppressionPulseTime(iBSup)))/T1Time);
         else
             % or until the next BSup pulse
             SignalPercentageVector(round(BackgroundSuppressionPulseTime(iBSup)+1):round(BackgroundSuppressionPulseTime(iBSup+1))) =...
                 1 - (1 - SignalPercentageVector(round(BackgroundSuppressionPulseTime(iBSup))))*...
-                exp(-(1:BackgroundSuppressionPulseTime(iBSup+1)-BackgroundSuppressionPulseTime(iBSup))/T1Time);
+                exp(-(1:round(BackgroundSuppressionPulseTime(iBSup+1)-BackgroundSuppressionPulseTime(iBSup)))/T1Time);
         end
     end
 end
@@ -171,14 +171,14 @@ if ~isempty(PathGraph)
     plot(SignalPercentageVector(:,1)*100); hold on
     
     % Plot a line at the start of the readout
-    plot([ReadoutTime,ReadoutTime],[-100,100],'g')
+    plot([round(ReadoutTime),round(ReadoutTime)],[-100,100],'g')
     
     % Plot a vertical line at zero
-    plot([1,ReadoutTime+max(SliceTime)],[0,0],'k');
+    plot([1,round(ReadoutTime+max(SliceTime))],[0,0],'k');
     
     % Plot a horizontal line at each slice
     for iSliceTime = 2:length(SliceTime)
-        plot(ReadoutTime+[SliceTime(iSliceTime),SliceTime(iSliceTime)],[-100,100],'r')
+        plot(round(ReadoutTime+[SliceTime(iSliceTime),SliceTime(iSliceTime)]),[-100,100],'r')
     end
     
     % Label the axes and time axis
