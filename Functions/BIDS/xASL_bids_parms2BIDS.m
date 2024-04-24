@@ -185,7 +185,12 @@ if ~isempty(inBids)
 		
 		% Preconvert certain names upfront - so that the values can be converted s-ms in the step below
 		if isfield(inBids,'ArterialSpinLabelingType') && strcmpi(inBids.ArterialSpinLabelingType,'PASL') && isfield(inBids,'BolusCutOffDelayTime')
-			inBids.LabelingDuration = inBids.BolusCutOffDelayTime(1);
+			if isfield(inBids, 'PostLabelingDelay')
+				inBids.LabelingDuration = ones(size(inBids.PostLabelingDelay)).*inBids.BolusCutOffDelayTime(1);
+			else
+				inBids.LabelingDuration = inBids.BolusCutOffDelayTime(1);
+			end
+			
 			inBids = rmfield(inBids,'BolusCutOffDelayTime');
 		end
 			
