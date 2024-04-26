@@ -363,7 +363,7 @@ switch lower(x.Q.LabelingType)
 		end
 
 		% Either print bolus duration or unspecify it
-		if isfield(jsonPWI4D.Q, 'LabelingDuration') && jsonPWI4D.Q.LabelingDuration
+		if isfield(jsonPWI4D.Q, 'LabelingDuration') && ~isempty(jsonPWI4D.Q.LabelingDuration) 
 			if length(unique(jsonPWI4D.Q.LabelingDuration))>1
 				warning('PASL multi-PLD currently supports only a single Labeling Duration');
 			end

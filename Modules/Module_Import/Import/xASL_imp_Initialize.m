@@ -115,7 +115,12 @@ function imPar = xASL_imp_InitializeBuildImPar(imPar)
     end
 
     if ~isfield(imPar, 'tokenVisitAliases')
+		% tokenVisitAliases are not defined at all
         imPar.tokenVisitAliases = [];
+	elseif sum(~cellfun(@isempty, imPar.tokenVisitAliases)) == 0
+		% tokenVisitAliases are defined as all empty strings
+		imPar.tokenVisitAliases = [];
+		warning('All empty TokenVisitAliases are provided in sourcestructure.json. Please remove this field.')
     elseif (size(imPar.tokenVisitAliases,2) > 2) || (size(imPar.tokenVisitAliases,2) == 1)
             tokenVisitAliasesOld = imPar.tokenVisitAliases;
 			imPar = rmfield(imPar, 'tokenVisitAliases');
