@@ -1,5 +1,6 @@
 function xASL_adm_SortDicomToFolders(pathDICOM, nDirLayers, bUseDCMTK, bVerbose)
-%xASL_adm_SortDicomToFolders Sorts DICOMs in the pathDICOM folder to directories based on the sequence name
+%xASL_adm_SortDicomToFolders Sorts DICOMs in the pathDICOM folder to directories based on the sequence name as defined in DICOM tags "SeriesDescription" or "ProtocolName". 
+% Note that these are most likely the names set in the protocol on the scanner, or changed by the radiographics.
 %
 % FORMAT: xASL_adm_SortDicomToFolders(pathDICOM [, bUseDCMTK, bVerbose])
 %
