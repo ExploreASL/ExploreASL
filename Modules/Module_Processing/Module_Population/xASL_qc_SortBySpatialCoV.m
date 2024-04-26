@@ -88,6 +88,12 @@ xASL_delete(DirUnknown_sCoV, true);
 
 %% Move the images
 fprintf('Sorting ASLCheck QC images for spatial CoV:   ');
+
+% we want these warnings issued only once
+% printing multiple lines is fine, but a series of warnings is annoying/too verbose)
+bWarningIsEmptyJPG = true;
+bWarningIsEmptyIndex = true;
+
 for iSubject=1:x.dataset.nSubjects
     for iSession=1:x.dataset.nSessions
         iSubjSess = (iSubject-1)*x.dataset.nSessions+iSession;
@@ -101,12 +107,22 @@ for iSubject=1:x.dataset.nSubjects
         
         if isempty(JPGList) % if we did not find an ASL jpg image, skip this subject-session
             fprintf('\n');
-            warning(['Missing transversal ASL jpg image in ' x.D.ASLCheckDir]);
+            
+            if bWarningIsEmptyJPG % Check that we only issue this warning once
+                warning(['Missing transversal ASL jpg image in ' x.D.ASLCheckDir ' and possibly others']);
+                bWarningIsEmptyJPG = false;
+            end
+
             fprintf('%s\n\n', ['Did something go wrong in the ASL module for ' NameSubjSess '?']);
         else
             if isempty(Index) % if we cannot determine the sCoV, copy this subject-session to 4_Unknown_sCoV
                 fprintf('\n');
-                warning(['Missing sCoV value in ' PathTSV]);
+                
+                if bWarningIsEmptyIndex % Check that we only issue this warning once                
+                    warning(['Missing sCoV value in ' PathTSV ' and possibly others']);
+                    bWarningIsEmptyIndex = false;
+                end
+
                 fprintf('%s\n\n', ['Did something go wrong in the ASL module for ' NameSubjSess '?']);
                 Ddir = DirUnknown_sCoV;
             else
