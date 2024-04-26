@@ -135,10 +135,8 @@ if bFollowSubjectSessions % see header. This boolean is only true when we force 
                 x.modules.population.(thisFile){iSubjectSession+2,1} = x.S.SubjectSessionID{iSubjectSession, 1};
 
                 %% Print the covariates and data
-                iSubjectSession_SetsID = iSubjectSession;
-                iSubjectSession_DAT = iSubjectSession;
                 bPrintSessions = true;
-                x.modules.population.(thisFile) = xASL_stat_PrintStats_FillStatCellArray(x,x.modules.population.(thisFile),iSubjectSession,iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);
+                x.modules.population.(thisFile) = xASL_stat_PrintStats_FillStatCellArray(x, x.modules.population.(thisFile), iSubjectSession, bPrintSessions);
 
             end
         end
@@ -234,7 +232,7 @@ else
                                 bPrintSessions = false;
                                 
                                 % Write it to the cell array instead
-                                x.modules.population.(thisFile) = xASL_stat_PrintStats_FillStatCellArray(x,x.modules.population.(thisFile),iSubjSess,iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);
+                                x.modules.population.(thisFile) = xASL_stat_PrintStats_FillStatCellArray(x, x.modules.population.(thisFile), iSubjSess, bPrintSessions);
                             end
                         end
                     end
@@ -373,14 +371,14 @@ function statCell = xASL_stat_PrintStats_AddSubjectSessionStatCellArray(x,statCe
 end
 
 %% Fill the stat cell array with all subjects and sessions xASL_tsvWrite later on
-function statCell = xASL_stat_PrintStats_FillStatCellArray(x,statCell, rowNum, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions)
+function statCell = xASL_stat_PrintStats_FillStatCellArray(x, statCell, iSubjectSession_DAT, bPrintSessions)
 
     % statCell - we write into this structure
 	% rowNum   - number of the row in this structure to write to
 	% iSubjectSession_SetsID - index in the general dataset of all ASL scans
 	% iSubjectSession_DAT - index in the specific extracted dataset by xASL_wrp_GetROIStatistics - these two indexes can differ
     % Skip the first two rows and columns (Labels & Legend, Subjects & Sessions)
-    rowNum = rowNum+2;
+    rowNum = iSubjectSession_DAT + 2;
     iCell = 3;
     
     % 1. print values for other covariates
@@ -420,7 +418,11 @@ function statCell = xASL_stat_PrintStats_FillStatCellArray(x,statCell, rowNum, i
     % 2. Print data in x.S.DAT
     % This part is different for volume or TT, since there will be only 1 value per subject (this will be done by the above in which nSessions is set to 1
     for iPrint=1:size(x.S.DAT,2) % print actual data
-        statCell{rowNum,iCell} = xASL_num2str(x.S.DAT(iSubjectSession_DAT, iPrint));
+        if size(x.S.DAT, 1)<iSubjectSession_DAT
+            statCell{rowNum, iCell} = 'n/a';
+        else
+            statCell{rowNum, iCell} = xASL_num2str(x.S.DAT(iSubjectSession_DAT, iPrint));
+        end
         iCell = iCell+1;
     end
 end
