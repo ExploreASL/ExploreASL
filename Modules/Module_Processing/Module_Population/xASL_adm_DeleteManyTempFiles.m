@@ -46,8 +46,8 @@ if isfield(x,'dir') && isfield(x.dir,'xASLDerivatives')
     %% 2. Native space — ASL module files
     fprintf('Deleting temporary ASL files in native space folders:    ');
 
-    for iP=1:length(Files2DelNativeASL)
-        xASL_TrackProgress(iP, length(Files2DelNativeASL));
+    for iPath=1:length(Files2DelNativeASL)
+        xASL_TrackProgress(iPath, length(Files2DelNativeASL));
         
         for iSession=1:length(listASLDone)
             sessionIndex = regexp(listASLDone{iSession}, 'ASL_\d*$');
@@ -68,11 +68,11 @@ end
 fprintf('Deleting temporary structural files in population folder:    ');
 
 for iPath=1:length(Files2DelStandardStructural)
-    xASL_TrackProgress(iP,length(Files2DelStandardStructural));
+    xASL_TrackProgress(iPath, length(Files2DelStandardStructural));
 
     for iSubject=1:length(listStructDone)
         % Delete any existing files
-        xASL_adm_DeleteFileList(x.D.PopDir, ['^' Files2DelStandardStructural{iPath} listStructDone{iSubject} '.*$'], 1, [0 Inf]);
+        xASL_adm_DeleteFileList(x.D.PopDir, ['^' Files2DelStandardStructural{iPath} listStructDone{iSubject} '.*$'], 0, [0 Inf]);
     end
 end
 fprintf('\n');
@@ -82,11 +82,11 @@ fprintf('\n');
 fprintf('Deleting temporary ASL files in population folder:    ');
 
 for iPath=1:length(Files2DelStandardASL)
-    xASL_TrackProgress(iP,length(Files2DelStandardASL));
+    xASL_TrackProgress(iPath,length(Files2DelStandardASL));
     
     for iSession=1:length(listASLDone)
         % Delete any existing files
-        xASL_adm_DeleteFileList(x.D.PopDir, ['^' Files2DelStandardASL{iPath} listASLDone{iSession} '.*$'], 1, [0 Inf]);
+        xASL_adm_DeleteFileList(x.D.PopDir, ['^' Files2DelStandardASL{iPath} listASLDone{iSession} '.*$'], 0, [0 Inf]);
     end
 end
 fprintf('\n');
