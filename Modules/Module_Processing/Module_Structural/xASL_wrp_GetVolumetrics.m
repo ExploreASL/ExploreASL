@@ -23,53 +23,65 @@ function xASL_wrp_GetVolumetrics(x)
 
 %% ------------------------------------------------------------------------------------------------
 %% 1) File management & store tissue volumes
-catVolFile = fullfile(x.D.TissueVolumeDir, ['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']); % CAT12 results
-MatFile = fullfile(x.dir.SUBJECTDIR, [x.P.STRUCT '_seg8.mat']); % SPM12 results
-SaveFile = fullfile(x.D.TissueVolumeDir, ['TissueVolume_' x.P.SubjectID '.csv']); % ExploreASL results
-xASL_adm_CreateDir(x.D.TissueVolumeDir);
+fileCAT12Volume = ['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']; % CAT12 results
+pathCAT12Volume = fullfile(x.D.TissueVolumeDir, fileCAT12Volume);
 
-if xASL_exist(catVolFile, 'file') % for CAT12 segmentation
-    catVol = load(catVolFile);
-    if isfield(catVol.S,'subjectmeasures')
-        GMvol = catVol.S.subjectmeasures.vol_abs_CGW(2)/1000; % volume was in cm^3, /1000 = dm^3 or Liter
-        WMvol = catVol.S.subjectmeasures.vol_abs_CGW(3)/1000;
-        CSFvol = catVol.S.subjectmeasures.vol_abs_CGW(1)/1000;
+fileSPM12Volume = [x.P.STRUCT '_seg8.mat']; % SPM12 results
+pathSPM12Volume = fullfile(x.dir.SUBJECTDIR, fileSPM12Volume);
+
+SaveFile = fullfile(x.D.TissueVolumeDir, ['TissueVolume_' x.P.SubjectID '.tsv']); % ExploreASL results
+SaveFileCSV = fullfile(x.D.TissueVolumeDir, ['TissueVolume_' x.P.SubjectID '.csv']); % ExploreASL results
+xASL_adm_CreateDir(x.D.TissueVolumeDir); % only create folder if it doesn't exist yet
+
+%% For CAT12 segmentation
+if xASL_exist(pathCAT12Volume, 'file')
+    volumeCAT12 = load(pathCAT12Volume, '-mat');
+
+    tableCAT12 = {'File' 'GM_volume_L' 'WM_volume_L' 'CSF_volume_L'};
+    tableCAT12{2,1} = x.P.SubjectID;
+
+    if isfield(volumeCAT12.S,'subjectmeasures')
+        tableCAT12{2,2} = xASL_num2str(volumeCAT12.S.subjectmeasures.vol_abs_CGW(2)/1000); % GM volume volume was in cm^3, /1000 = dm^3 or Liter
+        tableCAT12{2,3} = xASL_num2str(volumeCAT12.S.subjectmeasures.vol_abs_CGW(3)/1000); % WM volume
+        tableCAT12{2,4} = xASL_num2str(volumeCAT12.S.subjectmeasures.vol_abs_CGW(1)/1000); % CSF volume
     else
         warning('catVol.S does not contain the subjectmeasures field...');
-        GMvol = nan; WMvol = nan; CSFvol = nan;
+        tableCAT12{2,2:4} = 'n/a';
     end
 
-    FileID = fopen(SaveFile, 'wt');
-    fprintf(FileID,'%s\n', 'File,GM_volume_L,WM_volume_L,CSF_volume_L');
-    fprintf(FileID,'%s', [catVolFile ',' num2str(GMvol) ',' num2str(WMvol) ',' num2str(CSFvol)]);
-    fclose(FileID);
+    xASL_tsvWrite(tableCAT12, SaveFile, 1);
 
-elseif exist(MatFile, 'file') % for SPM12 segmentation
+%% For SPM12 segmentation
+elseif xASL_exist(pathSPM12Volume, 'file')
 
     % Make sure that filename is correct, otherwise this crashes.
     % This happens if the files have been run previously in different folder structure
-    clear tpm image Affine lkp MT Twarp Tbias mg mn vr wp ll volumes
-    load(MatFile, '-mat');
+    % clear tpm image Affine lkp MT Twarp Tbias mg mn vr wp ll volumes
+    
+    load(pathSPM12Volume, '-mat');
     for ii=1:6
         tpm(ii).fname = fullfile(x.D.SPMDIR, 'tpm', 'TPM.nii');
     end
     image.fname = fullfile(x.dir.SUBJECTDIR, [x.P.STRUCT '.nii']);
 
-    save(MatFile, 'image', 'tpm', 'Affine', 'lkp', 'MT', 'Twarp', 'Tbias', 'mg', 'mn', 'vr', 'wp', 'll');
+    save(pathSPM12Volume, 'image', 'tpm', 'Affine', 'lkp', 'MT', 'Twarp', 'Tbias', 'mg', 'mn', 'vr', 'wp', 'll');
 
-    matlabbatch{1}.spm.util.tvol.matfiles = {MatFile};
+    matlabbatch{1}.spm.util.tvol.matfiles = {pathSPM12Volume};
     matlabbatch{1}.spm.util.tvol.tmax = 6;
     matlabbatch{1}.spm.util.tvol.mask = {fullfile(x.D.SPMDIR, 'tpm', 'mask_ICV.nii,1')};
-    matlabbatch{1}.spm.util.tvol.outf = SaveFile;
+    matlabbatch{1}.spm.util.tvol.outf = SaveFileCSV;
 
     xASL_adm_UnzipNifti(image.fname, 1); % unzip the NIfTI if needed
     spm_jobman('run', matlabbatch); % run the volumetrics
     
     % Edit the header names
-    CSV = xASL_csvRead(SaveFile);
-    CSV(1, 2:end) = {'GM_volume_L' 'WM_volume_L' 'CSF_volume_L' 'Tissue_volume_L' 'Bone_volume_L' 'Air_volume_L'};
-    xASL_tsvWrite(CSV, [SaveFile(1:end-4) '.tsv'], 1);
-    xASL_delete(SaveFile);
+    CSV = xASL_csvRead(SaveFileCSV);
+    tableSPM12 = {'File' 'GM_volume_L' 'WM_volume_L' 'CSF_volume_L' 'Tissue_volume_L' 'Bone_volume_L' 'Air_volume_L'};
+    tableSPM12(2,2:end) = CSV(2,size(CSV,2)-5:end);
+    tableSPM12{2,1} = x.P.SubjectID;
+
+    xASL_tsvWrite(tableSPM12, SaveFile, 1);
+    xASL_delete(SaveFileCSV);
 else
     warning('No CAT12/SPM12 volumetric result file found, need to repeat segmentation');
 end
@@ -82,7 +94,7 @@ end
 %% 2) File management & store volumes for WMH segmentation (if exists)
 if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 
-    xASL_io_ReadNifti(x.P.Path_WMH_SEGM); % make sure it is unzipped
+    xASL_adm_UnzipNifti(x.P.Path_WMH_SEGM); % make sure it is unzipped
 
     % This function prints the WMH volume (mL) and number of WMH in a TSV file
     bVerbose = 1; % verbal output
@@ -103,18 +115,16 @@ if xASL_exist(x.P.Path_WMH_SEGM, 'file')
     
     % Get the current filename in the SUBJECT DIRECTORY
     FileName = fullfile(x.dir.SUBJECTDIR, FileName);
-    % Define new filenames:
-    OutputPath = fullfile(x.D.TissueVolumeDir, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.csv']);
-    % Then move our file
+    % Define new filename
+    pathOutput = fullfile(x.D.TissueVolumeDir, ['WMH_LST_' x.WMHsegmAlg '_' x.P.SubjectID '.tsv']);
+    
     if ~exist(FileName, 'file')
          warning(['Missing:' FileName]);
-	else
-		% First rename the output file to the correct filename format in the population dir
-        xASL_Move(FileName, OutputPath, true);
-
-		% Then convert CSV to TSV file per BIDS inside the population dir
-        xASL_bids_csv2tsvReadWrite(OutputPath, true);
-
+    else
+        tableLST = xASL_csvRead(FileName);
+        tableLST{2,1} = x.P.SubjectID;
+        xASL_tsvWrite(tableLST, pathOutput, true); % Write new output file
+        xASL_delete(FileName);
     end
 end
 
