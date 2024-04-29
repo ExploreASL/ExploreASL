@@ -27,7 +27,7 @@ x.S.NamesROI = {'GM_vol' 'WM_vol' 'CSF_vol' 'WMH_vol' 'WMH_count'}; % 'Bone (L)'
 x.S.output_ID = 'volume';
 x.S.unit = 'L';
 
-fprintf('%s\n',['Printing tsv-files with ' x.S.output_ID ' statistics...  ']);
+fprintf('%s\n',['Adding ' x.S.output_ID ' statistics to participants.tsv...  ']);
 
 bAnyWMHFound = false; % by default we don't add WMH volumes to participants.tsv below,
 % only if these are found
@@ -35,45 +35,41 @@ bAnyWMHFound = false; % by default we don't add WMH volumes to participants.tsv 
 for iSubject=1:x.dataset.nSubjects
     xASL_TrackProgress(iSubject,x.dataset.nSubjects);
 
-    PathCSV = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.SUBJECTS{iSubject} '.csv']);
-    if ~exist(PathCSV,'file')
-        PathCSV = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.SUBJECTS{iSubject} '.tsv']);
+    PathTSV = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.SUBJECTS{iSubject} '.tsv']);
+    if ~exist(PathTSV, 'file')
+        % backward compatibility
+        PathTSV = fullfile( x.D.TissueVolumeDir, ['TissueVolume_' x.SUBJECTS{iSubject} '.csv']);
     end
     
     % In case this subject had a FLAIR (in native space) then we default it
     % by NaNs, and issue a warning if no WMH volumetric statistics were
     % found
-    Path_FLAIR = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'FLAIR.nii');
-    Path_WMH = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'WMH_SEGM.nii');
-    if xASL_exist(Path_FLAIR, 'file') || xASL_exist(Path_WMH, 'file')
-        HasWMH = true;
-    else
-        % skip FLAIR volumetrics for this subject
-        HasWMH = false;
-    end
+    pathFLAIR = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'FLAIR.nii');
+    pathWMH = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, 'WMH_SEGM.nii');
+    bHasWMH = xASL_exist(pathFLAIR, 'file') || xASL_exist(pathWMH, 'file');
     
     % SUBJECT & NaN (for absent/empty NIfTIs) definitions
     GM_vol{iSubject,1}          = x.SUBJECTS{iSubject};
     WM_vol{iSubject,1}          = x.SUBJECTS{iSubject};
     CSF_vol{iSubject,1}         = x.SUBJECTS{iSubject};
-    GM_ICVRatio{iSubject,1}     = x.SUBJECTS{iSubject};
-    GMWM_ICVRatio{iSubject,1}   = x.SUBJECTS{iSubject};
+    GM_ICVRatio{iSubject,1}       = x.SUBJECTS{iSubject};
+    GMWM_ICVRatio{iSubject,1}     = x.SUBJECTS{iSubject};
     WMH_vol{iSubject,1}         = x.SUBJECTS{iSubject};
-    WMH_count{iSubject,1}       = x.SUBJECTS{iSubject};
+    WMH_count{iSubject,1}          = x.SUBJECTS{iSubject};
 
     GM_vol{iSubject,2}          = NaN;
     WM_vol{iSubject,2}          = NaN;
     CSF_vol{iSubject,2}         = NaN;
-    GM_ICVRatio{iSubject,2}     = NaN;
-    GMWM_ICVRatio{iSubject,2}   = NaN;    
+    GM_ICVRatio{iSubject,2}       = NaN;
+    GMWM_ICVRatio{iSubject,2}     = NaN;    
     WMH_vol{iSubject,2}         = NaN;
-    WMH_count{iSubject,2}       = NaN;
+    WMH_count{iSubject,2}          = NaN;
 
     DidExist = 0;
-    if exist(PathCSV,'file')
+    if exist(PathTSV, 'file')
         DidExist = 1;
         try
-            [~, CellArray] = xASL_bids_csv2tsvReadWrite(PathCSV);
+            [~, CellArray] = xASL_bids_csv2tsvReadWrite(PathTSV);
             for iMeas=1:size(CellArray,2)-1
                 vol(iSubject,iMeas) = xASL_str2num(CellArray{2,iMeas+1});
             end
@@ -98,35 +94,35 @@ for iSubject=1:x.dataset.nSubjects
 
     %% -----------------------------------------------------------------------------------------------
     %% 2) Collect WMH data
-    PathCSV = xASL_adm_GetFileList(x.D.TissueVolumeDir, ['(?i)^WMH_LST_(LGA|LPA)_' x.SUBJECTS{iSubject} '(\.csv|\.tsv)$'], 'FPList', [0 Inf]);
+    PathTSV = xASL_adm_GetFileList(x.D.TissueVolumeDir, ['(?i)^WMH_LST_(LGA|LPA)_' x.SUBJECTS{iSubject} '(\.csv|\.tsv)$'], 'FPList', [0 Inf]);
     
     DidExist = 0;
 
-    if ~isempty(PathCSV)
+    if ~isempty(PathTSV)
         DidExist = 1;
         try
-            [~, CellArray] = xASL_bids_csv2tsvReadWrite(PathCSV{1});
+            [~, CellArray] = xASL_bids_csv2tsvReadWrite(PathTSV{1});
             WMH_vol{iSubject,1} = x.SUBJECTS{iSubject};
-            WMH_vol{iSubject,2} = CellArray{2,4};
+            WMH_vol{iSubject,2} = CellArray{2,3};
             vol(iSubject,4) = xASL_str2num(WMH_vol{iSubject,2});
             
             WMH_count{iSubject,1} = x.SUBJECTS{iSubject};
-            WMH_count{iSubject,2} = CellArray{2,5};
+            WMH_count{iSubject,2} = CellArray{2,4};
             vol(iSubject,5) = xASL_str2num(WMH_count{iSubject,2});
             DidExist = 2;
             
-            HasWMH = true; % even if no WMH existed in native space
+            bHasWMH = true; % even if no WMH existed in native space
             bAnyWMHFound = true; % to keep track that we want to add this to participants.tsv below
         catch ME
             fprintf('%s\n', ME.message);
         end
     end
-    if HasWMH && ~DidExist
+    if bHasWMH && ~DidExist
         % when a native space FLAIR exists, but a standard space WMH does
         % not exist, we want to default and issue this message
         fprintf('\n%s\n', ['WMH volume for subject ' x.SUBJECTS{iSubject} ' was not found']);
         vol(iSubject,4:5) = NaN;
-    elseif ~HasWMH
+    elseif ~bHasWMH
         % when a native space FLAIR does not exists, we want to default
         % only
         vol(iSubject,4:5) = NaN;
