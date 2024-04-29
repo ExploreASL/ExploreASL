@@ -147,7 +147,7 @@ end
 % Create TLV file
 nameTLV = ['LST_tlv_', num2str(thr), '_', ps_create_timestamp, '.csv'];
 fileID = fopen(nameTLV, 'wt');
-fprintf(fileID, 'Path,FileName,LGA,TLV,N\n');
+fprintf(fileID, 'FileName,LGA,TLV,N\n');
 
 if ~void
     strout = 'Results are written to';
@@ -187,7 +187,7 @@ for i = 1:numel(Vles) % iterate over images
     else
         les_size = [];
     end    
-    fprintf(fileID, [pth, ',', name, ext, ',', num2str(lga(i)), ',', ...
+    fprintf(fileID, [name, ext, ',', num2str(lga(i)), ',', ...
          num2str(round(sum(les_size) * 1000) / 1000), ',', num2str(numel(les_size)), '\n']);
     
         

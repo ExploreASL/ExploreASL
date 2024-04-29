@@ -16,12 +16,16 @@ DESCRIPTION (see #1324):
 Added *.mexmaca64
 Changed Makefile, Makefile.var, spm_platform
 
+
+
 *********************************************************************************************************
 MAP CHANGES
 DATE+Name: 2021-07-07 HM
 DESCRIPTION:
 /External/SPMmodified/toolbox/cat12/templates_volumes/cat_wmh_miccai2017.nii
 Was cleaned up (lower slices contained some messy low probabilities)
+
+
 
 *********************************************************************************************************
 ASL-SPECIFIC HACKS
@@ -35,6 +39,8 @@ ADDED:
 Line 1: added the extra option bZigzag
 Line 117,137,158,181,571: added extra routines for the Zigzag
 
+
+
 *********************************************************************************************************
 COST FUNCTION MASKING FOR LESIONS
 
@@ -43,6 +49,8 @@ DESCRIPTION:
 hotfix minor bug in loading NIfTIs containing lesion masks in CAT12 #28
 FILE:
 cat_run_job.m at 577
+
+
 
 *********************************************************************************************************
 ENABLING LOW QUALITY MODE (FOR QUICK TESTING, RUN EVERYTHING BUT WITH LOWER ITERATIONS AND/OR SPATIAL RESOLUTION)
@@ -80,6 +88,8 @@ External/SPMmodified/toolbox/LST/ps_LST_lpa.m
 115: First loads the xasl_quality parameter from the job, or set to default == 1
 218: if xasl_quality is set to 0, load ps_LST_lpa_preproc_default_LowQ.m instead of ps_LST_lpa_preproc_default.m,
 likewise if xasl_quality is set to 2 (when WMH_SEGM pre-exists), load ps_LST_lpa_preproc_default_UltraLowQ.m
+
+
 
 *********************************************************************************************************
 REDUCE CODE SIZE
@@ -143,6 +153,7 @@ ADDED:
 Line 41 - removed 'spm_cfg_dcm_meeg'
 Line 132 - removed 'EEG'
 Line 135 - removed 'spm_cfg_eeg'
+
 
 
 *********************************************************************************************************
@@ -333,6 +344,8 @@ spm_smoothto8bit.m 57
 External/SPMmodified/toolbox/OldSeg/spm_maff.m line 106
 toolbox/cat12/cat_vol_correct_slice_scaling line 425
 
+
+
 *********************************************************************************************************
 BIDS/JSON
 
@@ -388,8 +401,14 @@ FILE:
 spm_jsonread.c at line 588 and all lines with mexErrMsgTxt, mexWarnMsgTxt, and mexPrintf.
 NOTE: Since version 1.11.0, spm_jsonwrite and spm_jsonread are not used anymore
 
+
+
 *********************************************************************************************************
 OTHER CODE HACKS
+
+DATE+NAME: 2024-04-28 HM (issue #1689)
+DESCRIPTION: avoid listing the path, which avoids seeing a comma in a path as delimiter
+FILE: ps_LST_tlv, 147 & 187
 
 DATE+NAME: 2021-03-10 MS (issue #408)
 DESCRIPTION: Missing version_matlab field in compiled xASL.
@@ -547,9 +566,6 @@ Fixing rounding backward compatibility
 (replacing round by xASL_round)
 FILE:
 cat_main_register.m, lines 341, 554, 560, 687, 861, 865, 1168
-
-
-
 
 
 
