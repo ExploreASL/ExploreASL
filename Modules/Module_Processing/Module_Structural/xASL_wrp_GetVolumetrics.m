@@ -29,7 +29,7 @@ pathCAT12Volume = fullfile(x.D.TissueVolumeDir, fileCAT12Volume);
 fileSPM12Volume = [x.P.STRUCT '_seg8.mat']; % SPM12 results
 pathSPM12Volume = fullfile(x.dir.SUBJECTDIR, fileSPM12Volume);
 
-SaveFile = fullfile(x.D.TissueVolumeDir, ['TissueVolume_' x.P.SubjectID '.tsv']); % ExploreASL results
+SaveFileTSV = fullfile(x.D.TissueVolumeDir, ['TissueVolume_' x.P.SubjectID '.tsv']); % ExploreASL results
 SaveFileCSV = fullfile(x.D.TissueVolumeDir, ['TissueVolume_' x.P.SubjectID '.csv']); % ExploreASL results
 xASL_adm_CreateDir(x.D.TissueVolumeDir); % only create folder if it doesn't exist yet
 
@@ -49,7 +49,7 @@ if xASL_exist(pathCAT12Volume, 'file')
         tableCAT12{2,2:4} = 'n/a';
     end
 
-    xASL_tsvWrite(tableCAT12, SaveFile, 1);
+    xASL_tsvWrite(tableCAT12, SaveFileTSV, 1);
 
 %% For SPM12 segmentation
 elseif xASL_exist(pathSPM12Volume, 'file')
@@ -80,14 +80,14 @@ elseif xASL_exist(pathSPM12Volume, 'file')
     tableSPM12(2,2:end) = CSV(2,size(CSV,2)-5:end);
     tableSPM12{2,1} = x.P.SubjectID;
 
-    xASL_tsvWrite(tableSPM12, SaveFile, 1);
+    xASL_tsvWrite(tableSPM12, SaveFileTSV, 1);
     xASL_delete(SaveFileCSV);
 else
     warning('No CAT12/SPM12 volumetric result file found, need to repeat segmentation');
 end
 
-if exist(SaveFile, 'file')
-    xASL_bids_csv2tsvReadWrite(SaveFile);
+if exist(SaveFileTSV, 'file')
+    xASL_bids_csv2tsvReadWrite(SaveFileTSV);
 end
 
 

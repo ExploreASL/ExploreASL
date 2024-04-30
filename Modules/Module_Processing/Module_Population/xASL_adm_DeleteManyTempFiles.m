@@ -55,7 +55,7 @@ if isfield(x,'dir') && isfield(x.dir,'xASLDerivatives')
             subjectIs = listASLDone{iSession}(1:sessionIndex-2);
             
             % Delete this file, if it exists
-            xASL_delete(fullfile(x.dir.xASLDerivatives, subjectIs, sessionIs, Files2DelNativeASL{iP}));
+            xASL_delete(fullfile(x.dir.xASLDerivatives, subjectIs, sessionIs, Files2DelNativeASL{iPath}));
         end
     end
     fprintf('\n');
