@@ -125,7 +125,7 @@ if ~isempty(inXasl)
 					end
 				end
 
-				if isfield(inXasl,'LabelingType') && strcmpi(inXasl.LabelingType,'PASL') && isfield(inXasl,'LabelingDuration')
+				if isfield(inXasl,'LabelingType') && strcmpi(inXasl.LabelingType,'PASL') && isfield(inXasl,'LabelingDuration') && ~isempty(inXasl.LabelingDuration)
 					inXasl.BolusCutOffDelayTime(1) = unique(inXasl.LabelingDuration) / 1000; % Convert and convert units from ms to s
 					inXasl = rmfield(inXasl,'LabelingDuration');
 					inXasl.BolusCutOffFlag = true;
