@@ -22,7 +22,7 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     imPar = xASL_imp_Initialize(studyPath, imParPath);
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
     %% 1. Read study file
 
@@ -114,13 +114,13 @@ function imPar = xASL_imp_InitializeBuildImPar(imPar)
             imPar.tokenScanAliases(:,2) = tokenScanAliasesOld(2:2:end);
     end
 
-    if ~isfield(imPar, 'tokenVisitAliases')
-		% tokenVisitAliases are not defined at all
+    if ~isfield(imPar, 'tokenVisitAliases') || isempty(imPar.tokenVisitAliases)
+		% tokenVisitAliases are not defined at all in sourceStructure.json or is empty (does not even contain empty strings)
         imPar.tokenVisitAliases = [];
 	elseif sum(~cellfun(@isempty, imPar.tokenVisitAliases)) == 0
-		% tokenVisitAliases are defined as all empty strings
+		% tokenVisitAliases field is defined in sourceStructure.json, but it contains empty strings only
 		imPar.tokenVisitAliases = [];
-		warning('All empty TokenVisitAliases are provided in sourcestructure.json. Please remove this field.')
+		warning('tokenVisitAliases field in sourceStructure.json contains empty fields only. No visit-token renaming will be done. Please remove the tokenVisitAliases field from sourceStructure.json as this is the correct way to configure that visit-tokens will not be renamed.')
     elseif (size(imPar.tokenVisitAliases,2) > 2) || (size(imPar.tokenVisitAliases,2) == 1)
             tokenVisitAliasesOld = imPar.tokenVisitAliases;
 			imPar = rmfield(imPar, 'tokenVisitAliases');
