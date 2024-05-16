@@ -226,7 +226,8 @@ end
 %% ====================================================================================
 %% 3. Create new NIfTI
 if ~isempty(changeMat)
-	newNifti.mat = changeMat;
+	newNifti.mat  = changeMat;
+	newNifti.mat0 = changeMat;
 end
 
 newNifti.dat.scl_slope = 1;
