@@ -143,22 +143,54 @@ else
 end
 
 %% ------------------------------------------------------------------------------------------
-% 6     Prepare pGM and pWM in the ASL native space
-% by presmoothing before downsampling to ASL space
+% 6     Prepare pGM, pWM, pCSF, WMH_Segm, and also Lesion and ROI maps in the ASL native space
+
+% We need to take into account the resolution difference between T1 and ASL.
+% The correct downsampling is done by first presmoothing the image and then reslicing using normal SPM routines.
+
+% Transform GM and WM segmentation to the ASL space
 xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c1T1, x.P.Path_PVgm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c2T1, x.P.Path_PVwm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVgm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVgm);
 xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwm);
 
-if xASL_exist(x.P.Path_c3T1) % for backward compatibility, where c3T1 wasnt always available
+% Transform CSF segmentation to the ASL space
+if xASL_exist(x.P.Path_c3T1) % Check file existence as for older versions c3T1 was not always available
 	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c3T1,x.P.Path_PVcsf,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVcsf, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVcsf);
 end
 
+% Transform WMH segmentation maps to the ASL space
 if xASL_exist(x.P.Path_WMH_SEGM) 
 	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_WMH_SEGM, x.P.Path_PVwmh,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwmh, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwmh);
 end
 
+% Transform Lesion and ROI masks to the ASL space. Note that we transform binary masks to maps with values between 0 and 1 so that the PV factor is recorded.
+% The maps have then have to be binarized again with a given threshold before using them again as masks
+
+% Create a list of lesions
+LesionROIList = xASL_adm_GetFileList(fullfile(x.D.ROOT, x.SUBJECT), '(?i)^(Lesion|ROI)_(T1|FLAIR|T2)_\d*\.(nii|nii\.gz)', 'List', [0 Inf]);
+
+% Go through all the lesions
+for iROI = 1:length(LesionROIList)
+	LesionROIName = LesionROIList{iROI};
+
+	% Unzip and remove .gz extension if necessary
+	if ~isempty(regexpi(LesionROIName, '\.gz$', 'once'))
+		xASL_adm_UnzipNifti(fullfile(x.D.ROOT, x.SUBJECT, LesionROIName));
+		LesionROIName = LesionROIName(1:end-3);
+	end
+
+	% Create the paths in T1 and ASL space
+	pathLesionROIT1space = fullfile(x.D.ROOT, x.SUBJECT, LesionROIName);
+	pathLesionROIASLspace = fullfile(x.D.ROOT, x.SUBJECT, x.SESSION, ['PV' LesionROIName]);
+
+	% Presmooth
+	xASL_im_PreSmooth(x.P.Path_PWI, pathLesionROIT1space, pathLesionROIASLspace, x.S.optimFWHM_Res_mm, [], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+
+	% Reslice
+	xASL_spm_reslice(x.P.Path_PWI, pathLesionROIASLspace, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, pathLesionROIASLspace);
+end
 
 end
