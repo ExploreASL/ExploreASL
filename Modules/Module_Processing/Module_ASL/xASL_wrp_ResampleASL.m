@@ -319,8 +319,6 @@ if x.settings.DELETETEMP
     end
     xASL_adm_DeleteFilePair(x.P.Path_rtemp_despiked_ASL4D, 'mat', 'json');
     xASL_adm_DeleteFilePair(x.P.Path_temp_despiked_ASL4D, 'mat', 'json');
-else
-    xASL_io_SaveNifti(x.P.Path_rtemp_despiked_ASL4D, x.P.Path_rtemp_despiked_ASL4D, ASL4D, 32);
 end
 
 

@@ -48,6 +48,17 @@ if ~isfield(x.Q, 'PulseSequenceType')
     return;
 end
 
+% Obtain the x.Q.MRAcquisitionType field from the json
+if ~isempty(tJson) && isfield(tJson, 'Q') && isfield(tJson.Q, 'MRAcquisitionType')
+	x.Q.MRAcquisitionType = tJson.Q.MRAcquisitionType;
+end
+
+% If sequence is still missing we skip this function
+if ~isfield(x.Q, 'MRAcquisitionType') 
+    warning('Setting x.Q.MRAcquisitionType missing, skipping');
+    return;
+end
+
 %% ----------------------------------------------------------------------------------------
 %% 1) Educated-guess FWHM
 if strcmpi(x.Q.PulseSequenceType, 'EPI') && strcmpi(x.Q.MRAcquisitionType, '2D')
