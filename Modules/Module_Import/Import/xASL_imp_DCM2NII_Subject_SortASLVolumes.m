@@ -149,16 +149,23 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
 	else
 		% In case of a single file, we need to check issues with orientation
 		% Check for a special case of Siemens MOSAIC files without Phoenix field
-		if isfield(tmpJSON, 'Manufacturer') && strcmpi(tmpJSON.Manufacturer, 'Siemens') && isfield(tmpJSON, 'ImageType') && ~isempty(regexpi(tmpJSON.ImageType, 'MOSAIC')) && (~isfield(tmpJSON, 'PhoenixProtocol') || isempty(tmpJSON.PhoenixProtocol))
+		if isfield(tmpJSON, 'Manufacturer') && strcmpi(tmpJSON.Manufacturer, 'Siemens') &&... It only happens for Siemens data
+		   isfield(tmpJSON, 'ImageType') && ~isempty(regexpi(tmpJSON.ImageType, 'MOSAIC')) &&... Problem is with MOSAIC files only
+		   (~isfield(tmpJSON, 'PhoenixProtocol') || isempty(tmpJSON.PhoenixProtocol)) % And only if the correct information is not retriev from Phoenix
+			
 			niftiData = xASL_io_ReadNifti(nii_files{1});
+			mat = niftiData.mat;
+
 			% We check for a special case of image center in the Z-direction not being crossing 0
-			if (sum(niftiData.mat(:,3)) > 0) && (niftiData.mat(3,4) > 0)
+			if (sum(mat(:,3)) > 0) && (mat(3,4) > 0)
 				% The image is mirrored in the Z-direction, we need to fix the image matrix and the orientation matrix
 				im = xASL_io_Nifti2Im(nii_files{1});
-				im = im(:,:,end:-1:1,:,:,:);
-				mat = niftiData.mat;
+				im = im(:,:,end:-1:1,:,:,:,:);
+				
 				mat(1:3, 4) = mat(1:3, 4) - size(im,3) * mat(1:3,3);
-				xASL_io_SaveNifti(nii_files{1}, nii_files{1}, im, [], [], mat);
+
+				% Change both mat and mat0 to the new matrix
+				xASL_io_SaveNifti(nii_files{1}, nii_files{1}, im, [], [], mat, [], [], [], [], mat);
 			end
 		end
 	end

@@ -1,7 +1,7 @@
-function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite)
+function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite, changeMat0)
 % Save a file to a Nifti format, while taking the parameters from another file
 %
-% FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite])
+% FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite, changeMat0])
 %
 % INPUT:
 %   pathOrigNifti  Path to the original Nifti file to take parameters from (REQUIRED)
@@ -26,6 +26,8 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %   bOverwrite     Vector with 3 Booleans for overwriting the following pre-existing destination files:
 %                  1) NIfTI file, 2) JSON file, 3) mat-orientation motion file (for 4D NIfTIs) (OPTIONAL, DEFAULT = [1 1 1]; 
 %                  1 -> [1 1 1] and 0 -> [0 0 0] and creates a warning; [1 0] - error
+%   changeMat0     New orientation matrix mat0 4x4. Note that mat0 should always stay as it was originally from the scanner, 
+%                  but we can exceptionally change it if mat0 was completely wrong (OPTIONAL, DEFAULT same as previous)
 %                  
 %
 % JSON saving options are:
@@ -53,7 +55,7 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 %% ----------------------------------------------------------------------------
 %% Admin
@@ -100,6 +102,14 @@ elseif length(bOverwrite) == 1
 	warning('bOverwrite should have a length of 3');
 elseif length(bOverwrite) == 2
 	error('bOverwrite should have a length of 3');
+end
+
+if nargin < 11 || isempty(changeMat0)
+	changeMat0 = [];
+else
+	if ~isequal(size(changeMat0),[4 4])
+		error('changeMat0 has to be 4x4');
+	end
 end
 
 % JSON saving, see detailed explanation above.
@@ -227,7 +237,10 @@ end
 %% 3. Create new NIfTI
 if ~isempty(changeMat)
 	newNifti.mat  = changeMat;
-	newNifti.mat0 = changeMat;
+end
+
+if ~isempty(changeMat0)
+	newNifti.mat0 = changeMat0;
 end
 
 newNifti.dat.scl_slope = 1;
