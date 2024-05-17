@@ -37,26 +37,18 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 [tIM, ~, tJson] = xASL_io_ReadNifti(PathASL);
 NativeResolution = tIM.hdr.pixdim(2:4);
 
-% Obtain the x.Q.PulseSequenceType field from the json
-if ~isempty(tJson) && isfield(tJson, 'Q') && isfield(tJson.Q, 'PulseSequenceType')
-	x.Q.PulseSequenceType = tJson.Q.PulseSequenceType;
+% Check for missing JSON
+if isempty(tJson) || ~isfield(tJson, 'Q') 
+	error(['Missing JSON sidecar for ' PathASL]);
 end
+
+% Obtain the x.Q.PulseSequenceType and x.Q.MRAcquisition fields from the json
+x.Q.PulseSequenceType = tJson.Q.PulseSequenceType;
+x.Q.MRAcquisitionType = tJson.Q.MRAcquisitionType;
 
 % If sequence is still missing we skip this function
-if ~isfield(x.Q, 'PulseSequenceType') 
-    warning('Setting x.Q.PulseSequenceType missing, skipping');
-    return;
-end
-
-% Obtain the x.Q.MRAcquisitionType field from the json
-if ~isempty(tJson) && isfield(tJson, 'Q') && isfield(tJson.Q, 'MRAcquisitionType')
-	x.Q.MRAcquisitionType = tJson.Q.MRAcquisitionType;
-end
-
-% If sequence is still missing we skip this function
-if ~isfield(x.Q, 'MRAcquisitionType') 
-    warning('Setting x.Q.MRAcquisitionType missing, skipping');
-    return;
+if ~isfield(x.Q, 'PulseSequenceType') || ~isfield(tJson.Q, 'MRAcquisitionType')
+    error('Setting x.Q.PulseSequenceType or x.Q.MRAcquisitionType is missing');
 end
 
 %% ----------------------------------------------------------------------------------------
