@@ -111,6 +111,27 @@ for iSpace = 1:2
 				warning(['Missing LabelingDuration for session ' x.modules.asl.sessionsToMerge{iSession}]);
 			end
 		end
+
+		% Take the following list of fields to save to the merged JSON
+		% These fields are given per entire sequence and not per volume. So the fields are saved only once for the first session
+		% and with following session, we check for consistence and report errors
+		listFields2Merge = {'MagneticFieldStrength', 'PulseSequenceType', 'MRAcquisitionType', 'Manufacturer', 'ArterialSpinLabelingType'};
+
+		% Go through all the fields to merge
+		for iField2Merge = 1:length(listFields2Merge)
+			% The field exists and is not empty
+ 			if isfield(jsonPWI4Dcurrent, listFields2Merge{iField2Merge}) && ~isempty(jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
+				if iSession == 1 && ~isfield(jsonPWI4DConcatenated, listFields2Merge{iField2Merge})
+					% If non-existing, just add the field
+					jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = jsonPWI4Dcurrent.(listFields2Merge{iField2Merge});
+				else
+					% Otherwise check for consistency and report an error if non-consistent
+					if ~isequal(jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
+						error(['Cannot merge JSON field ' listFields2Merge{iField2Merge} ' as it differs between sessions']);
+					end
+				end
+			end
+		end
 	end
 	% Create the specific new name
 	[fPath, fName] = xASL_fileparts(pathPWI4D{iSpace});

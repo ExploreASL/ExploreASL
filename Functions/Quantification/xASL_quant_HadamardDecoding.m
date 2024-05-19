@@ -51,7 +51,7 @@ function [decodedPWI4D, decodedControl4D, xQ] = xASL_quant_HadamardDecoding(imPa
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      n/a
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 
 %% 0. Admin
 % Check if all inputs are present
@@ -339,7 +339,6 @@ for iRepetition = 1:(nOuterRepetitions*nInnerRepetitions)
 	decodedBlocks = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), nPLDs); % Temporary single decoded Hadamard block
 
 	for iBlock = 1:nPLDs
-
 		indexPositive = find(xQ.TimeEncodedMatrix(iBlock+1,:)==1);
 		indexNegative = find(xQ.TimeEncodedMatrix(iBlock+1,:)==-1);
 		decodedBlocks(:,:,:,iBlock) = sum(encodedBlocks(:,:,:,(indexPositive)),4) - sum(encodedBlocks(:,:,:,(indexNegative)),4);
