@@ -51,7 +51,7 @@ end
 % Use either original or motion estimated ASL4D
 % Use despiked ASL only if spikes were detected and new file has been created
 % Otherwise, despiked_raw_asl = same as original file
-if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
+if ~xASL_exist(x.P.Path_despiked_ASL4D, 'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
 
@@ -69,7 +69,7 @@ else
             xASL_Copy(x.P.Path_c3T1, x.P.Path_PVcsf, true);
 		end
 		
-		if xASL_exist(x.P.Path_WMH_SEGM)
+		if xASL_exist(x.P.Path_WMH_SEGM, 'file')
             xASL_Copy(x.P.Path_WMH_SEGM, x.P.Path_PVwmh, true);
 		end
 		
@@ -77,7 +77,7 @@ else
         xASL_Copy(x.P.Pop_Path_rc1T1, x.P.Pop_Path_PV_pGM, true);
         xASL_Copy(x.P.Pop_Path_rc2T1, x.P.Pop_Path_PV_pWM, true);
 		
-		if xASL_exist(x.P.Path_rWMH_SEGM)
+		if xASL_exist(x.P.Path_rWMH_SEGM, 'file')
             xASL_Copy(x.P.Path_rWMH_SEGM, x.P.Pop_Path_PV_WMH_SEGM, true);
 		end
         % then skip the rest of the function
@@ -87,37 +87,41 @@ else
 end
 fprintf('Different T1 & ASL resolutions, adapting T1 PV maps to ASL resolution\n');
 
+%% ------------------------------------------------------------------------------------------
+%% A. STANDARD SPACE
+%% ------------------------------------------------------------------------------------------
+
 if bStandardSpace
     %% ------------------------------------------------------------------------------------------
-    %% 1)   Create dummy upsampled ASL scan, for registration
+    %% A1. Create dummy upsampled ASL scan, for registration
     % Assumes isotropic 1.5 mm resolution    
 	xASL_im_Upsample(x.P.Path_PWI, x.P.Path_rPWI, [1.5 1.5 1.5],0,[50 50 50]); % adding 25 voxels at each side for each dimension, to avoid too small FoV ASL dim resulting in wrong smoothing
 	
 	%% ------------------------------------------------------------------------------------------
-	%% 2) Reslice pGM & pWM to hi-res ASL
+	%% A2. Reslice pGM & pWM to hi-res ASL
 	% We just put it to the ASL grid, but we don't apply the non-linear transformation to the ASL,
 	% because we then go directly to standard space and only apply the T1->MNI and not ASL->T1 nonlinear transformation
 	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c1T1 ',1'], [],[], x.settings.Quality);
 	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], [],[], x.settings.Quality);
-	if xASL_exist(x.P.Path_WMH_SEGM)
+	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_WMH_SEGM ',1'], [],[], x.settings.Quality);
 	end
 	
     %% ------------------------------------------------------------------------------------------
-    % 3)    Define effective spatial resolution of ASL
+    %% A3. Define effective spatial resolution of ASL
     x = xASL_adm_DefineASLResolution(x);
 
     %% ------------------------------------------------------------------------------------------
-    % 4)    Smooth pGM & pWM to this spatial resolution
+    %% A4. Smooth pGM & pWM to this spatial resolution
 	xASL_spm_smooth(x.P.Path_rc1T1, x.S.optimFWHM_mm, x.P.Path_rc1T1);
 	xASL_spm_smooth(x.P.Path_rc2T1, x.S.optimFWHM_mm, x.P.Path_rc2T1);
-	if xASL_exist(x.P.Path_WMH_SEGM)
+	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 		xASL_spm_smooth(x.P.Path_rWMH_SEGM, x.S.optimFWHM_mm, x.P.Path_rWMH_SEGM);
 	end
 	
 	%% ------------------------------------------------------------------------------------------
-	% 5)    Move smoothed tissue posteriors to MNI space
-	if xASL_exist(x.P.Path_WMH_SEGM)
+	%% A5. Move smoothed tissue posteriors to MNI space
+	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 		InputList   = {x.P.Path_rc1T1,x.P.Path_rc2T1,x.P.Path_rWMH_SEGM};
 		OutputList  = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM,x.P.Pop_Path_PV_WMH_SEGM};
 	else
@@ -126,8 +130,10 @@ if bStandardSpace
 	end
 	
 	xASL_spm_deformations(x,InputList,OutputList,4, [], [], x.P.Path_y_ASL );
-	% Housekeeping
-	if xASL_exist(x.P.Path_WMH_SEGM)
+	
+    %% ------------------------------------------------------------------------------------------
+    %% A6. Housekeeping
+	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 		List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI x.P.Path_rWMH_SEGM};
 	else
 		List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI};
@@ -143,48 +149,53 @@ else
 end
 
 %% ------------------------------------------------------------------------------------------
-% 6     Prepare pGM, pWM, pCSF, WMH_Segm, and also Lesion and ROI maps in the ASL native space
+%% B. NATIVE SPACE
+%% ------------------------------------------------------------------------------------------
 
 % We need to take into account the resolution difference between T1 and ASL.
 % The correct downsampling is done by first presmoothing the image and then reslicing using normal SPM routines.
 
-% Transform GM and WM segmentation to the ASL space
+
+%% B1. Presmooth and transform GM and WM segmentations to the ASL space
 xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c1T1, x.P.Path_PVgm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c2T1, x.P.Path_PVwm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVgm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVgm);
 xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwm);
 
-% Transform CSF segmentation to the ASL space
-if xASL_exist(x.P.Path_c3T1) % Check file existence as for older versions c3T1 was not always available
+
+%% B2. Presmooth and transform the CSF segmentation to the ASL space
+if xASL_exist(x.P.Path_c3T1, 'file') % Check file existence as for older versions c3T1 was not always available
 	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c3T1,x.P.Path_PVcsf,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVcsf, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVcsf);
 end
 
-% Transform WMH segmentation maps to the ASL space
-if xASL_exist(x.P.Path_WMH_SEGM) 
+%% B2. Presmooth and transform the WMH segmentation map to the ASL space
+if xASL_exist(x.P.Path_WMH_SEGM, 'file') 
 	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_WMH_SEGM, x.P.Path_PVwmh,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwmh, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwmh);
 end
 
-% Transform Lesion and ROI masks to the ASL space. Note that we transform binary masks to maps with values between 0 and 1 so that the PV factor is recorded.
-% The maps have then have to be binarized again with a given threshold before using them again as masks
+%% B3. Presmooth and transform lesion & ROI masks to the ASL space.
+
+% Note that we transform these binary masks linearly, to preserve the partial volumes.
+% The maps have then have to be binarized again with a given threshold before using them again as masks.
 
 % Create a list of lesions
-LesionROIList = xASL_adm_GetFileList(fullfile(x.D.ROOT, x.SUBJECT), '(?i)^(Lesion|ROI)_(T1|FLAIR|T2)_\d*\.(nii|nii\.gz)', 'List', [0 Inf]);
+LesionROIList = xASL_adm_GetFileList(fullfile(x.D.ROOT, x.SUBJECT), '(?i)^(Lesion|ROI)_(T1|FLAIR|T2)_\d*\.nii)', 'FPList', [0 Inf]);
+
+if ~isempty(LesionROIList)
+    fprintf('\n');
+    warning('Lesion & ROI MASKS are transformed to the ASL native space as PROBABILISTIC MAPS!');
+    fprintf('They need to be masked/binarized before using them\n');
+end
 
 % Go through all the lesions
 for iROI = 1:length(LesionROIList)
-	LesionROIName = LesionROIList{iROI};
+    pathLesionROIT1space = xASL_adm_UnzipNifti(LesionROIList{iROI}); % Unzip and remove .gz extension if necessary
+    [Fdir, Ffile, Fext] = xASL_fileparts(pathLesionROIT1space);
 
-	% Unzip and remove .gz extension if necessary
-	if ~isempty(regexpi(LesionROIName, '\.gz$', 'once'))
-		xASL_adm_UnzipNifti(fullfile(x.D.ROOT, x.SUBJECT, LesionROIName));
-		LesionROIName = LesionROIName(1:end-3);
-	end
-
-	% Create the paths in T1 and ASL space
-	pathLesionROIT1space = fullfile(x.D.ROOT, x.SUBJECT, LesionROIName);
-	pathLesionROIASLspace = fullfile(x.D.ROOT, x.SUBJECT, x.SESSION, ['PV' LesionROIName]);
+	% Create the path in ASL space
+	pathLesionROIASLspace = fullfile(Fdir, x.SESSION, ['PV' Ffile Fext]);
 
 	% Presmooth
 	xASL_im_PreSmooth(x.P.Path_PWI, pathLesionROIT1space, pathLesionROIASLspace, x.S.optimFWHM_Res_mm, [], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
