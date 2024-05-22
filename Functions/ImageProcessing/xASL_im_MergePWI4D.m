@@ -121,15 +121,20 @@ for iSpace = 1:2
 		for iField2Merge = 1:length(listFields2Merge)
 			% The field exists and is not empty
  			if isfield(jsonPWI4Dcurrent, listFields2Merge{iField2Merge}) && ~isempty(jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
-				if iSession == 1 && ~isfield(jsonPWI4DConcatenated, listFields2Merge{iField2Merge})
-					% If non-existing, just add the field
+				if iSession == 1 
+					% For the first session, just add the field
 					jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = jsonPWI4Dcurrent.(listFields2Merge{iField2Merge});
-				else
-					% Otherwise check for consistency and report an error if non-consistent
-					if ~isequal(jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
-						error(['Cannot merge JSON field ' listFields2Merge{iField2Merge} ' as it differs between sessions']);
-					end
+				elseif ~isfield(jsonPWI4DConcatenated, listFields2Merge{iField2Merge})
+					% Session > 1, but the field was not added for session 1
+					% We report a conflict
+					error(['Cannot merge JSON field ' listFields2Merge{iField2Merge} ' as it was missing for the first session']);
+				elseif ~isequal(jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
+					% Otherwise (field added for first session and we are now adding more) check for consistency and report an error if non-consistent
+					error(['Cannot merge JSON field ' listFields2Merge{iField2Merge} ' as it differs between sessions']);
 				end
+			elseif isfield(jsonPWI4DConcatenated, listFields2Merge{iField2Merge})
+				% Field is missing, but it was added for the first session
+				error(['Cannot merge JSON field ' listFields2Merge{iField2Merge} ' as it is missing for one of the sessions, but not for the first session']);
 			end
 		end
 	end
