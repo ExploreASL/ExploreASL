@@ -34,10 +34,7 @@ function x = xASL_wrp_PreparePV(x, bStandardSpace)
 %
 % EXAMPLE: xASL_wrp_PreparePV(x);
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
-
-
-
+% Copyright (C) 2015-2024 ExploreASL
 
 %% ------------------------------------------------------------------------------------------
 %% 0)   Admin
@@ -181,7 +178,7 @@ end
 % The maps have then have to be binarized again with a given threshold before using them again as masks.
 
 % Create a list of lesions
-LesionROIList = xASL_adm_GetFileList(fullfile(x.D.ROOT, x.SUBJECT), '(?i)^(Lesion|ROI)_(T1|FLAIR|T2)_\d*\.nii)', 'FPList', [0 Inf]);
+LesionROIList = xASL_adm_GetFileList(fullfile(x.D.ROOT, x.SUBJECT), '(?i)^(Lesion|ROI)_(T1|FLAIR|T2)_\d*\.nii', 'FPList', [0 Inf]);
 
 if ~isempty(LesionROIList)
     fprintf('\n');
