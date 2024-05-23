@@ -165,6 +165,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
 				mat(1:3, 4) = mat(1:3, 4) - size(im,3) * mat(1:3,3);
 
 				% Change both mat and mat0 to the new matrix
+				fprintf('Need to re-orient the ASL volume. Changing both mat and mat0, please ignore warnings during NIfTI saving\n');
 				xASL_io_SaveNifti(nii_files{1}, nii_files{1}, im, [], [], mat, [], [], [], [], mat);
 			end
 		end

@@ -240,6 +240,7 @@ if ~isempty(changeMat)
 end
 
 if ~isempty(changeMat0)
+	warning('Note that mat0 (the original NIfTI orientation) is changed upon request. This can jeopardize re-running ExploreASL when done in the processing module!');
 	newNifti.mat0 = changeMat0;
 end
 
