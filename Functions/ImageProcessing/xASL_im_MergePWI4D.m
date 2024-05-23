@@ -79,65 +79,48 @@ for iSpace = 1:2
 			end
 		end
 
-		if isfield(jsonPWI4Dcurrent, 'EchoTime')
-			if iSession == 1
-				jsonPWI4DConcatenated.EchoTime = jsonPWI4Dcurrent.EchoTime;
-			else
-				jsonPWI4DConcatenated.EchoTime = [jsonPWI4DConcatenated.EchoTime; jsonPWI4Dcurrent.EchoTime];
-			end
-		else
-			warning(['Missing EchoTime for session ' x.modules.asl.sessionsToMerge{iSession}]);
-		end
-
-		if isfield(jsonPWI4Dcurrent, 'PostLabelingDelay')
-			if iSession == 1
-				jsonPWI4DConcatenated.PostLabelingDelay = jsonPWI4Dcurrent.PostLabelingDelay;
-			else
-				jsonPWI4DConcatenated.PostLabelingDelay = [jsonPWI4DConcatenated.PostLabelingDelay; jsonPWI4Dcurrent.PostLabelingDelay];
-			end
-		else
-			warning(['Missing PostLabelingDelay for session ' x.modules.asl.sessionsToMerge{iSession}]);
-		end
-
-		if isfield(jsonPWI4Dcurrent, 'LabelingDuration')
-			if iSession == 1
-				jsonPWI4DConcatenated.LabelingDuration = jsonPWI4Dcurrent.LabelingDuration;
-			else
-				jsonPWI4DConcatenated.LabelingDuration = [jsonPWI4DConcatenated.LabelingDuration; jsonPWI4Dcurrent.LabelingDuration];
-			end
-		else
-			jsonPWI4DConcatenated.LabelingDuration = [];
-			if ~strcmpi(x.Q.LabelingType, 'pasl')
-				warning(['Missing LabelingDuration for session ' x.modules.asl.sessionsToMerge{iSession}]);
-			end
-		end
-
-		% Take the following list of fields to save to the merged JSON
-		% These fields are given per entire sequence and not per volume. So the fields are saved only once for the first session
+		% Take the following list of fields to save to the merged JSON. 
+		% Some fields are concatenated across sessions. Other fields are given per entire sequence and not per volume. So the fields are saved only once for the first session
 		% and with following session, we check for consistence and report errors
-		listFields2Merge = {'MagneticFieldStrength', 'PulseSequenceType', 'MRAcquisitionType', 'Manufacturer', 'ArterialSpinLabelingType'};
+
+		% A list of fields
+		listFields2Merge = {'MagneticFieldStrength', 'PulseSequenceType', 'MRAcquisitionType', 'Manufacturer', 'ArterialSpinLabelingType', ...% These are checked but not concatenated
+			                'LabelingDuration', 'PostLabelingDelay', 'EchoTime'};% These are concatenated
+
+		% An indication of a field is merged or concatenated
+		bFields2Concatenate = [0, 0, 0, 0, 0, ...
+		                       1, 1, 1];
 
 		% Go through all the fields to merge
 		for iField2Merge = 1:length(listFields2Merge)
-			% The field exists and is not empty
+			% The field exists and is not empty, we therefore need to check if we can merge it across sessions
  			if isfield(jsonPWI4Dcurrent, listFields2Merge{iField2Merge}) && ~isempty(jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
 				if iSession == 1 
 					% For the first session, just add the field
 					jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = jsonPWI4Dcurrent.(listFields2Merge{iField2Merge});
 				elseif ~isfield(jsonPWI4DConcatenated, listFields2Merge{iField2Merge})
-					% Session > 1, but the field was not added for session 1
-					% We report a conflict
-					error(['Cannot merge JSON field ' listFields2Merge{iField2Merge} ' as it was missing for the first session']);
-				elseif ~isequal(jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
-					% Otherwise (field added for first session and we are now adding more) check for consistency and report an error if non-consistent
-					error(['Cannot merge JSON field ' listFields2Merge{iField2Merge} ' as it differs between sessions']);
+					% Session > 1, but the field was not added for session 1, we report a conflict
+					error(['Cannot merge sessions as the JSON field ' listFields2Merge{iField2Merge} ' is missing for session ' x.modules.asl.sessionsToMerge{1} ' but not for session ' x.modules.asl.sessionsToMerge{iSession}]);
+				else
+					% The field seems to be consistently present/missing/empty on both sessions. The field is either check for consistency across sessions or concatenated
+					if bFields2Concatenate(iField2Merge)
+						% Concatenation
+						jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = [jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}); jsonPWI4Dcurrent.(listFields2Merge{iField2Merge})];
+					else
+						% Just checking consistency
+						if ~isequal(jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
+							% Otherwise (field added for first session and we are now adding more) check for consistency and report an error if non-consistent
+							error(['Cannot merge sessions as the JSON field ' listFields2Merge{iField2Merge} ' differs between sessions ' x.modules.asl.sessionsToMerge{iSession} ' and ' x.modules.asl.sessionsToMerge{1}]);
+						end
+					end
 				end
-			elseif isfield(jsonPWI4DConcatenated, listFields2Merge{iField2Merge})
-				% Field is missing, but it was added for the first session
-				error(['Cannot merge JSON field ' listFields2Merge{iField2Merge} ' as it is missing for one of the sessions, but not for the first session']);
+			elseif isfield(jsonPWI4DConcatenated, listFields2Merge{iField2Merge}) && ~isempty(jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}))
+				% Field is missing for the current session, but it was added for the first session
+				error(['Cannot merge sessions as the JSON field ' listFields2Merge{iField2Merge} ' is missing for session ' x.modules.asl.sessionsToMerge{iSession} ' but not for session ' x.modules.asl.sessionsToMerge{1}]);
 			end
 		end
 	end
+
 	% Create the specific new name
 	[fPath, fName] = xASL_fileparts(pathPWI4D{iSpace});
 	pathOut = fullfile(fPath, [fName sessionName '.nii']);
