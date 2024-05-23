@@ -27,7 +27,7 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %                  1) NIfTI file, 2) JSON file, 3) mat-orientation motion file (for 4D NIfTIs) (OPTIONAL, DEFAULT = [1 1 1]; 
 %                  1 -> [1 1 1] and 0 -> [0 0 0] and creates a warning; [1 0] - error
 %   changeMat0     New orientation matrix mat0 4x4. Note that mat0 should always stay as it was originally from the scanner, 
-%                  but we can exceptionally change it if mat0 was completely wrong (OPTIONAL, DEFAULT same as previous)
+%                  but we can exceptionally change it, e.g. if mat0 was incorrectly converted from the DICOM header (OPTIONAL, DEFAULT same as previous)
 %                  
 %
 % JSON saving options are:
