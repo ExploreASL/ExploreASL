@@ -97,7 +97,7 @@ for iSpace = 1:2
  			if isfield(jsonPWI4Dcurrent, listFields2Merge{iField2Merge}) && ~isempty(jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
 				if iSession == 1 
 					% For the first session, just add the field
-					jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = jsonPWI4Dcurrent.(listFields2Merge{iField2Merge});
+					jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = jsonPWI4Dcurrent.(listFields2Merge{iField2Merge})(:)';
 				elseif ~isfield(jsonPWI4DConcatenated, listFields2Merge{iField2Merge})
 					% Session > 1, but the field was not added for session 1, we report a conflict
 					error('foo:bar',['Cannot merge sessions for subject ' x.SUBJECT '\n JSON field ' listFields2Merge{iField2Merge} ' is missing for session ' x.modules.asl.sessionsToMerge{1} ' but not for session ' x.modules.asl.sessionsToMerge{iSession}]);
@@ -105,10 +105,10 @@ for iSpace = 1:2
 					% The field seems to be consistently present/missing/empty on both sessions. The field is either check for consistency across sessions or concatenated
 					if bFields2Concatenate(iField2Merge)
 						% Concatenation
-						jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = [jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}); jsonPWI4Dcurrent.(listFields2Merge{iField2Merge})];
+						jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = [jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge})(:)'];
 					else
 						% Just checking consistency
-						if ~isequal(jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
+						if ~isequal(jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge})(:)')
 							% Otherwise (field added for first session and we are now adding more) check for consistency and report an error if non-consistent
 							error('foo:bar',['Cannot merge sessions for subject ' x.SUBJECT '\n JSON field ' listFields2Merge{iField2Merge} ' differs between sessions ' x.modules.asl.sessionsToMerge{iSession} ' and ' x.modules.asl.sessionsToMerge{1}]);
 						end
