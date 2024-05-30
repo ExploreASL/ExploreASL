@@ -17,8 +17,7 @@ function [path_PWI4D, path_PWI4D_Pop] = xASL_im_MergePWI4D(x)
 %              merges them to a single NII with a predefined name. It returns this new name for both native and standard space and it also creates the 
 %              appropriate JSON sidecars.
 %              
-%              We merge NIfTIs and JSONs as are, without interpretation (the parameter interpretation, conversion BIDS->Legacy etc is done later)
-%              We only merge required (per BIDS/ExploreASL) JSON fields, so if any field is missing we issue an error
+%              We merge NIfTIs and JSONs as they are, without interpretation (the parameter interpretation, conversion BIDS->Legacy etc is done later)
 %
 % EXAMPLE: 
 %   [path_PWI4D, path_PWI4D_Pop] = xASL_im_MergePWI4D(x)
@@ -44,10 +43,8 @@ for iSession = 1:numel(x.modules.asl.sessionsToMerge)
 	mergedSessionsName = [mergedSessionsName '_' x.modules.asl.sessionsToMerge{iSession}];
 end
 
-
 for iSpace = 1:2
 	for iSession = 1:numel(x.modules.asl.sessionsToMerge)
-
         %% ---------------------------------------------------------------------
         %% 1. Load NIfTI and JSONs
 		% Here we get the path of the session, by replacing the session names 
@@ -85,7 +82,7 @@ for iSpace = 1:2
 				% Here we concatenate (cat) over the 4rd dimension (4), PWI (total concatenated image matrix) with the new current PWI
                 imPWI4DConcatenated = cat(4, imPWI4DConcatenated, imPWI4Dcurrent);
 			else
-				error(['Cannot concatenate sessions as session '  x.modules.asl.sessionsToMerge{iSession} ' has a different matrix size']);
+				error(['Cannot concatenate sessions: session '  x.modules.asl.sessionsToMerge{iSession} ' has a different matrix size']);
 			end
 		end
 
@@ -106,21 +103,28 @@ for iSpace = 1:2
 
 		for iField2Merge = 1:length(listFields2Merge) % Go through all the JSON fields that might need merging
 			
- 			if ~isfield(jsonPWI4Dcurrent, listFields2Merge{iField2Merge}) || isempty(jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
-            % We only merge fields that exist and are not empty
-                error(['Cannot merge sessions for subject ' x.SUBJECT '\n as JSON field ' listFields2Merge{iField2Merge} ' is missing for session ' x.modules.asl.sessionsToMerge{iSession}]);
-            
-            elseif iSession == 1 % For the first session, just add the field
-		        jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = jsonPWI4Dcurrent.(listFields2Merge{iField2Merge})(:)';
-
-            elseif bFields2Concatenate(iField2Merge) % for vector fields, we concatenate
-					jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = [jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge})(:)'];
-            
-            elseif ~isequal(jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge})(:)')
-                % for non-vector fields, we check consistency
-					
-                % We report an error if non-consistent, because this makes the ASL scans incompliant
-				error(['Cannot merge sessions for subject ' x.SUBJECT '\n as JSON field ' listFields2Merge{iField2Merge} ' differs between sessions ' x.modules.asl.sessionsToMerge{iSession} ' and ' x.modules.asl.sessionsToMerge{1}]);
+ 			if isfield(jsonPWI4Dcurrent, listFields2Merge{iField2Merge}) && ~isempty(jsonPWI4Dcurrent.(listFields2Merge{iField2Merge}))
+				% The field exists and is not empty, we therefore need to check if we can merge it across sessions
+				if iSession == 1 % For the first session, just add the field
+					jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = jsonPWI4Dcurrent.(listFields2Merge{iField2Merge})(:)';
+				elseif ~isfield(jsonPWI4DConcatenated, listFields2Merge{iField2Merge})
+					% For later session, the field should already exist for sessions 1. If not, we report an error
+					error('%s %s\n %s %s %s %s %s %s','Cannot merge sessions: For subject', x.SUBJECT, 'JSON field',  listFields2Merge{iField2Merge}, 'is missing for session', x.modules.asl.sessionsToMerge{1}, 'but not for session', x.modules.asl.sessionsToMerge{iSession});
+				else
+					% The field seems to be consistently present/missing/empty on both sessions. The field is either check for consistency across sessions or concatenated
+					if bFields2Concatenate(iField2Merge) % For vector fields, we concatenate
+						jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}) = [jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge})(:)'];
+					else
+						% For non-vector fields, we check consistency
+						if ~isequal(jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}), jsonPWI4Dcurrent.(listFields2Merge{iField2Merge})(:)')
+							% We report an error if non-consistent, because this makes the ASL scans incompliant
+							error('%s %s\n %s %s %s %s %s %s', 'Cannot merge sessions: For subject', x.SUBJECT, 'JSON field', listFields2Merge{iField2Merge}, 'differs between sessions', x.modules.asl.sessionsToMerge{iSession}, 'and', x.modules.asl.sessionsToMerge{1});
+						end
+					end
+				end
+			elseif isfield(jsonPWI4DConcatenated, listFields2Merge{iField2Merge}) && ~isempty(jsonPWI4DConcatenated.(listFields2Merge{iField2Merge}))
+				% Field is missing for the current session, but it was added for the first session
+				error('%s %s\n %s %s %s %s %s %s', 'Cannot merge sessions: For subject', x.SUBJECT, 'JSON field', listFields2Merge{iField2Merge}, 'is missing for session', x.modules.asl.sessionsToMerge{iSession}, 'but not for session', x.modules.asl.sessionsToMerge{1});
 			end
 		end
 	end
