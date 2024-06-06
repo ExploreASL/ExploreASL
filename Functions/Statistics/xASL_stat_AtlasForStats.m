@@ -220,11 +220,11 @@ if x.S.SubjectWiseVisualization
     % CAVE: only one label per voxel will be shown (latest have preference,
     % can be improved later)
     for iSub=1:size(x.S.InputMasks,3)
-        xASL_TrackProgress(iSub,size(x.S.InputMasks,3));
-        LabelIM = xASL_vis_TransformData2View(xASL_Convert4D_3D_atlas(xASL_im_Column2IM(x.S.InputMasks(:,:,iSub),x.S.masks.WBmask)),x);
-        DataIM = xASL_vis_TransformData2View(x.S.masks.skull.*xASL_io_Nifti2Im(fullfile(x.D.TemplateDir,'rT1.nii')),x);
-        CombiIM = xASL_im_ProjectLabelsOverData(DataIM,LabelIM,x);
-        xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir,[Ffile '_Subj_' num2str(iSub) '.jpg']));
+        xASL_TrackProgress(iSub,size(x.S.InputMasks, 3));
+        LabelIM = xASL_vis_TransformData2View(xASL_vis_Convert4D_3D_atlas(xASL_im_Column2IM(x.S.InputMasks(:,:,iSub), x.S.masks.WBmask)), x);
+        DataIM = xASL_vis_TransformData2View(x.S.masks.skull.*xASL_io_Nifti2Im(fullfile(x.D.SPMDIR, 'MapsAdded', 'rT1.nii')), x);
+        CombiIM = xASL_im_ProjectLabelsOverData(DataIM,LabelIM, x);
+        xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir, [Ffile '_Subj_' num2str(iSub) '.jpg']));
     end
 end
 

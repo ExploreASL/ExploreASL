@@ -529,22 +529,11 @@ for iSubject=1:x.dataset.nSubjects
 			VascularMask = logical(DataIm);
 			DataIm(:) = NaN;
 		end
-		%% 4.d Show ROIs projected on ASL image
-		if x.S.SubjectWiseVisualization && ~x.S.InputNativeSpace
-			% this takes extra computation time, hence best switched off
-			% Prepare visualization settings
-			x.S.TraSlices = x.S.slices;
-			x.S.CorSlices = [110 90 x.S.slices(1:2)];
-			x.S.SagSlices = x.S.slices;
+		%% 4.d Show ROIs projected on ASL image (%% PM %% : ALSO DONE BELOW)
+		LabelIM = xASL_vis_Convert4D_3D_atlas(xASL_im_Column2IM(SubjectSpecificMasks(:,[1:3:end]), x.S.masks.WBmask));
+		fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1}];
+        xASL_stat_VisualizeSubjectWiseROI(x, LabelIM, Data3D, fileName);
 
-			LabelIM = xASL_Convert4D_3D_atlas(xASL_im_Column2IM(SubjectSpecificMasks(:,[1:3:end]), x.S.masks.WBmask));
-			LabelIM = xASL_vis_TransformData2View(LabelIM);
-			DataIM = xASL_vis_TransformData2View(Data3D);
-			CombiIM = xASL_im_ProjectLabelsOverData(DataIM, LabelIM, x);
-
-			xASL_adm_CreateDir(x.S.CheckMasksDir);
-			xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir,[x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1} '.jpg']));
-		end
 
 		%         % Labeling efficiency normalization
 		%         if  x.LabEffNorm; temp = xASL_im_NormalizeLabelingTerritories( temp, logical(x.masks.Data.data(:,iSub,1)), x); end
@@ -612,9 +601,12 @@ for iSubject=1:x.dataset.nSubjects
 				CurrentMask = SubjectSpecificMasks(:,iROI) & isfinite(DataIm);
 				if x.S.IsVolume
 					VoxelVolume = prod(VoxelSize);
+                    % PM: ADD HERE VISUALIZATION AS WELL
 					x.S.DAT_sum_PVC0(SubjSess,iROI) = sum(DataIm(CurrentMask)) .* VoxelVolume;
 				else
-					x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, 0, 0, 0);
+					% PM: ADD HERE VISUALIZATION AS WELL
+                    x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, 0, 0, 0);
+                    % PM: ADD HERE VISUALIZATION AS WELL
 					x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, 0, 0, 1);
 				end
             else
@@ -665,8 +657,13 @@ for iSubject=1:x.dataset.nSubjects
                 else                    
 
                     %% CoV
+                    % Visualization first
+		            fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
+                    xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName);
+
                     x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 0);
 					if ~bSkipPVC
+                        % No visualization here, because there is no different masking
 						x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 2, 1, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 					end
 
@@ -683,6 +680,11 @@ for iSubject=1:x.dataset.nSubjects
                         % mask)
                         fprintf('%s\n', ['Empty CBF mask for subject ' xASL_num2str(iSubject) '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI)]); % slightly different warning/mask as above for sCoV
                     else
+
+                        % Visualization first (this differs from sCoV only by the vascular mask)
+		                fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1} '_CBF'];
+                        xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName);
+
                         x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0, 1);
                         x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0, 0);
 						if ~bSkipPVC
@@ -723,6 +725,38 @@ fprintf('\n');
 end
 
 
+%% ------------------------------------------------------------------------------------------------------------
+function xASL_stat_VisualizeSubjectWiseROI(x, MaskROI, BackgroundImage, fileName)
+%xASL_stat_VisualizeSubjectWiseROI Show ROI projected on image
+%   Detailed explanation goes here
+
+	if x.S.SubjectWiseVisualization && ~x.S.InputNativeSpace
+		% this takes extra computation time, hence best switched off
+
+        % Prepare visualization settings
+        x.S.TraSlices = x.S.slices;
+        x.S.CorSlices = [110 90 x.S.slices(1:2)];
+        x.S.SagSlices = x.S.slices;
+    
+        %%%%%%%%%%%%%%%%
+        % PM: REPLACE WITH xASL_vis_CreateVisualFig
+        %%%%%%%%%%%%%%%%
+    
+        MaskROI = xASL_vis_TransformData2View(MaskROI);
+        BackgroundImage = xASL_vis_TransformData2View(BackgroundImage);
+        CombiIM = xASL_im_ProjectLabelsOverData(BackgroundImage, MaskROI, x);
+    
+        %%%%%%%%%%%%%%%%
+        % PM: REPLACE WITH xASL_vis_CreateVisualFig
+        %%%%%%%%%%%%%%%%
+    
+        xASL_adm_CreateDir(x.S.CheckMasksDir);
+        xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir, [fileName '.jpg']));
+
+    end
+
+end
+
 
 %% ------------------------------------------------------------------------------------------------------------
 function [S] = RemoveSuffixes(S)
@@ -762,7 +796,6 @@ end
 
 
 end
-
 
 
 
@@ -937,70 +970,5 @@ else % It adds layers of WM until reaching certain ratio of GM and WM size (nVox
     end
 end
 
-
-end
-
-
-
-
-%% ------------------------------------------------------------------------------------------------------------
-%% ------------------------------------------------------------------------------------------------------------
-%% ------------------------------------------------------------------------------------------------------------
-function [AtlasOut] = xASL_Convert3D_4D_atlas(AtlasIn)
-%xASL_Convert3D_4D_atlas Converts 3D atlas with ordinal integers to 4D binary image
-%
-% FORMAT: [AtlasOut] = xASL_Convert3D_4D_atlas(AtlasIn)
-%
-% INPUT:
-%   AtlasIn   - 3D image matrix with ordinal integers where each integer defines an ROI mask (REQUIRED)
-%
-% OUTPUT:
-%   AtlasOut  - binary 4D matrix, concatenation of 3D binary masks, where
-%               fourth dim is equal to the mask integer of AtlasIn
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function converts 3D atlas with ordinal integers to 4D binary image
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: AtlasOut = xASL_Convert3D_4D_atlas(AtlasIn);
-% __________________________________
-% Copyright 2017-2019 ExploreASL
-
-AtlasOut = zeros([size(AtlasIn(:,:,:,1,1,1)) max(AtlasIn(:))],'uint8');
-for iL=1:max(AtlasIn(:))
-    tempIM = zeros(size(AtlasIn(:,:,:,1,1,1)));
-    tempIM(AtlasIn==iL) = 1;
-    AtlasOut(:,:,:,iL) = tempIM;
-end
-
-end
-
-
-
-%% ------------------------------------------------------------------------------------------------------------
-%% ------------------------------------------------------------------------------------------------------------
-%% ------------------------------------------------------------------------------------------------------------
-function [AtlasOut] = xASL_Convert4D_3D_atlas(AtlasIn)
-%xASL_Convert4D_3D_atlas Converts 4D binary image to 3D atlas with ordinal integers
-%
-% FORMAT: [AtlasOut] = xASL_Convert4D_3D_atlas(AtlasIn)
-%
-% INPUT:
-%   AtlasIn   - binary 4D matrix, concatenation of 3D binary masks, where
-%               fourth dim is equal to the mask number (REQUIRED)
-%
-% OUTPUT:
-%   AtlasOut  - 3D image matrix with ordinal integers where each integer
-%               defines an ROI mask, equal to the number of the fourth dim of the input
-%               atlas
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: This function converts 4D binary image to 3D atlas with ordinal integers
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: AtlasOut = xASL_Convert4D_3D_atlas(AtlasIn);
-% __________________________________
-% Copyright 2017-2019 ExploreASL
-
-AtlasOut = zeros(size(AtlasIn(:,:,:,1,1,1)),'uint8');
-for iL=1:size(AtlasIn,4)
-    AtlasOut(logical(AtlasIn(:,:,:,iL))) = iL;
-end
 
 end
