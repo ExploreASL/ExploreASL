@@ -256,7 +256,9 @@ if ~x.mutex.HasState(StateName{8})
 
             % ROI statistics (default: standard space)
             x.S.InputNativeSpace = 0;
-			x.S.bSubjectSpecificROI = false;
+			x.S.bSubjectSpecificROI = false; % lesion/ROIs designated per subject (e.g., Lesion_T1_2.nii)
+            % x.S.SubjectWiseVisualization = true; defaulted to false,
+            % set this to true for visualization ROIs
             xASL_wrp_GetROIstatistics(x);
             % ROI statistics (optional: native space)
             if x.modules.population.bNativeSpaceAnalysis
