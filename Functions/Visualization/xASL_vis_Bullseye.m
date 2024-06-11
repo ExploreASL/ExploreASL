@@ -1,34 +1,45 @@
 function  xASL_vis_Bullseye(savePath, dataMatrix, dataLabels, dataTitle, dataColorMap)
     %xASL_vis_Bullseye uses plotting to make a bullseye plot.
     %
-    % FORMAT:       xASL_vis_Bullseye(x,);
+    % FORMAT:       xASL_vis_Bullseye(savepath, dataMatrix[, dataLabels, DataTitle, dataColorMap)];
     % 
-    % INPUT:        x - x struct (REQUIRED)
-    %               savePath - char path to save file (OPTIONAL)
+    % INPUT:        savePath - char path to save file (REQUIRED)
+    %               dataMatrix - 2D matrix with values to plot (REQUIRED)
+    %               dataLabels - cell array with labels for each segment (OPTIONAL - default is 9 segments of brain regions if a 9 by N matrix is provided)
+    %               dataTitle - char title for the plot (OPTIONAL - default is 'Coronal Bullseye Plot')
+    %               dataColorMap - colormap to use for the plot (OPTIONAL - default is autumn colormap)
     %
-    % OUTPUT:       ...
+    % OUTPUT:       None (saves a file at savePath)
     % 
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % DESCRIPTION:  Generates a bullseye plot.
+    % DESCRIPTION:  Generates a bullseye plot from the dataMatrix. The dataMatrix should be 2D matrix with the first dimension corresponding 
+    %               to the segments and the second dimension corresponding to the layers. The plot will be saved at savePath.
+    %               The dataLabels is a cell array with labels for each segment.
+    %               The plot will be saved at savePath.
     %
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % EXAMPLE:      ...
+    % EXAMPLE:      xASL_vis_Bullseye('Bullseye.png', meshgrid(0.1:0.1:0.4, 0.1:0.1:0.9), {'Frontal', 'Parietal', 'Temporal', 'Occipital', 'SubCortical', 'Occipital', 'Temporal', 'Parietal', 'Frontal'}, 'This is an Expample of 9 segments with 4 layers', flipud(autumn));
+    %               xASL_vis_Bullseye('Bullseye.png', meshgrid(0.1:0.1:0.4, 0.1:0.1:0.9));
+    %               xASL_vis_Bullseye('Bullseye.png', meshgrid(0.25:0.25:1, 0.25:0.25:1), {'segment1', 'segment2', 'segment3', 'segment4'}, 'This is an Expample of 4 segments with 4 layers', flipud(autumn));
+    %               
     % __________________________________
-    % Copyright 2015-2023 ExploreASL
+    % Copyright 2015-2024 ExploreASL
     
 %% Admin
 if nargin<1 || isempty(savePath)
-    savePath = 'Bullseye';
+% Default savedirectory if not provided is in the current directory
+    savePath = 'Bullseye.png';
 end
 
 if nargin<2 || isempty(dataMatrix)
-    warning('No Values provided, Bullseye plot not performed.')
+    warning('No Values provided, Bullseye plot not performed. Please provide a 2D dataMatrix.')
     return
 end
 
 [segmentCount, layerCount, ~ ] = size(dataMatrix);
 
 if nargin<3 || isempty(dataLabels)
+    % Default labels if dataMatrix has 9 segments
     if segmentCount == 9
         dataLabels = {'Frontal', 'Parietal', 'Temporal', 'Occipital', 'SubCortical', 'Occipital', 'Temporal', 'Parietal', 'Frontal'};
     else
@@ -37,7 +48,7 @@ if nargin<3 || isempty(dataLabels)
 end
 
 if nargin<4 || isempty(dataTitle)
-    dataTitle = 'Coronal Bullseye Plot';
+    dataTitle = 'Bullseye Plot';
 end
 
 if nargin<4 || isempty(dataColorMap)
@@ -51,9 +62,9 @@ ANGLE_OFFSET = 90;
 segmentBoundaryAngles = linspace(0, 360, segmentCount+1) + ANGLE_OFFSET;
 
 % Initialize Figure
-fig = figure;
+fig = figure('visible', 'off');
 colormap(dataColorMap);
-title('Coronal Bullseye Plot');
+title(dataTitle);
 colorbar();
 axis off;
 
