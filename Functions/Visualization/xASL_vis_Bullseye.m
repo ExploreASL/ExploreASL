@@ -18,9 +18,9 @@ function  xASL_vis_Bullseye(savePath, dataMatrix, dataLabels, dataTitle, dataCol
     %               The plot will be saved at savePath.
     %
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
-    % EXAMPLE:      xASL_vis_Bullseye('Bullseye.png', meshgrid(0.1:0.1:0.4, 0.1:0.1:0.9), {'Frontal', 'Parietal', 'Temporal', 'Occipital', 'SubCortical', 'Occipital', 'Temporal', 'Parietal', 'Frontal'}, 'This is an Expample of 9 segments with 4 layers', flipud(autumn));
+    % EXAMPLE:      xASL_vis_Bullseye('Bullseye.png', meshgrid(0.1:0.1:0.4, 0.1:0.1:0.9), {'Frontal', 'Parietal', 'Temporal', 'Occipital', 'SubCortical', 'Occipital', 'Temporal', 'Parietal', 'Frontal'}, 'This is an Example of 9 segments with 4 layers', flipud(autumn));
     %               xASL_vis_Bullseye('Bullseye.png', meshgrid(0.1:0.1:0.4, 0.1:0.1:0.9));
-    %               xASL_vis_Bullseye('Bullseye.png', meshgrid(0.25:0.25:1, 0.25:0.25:1), {'segment1', 'segment2', 'segment3', 'segment4'}, 'This is an Expample of 4 segments with 4 layers', flipud(autumn));
+    %               xASL_vis_Bullseye('Bullseye.png', meshgrid(0.25:0.25:1, 0.25:0.25:1), {'segment1', 'segment2', 'segment3', 'segment4'}, 'This is an Example of 4 segments with 4 layers', flipud(autumn));
     %               
     % __________________________________
     % Copyright 2015-2024 ExploreASL
