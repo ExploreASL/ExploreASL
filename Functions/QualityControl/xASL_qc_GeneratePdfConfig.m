@@ -102,19 +102,37 @@ function [config] = xASL_sub_createDefaultJson(x)
         return;
     end
 
-    config.pages = struct();
+    config.modules = struct();
     modules = fieldnames(x.Output);
     for module = 1:size(modules)
-        config.pages(module).category = 'metadata';
-        config.pages(module).type = 'page';
-        config.pages(module).pageIdentifier = modules{module};
-        config.pages(module).content = xASL_sub_createModuleContent(x, modules{module});
+        if strcmp(modules(module), 'Structural')
+            config.modules(module).category = 'metadata';
+            config.modules(module).type = 'page';
+            config.modules(module).identifier = modules{module};
+            config.modules(module).content = xASL_sub_createPageContent(x.Output.(modules{module}), modules{module});
+        elseif strcmp(modules(module), 'ASL')
+            config.modules(module).category = 'metadata';
+            config.modules(module).type = 'module';
+            config.modules(module).identifier = modules{module};
+            asl_sessions = fieldnames(x.Output.(modules{module}));
+            for session = 1:size(asl_sessions)
+                config.modules(module).content(session).category = 'metadata';
+                config.modules(module).content(session).type = 'page';
+                config.modules(module).content(session).identifier = asl_sessions{session};
+                config.modules(module).content(session).content = xASL_sub_createPageContent(x.Output.ASL.(asl_sessions{session}), modules{module}, asl_sessions{session});
+            end
+        end
     end
 
 end
 
-function content = xASL_sub_createModuleContent(x, module)
-    qc_parameters = fieldnames(x.Output.(module));
+function content = xASL_sub_createPageContent(module, modulename, sessionname)
+    
+    if nargin < 3 || isempty(sessionname)
+        sessionname = '';
+    end
+
+    qc_parameters = fieldnames(module);
     content = cell(size(qc_parameters,1),1);
 
     for field = 1:size(qc_parameters)
@@ -122,7 +140,8 @@ function content = xASL_sub_createModuleContent(x, module)
         qc_content.category = 'content';
         qc_content.type = 'QCValues';
         qc_content.parameter = qc_parameters{field};
-        qc_content.module = module;
+        qc_content.module = modulename;
+        qc_content.session = sessionname;
         content{field} = qc_content;
     end
 
@@ -133,9 +152,8 @@ function content = xASL_sub_createModuleContent(x, module)
     qc_content.parameter = 'qc_images';
     qc_content.position = '[0.4 0.25]';
     qc_content.size = '[0.6 0.6]';
-    qc_content.module = module;
+    qc_content.module = modulename;
+    qc_content.session = sessionname;
     content{end+1} = qc_content;
-
-
 
 end
