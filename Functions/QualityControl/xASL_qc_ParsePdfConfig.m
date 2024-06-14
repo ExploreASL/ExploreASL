@@ -115,7 +115,6 @@ end
 % ====================================================================================================================================================
 
 function  xASL_qc_ParsePdfConfig_sub_printModule(moduleStruct, x, settingsPDF)
-    moduleStruct.content
 
     for page = 1:size(moduleStruct.content)
         xASL_qc_ParsePdfConfig_sub_printPage(moduleStruct.content(page), x, settingsPDF);
@@ -507,7 +506,7 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
 % QC Values are extracted from the x.Output structure, and printed to the PDF report in a single line.
 % Certain settings can be applied to the QC values, for example a range can be specified.
 % If the QC value is outside the range, it will be printed in red.
-
+    
     if ~isfield(qcStruct, 'parameter') || ~isfield(qcStruct, 'module')
         fprintf (['QC content field not properly defined in JSON, skipping printing of QC parameter. \n']);
         return
@@ -517,10 +516,12 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
     end
 
     % Stop if module and field don't exists in output
-    if ~isfield(x.Output, (qcStruct.session)) || ~isfield(x.Output.(qcStruct.session), qcStruct.parameter) 
+    if ~isfield(qcStruct, 'session') || qcStruct.session == ""
         if ~isfield(x.Output, (qcStruct.module)) || ~isfield(x.Output.(qcStruct.module), qcStruct.parameter) 
-            return     
-        end   
+            return
+        end
+    elseif ~isfield(x.Output, (qcStruct.module)) || ~isfield(x.Output.(qcStruct.module), qcStruct.session)  || ~isfield(x.Output.(qcStruct.module).(qcStruct.session), qcStruct.parameter) 
+        return
     end
 
     % Use field specific settings if they exists, otherwise default to monospace for QC values. 
@@ -566,19 +567,23 @@ function [string] = xASL_qc_ParsePdfConfig_sub_BIDS_Translation(string)
 end
 
 function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, settingsPDF)
-    
-    if ~isfield(x.Output, (qcStruct.module)) 
-        fprintf (['QC Value ' x.Output.(qcStruct.module) ' not found, skipping. \n']);
+  
+    if ~isfield(qcStruct, 'module') ||  ~isfield(x.Output, (qcStruct.module))
         return
-    end 
-
-    if ~isfield(x.Output.(qcStruct.module),( qcStruct.parameter)) 
-        fprintf (['QC Value ' x.Output.(qcStruct.module).(qcStruct.parameter) ' not found, skipping. \n']);
-        return
+    elseif ~isfield(qcStruct, 'session') || qcStruct.session == "" 
+        if ~isfield(qcStruct, 'parameter') || ~isfield(x.Output.(qcStruct.module), qcStruct.parameter) 
+            return
+        else
+            TempValue = x.Output.(qcStruct.module).(qcStruct.parameter);
+        end
+    elseif isfield(x.Output.(qcStruct.module), qcStruct.session) 
+        if ~isfield(qcStruct, 'parameter') || ~isfield(x.Output.(qcStruct.module).(qcStruct.session), qcStruct.parameter) 
+            return
+        else
+            TempValue = x.Output.(qcStruct.module).(qcStruct.session).(qcStruct.parameter);
+        end
     end
 
-    TempValue = x.Output.(qcStruct.module).(qcStruct.parameter);
-    
     % Translate from the provided translation tsv if that's enabled
     if settingsPDF.QC_TSV_Translations
         qcStruct = xASL_qc_ParsePdfConfig_sub_QC_Translation(qcStruct, settingsPDF);
@@ -611,6 +616,10 @@ function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, s
 
     % Convert the value to a string.
     TempValue = xASL_num2str(TempValue);
+
+    if iscell(TempValue)
+        TempValue = cell2mat(TempValue);
+    end
 
     qcStruct.alias  = xASL_qc_ParsePdfConfig_sub_PaddedString( qcStruct.alias, settingsPDF.QC_string_limit);
     TempValue       = xASL_qc_ParsePdfConfig_sub_PaddedString( TempValue, 12, 'right');
