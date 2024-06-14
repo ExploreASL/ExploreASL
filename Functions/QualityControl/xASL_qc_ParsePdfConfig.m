@@ -615,7 +615,7 @@ function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, s
     end
 
     % Convert the value to a string.
-    TempValue = xASL_num2str(TempValue);
+    TempValue = xASL_num2str(TempValue, settingsPDF.numberFormat);
 
     if iscell(TempValue)
         TempValue = cell2mat(TempValue);
@@ -700,6 +700,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings(x)
     settingsPDF.QC_TSV_Translations = 1; 
     settingsPDF.imageHeaders = 1;
     settingsPDF.QC_string_limit  = 25;
+    settingsPDF.numberFormat = '%.2f';
 
     settingsPDF.QC_Translation = xASL_tsvRead(fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'qc_glossary.tsv'));
 

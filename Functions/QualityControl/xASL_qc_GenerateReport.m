@@ -6,7 +6,7 @@ function [x] = xASL_qc_GenerateReport(x, subject, bOverWrite)
 % INPUT:
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
 %   subject     - subject name (OPTIONAL, default = x.SUBJECT)
-%   bOverWrite  - boolean to determine if current configReportPDF.json should be overwritten. (OPTIONAL, default == false)
+%   bOverWrite  - boolean to determine if current configReportPDF.json should be overwritten with the default one. (OPTIONAL, default == false)
 %
 % OUTPUT: 
 %   x           - x structure containing fields with all information as well as now the quality parameters loaded in
@@ -21,6 +21,8 @@ function [x] = xASL_qc_GenerateReport(x, subject, bOverWrite)
 %               Scans are generated using the function xASL_vis_CreateVisualFig.
 % 
 % EXAMPLE: xASL_qc_GenerateReport(x);
+%          xASL_qc_GenerateReport(x, 'sub-001', true);
+%          xASL_qc_GenerateReport(x, [], false);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
 
