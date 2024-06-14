@@ -9,6 +9,7 @@ function [config] = xASL_qc_LoadPdfConfig(x, configPath, bOverWrite)
 % INPUT:
 %   x           - Struct containing all ExploreAsl Parameters (REQUIRED)
 %   configPath  - Path to the config file (OPTIONAL)
+%   bOverWrite  - Boolean to determine if current configReportPDF.json should be overwritten. (OPTIONAL, default == false)
 %
 %   OUTPUT:
 %   config      - Struct containing all parameters of the jsonfile
@@ -39,7 +40,7 @@ if nargin<2 || isempty(configPath)
 end
 
 if nargin<3 || isempty(bOverWrite)
-    bOverWrite = true;
+    bOverWrite = false;
 end
 
 %% ------------------------------------------------------------------------
@@ -53,7 +54,7 @@ if exist(configPath, 'file')
     config = xASL_io_ReadJson(configPath);
 else
     fprintf(['Custom PDF definitions not found, using default configuration for PDF generation.\n']);
-    xASL_qc_GeneratePdfConfig(x, x.SUBJECT, false);
+    xASL_qc_GeneratePdfConfig(x, x.SUBJECT, bOverWrite);
     config = xASL_io_ReadJson(configPath);
 end
 
