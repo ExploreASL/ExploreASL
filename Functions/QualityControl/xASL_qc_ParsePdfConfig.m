@@ -457,7 +457,7 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, 
 
     % Check if participant information exists in the participants.tsv
     if isempty(PatientInfo)
-        fprintf ('No patient information found in participants.tsc in the ExploreASL derivatives folder.\n');
+        fprintf ('No patient information found in participants.tsv in the ExploreASL derivatives folder.\n');
         return
     end
     
