@@ -7,7 +7,8 @@
         "fontWeight": "normal",
         "color": "k",
         "axesVisible": "off",
-        "HorizontalAlignment": "left"
+        "HorizontalAlignment": "left",
+        "numberFormat": "%.2f"
     },
     "pages": [
         {
@@ -137,7 +138,11 @@
                     "parameter": "T1w_GM_vol_mL",
                     "module": "Structural",
                     "range": "1000-1200",
-                    "unit": "mL"
+                    "unit": "mL",
+                    "textSettings": {
+                        "numberFormat": "%.0f"
+                    }
+
                 },
                 {
                     "category": "content",
@@ -145,7 +150,10 @@
                     "parameter": "T1w_WM_vol_mL",
                     "module": "Structural",
                     "range": "300-600",
-                    "unit": "mL"
+                    "unit": "mL",
+                    "textSettings": {
+                        "numberFormat": "%.0f"
+                    }
                 },
                 {
                     "category": "content",
@@ -153,7 +161,10 @@
                     "parameter": "T1w_CSF_vol_mL",
                     "module": "Structural",
                     "range": "150-300",
-                    "unit": "mL"
+                    "unit": "mL",
+                    "textSettings": {
+                        "numberFormat": "%.0f"
+                    }
                 },
                 {
                     "category": "content",
