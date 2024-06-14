@@ -242,10 +242,15 @@ end
 
 function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, currentFigure, settingsPDF)
     % This function prints images using the layout defined in the json file.
-    if ~isfield(x, 'Output_im') || ~isfield(x.Output_im, qcStruct.module) 
-        if (qcStruct.session == "") && ~isfield(x.Output_im.(qc.Struct.module), qcStruct.module.session)
-            return
-        end
+
+    if ~isfield(qcStruct, 'module') ||  ~isfield(x.Output, (qcStruct.module))
+        return
+    elseif ~isfield(qcStruct, 'session') || qcStruct.session == "" 
+        allImages = x.Output_im.(qcStruct.module);
+    elseif isfield(x.Output_im.(qcStruct.module), qcStruct.session) 
+        allImages = x.Output_im.(qcStruct.module).(qcStruct.session);
+    else
+        return
     end
 
     if ~isfield(qcStruct, 'position') ||~isfield(qcStruct, 'size')
@@ -255,13 +260,6 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, c
     % First it calculates the size of the canvas for the image to be printed in.
     position = [xASL_str2num(qcStruct.position) xASL_str2num(qcStruct.size)];
     [canvas] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), settingsPDF.canvas);
-
-    % Get all images
-    if isfield(x.Output_im.(qcStruct.module), qcStruct.session) && ~(qcStruct.session == "")
-        allImages = x.Output_im.(qcStruct.module).(qcStruct.session);
-    else
-        allImages = x.Output_im.(qcStruct.module);
-    end 
     
     % Dimensions, at most 16 images will be printed
     nImages  = min(size(allImages, 2), 16);
