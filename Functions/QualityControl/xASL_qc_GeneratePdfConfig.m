@@ -135,6 +135,17 @@ function content = xASL_sub_createPageContent(module, modulename, sessionname)
     qc_parameters = fieldnames(module);
     content = cell(size(qc_parameters,1),1);
 
+    % Add the qc_images
+    qc_content = struct();
+    qc_content.category = 'content';
+    qc_content.type = 'text';
+    qc_content.text = ['Quality parameters for the ' modulename ' module ' sessionname];
+    qc_content.textSettings = struct();
+    qc_content.textSettings.fontSize = '12';
+    qc_content.textSettings.fontWeight = 'bold';
+
+    content{1} = qc_content;
+
     for field = 1:size(qc_parameters)
         qc_content = struct();
         qc_content.category = 'content';
@@ -142,7 +153,7 @@ function content = xASL_sub_createPageContent(module, modulename, sessionname)
         qc_content.parameter = qc_parameters{field};
         qc_content.module = modulename;
         qc_content.session = sessionname;
-        content{field} = qc_content;
+        content{field+1} = qc_content;
     end
 
     % Add the qc_images
