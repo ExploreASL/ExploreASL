@@ -46,7 +46,7 @@ function [x] = xASL_stat_PrintStats(x, bFollowSubjectSessions)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_stat_PrintStats(x);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
 %% Admin
@@ -132,13 +132,15 @@ else
 
     printedSessionN = 0;
     
-    % Initialize empty table
+    % Initialize empty table with dimensions based on what was created in xASL_stat_GetROIStatistics
     numElements = size(x.modules.population.(thisFile),2);
     numSubjectsSessions = length(x.S.SubjectSessionID);
     for iSubjSess=1:numSubjectsSessions
+		% Fill the table with NaNs
         x.modules.population.(thisFile)(2+iSubjSess,:) = repmat({nan(1, 1)}, 1, numElements);
     end
     
+	% Go through all sessions that have CBF detected in xASL_stat_GetROIStatistics
     for iSubjSess=1:numSubjectsSessions
         % x.S.SubjectSessionID == subject/session IDs created in xASL_stat_GetROIStatistics
 
@@ -153,7 +155,6 @@ else
             
             if isempty(startSessionIndex) || isempty(endSessionIndex)
 				% If the sessionID was not found, then report a warning and use the entire expression for subjectID
-				SubjectID = x.S.SubjectSessionID{iSubjSess}(startSubjectIndex:endSubjectIndex);
                 fprintf(2, ['Could not find session for ' x.S.SubjectSessionID{iSubjSess} '\n']);
 			else
 				% If session ID was identified, we have to double-check that session ID is not part of subject ID and exclude if necessary
@@ -175,7 +176,7 @@ else
                 x.dataset.currentSubjectID = SubjectID;
                 x.dataset.currentSessionID = SessionID;
                 
-                % Fill stat cell array
+                % Fill stat cell array - subject name and session
                 x.modules.population.(thisFile) = xASL_stat_PrintStats_AddSubjectSessionStatCellArray(x,x.modules.population.(thisFile),iSubjSess);
                 
 
@@ -191,20 +192,19 @@ else
                         SessionColumn = find(strcmpi(x.S.SetsName, 'session'));
                         if isempty(SessionColumn) || length(SessionColumn)>1
                             fprintf(2, 'Could not find session data\n');
-                        else
-                            SessionN = iSubjSess;
-                            if isempty(SessionN) || ~isnumeric(SessionN)
+						else
+                            if isempty(iSubjSess) || ~isnumeric(iSubjSess)
                                 fprintf(2, ['Something wrong with session ' SessionID '\n']);
                             elseif SessionIndex>x.dataset.nSessions
-                                if ~max(printedSessionN==SessionN)
+                                if ~max(printedSessionN==iSubjSess)
                                     fprintf(2, 'Could not find values for other covariates\n');
                                 end
-                                printedSessionN = [printedSessionN SessionN];
+                                printedSessionN = [printedSessionN iSubjSess];
                             else
                                 
                                 %% Print the covariates and data
-                                iSubjectSession_SetsID = x.dataset.nSessions*(SubjectIndex-1)+SessionN;
-                                iSubjectSession_DAT = iSubjSess;
+                                iSubjectSession_SetsID = x.dataset.nSessions*(SubjectIndex-1)+SessionIndex; % This is for the total set and is based on the real names
+                                iSubjectSession_DAT = iSubjSess; % This is for the DATA and is based on xASL_wrp_GetROIStatistics
                                 bPrintSessions = false;
                                 
                                 % Write it to the cell array instead
@@ -349,6 +349,10 @@ end
 %% Fill the stat cell array with all subjects and sessions xASL_tsvWrite later on
 function statCell = xASL_stat_PrintStats_FillStatCellArray(x,statCell, rowNum, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions)
 
+    % statCell - we write into this structure
+	% rowNum   - number of the row in this structure to write to
+	% iSubjectSession_SetsID - index in the general dataset of all ASL scans
+	% iSubjectSession_DAT - index in the specific extracted dataset by xASL_wrp_GetROIStatistics - these two indexes can differ
     % Skip the first two rows and columns (Labels & Legend, Subjects & Sessions)
     rowNum = rowNum+2;
     iCell = 3;
@@ -359,19 +363,22 @@ function statCell = xASL_stat_PrintStats_FillStatCellArray(x,statCell, rowNum, i
     if bPrintSessions
         printMatrix = x.S.SetsID;
         optionsMatrix = x.S.SetsOptions;
-        sampleMatrix = x.S.Sets1_2Sample;
+        %sampleMatrix = x.S.Sets1_2Sample;
     else
         SessionColumn = find(strcmpi(x.S.SetsName, 'session'));
-        vector2Print = [1:size(x.S.SetsName,2)];
+        vector2Print = 1:size(x.S.SetsName,2);
         vector2Print = vector2Print(vector2Print~=SessionColumn);
         
         printMatrix = x.S.SetsID(:, vector2Print);
         optionsMatrix = x.S.SetsOptions(:, vector2Print);
-        sampleMatrix = x.S.Sets1_2Sample(:, vector2Print);
+        %sampleMatrix = x.S.Sets1_2Sample(:, vector2Print);
     end
     
     for iPrint=1:size(printMatrix,2)
-        String2Print = printMatrix(iSubjectSession_DAT, iPrint); % Previously we used iSubjectSession_SetsID
+		% Previously we incorrectly used iSubjectSession_DAT, but SetsID and DAT can differ
+		% Previously, this was changes to DAT, because there was a bug in SetsID calculation
+		% Now we are back at the correct SetsID and but we have also corrected calculation of this index
+        String2Print = printMatrix(iSubjectSession_SetsID, iPrint);
 
         if length(optionsMatrix{iPrint})>1 % we need options
             if length(optionsMatrix{iPrint}) >= length(unique(printMatrix(:,iPrint)))-2 % allow for zeros & NaNs
@@ -390,6 +397,4 @@ function statCell = xASL_stat_PrintStats_FillStatCellArray(x,statCell, rowNum, i
         statCell{rowNum,iCell} = xASL_num2str(x.S.DAT(iSubjectSession_DAT, iPrint));
         iCell = iCell+1;
     end
-
-
 end

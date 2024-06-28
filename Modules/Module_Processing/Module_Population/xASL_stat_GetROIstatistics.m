@@ -277,7 +277,9 @@ for iSubject=1:x.dataset.nSubjects
             TotalRows = x.dataset.nSubjects;
 		else
 			x.S.SubjectSessionID{SubjSess,1} = [x.SUBJECTS{iSubject} '_' listSessions{iSess}];
-            TotalRows = x.dataset.nSubjects * x.dataset.nSessions;
+			% The number of sessions have to be consistent with the detected one. If we have 2 sessions, but only session 2 has quantified CBF, 
+			% then we want to created nSessions == 1 lines and not x.dataset.nSessions == 2 lines
+            TotalRows = x.dataset.nSubjects * nSessions; 
 		end
         
 		if x.S.IsASL
