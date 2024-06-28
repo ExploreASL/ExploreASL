@@ -425,7 +425,7 @@ for iScanType=1:length(PreFixList)
                                 tempIM = xASL_io_Nifti2Im(LoadFiles{iCell}{iLoad, 1});
                                 tempImColumn = xASL_im_IM2Column(tempIM, x.S.masks.WBmask);
 
-                                if iLoad>1 && ~(size(tempImColumn,1)==size(IM{iCell},1))
+                                if (iLoad>1 && ~(size(tempImColumn,1)==size(IM{iCell},1))) || size(tempIM,4)>1
                                     warning(['Wrong size:' LoadFiles{iCell}{iLoad,1}]);
                                     bProceedComputationMaps = 0; % proceed with next ScanType
                                 else % add the image
