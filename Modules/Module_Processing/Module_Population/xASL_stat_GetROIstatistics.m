@@ -87,6 +87,10 @@ function [x] = xASL_stat_GetROIstatistics(x)
 
 [nSessions, bSessionsMissing, listSessions] = xASL_adm_GetPopulationSessions(x); % obtain sessions & number of sessions
 
+if nSessions~=x.dataset.nSessions
+    warning('Not all sessions/runs seem correctly processed in the ASL module');
+end
+
 if x.S.InputNativeSpace
 	% Native space
 	x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
@@ -267,7 +271,6 @@ for iSubject=1:x.dataset.nSubjects
 
 
 	for iSess=1:nSessions
-        
 		% ID (which name, group etc), all for identification
 		% Subject_session definition
 		DataIm = NaN;
@@ -277,8 +280,9 @@ for iSubject=1:x.dataset.nSubjects
             TotalRows = x.dataset.nSubjects;
 		else
 			x.S.SubjectSessionID{SubjSess,1} = [x.SUBJECTS{iSubject} '_' listSessions{iSess}];
-			% The number of sessions have to be consistent with the detected one. If we have 2 sessions, but only session 2 has quantified CBF, 
-			% then we want to created nSessions == 1 lines and not x.dataset.nSessions == 2 lines
+			% The number of sessions has to be consistent with the detected one. E.g., if the original dataset/study has 2 sessions, but only session 2 was succesfully processed for all participants,
+			% then we want to perform statistics for nSessions == 1 and not x.dataset.nSessions == 2. Note that in this example, it would perform
+            % statistics for ASL_2 only.
             TotalRows = x.dataset.nSubjects * nSessions; 
 		end
         
