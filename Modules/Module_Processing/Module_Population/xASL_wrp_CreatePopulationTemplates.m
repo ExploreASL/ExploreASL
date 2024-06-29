@@ -425,9 +425,13 @@ for iScanType=1:length(PreFixList)
                                 tempIM = xASL_io_Nifti2Im(LoadFiles{iCell}{iLoad, 1});
                                 tempImColumn = xASL_im_IM2Column(tempIM, x.S.masks.WBmask);
 
-                                if (iLoad>1 && ~(size(tempImColumn,1)==size(IM{iCell},1))) || size(tempIM,4)>1
+                                if iLoad>1 && ~(size(tempImColumn, 1)==size(IM{iCell},1))
                                     warning(['Wrong size:' LoadFiles{iCell}{iLoad,1}]);
                                     bProceedComputationMaps = 0; % proceed with next ScanType
+                                elseif size(tempIM, 4)>1 % 4D images, feature that we're working on
+                                    warning(['4D image, incomplete feature:' LoadFiles{iCell}{iLoad,1}]);
+                                    bProceedComputationMaps = 0; % proceed with next ScanType
+                                    fprintf('We are working on a feature for 4D maps statistics, skipping this for now\n');
                                 else % add the image
                                     IM{iCell}(:,iLoad) = tempImColumn;
                                     if bSaveUnmasked; IM2noMask{iCell}(:,:,:,iLoad) = tempIM; end
