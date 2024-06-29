@@ -55,6 +55,25 @@ if nargin<2 || isempty(bFollowSubjectSessions)
 end
 
 
+% Manage missing type of statistics
+% x.S.Sets1_2Sample indicates the type of data
+% x.S.Sets1_2Sample==1 means paired data, e.g. sessions
+% x.S.Sets1_2Sample==2 means a two-sample data, e.g. cohorts
+% x.S.Sets1_2Sample==3 means continues data, e.g. age
+
+if ~isfield(x, 'S')
+    error('Missing field x.S, something went wrong');
+end
+nSets = size(x.S.SetsID, 2);
+if ~isfield(x.S, 'Sets1_2Sample')
+    x.S.Sets1_2Sample(1:nSets) = 3; % we default to continuous data
+else
+    % This would do nothing if x.S.Sets1_2Sample was already defined for each set
+    x.S.Sets1_2Sample(end+1:nSets) = 3;
+end
+
+
+
 %% -----------------------------------------------------------------------------------------------
 %% 1) First remove previous TSV-file, if already existed
 fclose all; % safety procedure
@@ -132,7 +151,7 @@ else
 
     printedSessionN = 0;
     
-    % Initialize empty table with dimensions based on what was created in xASL_stat_GetROIStatistics
+    % Initialize empty table with dimensions based on what was provided to xASL_stat_PrintStats (e.g., by xASL_stat_GetROIStatistics)
     numElements = size(x.modules.population.(thisFile),2);
     numSubjectsSessions = length(x.S.SubjectSessionID);
     for iSubjSess=1:numSubjectsSessions
@@ -140,7 +159,7 @@ else
         x.modules.population.(thisFile)(2+iSubjSess,:) = repmat({nan(1, 1)}, 1, numElements);
     end
     
-	% Go through all sessions that have CBF detected in xASL_stat_GetROIStatistics
+	% Go through all sessions that were provided to xASL_stat_PrintStats (e.g., by xASL_stat_GetROIStatistics)
     for iSubjSess=1:numSubjectsSessions
         % x.S.SubjectSessionID == subject/session IDs created in xASL_stat_GetROIStatistics
 
@@ -194,7 +213,7 @@ else
                             fprintf(2, 'Could not find session data\n');
 						else
                             if isempty(iSubjSess) || ~isnumeric(iSubjSess)
-                                fprintf(2, ['Something wrong with session ' SessionID '\n']);
+                                fprintf(2, ['Something went wrong with ' SubjectID '_' SessionID '\n']);
                             elseif SessionIndex>x.dataset.nSessions
                                 if ~max(printedSessionN==iSubjSess)
                                     fprintf(2, 'Could not find values for other covariates\n');
@@ -203,8 +222,12 @@ else
                             else
                                 
                                 %% Print the covariates and data
-                                iSubjectSession_SetsID = x.dataset.nSessions*(SubjectIndex-1)+SessionIndex; % This is for the total set and is based on the real names
-                                iSubjectSession_DAT = iSubjSess; % This is for the DATA and is based on xASL_wrp_GetROIStatistics
+                                % SetsID -> contains throughout ExploreASL the stats read from participants_id, e.g., subject, session, covariates, names, etc
+                                % iSubjectSession_SetsID here defines the names that will be printed
+                                % _DAT & _DATA is about the data (mostly numerical), the stats coming out of e.g., xASL_wrp_GetROIStatistics that will
+                                % be printed
+                                iSubjectSession_SetsID = x.dataset.nSessions*(SubjectIndex-1)+SessionIndex;
+                                iSubjectSession_DAT = iSubjSess;
                                 bPrintSessions = false;
                                 
                                 % Write it to the cell array instead
@@ -363,7 +386,7 @@ function statCell = xASL_stat_PrintStats_FillStatCellArray(x,statCell, rowNum, i
     if bPrintSessions
         printMatrix = x.S.SetsID;
         optionsMatrix = x.S.SetsOptions;
-        %sampleMatrix = x.S.Sets1_2Sample;
+        sampleMatrix = x.S.Sets1_2Sample;
     else
         SessionColumn = find(strcmpi(x.S.SetsName, 'session'));
         vector2Print = 1:size(x.S.SetsName,2);
@@ -371,7 +394,7 @@ function statCell = xASL_stat_PrintStats_FillStatCellArray(x,statCell, rowNum, i
         
         printMatrix = x.S.SetsID(:, vector2Print);
         optionsMatrix = x.S.SetsOptions(:, vector2Print);
-        %sampleMatrix = x.S.Sets1_2Sample(:, vector2Print);
+        sampleMatrix = x.S.Sets1_2Sample(:, vector2Print);
     end
     
     for iPrint=1:size(printMatrix,2)
