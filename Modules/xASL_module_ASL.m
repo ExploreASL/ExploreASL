@@ -21,10 +21,10 @@ function [result, x] = xASL_module_ASL(x)
 % A. Check existence and validity of ASL
 % B. Manage mutex state processing step
 % C. Cleanup before rerunning
-% D. ASL processing & quantification parameters
-% E. Backward and forward compatibility of filenames
-% F. Split ASL and M0 within the ASL time series
-% G. DeltaM and CBF parsing - check if all/some volumes are deltams or CBFs
+% D. Backward and forward compatibility of filenames
+% E. Split ASL and M0 within the ASL time series
+% F. DeltaM and CBF parsing - check if all/some volumes are deltams or CBFs
+% G. ASL processing & quantification parameters
 %
 % This module has the following submodules/wrappers:
 %
@@ -129,10 +129,7 @@ x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
 % Check and remove all outdated QC fields that are not used anymore
 x = xASL_qc_CleanOldQC(x, bCompleteRerun);
 
-%% D. ASL processing & quantification parameters
-x = xASL_module_ASL_ParseParameters(x, bOutput, nVolumes);
-
-%% E. Backward and forward compatibility of filenames
+%% D. Backward and forward compatibility of filenames
 if ~xASL_exist(x.P.Path_M0, 'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
     FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.nii$','FPList',[0 Inf]);
@@ -156,7 +153,7 @@ if xASL_exist(x.P.Pop_Path_qCBF_untreated,'file')
 end
 
 
-%% F. Split ASL and M0 within the ASL time series
+%% E. Split ASL and M0 within the ASL time series
 % Run this when the images hasn't been touched yet
 % The first three states are here, because the first two are run only conditionally
 
@@ -164,6 +161,13 @@ end
 % `xASL_bids_parseM0` (BIDS->Legacy conversion). We keep this here only for
 % backward compatibility, for images imported a long time ago
 if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mutex.HasState(StateName{3})
+	% Initialize the DummyScan and M0 position fields - by default empty
+	if ~isfield(x.modules.asl,'DummyScanPositionInASL4D')
+		x.modules.asl.DummyScanPositionInASL4D = [];
+	end
+	if ~isfield(x.modules.asl,'M0PositionInASL4D')
+		x.modules.asl.M0PositionInASL4D = [];
+	end
 	% Split the M0 and dummy scans from the ASL time-series
 	xASL_io_SplitASL(x.P.Path_ASL4D, x.modules.asl.M0PositionInASL4D, x.modules.asl.DummyScanPositionInASL4D);
 	
@@ -178,7 +182,7 @@ if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mute
 	end
 end
 
-%% G. DeltaM and CBF parsing - check if all/some volumes are deltams or CBFs
+%% F. DeltaM and CBF parsing - check if all/some volumes are deltams or CBFs
 % If TSV file exist
 % We don't have a subtraction image by default
 x.modules.asl.bContainsSubtracted = false;
@@ -206,7 +210,8 @@ else
 	end
 end
 
-
+%% G. ASL processing & quantification parameters
+x = xASL_module_ASL_ParseParameters(x, bOutput, nVolumes);
 
 %% ========================================================================================================================
 %% 1 TopUp (WIP, only supported if FSL installed)
@@ -548,13 +553,6 @@ if ~isfield(x.modules.asl,'bPVCNativeSpace') || isempty(x.modules.asl.bPVCNative
 	x.modules.asl.bPVCNativeSpace = 0;
 end
 
-% Initialize the DummyScan and M0 position fields - by default empty
-if ~isfield(x.modules.asl,'DummyScanPositionInASL4D') 
-	x.modules.asl.DummyScanPositionInASL4D = [];
-end
-if ~isfield(x.modules.asl,'M0PositionInASL4D') 
-	x.modules.asl.M0PositionInASL4D = [];
-end
 if ~isfield(x.modules.asl,'motionCorrection')
     x.modules.asl.motionCorrection = 1;
 end
