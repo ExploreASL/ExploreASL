@@ -420,6 +420,7 @@ if ~x.mutex.HasState(StateName{iState}) || ~x.mutex.HasState(StateName{iState+1}
 		% Note: The paths x.P.(Pop_)Path_PWI4D_used can differ from a PWI4D obtained from a simple subtraction as we may have merged sessions,
 		% and the user or ExploreASL may have removed volumes from PWI4D. That's why we save and use x.P.(Pop_)Path_PWI4D_used in memory, such
 		% that the correct NIfTI will be used later in the pipeline (e.g., in xASL_wrp_VisualQC)
+		x = xASL_module_ASL_CheckSaveCBF4D(x);
 	end
 end
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
@@ -526,11 +527,6 @@ function [x, bSkip] = xASL_module_ASL_CheckASL(x)
 
 end
 
-
-
-
-
-
 %% ========================================================================================================================
 %% =============================================================================================
 function [x] = xASL_module_ASL_ParseParameters(x, bOutput, nVolumes)
@@ -569,6 +565,12 @@ parLowestValue = {0 0 0};
 
 if exist(x.P.Path_ASL4D_json, 'file')
     jsonFields = xASL_bids_parms2BIDS([], xASL_io_ReadJson(x.P.Path_ASL4D_json), 0);
+else
+	jsonFields = [];
+end
+
+if ~isempty(jsonFields) && isfield(jsonFields, 'Q')
+	x.Q = jsonFields.Q;
 else
     warning(['Reverting to x.Q memory, JSON file missing' x.P.Path_ASL4D_json]);
 end
@@ -849,13 +851,8 @@ if ~isfield(x.modules.asl, 'bUseBasilQuantification') || isempty(x.modules.asl.b
     end
 end
 
-% Saving of CBF4D is only possible for single TE, single PLD sequences
-if ~isfield(x.modules.asl, 'SaveCBF4D') || isempty(x.modules.asl.SaveCBF4D)
-	x.modules.asl.SaveCBF4D = false;
-elseif x.modules.asl.SaveCBF4D && (x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQuantifyMultiTE)
-	warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, setting SaveCBF4D = false');
-	x.modules.asl.SaveCBF4D = false;
-end
+% Check if the SaveCBF4D is defined and can be set to ON
+[x] = xASL_module_ASL_CheckSaveCBF4D(x);
 
 % Manage absent M0
 if ~x.modules.asl.ApplyQuantification(5) && ~xASL_exist(x.P.Path_M0) && ~strcmp(x.Q.M0, 'Absent')
@@ -872,4 +869,16 @@ if strcmp(x.Q.M0, 'Absent')
     end
 end
 
+end
+
+%% ========================================================================================================================
+function [x] = xASL_module_ASL_CheckSaveCBF4D(x)
+
+% Saving of CBF4D is only possible for single TE, single PLD sequences
+if ~isfield(x.modules.asl, 'SaveCBF4D') || isempty(x.modules.asl.SaveCBF4D)
+	x.modules.asl.SaveCBF4D = false;
+elseif x.modules.asl.SaveCBF4D && (x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQuantifyMultiTE)
+	warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, setting SaveCBF4D = false');
+	x.modules.asl.SaveCBF4D = false;
+end
 end
