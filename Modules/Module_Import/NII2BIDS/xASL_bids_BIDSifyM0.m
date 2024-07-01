@@ -28,7 +28,7 @@ function jsonOut = xASL_bids_BIDSifyM0(jsonIn, jsonInASL, studyPar, pathM0In, pa
 % EXAMPLE: n/a
 %
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 % Check if required fields exist in studyPar but not in jsonIn
 jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,'m0');
@@ -77,6 +77,9 @@ else
 end
 
 jsonOut.RepetitionTimePreparation = jsonOut.RepetitionTime;
+if isfield(studyPar, 'RepetitionTimePreparationM0') && (~isempty(studyPar.RepetitionTimePreparationM0))
+	jsonOut.RepetitionTimePreparation = studyPar.RepetitionTimePreparationM0;
+end
 
 % Check for Philips Look-Locker
 % Look-Locker acquisition for Philips has often TR given as the length of a single readout of single volume, not as the entire cycle of all PLDs within a single labeling cycle

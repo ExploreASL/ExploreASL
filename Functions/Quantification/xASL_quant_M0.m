@@ -58,7 +58,7 @@ elseif ~isfield(x,'M0_usesASLtiming')
 end
 
 % Allow inputting path instead of image
-M0IM = xASL_io_Nifti2Im(inputM0);
+[M0IM, jsonM0] = xASL_io_Nifti2Im(inputM0, [], [], true);
 
 %% ------------------------------------------------------------------------------------------------------
 % 1. Correct scale slopes, if Philips
@@ -114,9 +114,15 @@ else
     if ~isempty(regexpi(x.Q.Vendor,'GE')) && isempty(regexpi(x.Q.Vendor,'Siemens')) &&  isempty(regexpi(x.Q.Vendor,'Philips'))
         TR = 2000; % GE does an inversion recovery, which takes 2 s and hence signal has decayed 2 s
         fprintf('%s\n','GE M0 scan, so using 2 s as TR (GE inversion recovery M0)');
-    else
-        M0_parms = xASL_adm_LoadParms(M0ParmsMat, x);
-        TR = M0_parms.RepetitionTime; % This will be either the separate M0-scan value or the ASL scan value (if UseControlAsM0)
+	else
+		% Preferably load the TR from the rM0.json
+		if isempty(jsonM0) || ~isfield(jsonM0, 'RepetitionTime')
+			% Outdated and soon to be discontinued variant
+			M0_parms = xASL_adm_LoadParms(M0ParmsMat, x);
+			TR = M0_parms.RepetitionTime; % This will be either the separate M0-scan value or the ASL scan value (if UseControlAsM0)
+		else
+			TR = jsonM0.RepetitionTime;
+		end
     end
 
     %% ------------------------------------------------------------------------------------------------------

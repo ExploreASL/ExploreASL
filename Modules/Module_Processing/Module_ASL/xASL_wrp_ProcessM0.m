@@ -58,8 +58,6 @@ function xASL_wrp_ProcessM0(x)
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
 
-
-
 %% -----------------------------------------------------------------------------------------------
 %% 0)   Administration
 if ~xASL_exist(x.P.Path_M0,'file')
@@ -71,11 +69,12 @@ end
 % Use either original or motion estimated ASL4D
 % Use despiked ASL only if spikes were detected and new file has been created
 % Otherwise, despiked_raw_asl = same as original file
-if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
-    x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
-end
-tempnii = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
-nVolumes = double(tempnii.hdr.dim(5));
+% PM: The code below is unused
+%if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
+%    x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
+%end
+%tempnii = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
+%nVolumes = double(tempnii.hdr.dim(5));
 
 if strcmpi(x.Q.M0,'no_background_suppression')
     x.Q.M0 = 'UseControlAsM0'; % backward compatibility
@@ -120,10 +119,35 @@ if ~isempty(jsonM0)
 
 			% Find the smallest of the previously selected positive nonzero TEs
 			minTE = min(uniqueNonzeroTE);
-			fprintf('Multi-TE M0 present. Using the shortest TE=%.1f ms for M0 calibration.\n', minTE*1000);
+			% JSON values were converted from BIDS (seconds) to Legacy (millisecond) during JSON reading
+			fprintf('Multi-TE M0 present. Using the shortest TE = %.1f ms for M0 calibration.\n', minTE);
 
-			% Average M0 image across all these minimal TEs
-			imM0 = xASL_stat_MeanNan(imM0(:,:,:,jsonM0.Q.EchoTime == minTE), 4);
+			% Find the correct indices and update the jsonM0 parameter
+			indMinTE = jsonM0.Q.EchoTime == minTE;
+			jsonM0.Q.EchoTime = jsonM0.Q.EchoTime(indMinTE);
+			if isfield(jsonM0, 'RepetitionTime') && length(jsonM0.RepetitionTime) > 1
+				jsonM0.RepetitionTime = jsonM0.RepetitionTime(indMinTE);
+			end
+
+			% Select the minimal TEs
+			imM0 = imM0(:, :, :, indMinTE);
+		end
+	end
+
+	% Check if there are multiple different TR times and select the longest one for M0 quantification
+	if isfield(jsonM0, 'RepetitionTime')
+		uniqueNonzeroTR = unique(jsonM0.RepetitionTime(jsonM0.RepetitionTime > 0));
+		if length(uniqueNonzeroTR) > 1
+			% We currently do not do inversion fitting in multi-TE M0, so we issue a warning and use the longest TR value
+			maxTR = max(uniqueNonzeroTR);
+			indMaxTR = jsonM0.RepetitionTime == maxTR;
+
+			% Select the volumes with maximal TR
+			imM0 = imM0(:, :, :, indMaxTR);
+			jsonM0.RepetitionTime = jsonM0.RepetitionTime(indMaxTR);
+			if isfield(jsonM0.Q, 'EchoTime') && length(jsonM0.Q.EchoTime) > 1
+				jsonM0.Q.EchoTime = jsonM0.Q.EchoTime(indMaxTR);
+			end
 		end
 	end
 end
