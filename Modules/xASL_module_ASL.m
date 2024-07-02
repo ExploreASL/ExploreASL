@@ -420,6 +420,15 @@ if ~x.mutex.HasState(StateName{iState}) || ~x.mutex.HasState(StateName{iState+1}
 		% Note: The paths x.P.(Pop_)Path_PWI4D_used can differ from a PWI4D obtained from a simple subtraction as we may have merged sessions,
 		% and the user or ExploreASL may have removed volumes from PWI4D. That's why we save and use x.P.(Pop_)Path_PWI4D_used in memory, such
 		% that the correct NIfTI will be used later in the pipeline (e.g., in xASL_wrp_VisualQC)
+
+		% Check again if we have multiple values for certain ASL parameters (PLD, LD, TE)
+		fprintf('%s\n','Sessions were concatenated. Checking again if LD, PLD, TE have multiple values...');
+		[tempPath, tempFile] = xASL_fileparts(x.P.Path_PWI4D_used);
+		tempASL = xASL_io_Nifti2Im(x.P.Path_PWI4D_used);
+		nVolumes = size(tempASL, 4);
+		x = xASL_module_ASL_MultiParameterParsing(x, fullfile(tempPath, [tempFile '.json'], nVolumes);
+
+		% Check again that we can save CBF4D for the given ASL4D
 		x = xASL_module_ASL_CheckSaveCBF4D(x);
 	end
 end
@@ -558,133 +567,7 @@ end
 
 
 %% 3. Multi-parameter parsing
-parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
-parAbbreviation = {'TE' 'PLD' 'LD'};
-parTolerance = {0.001 0 0};
-parLowestValue = {0 0 0};
-
-if exist(x.P.Path_ASL4D_json, 'file')
-    jsonFields = xASL_bids_parms2BIDS([], xASL_io_ReadJson(x.P.Path_ASL4D_json), 0);
-else
-	jsonFields = [];
-end
-
-if ~isempty(jsonFields) && isfield(jsonFields, 'Q')
-	x.Q = jsonFields.Q;
-else
-    warning(['Reverting to x.Q memory, JSON file missing' x.P.Path_ASL4D_json]);
-end
-
-for iPar=1:length(parNames)
-
-    if ~isfield(x.Q, parNames{iPar})
-        % if the field is completely missing
-        warning(['Missing field x.Q.' parNames{iPar} ', this may be needed for quantification']);
-        % After the warning, we default to single-parameter processing
-        fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
-		x.Q.(parNames{iPar}) = [];
-		x.Q.(['unique' parNames{iPar}]) = [];
-	    x.Q.(['nUnique' parNames{iPar}]) = 1;
-        x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
-    
-    elseif isempty(x.Q.(parNames{iPar})) || ~isnumeric(x.Q.(parNames{iPar}))
-        % if the field exists but is illegal
-        warning(['Illegal field x.Q.' parNames{iPar} ', this should not be empty and should contain numerical values']);
-        % After the warning, we default to single-parameter processing
-        fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
-		x.Q.(parNames{iPar}) = [];
-		x.Q.(['unique' parNames{iPar}]) = [];
-	    x.Q.(['nUnique' parNames{iPar}]) = 1;
-        x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
-    else
-        % Check, with allowed tolerance (0 is without tolerance) what the unique parameters are
-        x.Q.(['unique' parNames{iPar}]) = uniquetol(x.Q.(parNames{iPar}), parTolerance{iPar});
-    
-        x.Q.(['nUnique' parNames{iPar}]) = length(x.Q.(['unique' parNames{iPar}]));
-        % Obtain the number of unique parameters
-    
-        if sum(x.Q.(parNames{iPar})<=parLowestValue{iPar})>0
-            warning(['x.Q.' parNames{iPar} ' should be larger than ' num2str(parLowestValue{iPar})]);
-        end
-    
-        % Handle different number of parameters (== potentially different ASL sequences)
-        if x.Q.(['nUnique' parNames{iPar}]) == 1
-            fprintf('%s\n', ['Single-' parAbbreviation{iPar} ' ASL detected']);
-        elseif x.Q.(['nUnique' parNames{iPar}]) == 2
-            fprintf('%s\n', ['Dual-' parAbbreviation{iPar} ' ASL detected']);
-            
-            if strcmp(parAbbreviation{iPar}, 'TE')
-                warning('Dual-echo ASL detected, dual-echo ASL processing not yet implemented');
-                fprintf('%s\n', 'We will process these ASL images as if they have a single echo, using the first echo only');
-                fprintf('%s\n', 'Assuming that this is a dual-echo ASL+BOLD sequence');
-    
-                x.Q.EchoTime = min(x.Q.EchoTime);
-		        % Update the other fields as well
-		         x.Q.uniqueEchoTime = x.Q.EchoTime;
-		         x.Q.nUniqueEchoTime = 1;
-            end
-    
-        elseif x.Q.(['nUnique' parNames{iPar}])>2
-            fprintf('%s\n', ['Multiple ' parNames{iPar} 's detected, processing this as multi-' parAbbreviation{iPar} ' ASL']);
-            fprintf('%s\n', 'Note that this feature is still under development');
-    
-            if strcmp(parAbbreviation{iPar}, 'PLD')
-                if isfield(x.modules.asl, 'bQuantifyMultiPLD') && ~x.modules.asl.bQuantifyMultiPLD
-                    fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.');
-                else
-                % In case it wasn't defined or it was defined as true, we can set it to true
-                x.modules.asl.bQuantifyMultiPLD = true;
-                end
-            elseif strcmp(parAbbreviation{iPar}, 'LD')
-                if x.modules.asl.bQuantifyMultiPLD
-                    fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
-                else
-                    warning('Multi labeling durations detected but multiPLD-quantification is turned off, is this correct?');
-                end
-            end
-        end
-    
-        % Now we print to the screen which unique parameter-values we detected
-        fprintf('%s\n', ['Detected the following unique ' parNames{iPar} 's (ms):'])
-        for iVol = 1:x.Q.(['nUnique' parNames{iPar}])
-            fprintf('%.2f, ', round(x.Q.(['unique' parNames{iPar}])(iVol), 4));
-        end
-        fprintf('\n');
-    end
-    
-    % If multi-parameter data is detected, we switch on multi-parameter quantification by default. Unless this has been deactived in dataPar.json
-    if x.Q.(['nUnique' parNames{iPar}])>1
-	    if ~isfield(x.modules.asl, ['bQuantifyMulti' parAbbreviation{iPar}]) || isempty(x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]))
-		    % By default, initialize as Multi-par quantification as true
-		    x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = true;
-	    end
-    else
-	    x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
-    end
-    
-    % Deal with too short vectors (e.g., repetitions in the case of single-parameter)
-    nPar = length(x.Q.([parNames{iPar}]));
-	if nPar > 0
-		if mod(nVolumes, nPar)~=0
-			error(['Number of ' parNames{iPar} 's (n=' xASL_num2str(nPar) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
-			% If we don't issue an error here, repmat will crash
-		end
-
-		factorPar = nVolumes/nPar;
-		x.Q.(parNames{iPar}) = repmat(x.Q.(parNames{iPar})(:), [factorPar 1]);
-		nPar = length(x.Q.(parNames{iPar}));
-
-		% Number of echoes should now be equal to the number of ASL volumes
-		if nPar~=nVolumes
-			warning(['Number of ' parNames{iPar} ' (n=' xASL_num2str(nPar) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
-		end
-	end
-    % Save the updated quantification parameters in the JSON sidecar
-    jsonFields.Q.(parNames{iPar}) = x.Q.(parNames{iPar});
-end
-
-xASL_io_WriteJson(x.P.Path_ASL4D_json, xASL_bids_parms2BIDS(jsonFields, [], 1), 1);
-
+x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_ASL4D_json, nVolumes);
 
 %% 4. TimeEncoded parsing
 % Check if TimeEncoded is defined
@@ -881,4 +764,135 @@ elseif x.modules.asl.SaveCBF4D && (x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQu
 	warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, setting SaveCBF4D = false');
 	x.modules.asl.SaveCBF4D = false;
 end
+end
+
+%% ========================================================================================================================
+function x = xASL_module_ASL_MultiParameterParsing(x, pathJSON, nVolumes)
+% Read the ASL parameters (PLD, LD, TE) from JSON and calculate the number of unique values
+parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
+parAbbreviation = {'TE' 'PLD' 'LD'};
+parTolerance = {0.001 0 0};
+parLowestValue = {0 0 0};
+
+if exist(pathJSON, 'file')
+    jsonFields = xASL_bids_parms2BIDS([], xASL_io_ReadJson(pathJSON), 0);
+else
+	jsonFields = [];
+end
+
+if ~isempty(jsonFields) && isfield(jsonFields, 'Q')
+	x.Q = jsonFields.Q;
+else
+    warning(['Reverting to x.Q memory, JSON file missing: ' pathJSON]);
+end
+
+for iPar=1:length(parNames)
+
+    if ~isfield(x.Q, parNames{iPar})
+        % if the field is completely missing
+        warning(['Missing field x.Q.' parNames{iPar} ', this may be needed for quantification']);
+        % After the warning, we default to single-parameter processing
+        fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
+		x.Q.(parNames{iPar}) = [];
+		x.Q.(['unique' parNames{iPar}]) = [];
+	    x.Q.(['nUnique' parNames{iPar}]) = 1;
+        x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
+    
+    elseif isempty(x.Q.(parNames{iPar})) || ~isnumeric(x.Q.(parNames{iPar}))
+        % if the field exists but is illegal
+        warning(['Illegal field x.Q.' parNames{iPar} ', this should not be empty and should contain numerical values']);
+        % After the warning, we default to single-parameter processing
+        fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
+		x.Q.(parNames{iPar}) = [];
+		x.Q.(['unique' parNames{iPar}]) = [];
+	    x.Q.(['nUnique' parNames{iPar}]) = 1;
+        x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
+    else
+        % Check, with allowed tolerance (0 is without tolerance) what the unique parameters are
+        x.Q.(['unique' parNames{iPar}]) = uniquetol(x.Q.(parNames{iPar}), parTolerance{iPar});
+    
+        x.Q.(['nUnique' parNames{iPar}]) = length(x.Q.(['unique' parNames{iPar}]));
+        % Obtain the number of unique parameters
+    
+        if sum(x.Q.(parNames{iPar})<=parLowestValue{iPar})>0
+            warning(['x.Q.' parNames{iPar} ' should be larger than ' num2str(parLowestValue{iPar})]);
+        end
+    
+        % Handle different number of parameters (== potentially different ASL sequences)
+        if x.Q.(['nUnique' parNames{iPar}]) == 1
+            fprintf('%s\n', ['Single-' parAbbreviation{iPar} ' ASL detected']);
+        elseif x.Q.(['nUnique' parNames{iPar}]) == 2
+            fprintf('%s\n', ['Dual-' parAbbreviation{iPar} ' ASL detected']);
+            
+            if strcmp(parAbbreviation{iPar}, 'TE')
+                warning('Dual-echo ASL detected, dual-echo ASL processing not yet implemented');
+                fprintf('%s\n', 'We will process these ASL images as if they have a single echo, using the first echo only');
+                fprintf('%s\n', 'Assuming that this is a dual-echo ASL+BOLD sequence');
+    
+                x.Q.EchoTime = min(x.Q.EchoTime);
+		        % Update the other fields as well
+		         x.Q.uniqueEchoTime = x.Q.EchoTime;
+		         x.Q.nUniqueEchoTime = 1;
+            end
+    
+        elseif x.Q.(['nUnique' parNames{iPar}])>2
+            fprintf('%s\n', ['Multiple ' parNames{iPar} 's detected, processing this as multi-' parAbbreviation{iPar} ' ASL']);
+            fprintf('%s\n', 'Note that this feature is still under development');
+    
+            if strcmp(parAbbreviation{iPar}, 'PLD')
+                if isfield(x.modules.asl, 'bQuantifyMultiPLD') && ~x.modules.asl.bQuantifyMultiPLD
+                    fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.');
+                else
+                % In case it wasn't defined or it was defined as true, we can set it to true
+                x.modules.asl.bQuantifyMultiPLD = true;
+                end
+            elseif strcmp(parAbbreviation{iPar}, 'LD')
+                if x.modules.asl.bQuantifyMultiPLD
+                    fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
+                else
+                    warning('Multi labeling durations detected but multiPLD-quantification is turned off, is this correct?');
+                end
+            end
+        end
+    
+        % Now we print to the screen which unique parameter-values we detected
+        fprintf('%s\n', ['Detected the following unique ' parNames{iPar} 's (ms):'])
+        for iVol = 1:x.Q.(['nUnique' parNames{iPar}])
+            fprintf('%.2f, ', round(x.Q.(['unique' parNames{iPar}])(iVol), 4));
+        end
+        fprintf('\n');
+    end
+    
+    % If multi-parameter data is detected, we switch on multi-parameter quantification by default. Unless this has been deactived in dataPar.json
+    if x.Q.(['nUnique' parNames{iPar}])>1
+	    if ~isfield(x.modules.asl, ['bQuantifyMulti' parAbbreviation{iPar}]) || isempty(x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]))
+		    % By default, initialize as Multi-par quantification as true
+		    x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = true;
+	    end
+    else
+	    x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
+    end
+    
+    % Deal with too short vectors (e.g., repetitions in the case of single-parameter)
+    nPar = length(x.Q.([parNames{iPar}]));
+	if nPar > 0
+		if mod(nVolumes, nPar)~=0
+			error(['Number of ' parNames{iPar} 's (n=' xASL_num2str(nPar) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
+			% If we don't issue an error here, repmat will crash
+		end
+
+		factorPar = nVolumes/nPar;
+		x.Q.(parNames{iPar}) = repmat(x.Q.(parNames{iPar})(:), [factorPar 1]);
+		nPar = length(x.Q.(parNames{iPar}));
+
+		% Number of echoes should now be equal to the number of ASL volumes
+		if nPar~=nVolumes
+			warning(['Number of ' parNames{iPar} ' (n=' xASL_num2str(nPar) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
+		end
+	end
+    % Save the updated quantification parameters in the JSON sidecar
+    jsonFields.Q.(parNames{iPar}) = x.Q.(parNames{iPar});
+end
+
+xASL_io_WriteJson(pathJSON, xASL_bids_parms2BIDS(jsonFields, [], 1), 1);
 end
