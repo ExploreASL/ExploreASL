@@ -134,19 +134,20 @@ if ~isempty(jsonM0)
 		end
 	end
 
-	% Check if there are multiple different TR times and select the longest one for M0 quantification
+	% Check if there are multiple different TR times and select the optimal one for M0 quantification
 	if isfield(jsonM0, 'RepetitionTime')
 		uniqueNonzeroTR = unique(jsonM0.RepetitionTime(jsonM0.RepetitionTime > 0));
 		if length(uniqueNonzeroTR) > 1
-			% We currently do not do inversion fitting in multi-TE M0, so we issue a warning and use the longest TR value
-			maxTR = max(uniqueNonzeroTR);
-			indMaxTR = jsonM0.RepetitionTime == maxTR;
+			% We currently do not do inversion fitting in multi-TE M0, so we issue a warning and use the TR value closest to 2000ms
+			[~, optimalTR] = min(abs(uniqueNonzeroTR-2000));
+			optimalTR = uniqueNonzeroTR(optimalTR);
+			indOptimalTR = jsonM0.RepetitionTime == optimalTR;
 
-			% Select the volumes with maximal TR
-			imM0 = imM0(:, :, :, indMaxTR);
-			jsonM0.RepetitionTime = jsonM0.RepetitionTime(indMaxTR);
+			% Select the volumes with optimal TR
+			imM0 = imM0(:, :, :, indOptimalTR);
+			jsonM0.RepetitionTime = jsonM0.RepetitionTime(indOptimalTR);
 			if isfield(jsonM0.Q, 'EchoTime') && length(jsonM0.Q.EchoTime) > 1
-				jsonM0.Q.EchoTime = jsonM0.Q.EchoTime(indMaxTR);
+				jsonM0.Q.EchoTime = jsonM0.Q.EchoTime(indOptimalTR);
 			end
 		end
 	end
