@@ -91,7 +91,7 @@ if ~StructuralDerivativesExist
         fprintf('also, there are no raw structural scans present\n');
 		fprintf('Consider enabling "x.modules.asl.bUseMNIasDummyStructural" to run the ASL module without structural images\n');
         error('Skipping ASL module');
-    end
+	end
 end
 
 
@@ -426,15 +426,16 @@ if ~x.mutex.HasState(StateName{iState}) || ~x.mutex.HasState(StateName{iState+1}
 		[tempPath, tempFile] = xASL_fileparts(x.P.Path_PWI4D_used);
 		tempASL = xASL_io_Nifti2Im(x.P.Path_PWI4D_used);
 		nVolumes = size(tempASL, 4);
-		x = xASL_module_ASL_MultiParameterParsing(x, fullfile(tempPath, [tempFile '.json'], nVolumes);
-
-		% Check again that we can save CBF4D for the given ASL4D
-		x = xASL_module_ASL_CheckSaveCBF4D(x);
+		x = xASL_module_ASL_MultiParameterParsing(x, fullfile(tempPath, [tempFile '.json']), nVolumes);
 	end
 end
+
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
 % Including PVC
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
+	% Check multi-parametric quantification options
+	x = xASL_module_ASL_MultiParameterQuantificationOptions(x);
+
     fprintf('%s\n','Quantifying ASL:   ');
     % If BASIL quantification will be performed, only native space analysis is possible
     if isfield(x.modules.asl, 'bUseBasilQuantification') && x.modules.asl.bUseBasilQuantification
@@ -726,17 +727,6 @@ if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSup
     x.Q.BackgroundSuppressionNumberPulses = x.BackgroundSuppressionNumberPulses;
 end
 
-if ~isfield(x.modules.asl, 'bUseBasilQuantification') || isempty(x.modules.asl.bUseBasilQuantification)
-	x.modules.asl.bUseBasilQuantification = false;
-    
-    if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
-        x.modules.asl.bUseBasilQuantification = true;
-    end
-end
-
-% Check if the SaveCBF4D is defined and can be set to ON
-[x] = xASL_module_ASL_CheckSaveCBF4D(x);
-
 % Manage absent M0
 if ~x.modules.asl.ApplyQuantification(5) && ~xASL_exist(x.P.Path_M0) && ~strcmp(x.Q.M0, 'Absent')
     warning('M0 division was disabled & M0 missing, setting M0 to "absent"');
@@ -755,18 +745,6 @@ end
 end
 
 %% ========================================================================================================================
-function [x] = xASL_module_ASL_CheckSaveCBF4D(x)
-
-% Saving of CBF4D is only possible for single TE, single PLD sequences
-if ~isfield(x.modules.asl, 'SaveCBF4D') || isempty(x.modules.asl.SaveCBF4D)
-	x.modules.asl.SaveCBF4D = false;
-elseif x.modules.asl.SaveCBF4D && (x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQuantifyMultiTE)
-	warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, setting SaveCBF4D = false');
-	x.modules.asl.SaveCBF4D = false;
-end
-end
-
-%% ========================================================================================================================
 function x = xASL_module_ASL_MultiParameterParsing(x, pathJSON, nVolumes)
 % Read the ASL parameters (PLD, LD, TE) from JSON and calculate the number of unique values
 parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
@@ -781,7 +759,10 @@ else
 end
 
 if ~isempty(jsonFields) && isfield(jsonFields, 'Q')
-	x.Q = jsonFields.Q;
+	xQfields = fieldnames(jsonFields.Q);
+	for iField = 1:length(xQfields)
+		x.Q.(xQfields{iField}) = jsonFields.Q.(xQfields{iField});
+	end
 else
     warning(['Reverting to x.Q memory, JSON file missing: ' pathJSON]);
 end
@@ -796,8 +777,6 @@ for iPar=1:length(parNames)
 		x.Q.(parNames{iPar}) = [];
 		x.Q.(['unique' parNames{iPar}]) = [];
 	    x.Q.(['nUnique' parNames{iPar}]) = 1;
-        x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
-    
     elseif isempty(x.Q.(parNames{iPar})) || ~isnumeric(x.Q.(parNames{iPar}))
         % if the field exists but is illegal
         warning(['Illegal field x.Q.' parNames{iPar} ', this should not be empty and should contain numerical values']);
@@ -806,22 +785,20 @@ for iPar=1:length(parNames)
 		x.Q.(parNames{iPar}) = [];
 		x.Q.(['unique' parNames{iPar}]) = [];
 	    x.Q.(['nUnique' parNames{iPar}]) = 1;
-        x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
     else
         % Check, with allowed tolerance (0 is without tolerance) what the unique parameters are
         x.Q.(['unique' parNames{iPar}]) = uniquetol(x.Q.(parNames{iPar}), parTolerance{iPar});
-    
         x.Q.(['nUnique' parNames{iPar}]) = length(x.Q.(['unique' parNames{iPar}]));
-        % Obtain the number of unique parameters
-    
-        if sum(x.Q.(parNames{iPar})<=parLowestValue{iPar})>0
+
+		% Obtain the number of unique parameters
+		if sum(x.Q.(parNames{iPar})<=parLowestValue{iPar})>0
             warning(['x.Q.' parNames{iPar} ' should be larger than ' num2str(parLowestValue{iPar})]);
-        end
+		end
     
         % Handle different number of parameters (== potentially different ASL sequences)
-        if x.Q.(['nUnique' parNames{iPar}]) == 1
+		if x.Q.(['nUnique' parNames{iPar}]) == 1
             fprintf('%s\n', ['Single-' parAbbreviation{iPar} ' ASL detected']);
-        elseif x.Q.(['nUnique' parNames{iPar}]) == 2
+		elseif x.Q.(['nUnique' parNames{iPar}]) == 2
             fprintf('%s\n', ['Dual-' parAbbreviation{iPar} ' ASL detected']);
             
             if strcmp(parAbbreviation{iPar}, 'TE')
@@ -834,26 +811,7 @@ for iPar=1:length(parNames)
 		         x.Q.uniqueEchoTime = x.Q.EchoTime;
 		         x.Q.nUniqueEchoTime = 1;
             end
-    
-        elseif x.Q.(['nUnique' parNames{iPar}])>2
-            fprintf('%s\n', ['Multiple ' parNames{iPar} 's detected, processing this as multi-' parAbbreviation{iPar} ' ASL']);
-            fprintf('%s\n', 'Note that this feature is still under development');
-    
-            if strcmp(parAbbreviation{iPar}, 'PLD')
-                if isfield(x.modules.asl, 'bQuantifyMultiPLD') && ~x.modules.asl.bQuantifyMultiPLD
-                    fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.');
-                else
-                % In case it wasn't defined or it was defined as true, we can set it to true
-                x.modules.asl.bQuantifyMultiPLD = true;
-                end
-            elseif strcmp(parAbbreviation{iPar}, 'LD')
-                if x.modules.asl.bQuantifyMultiPLD
-                    fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
-                else
-                    warning('Multi labeling durations detected but multiPLD-quantification is turned off, is this correct?');
-                end
-            end
-        end
+		end
     
         % Now we print to the screen which unique parameter-values we detected
         fprintf('%s\n', ['Detected the following unique ' parNames{iPar} 's (ms):'])
@@ -861,16 +819,6 @@ for iPar=1:length(parNames)
             fprintf('%.2f, ', round(x.Q.(['unique' parNames{iPar}])(iVol), 4));
         end
         fprintf('\n');
-    end
-    
-    % If multi-parameter data is detected, we switch on multi-parameter quantification by default. Unless this has been deactived in dataPar.json
-    if x.Q.(['nUnique' parNames{iPar}])>1
-	    if ~isfield(x.modules.asl, ['bQuantifyMulti' parAbbreviation{iPar}]) || isempty(x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]))
-		    % By default, initialize as Multi-par quantification as true
-		    x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = true;
-	    end
-    else
-	    x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
     end
     
     % Deal with too short vectors (e.g., repetitions in the case of single-parameter)
@@ -895,4 +843,65 @@ for iPar=1:length(parNames)
 end
 
 xASL_io_WriteJson(pathJSON, xASL_bids_parms2BIDS(jsonFields, [], 1), 1);
+end
+
+function x = xASL_module_ASL_MultiParameterQuantificationOptions(x)
+% Check the ASL parameters (PLD, LD, TE) previously parsed and set the specific Multi-parameter quantification options
+parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
+parAbbreviation = {'TE' 'PLD' 'LD'};
+
+for iPar=1:length(parNames)
+	if ~isfield(x.Q, parNames{iPar})
+        x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
+	elseif isempty(x.Q.(parNames{iPar})) || ~isnumeric(x.Q.(parNames{iPar}))
+        x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;		
+	else
+		 if x.Q.(['nUnique' parNames{iPar}])>2
+			 fprintf('%s\n', ['Multiple ' parNames{iPar} 's detected, processing this as multi-' parAbbreviation{iPar} ' ASL']);
+			 fprintf('%s\n', 'Note that this feature is still under development');
+    
+			 if strcmp(parAbbreviation{iPar}, 'PLD')
+				 if isfield(x.modules.asl, 'bQuantifyMultiPLD') && ~x.modules.asl.bQuantifyMultiPLD
+					 fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.');
+				 else
+					 % In case it wasn't defined or it was defined as true, we can set it to true
+					 x.modules.asl.bQuantifyMultiPLD = true;
+				 end
+			 elseif strcmp(parAbbreviation{iPar}, 'LD')
+				 if x.modules.asl.bQuantifyMultiPLD
+					 fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
+				 else
+					 warning('Multi labeling durations detected but multiPLD-quantification is turned off, is this correct?');
+				 end
+			 end
+		 end
+	end
+
+	 % If multi-parameter data is detected, we switch on multi-parameter quantification by default. Unless this has been deactived in dataPar.json
+    if x.Q.(['nUnique' parNames{iPar}])>1
+	    if ~isfield(x.modules.asl, ['bQuantifyMulti' parAbbreviation{iPar}]) || isempty(x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]))
+		    % By default, initialize as Multi-par quantification as true
+		    x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = true;
+	    end
+    else
+	    x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
+    end
+end
+
+if ~isfield(x.modules.asl, 'bUseBasilQuantification') || isempty(x.modules.asl.bUseBasilQuantification)
+	x.modules.asl.bUseBasilQuantification = false;
+    
+    if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
+        x.modules.asl.bUseBasilQuantification = true;
+    end
+end
+
+% Saving of CBF4D is only possible for single TE, single PLD sequences
+if ~isfield(x.modules.asl, 'SaveCBF4D') || isempty(x.modules.asl.SaveCBF4D)
+	x.modules.asl.SaveCBF4D = false;
+elseif x.modules.asl.SaveCBF4D && (x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQuantifyMultiTE)
+	warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, setting SaveCBF4D = false');
+	x.modules.asl.SaveCBF4D = false;
+end
+
 end
