@@ -25,7 +25,7 @@ function [ColumnOut] = xASL_im_IM2Column(ImageIn, BrainMask, ApplyShiftDim)
 %
 % EXAMPLE: ColumnOut = xASL_im_IM2Column(ImageIn, BrainMask);
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 
 
 %%  ------------------------------------------------------------
@@ -34,8 +34,14 @@ if nargin<3 || isempty(ApplyShiftDim)
     ApplyShiftDim = true;
 end
 
-if ApplyShiftDim && length(size(ImageIn))>3
-    ImageIn = shiftdim(ImageIn,length(size(ImageIn))-3);
+if length(size(ImageIn))>3
+	if ApplyShiftDim
+		ImageIn = shiftdim(ImageIn,length(size(ImageIn))-3);
+	else
+		% Issue a warning and output all NaNs
+		warning('Cannot accept 4D image when ApplyShiftDim is FALSE');
+		ImageIn = nan(size(ImageIn));
+	end
 else
     ApplyShiftDim = false; % to avoid re-shifting below
 end

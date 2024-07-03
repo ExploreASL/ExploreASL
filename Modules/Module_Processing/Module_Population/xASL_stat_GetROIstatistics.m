@@ -494,11 +494,7 @@ for iSubject=1:x.dataset.nSubjects
 			FilePath = fullfile(x.dir.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
 			if xASL_exist(FilePath, 'file')
 				Data3D = xASL_io_Nifti2Im(FilePath);
-				if size(Data3D,4) > 1
-					warning(['File ' FilePath ' includes more than one volume. Skipping population statistics for this file.'])
-				else
-					DataIm = xASL_im_IM2Column(Data3D,x.S.masks.WBmask);
-				end
+				DataIm = xASL_im_IM2Column(Data3D, x.S.masks.WBmask, false);
 			end
 
             if x.S.bMasking(2)==1
@@ -514,11 +510,7 @@ for iSubject=1:x.dataset.nSubjects
 			FilePath = fullfile(x.D.PopDir, [x.S.InputDataStr '_' x.S.SubjectSessionID{SubjSess,1} '.nii']);
 			if xASL_exist(FilePath, 'file')
 				Data3D = xASL_io_Nifti2Im(FilePath,[121 145 121]);
-				if size(Data3D,4) > 1
-					warning(['File ' FilePath ' includes more than one volume. Skipping population statistics for this file.'])
-				else
-					DataIm = xASL_im_IM2Column(Data3D,x.S.masks.WBmask);
-				end
+				DataIm = xASL_im_IM2Column(Data3D, x.S.masks.WBmask, false);
 			end
 
             if x.S.bMasking(2)==1
