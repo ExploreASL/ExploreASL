@@ -25,18 +25,27 @@ function xASL_wrp_ProcessM0(x)
 % DESCRIPTION: This submodule performs the image processing and
 %           quantification of M0 maps (if they exist), with the following steps:
 %
-%           1. Register M0 to mean control if it exists
-%              Before registration, contrast is equalized between the
-%              images & biasfields are removed
-%           2. Quantify M0 (correction scale slope & incomplete T1 recovery)
-%           3. Masking & smoothing of M0 image, either using:
-%              A) traditional technique (very sharp masking & little smoothing)
-%              B) new ExploreASL-specific technique:
-%                 * extrapolating outside mask (avoiding artifacts from too
-%                   much or too little masking)
-%                 * smooth very extensively, to create a biasfield
-%                   (increases robustness & comparison of M0 between
-%                   sequences/patients)
+% 0.    Administration
+%
+% 0B.   Scale PD between ASL & M0 if voxel volumes differ
+% 0C. Use the M0 with the lowest TE (if we have multiple M0s)
+% 0D. Use the M0 with the TR closest to 2000 ms (if we have multiple M0s)
+%
+% 1.    Register M0 to mean control if it exists
+%           Before registration, contrast is equalized between the
+%           images & biasfields are removed
+% 1A.   Clip, mask & equalize contrast & intensity range
+% 1B.   Remove biasfields
+% 1C.   Rigid-body registration
+%
+% 2.    Quantify M0 (correction scale slope & incomplete T1 recovery)
+%
+% 3A.   Conventional M0 masking & minor smoothing (doesnt work with smooth ASL images)
+%           traditional technique (very sharp masking & little smoothing)
+% 3B.   New ExploreASL strategy for M0 masking & smoothing
+%           smooth very extensively, to create a biasfield
+%           (increases robustness & comparison of M0 between
+%           sequences/patients)
 %
 %     Any M0 will be processed here. Even if part of the subjects does not
 %     have an M0, since this can be later imputed, or an average population
@@ -59,7 +68,7 @@ function xASL_wrp_ProcessM0(x)
 % Copyright (C) 2015-2024 ExploreASL
 
 %% -----------------------------------------------------------------------------------------------
-%% 0)   Administration
+%% 0.   Administration
 if ~xASL_exist(x.P.Path_M0,'file')
     % skip this part. This should be only the case when using a single value for M0,
     % if the mean_control is used as M0, it should be copied to be used as M0 previously
@@ -69,10 +78,12 @@ end
 % Use either original or motion estimated ASL4D
 % Use despiked ASL only if spikes were detected and new file has been created
 % Otherwise, despiked_raw_asl = same as original file
+
+if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
+   x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
+end
+
 % PM: The code below is unused
-%if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
-%    x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
-%end
 %tempnii = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
 %nVolumes = double(tempnii.hdr.dim(5));
 
@@ -87,10 +98,10 @@ elseif x.modules.asl.M0_conventionalProcessing == 1 && strcmpi(x.Q.MRAcquisition
        warning('M0 conventional processing disabled, since this masking does not work with 3D sequences');
 end
 
-%% 0B) Scale PD between ASL & M0 if voxel volumes differ
+%% 0B. Scale PD between ASL & M0 if voxel volumes differ
 M0nii          = xASL_io_ReadNifti(x.P.Path_M0);
 M0voxelVolume  = prod(M0nii.hdr.pixdim(2:4));
-ASLnii         = xASL_io_ReadNifti(x.P.Path_ASL4D);
+ASLnii         = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
 ASLvoxelVolume = prod(ASLnii.hdr.pixdim(2:4));
 M0ScaleVolume  = ASLvoxelVolume/M0voxelVolume;
 
@@ -104,10 +115,9 @@ if xASL_stat_SumNan(imM0(:))==0
     error('Invalid M0, M0 image processing will fail, skipping');
 end
 
-% Load JSON and locate TE part
+%% 0C. Use the M0 with the lowest TE (if we have multiple M0s)
 if ~isempty(jsonM0)
 	if isfield(jsonM0.Q, 'EchoTime')
-		% If there is more than 1 different nonzero TE, then we have to select the shortest positive non-zero one
 		% Select only non-zero TEs
 		uniqueNonzeroTE = unique(jsonM0.Q.EchoTime(jsonM0.Q.EchoTime > 0));
 		if length(uniqueNonzeroTE) > 1
@@ -134,7 +144,7 @@ if ~isempty(jsonM0)
 		end
 	end
 
-	% Check if there are multiple different TR times and select the optimal one for M0 quantification
+%% 0D. Use the M0 with the TR closest to 2000 ms (if we have multiple M0s)
 	if isfield(jsonM0, 'RepetitionTime')
 		uniqueNonzeroTR = unique(jsonM0.RepetitionTime(jsonM0.RepetitionTime > 0));
 		if length(uniqueNonzeroTR) > 1
@@ -163,7 +173,7 @@ xASL_im_CreateASLDeformationField(x); % make sure we have the deformation field 
 
 
 %% -----------------------------------------------------------------------------------------------
-%% 1)   Register M0 to mean control if it exists
+%% 1.   Register M0 to mean control if it exists
 % Registering x.P.Path_M0 to ASL, changing x.P.Path_M0 header only
 % If there is only a single ASL PWI (e.g. GE 3D FSE), this is not performed because of
 % inequality of image contrast for ASL & M0, and because they usually
@@ -192,7 +202,7 @@ elseif ~strcmpi(x.Q.M0, 'UseControlAsM0') && isempty(regexpi(x.Q.PulseSequenceTy
 
 
 
-    %% 1A) Clip, mask & equalize contrast & intensity range
+    %% 1A. Clip, mask & equalize contrast & intensity range
     %     xASL_im_EqualizeContrastImages( x.P.Path_rrM0, refIM );
 
     % First do the center of mass alignment
@@ -200,12 +210,12 @@ elseif ~strcmpi(x.Q.M0, 'UseControlAsM0') && isempty(regexpi(x.Q.PulseSequenceTy
         xASL_im_CenterOfMass(x.P.Path_rM0, {x.P.Path_M0} );
     end
 
-    %% 2B) remove biasfields
+    %% 1B. Remove biasfields
     xASL_spm_BiasfieldCorrection(x.P.Path_rM0, x.D.SPMDIR, x.settings.Quality, [], x.P.Path_rrM0);
     xASL_spm_BiasfieldCorrection(refPath, x.D.SPMDIR, x.settings.Quality, [], refPath);
 
 
-    %% 3C) Rigid-body registration
+    %% 1C. Rigid-body registration
     xASL_spm_coreg(refPath, x.P.Path_rrM0, {x.P.Path_M0;x.P.Path_rM0}, x);
     xASL_delete(x.P.Path_mask_T1);
     xASL_delete(x.P.Path_rrM0);
@@ -213,13 +223,13 @@ end
 
 
 %% -----------------------------------------------------------------------------------------------
-%% 2) Quantify M0 (correction scale slope & incomplete T1 recovery)
+%% 2. Quantify M0 (correction scale slope & incomplete T1 recovery)
 M0_im = xASL_quant_M0(x.P.Path_rM0, x);
 
 
 
 %% -----------------------------------------------------------------------------------------------
-%% 3A) Conventional M0 masking & minor smoothing (doesnt work with smooth ASL images)
+%% 3A. Conventional M0 masking & minor smoothing (doesnt work with smooth ASL images)
 if x.modules.asl.M0_conventionalProcessing
     % Conventional M0 processing, should be performed in native space
     % We
@@ -231,7 +241,7 @@ if x.modules.asl.M0_conventionalProcessing
 
     fprintf('%s\n','Running conventional M0 processing method');
 
-    xASL_spm_reslice( x.P.Path_ASL4D, x.P.Path_rM0, [], [], x.settings.Quality, x.P.Path_rM0, 1 ); % make sure M0 is in ASL space
+    xASL_spm_reslice(x.P.Path_despiked_ASL4D, x.P.Path_rM0, [], [], x.settings.Quality, x.P.Path_rM0, 1 ); % make sure M0 is in ASL space
     M0_nii          = xASL_io_ReadNifti( x.P.Path_rM0);
     x.VoxelSize     = M0_nii.hdr.pixdim(2:4);
     M0_im           = xASL_im_ProcessM0Conventional(M0_im, x); % also masks in native space
@@ -265,7 +275,7 @@ if x.modules.asl.M0_conventionalProcessing
     xASL_Copy(x.P.Pop_Path_M0,x.P.Pop_Path_noSmooth_M0,1);
 
 %% -----------------------------------------------------------------------------------------------
-%% 3B) New ExploreASL strategy for M0 masking & smoothing
+%% 3B. New ExploreASL strategy for M0 masking & smoothing
 %   Currently, this is performed in standard space, but this can be
 %   optimized by running this in native space
 else
