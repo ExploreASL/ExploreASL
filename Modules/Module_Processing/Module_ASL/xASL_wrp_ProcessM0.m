@@ -120,6 +120,8 @@ if ~isempty(jsonM0)
 	if isfield(jsonM0.Q, 'EchoTime')
 		% Select only non-zero TEs
 		uniqueNonzeroTE = unique(jsonM0.Q.EchoTime(jsonM0.Q.EchoTime > 0));
+
+		% Check if we have multiple TE to decide to select only a single value
 		if length(uniqueNonzeroTE) > 1
             % First check if the number of TEs equals the number of M0 volumes
             if length(uniqueNonzeroTE)>size(imM0,4)
@@ -147,11 +149,15 @@ if ~isempty(jsonM0)
 %% 0D. Use the M0 with the TR closest to 2000 ms (if we have multiple M0s)
 	if isfield(jsonM0, 'RepetitionTime')
 		uniqueNonzeroTR = unique(jsonM0.RepetitionTime(jsonM0.RepetitionTime > 0));
+
+		% Check if we have multiple TR to decide to select a single value only
 		if length(uniqueNonzeroTR) > 1
-			% We currently do not do inversion fitting in multi-TE M0, so we issue a warning and use the TR value closest to 2000ms
+			% We currently do not do inversion fitting in multi-TR M0, so we issue a warning and use the TR value closest to 2000ms
 			[~, optimalTR] = min(abs(uniqueNonzeroTR-2000));
 			optimalTR = uniqueNonzeroTR(optimalTR);
 			indOptimalTR = jsonM0.RepetitionTime == optimalTR;
+
+			fprintf('Warning: Multi-TR M0 present. Using the TR closest to 2000ms = %.1f ms for M0 calibration.\n', optimalTR);
 
 			% Select the volumes with optimal TR
 			imM0 = imM0(:, :, :, indOptimalTR);
