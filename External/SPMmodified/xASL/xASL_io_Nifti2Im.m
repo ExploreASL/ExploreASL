@@ -18,7 +18,7 @@ function [imOut, json] = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle, bBI
 %
 % OUTPUT:
 %   imOut     - image matrix with single precision
-%   json      - json containing quantification parameters, if niftiIn is a path
+%   json      - json containing quantification parameters, if niftiIn is a path, otherwise empty (e.g., when the input is a matrix and not a path)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function loads a NIfTI image matrix with flexible input
 %              (as explained under INPUT: niftiIn). It does the following. It also loads the JSON sidecar and 
@@ -54,6 +54,11 @@ if nargin<4 || isempty(bBIDS2Legacy)
 end
 
 niiMat = false; % default
+
+% Initialize the json output
+if nargout >= 2
+	json = [];
+end
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % 1) Load the NIfTI (and JSON sidecar)
