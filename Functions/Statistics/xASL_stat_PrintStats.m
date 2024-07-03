@@ -14,8 +14,8 @@ function [x] = xASL_stat_PrintStats(x, bFollowSubjectSessions)
 %   x.S.SetsOptions     - options for sets (if the sets are ordinal)
 %   bFollowSubjectSessions - boolean specifying which source determines the
 %                            subjects/sessions that we process:
-%                            TRUE: follow x.SUBJECTS & x.SESSIONS
-%                            FALSE: follow data in x.S.DAT
+%                            TRUE: follow x.SUBJECTS & x.SESSIONS (from participants.TSV)
+%                            FALSE: follow data in x.S.DAT (data that was actually processed etc)
 %                            (OPTIONAL, DEFAULT: FALSE)
 %                         
 % OUTPUT:
@@ -117,7 +117,10 @@ end
 %% -----------------------------------------------------------------------------------------------
 %% 4) Print overview
 
-if bFollowSubjectSessions
+if bFollowSubjectSessions % see header. This boolean is only true when we force to 
+    % use subject & session indices from participants.tsv only, instead of relying 
+    % on what is actually captured in x.S.DAT. In the normal case, we want ~bFollowSubjectSessions,
+    % which is defaulted above.
     
     for iSubject=1:x.dataset.nSubjects
         for iSession=1:nSessions
@@ -129,7 +132,7 @@ if bFollowSubjectSessions
                 fprintf(2, ['Missing data, skipping printing data for ' x.SUBJECTS{iSubject} '_' x.SESSIONS{iSession} '\n']);
             else
                 % print subject name
-                x.modules.population.(thisFile){iSubjectSession+2,1} = x.S.SubjectSessionID{iSubjectSession, 1}; % I'm not 100% sure this is correct, how do I test this?
+                x.modules.population.(thisFile){iSubjectSession+2,1} = x.S.SubjectSessionID{iSubjectSession, 1};
 
                 %% Print the covariates and data
                 iSubjectSession_SetsID = iSubjectSession;
