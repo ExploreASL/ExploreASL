@@ -211,7 +211,7 @@ else
 end
 
 %% G. ASL processing & quantification parameters
-x = xASL_module_ASL_ParseParameters(x, bOutput, nVolumes);
+x = xASL_module_ASL_ParseParameters(x, bOutput);
 
 %% ========================================================================================================================
 %% 1 TopUp (WIP, only supported if FSL installed)
@@ -420,22 +420,21 @@ if ~x.mutex.HasState(StateName{iState}) || ~x.mutex.HasState(StateName{iState+1}
 		% Note: The paths x.P.(Pop_)Path_PWI4D_used can differ from a PWI4D obtained from a simple subtraction as we may have merged sessions,
 		% and the user or ExploreASL may have removed volumes from PWI4D. That's why we save and use x.P.(Pop_)Path_PWI4D_used in memory, such
 		% that the correct NIfTI will be used later in the pipeline (e.g., in xASL_wrp_VisualQC)
-
-		% Check again if we have multiple values for certain ASL parameters (PLD, LD, TE)
-		fprintf('%s\n','Sessions were concatenated. Checking again if LD, PLD, TE have multiple values...');
-		[tempPath, tempFile] = xASL_fileparts(x.P.Path_PWI4D_used);
-		tempASL = xASL_io_Nifti2Im(x.P.Path_PWI4D_used);
-		nVolumes = size(tempASL, 4);
-		x = xASL_module_ASL_MultiParameterParsing(x, fullfile(tempPath, [tempFile '.json']), nVolumes);
 	end
 end
+
+if x.modules.asl.bMergingSessions
+	% Check again if we have multiple values for certain ASL parameters (PLD, LD, TE)
+	fprintf('%s\n','Sessions were concatenated. Checking again if LD, PLD, TE have multiple values...');
+	x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_PWI4D_used);
+end
+
+% Check multi-parametric quantification options
+x = xASL_module_ASL_MultiParameterQuantificationOptions(x);
 
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
 % Including PVC
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
-	% Check multi-parametric quantification options
-	x = xASL_module_ASL_MultiParameterQuantificationOptions(x);
-
     fprintf('%s\n','Quantifying ASL:   ');
     % If BASIL quantification will be performed, only native space analysis is possible
     if isfield(x.modules.asl, 'bUseBasilQuantification') && x.modules.asl.bUseBasilQuantification
@@ -539,7 +538,7 @@ end
 
 %% ========================================================================================================================
 %% =============================================================================================
-function [x] = xASL_module_ASL_ParseParameters(x, bOutput, nVolumes)
+function [x] = xASL_module_ASL_ParseParameters(x, bOutput)
 %% xASL_module_ASL_ParseParameters Manage ASL-specific quantification and processing parameters
 % 1. Load ASL parameters (inheritance principle)
 % 2. Default ASL processing settings in the x.modules.asl field
@@ -568,7 +567,7 @@ end
 
 
 %% 3. Multi-parameter parsing
-x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_ASL4D_json, nVolumes);
+x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_ASL4D);
 
 %% 4. TimeEncoded parsing
 % Check if TimeEncoded is defined
@@ -745,18 +744,18 @@ end
 end
 
 %% ========================================================================================================================
-function x = xASL_module_ASL_MultiParameterParsing(x, pathJSON, nVolumes)
+function x = xASL_module_ASL_MultiParameterParsing(x, pathASL)
 % Read the ASL parameters (PLD, LD, TE) from JSON and calculate the number of unique values
 parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
 parAbbreviation = {'TE' 'PLD' 'LD'};
 parTolerance = {0.001 0 0};
 parLowestValue = {0 0 0};
 
-if exist(pathJSON, 'file')
-    jsonFields = xASL_bids_parms2BIDS([], xASL_io_ReadJson(pathJSON), 0);
-else
-	jsonFields = [];
-end
+% Read the image and the JSON converted to Legacy while reading
+[tempASL, jsonFields] = xASL_io_Nifti2Im(pathASL);
+
+% Get the number of image volumes
+nVolumes = size(tempASL, 4);
 
 if ~isempty(jsonFields) && isfield(jsonFields, 'Q')
 	xQfields = fieldnames(jsonFields.Q);
@@ -764,7 +763,7 @@ if ~isempty(jsonFields) && isfield(jsonFields, 'Q')
 		x.Q.(xQfields{iField}) = jsonFields.Q.(xQfields{iField});
 	end
 else
-    warning(['Reverting to x.Q memory, JSON file missing: ' pathJSON]);
+    warning(['Reverting to x.Q memory, JSON file missing for the ASL file: ' pathASL]);
 end
 
 for iPar=1:length(parNames)
@@ -842,9 +841,14 @@ for iPar=1:length(parNames)
     jsonFields.Q.(parNames{iPar}) = x.Q.(parNames{iPar});
 end
 
-xASL_io_WriteJson(pathJSON, xASL_bids_parms2BIDS(jsonFields, [], 1), 1);
+% Get the path to the JSON file and save the output
+if ~isempty(jsonFields)
+	[tempPath, tempFile] = xASL_fileparts(pathASL);
+	xASL_io_WriteJson(fullfile(tempPath, [tempFile '.json']), xASL_bids_parms2BIDS(jsonFields, [], 1), 1);
+end
 end
 
+%% ========================================================================================================================
 function x = xASL_module_ASL_MultiParameterQuantificationOptions(x)
 % Check the ASL parameters (PLD, LD, TE) previously parsed and set the specific Multi-parameter quantification options
 parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
