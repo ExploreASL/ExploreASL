@@ -746,17 +746,27 @@ end
 %% ========================================================================================================================
 function x = xASL_module_ASL_MultiParameterParsing(x, pathASL)
 % Read the ASL parameters (PLD, LD, TE) from JSON and calculate the number of unique values
+% 0.1 Read the JSON sidecar
+% 0.2 Obtain the number of image volumes 
+% 0.3 Check if JSON contains the ASL parameters
+% 1. Check the number of unique values for LD, PLD, TE
+% 2. Check if parameter vector and number of volumes match
+% 3. Save the updated JSON
+
 parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
 parAbbreviation = {'TE' 'PLD' 'LD'};
 parTolerance = {0.001 0 0};
 parLowestValue = {0 0 0};
 
+%% 0.1 Read the JSON sidecar
 % Read the image and the JSON converted to Legacy while reading
 [tempASL, jsonFields] = xASL_io_Nifti2Im(pathASL);
 
+%% 0.2 Obtain the number of image volumes 
 % Get the number of image volumes
 nVolumes = size(tempASL, 4);
 
+%% 0.3 Check if JSON contains the ASL parameters
 if ~isempty(jsonFields) && isfield(jsonFields, 'Q')
 	xQfields = fieldnames(jsonFields.Q);
 	for iField = 1:length(xQfields)
@@ -766,6 +776,7 @@ else
     warning(['Reverting to x.Q memory, JSON file missing for the ASL file: ' pathASL]);
 end
 
+%% 1. Check the number of unique values for LD, PLD, TE
 for iPar=1:length(parNames)
 
     if ~isfield(x.Q, parNames{iPar})
@@ -820,6 +831,7 @@ for iPar=1:length(parNames)
         fprintf('\n');
     end
     
+	%% 2. Check if parameter vector and number of volumes match
     % Deal with too short vectors (e.g., repetitions in the case of single-parameter)
     nPar = length(x.Q.([parNames{iPar}]));
 	if nPar > 0
@@ -841,6 +853,7 @@ for iPar=1:length(parNames)
     jsonFields.Q.(parNames{iPar}) = x.Q.(parNames{iPar});
 end
 
+%% 3. Save the updated JSON
 % Get the path to the JSON file and save the output
 if ~isempty(jsonFields)
 	[tempPath, tempFile] = xASL_fileparts(pathASL);
@@ -851,9 +864,16 @@ end
 %% ========================================================================================================================
 function x = xASL_module_ASL_MultiParameterQuantificationOptions(x)
 % Check the ASL parameters (PLD, LD, TE) previously parsed and set the specific Multi-parameter quantification options
+% The multi-parameter quantification options are either set here based on the data, or we check if the values provided in
+% the dataPar.json are compatible with the data
+% 1. Set the bQuantifyMulti option for TE, PLD, and LD
+% 2. Manage bUseBasilQuantification parameter
+% 3. Manage parameter SaveCBF4D
+
 parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
 parAbbreviation = {'TE' 'PLD' 'LD'};
 
+%% 1. Set the bQuantifyMulti option for TE, PLD, and LD
 for iPar=1:length(parNames)
 	if ~isfield(x.Q, parNames{iPar})
         x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
@@ -892,6 +912,7 @@ for iPar=1:length(parNames)
     end
 end
 
+%% 2. Manage bUseBasilQuantification parameter that activates BASIL quantification
 if ~isfield(x.modules.asl, 'bUseBasilQuantification') || isempty(x.modules.asl.bUseBasilQuantification)
 	x.modules.asl.bUseBasilQuantification = false;
     
@@ -900,6 +921,7 @@ if ~isfield(x.modules.asl, 'bUseBasilQuantification') || isempty(x.modules.asl.b
     end
 end
 
+%% 3. Manage parameter SaveCBF4D that saves the entire 4D volume
 % Saving of CBF4D is only possible for single TE, single PLD sequences
 if ~isfield(x.modules.asl, 'SaveCBF4D') || isempty(x.modules.asl.SaveCBF4D)
 	x.modules.asl.SaveCBF4D = false;
