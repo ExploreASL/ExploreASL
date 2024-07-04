@@ -39,7 +39,7 @@ if length(size(ImageIn))>3
 		ImageIn = shiftdim(ImageIn,length(size(ImageIn))-3);
 	else
 		% Issue a warning and output all NaNs
-		warning('Cannot accept 4D image when ApplyShiftDim is FALSE');
+		warning('Cannot accept 4D image when ApplyShiftDim is false, check if your data were correctly processed');
 		ImageIn = nan(size(ImageIn));
 	end
 else
