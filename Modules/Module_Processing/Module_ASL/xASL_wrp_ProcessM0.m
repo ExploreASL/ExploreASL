@@ -118,52 +118,54 @@ end
 %% 0C. Use the M0 with the lowest TE (if we have multiple M0s)
 if ~isempty(jsonM0)
 	if isfield(jsonM0.Q, 'EchoTime')
-		% Select only non-zero TEs
-		uniqueNonzeroTE = unique(jsonM0.Q.EchoTime(jsonM0.Q.EchoTime > 0));
+		% Select unique TEs
+		uniqueTE = unique(jsonM0.Q.EchoTime);
 
 		% Check if we have multiple TE to decide to select only a single value
-		if length(uniqueNonzeroTE) > 1
+		% Only the smallest and single TE is relevant for M0 quantification. The entire TE vector is only
+		% useful for fitting T2 time and we do not need it for obtaining the equilibrium M0 for CBF quantification
+		if length(uniqueTE) > 1
             % First check if the number of TEs equals the number of M0 volumes
-            if length(uniqueNonzeroTE)>size(imM0,4)
+            if length(uniqueTE)>size(imM0,4)
                 warning('M0 JSON contains more unique echo times than number of M0.nii volumes');
                 fprintf('%s\n', 'Hint: check if your data are BIDS compatible');
             end
 
-			% Find the smallest of the previously selected positive nonzero TEs
-			minTE = min(uniqueNonzeroTE);
+			% Find the smallest of the TEs
+			minTE = min(uniqueTE);
 			% JSON values were converted from BIDS (seconds) to Legacy (millisecond) during JSON reading
 			fprintf('Multi-TE M0 present. Using the shortest TE = %.1f ms for M0 calibration.\n', minTE);
 
 			% Find the correct indices and update the jsonM0 parameter
-			indMinTE = jsonM0.Q.EchoTime == minTE;
-			jsonM0.Q.EchoTime = jsonM0.Q.EchoTime(indMinTE);
+			indexMinTE = jsonM0.Q.EchoTime == minTE;
+			jsonM0.Q.EchoTime = jsonM0.Q.EchoTime(indexMinTE);
 			if isfield(jsonM0, 'RepetitionTime') && length(jsonM0.RepetitionTime) > 1
-				jsonM0.RepetitionTime = jsonM0.RepetitionTime(indMinTE);
+				jsonM0.RepetitionTime = jsonM0.RepetitionTime(indexMinTE);
 			end
 
 			% Select the minimal TEs
-			imM0 = imM0(:, :, :, indMinTE);
+			imM0 = imM0(:, :, :, indexMinTE);
 		end
 	end
 
 %% 0D. Use the M0 with the TR closest to 2000 ms (if we have multiple M0s)
 	if isfield(jsonM0, 'RepetitionTime')
-		uniqueNonzeroTR = unique(jsonM0.RepetitionTime(jsonM0.RepetitionTime > 0));
+		uniqueTR = unique(jsonM0.RepetitionTime);
 
 		% Check if we have multiple TR to decide to select a single value only
-		if length(uniqueNonzeroTR) > 1
+		if length(uniqueTR) > 1
 			% We currently do not do inversion fitting in multi-TR M0, so we issue a warning and use the TR value closest to 2000ms
-			[~, optimalTR] = min(abs(uniqueNonzeroTR-2000));
-			optimalTR = uniqueNonzeroTR(optimalTR);
-			indOptimalTR = jsonM0.RepetitionTime == optimalTR;
+			[~, optimalTR] = min(abs(uniqueTR-2000));
+			optimalTR = uniqueTR(optimalTR);
+			indexOptimalTR = jsonM0.RepetitionTime == optimalTR;
 
 			fprintf('Warning: Multi-TR M0 present. Using the TR closest to 2000ms = %.1f ms for M0 calibration.\n', optimalTR);
 
 			% Select the volumes with optimal TR
-			imM0 = imM0(:, :, :, indOptimalTR);
-			jsonM0.RepetitionTime = jsonM0.RepetitionTime(indOptimalTR);
+			imM0 = imM0(:, :, :, indexOptimalTR);
+			jsonM0.RepetitionTime = jsonM0.RepetitionTime(indexOptimalTR);
 			if isfield(jsonM0.Q, 'EchoTime') && length(jsonM0.Q.EchoTime) > 1
-				jsonM0.Q.EchoTime = jsonM0.Q.EchoTime(indOptimalTR);
+				jsonM0.Q.EchoTime = jsonM0.Q.EchoTime(indexOptimalTR);
 			end
 		end
 	end

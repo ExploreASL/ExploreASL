@@ -56,9 +56,7 @@ end
 niiMat = false; % default
 
 % Initialize the json output
-if nargout >= 2
-	json = [];
-end
+json = [];
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % 1) Load the NIfTI (and JSON sidecar)
