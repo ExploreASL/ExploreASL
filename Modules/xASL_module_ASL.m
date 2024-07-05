@@ -423,11 +423,8 @@ if ~x.mutex.HasState(StateName{iState}) || ~x.mutex.HasState(StateName{iState+1}
 	end
 end
 
-if x.modules.asl.bMergingSessions
-	% Check again if we have multiple values for certain ASL parameters (PLD, LD, TE)
-	fprintf('%s\n','Sessions were concatenated. Checking again if LD, PLD, TE have multiple values...');
-	x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_PWI4D_used);
-end
+% Check again if we have multiple values for certain ASL parameters (PLD, LD, TE) directly on the PWI file used for processing
+x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_PWI4D_used);
 
 % Check multi-parametric quantification options
 x = xASL_module_ASL_MultiParameterQuantificationOptions(x);
