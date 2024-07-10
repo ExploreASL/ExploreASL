@@ -37,13 +37,13 @@ function [Fpath, Ffile, Fext, SuffixSPM] = xASL_fileparts(InputPath)
     %% 1. Catch SPM suffixes
     [Fpath, Ffile, Fext] = fileparts(InputPath);
 
-    [Ind1, Ind2] = regexp(Fext, ',\d+');
-    if ~isempty(Ind1)
-        if Ind2~=length(Fext)
-            error('Something wrong with this file extension');
+    Index1 = regexp(Fext, ',\d+$');
+
+    if isempty(Index1)
+        error('Something wrong with this file extension');
         else
-            SuffixSPM = Fext(Ind1:Ind2);
-            InputPath = fullfile(Fpath, [Ffile Fext(1:Ind1-1)]);
+            SuffixSPM = Fext(Index1:end);
+            InputPath = fullfile(Fpath, [Ffile Fext(1:Index1-1)]);
         end
     else
         SuffixSPM = '';
