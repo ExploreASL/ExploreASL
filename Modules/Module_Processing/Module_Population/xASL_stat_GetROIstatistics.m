@@ -119,6 +119,11 @@ if ~isfield(x.S,'NamesROI')
 	return;
 end
 
+% Defaulting outputs for ROI visualization
+pathOutput_sCoV = [];
+pathOutput_CBF = [];
+
+
 %% 0.a Manage masking
 if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
     x.S.bMasking = [1 1 1 1]; % default
@@ -659,7 +664,7 @@ for iSubject=1:x.dataset.nSubjects
                     %% CoV
                     % Visualization first
 		            fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
-                    xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName);
+                    [pathOutput_sCoV] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_sCoV);
 
                     x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 0);
 					if ~bSkipPVC
@@ -683,7 +688,7 @@ for iSubject=1:x.dataset.nSubjects
 
                         % Visualization first (this differs from sCoV only by the vascular mask)
 		                fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1} '_CBF'];
-                        xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName);
+                        [pathOutput_CBF] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_CBF);
 
                         x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0, 1);
                         x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0, 0);
@@ -726,9 +731,23 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------------------
-function xASL_stat_VisualizeSubjectWiseROI(x, MaskROI, BackgroundImage, fileName)
+function [pathOutput] = xASL_stat_VisualizeSubjectWiseROI(x, MaskROI, BackgroundImage, fileName, pathOutput)
 %xASL_stat_VisualizeSubjectWiseROI Show ROI projected on image
-%   Detailed explanation goes here
+% IN: MaskROI           = the actual ROI that will be projected
+% IN: BackgroundImage   = image that we will project the ROI on (e.g., qCBF image)
+% IN: fileName          = filename that we will use for pathOutput, i.e. datatype_ROI_subject_session_unit, e.g., qCBF_StandardSpace_TotalGM_sub-017_1_ASL_1_CBF
+%
+% OUT: pathOutput       = used to check if we already saved this visualization image
+%                         within the same population module run, we want to save this visualization only once with the full bilateral ROI
+%                         but xASL_stat_GetROIstatistics iterates each ROI 1 bilateral 2 left- 3 right-sided.
+%                         So if we rerun the population module, this will be overwritten, but within the same population module run, this will be
+%                         saved once
+
+    if nargin<5 || isempty(pathOutput)
+        pathOutput = []; % By default, this is empty, and only will be filled if we actually saved something
+    elseif ~isempty(pathOutput) % because we already saved this file, we will skip it now
+        return;
+    end
 
 	if x.S.SubjectWiseVisualization && ~x.S.InputNativeSpace
 		% this takes extra computation time, hence best switched off
@@ -751,7 +770,9 @@ function xASL_stat_VisualizeSubjectWiseROI(x, MaskROI, BackgroundImage, fileName
         %%%%%%%%%%%%%%%%
     
         xASL_adm_CreateDir(x.S.CheckMasksDir);
-        xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir, [fileName '.jpg']));
+        pathOutput = fullfile(x.S.CheckMasksDir, [fileName '.jpg']);
+
+        xASL_vis_Imwrite(CombiIM, pathOutput);
 
     end
 
