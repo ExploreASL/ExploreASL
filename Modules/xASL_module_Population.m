@@ -245,13 +245,21 @@ if ~x.mutex.HasState(StateName{8})
         end
     
         % Iterate over atlases
-        for iAtlas=1:length(x.S.Atlases)        
+        x.dir.dirAtlas = fullfile(x.opts.MyPath, 'external', 'Atlases');
 
+        for iAtlas=1:length(x.S.Atlases)        
+            pathAtlas = fullfile(x.dir.dirAtlas, [x.S.Atlases{iAtlas} '.nii']);
+            
             % Check if atlas name is in path list
-            if ~isfield(x.P.Atlas,x.S.Atlases{iAtlas})
-                warning(['Unknown atlas: ' x.S.Atlases{iAtlas} ', skipping']);
-            else
+            if isfield(x.P.Atlas, x.S.Atlases{iAtlas})
+                % Atlas is found in the default atlas list
                 x.S.InputAtlasPath = x.P.Atlas.(x.S.Atlases{iAtlas});
+            elseif xASL_exist(pathAtlas, 'file')
+                    % try to find the atlas in the default folder
+                    x.P.Atlas.(x.S.Atlases{iAtlas}) = pathAtlas;
+                    x.S.InputAtlasPath = x.P.Atlas.(x.S.Atlases{iAtlas});
+            else
+                warning(['Unknown atlas: ' x.S.Atlases{iAtlas} ', skipping']);
             end
 
             % ROI statistics (default: standard space)
