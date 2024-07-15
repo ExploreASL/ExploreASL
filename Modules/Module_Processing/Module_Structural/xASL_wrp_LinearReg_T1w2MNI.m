@@ -18,12 +18,15 @@ function xASL_wrp_LinearReg_T1w2MNI(x, bAutoACPC)
 % a center of mass-based ACPC alignment, and then several iterations of SPM coregistration.
 % Assuming that this submodule is run at the start of ExploreASL, all NIfTI orientation matrices are restored before running the registration.
 %
+% This function performs the following steps:
+% 1. Obtain path lists
+% 2. Issue warnings if any of the orientation matrices were changed (e.g. in an earlier processing run)
+% 3. Perform the registration
+%
 % EXAMPLE: xASL_wrp_LinearReg_T1w2MNI(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2019 ExploreASL
-%
-% 2019-05-02 HJM
+% Copyright 2015-2024 ExploreASL
 
 % Input check
 if nargin<2 || isempty(bAutoACPC)
