@@ -1,4 +1,4 @@
-function [DataOut] = xASL_num2str(DataIn, stringFormat, bConcatenate, stringDelimiter)
+function [DataOut] = xASL_num2str(DataIn, stringFormat, bConcatenate, stringDelimiter, bUnique)
 %xASL_num2str Wrapper around Matlab builtin 'num2str', bypassing strings/characters & BIDS-compatible
 %
 % FORMAT: [DataOut] = xASL_num2str(DataIn[, stringFormat, bConcatenate, stringDelimiter])
@@ -7,9 +7,11 @@ function [DataOut] = xASL_num2str(DataIn, stringFormat, bConcatenate, stringDeli
 %   DataIn 	        - Input data (can be any format) (REQUIRED, INTEGER or DOUBLE, SCALAR or ARRAY)
 %   stringFormat    - Second argument of "num2str". Can be a format, but mostly used as number
 %                     of characters to print (effectively rounding) (OPTIONAL, DEFAULT = '')
-%   bConcatenate    - Concatenate multiple-lines to a single line with ',' as a delimiter (OPTIONAL, DEFAULT = 1)
+%   bConcatenate    - Concatenate multiple-lines to a single line with ',' as a delimiter (OPTIONAL, DEFAULT = TRUE)
 %   stringDelimiter - String to be used as a delimiter for concatenating when bConcatenate 
 %                     is TRUE, empty delimiters are allowed (OPTIONAL, DEFAULT = ',')
+%   bUnique         - boolean to run unique first on the numbers — in case of multiple numbers — before converting them to string (OPTIONAL, DEFAULT =
+%                     FALSE)
 %
 % OUTPUT:
 %   DataOut         - Numbers converted to string, or bypassed data (CHAR ARRAY)
@@ -59,7 +61,7 @@ end
 
 % Default: set concatenate to 1
 if nargin < 3 || isempty(bConcatenate)
-	bConcatenate = 1;
+	bConcatenate = true;
 end
 
 % Default: set delimiter
@@ -73,8 +75,16 @@ if size(stringDelimiter,1) > 1
 	error('The delimiter can only have a single row');
 end
 
+if nargin < 5 || isempty(bUnique)
+    bUnique = false;
+end
+
 % Do the conversion if DataIn is numeric
 if isnumeric(DataIn) || islogical(DataIn)
+    if bUnique
+        DataIn = unique(DataIn);
+    end
+
 	if isnan(DataIn)
 		DataOut = 'n/a';
 	elseif isempty(stringFormat)
