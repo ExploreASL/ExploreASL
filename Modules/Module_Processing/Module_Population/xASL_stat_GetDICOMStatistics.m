@@ -1,12 +1,12 @@
 function xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions, bOverwrite)
-%xASL_stat_GetDICOMStatistics Collect DICOM metadata in CSV file to check
+%xASL_stat_GetDICOMStatistics Collect JSON sidecar data in TSV file to check
 %
 % FORMAT: xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions)
 % 
 % INPUT:
 %   x           - struct containing pipeline environment parameters (REQUIRED)
-%   ScanType    - type of data (e.g. T1, FLAIR, ASL) (REQUIRED)
-%   HasSessions - true for multiple ASL sessions (OPTIONAL, DEFAULT=false)
+%   ScanType    - type of NIfTI (e.g. T1, FLAIR, ASL, M0) (REQUIRED)
+%   HasSessions - true for e.g., multiple ASL sessions (OPTIONAL, DEFAULT=false)
 %   bOverwrite  - boolean to overwrite existing TSV summary file (OPTIONAL, DEFAULT=true)
 %
 % OUTPUT: n/a
@@ -18,13 +18,16 @@ function xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions, bOverwrite)
 %              parameter changes can hint on quantification changes.
 %              This function carries out the following steps:
 %
-%              1. Load & save individual parameter files
-%              2. Print summary
-%              3. Write TSV file
+%              1. Loading JSON sidecars
+%              2. Write TSV file
+%
+%              Note that this function was revamped from its previous version to obtain stats from ASL4D_parms.mat files.
+%              PM: when we fully move to BIDS derivatives, we can also rename the folder and this function DICOMparameters
+% 
 % ------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_stat_GetDICOMStatistics(x, 'ASL', true);
 % __________________________________
-% Copyright 2016-2020 ExploreASL
+% Copyright 2016-2024 ExploreASL
 
 
 %% -----------------------------------------------------------------------------------------------
@@ -36,22 +39,13 @@ if nargin<3 || isempty(HasSessions)
     HasSessions = false;
 end
 
-% matFields = {'RepetitionTime' 'EchoTime' 'NumberOfTemporalPositions' 'MRScaleSlope' 'RescaleSlopeOriginal' 'RescaleIntercept' 'Scanner' 'SliceReadoutTime'};
-% nFields = length(matFields);
 PathTSV = fullfile(x.D.DICOMparameterDir, ['QuantificationParameters_' ScanType '.tsv']);
 
 % Print header
 TSV = {'participant_id' 'session'};
-% TSV(1,3:2+nFields) = matFields(1:nFields);
 
-% Initialize empty table
-% numElements = size(TSV,2);
-% numSubjectsSessions = x.dataset.nSubjects*x.dataset.nSessions;
-% for iSubjSess=1:numSubjectsSessions
-%     TSV(1+iSubjSess,:) = repmat({' '},1, numElements);
-% end
 
-%% 1. Load & save individual parameter files
+%% 1. Loading JSON sidecars
 fprintf('%s\n', ['Loading ' ScanType '.json sidecars...  ']);
 
 for iSubject=1:x.dataset.nSubjects
@@ -103,32 +97,6 @@ fprintf('\n');
 
 
 %% 2. Write TSV file
-
-% % Ensure all elements of the TSV cell array have the correct format
-% for iRow=1:size(TSV,1)
-%     for iColumn=1:size(TSV,2)
-%         if size(TSV{iRow,iColumn},1)>1
-%             % We skip lists, as this was introduced with BIDS
-%             % This function aims to do DICOM QC, BIDS lists are not necessary
-%             % here, as we can now find them in the *asl.json sidecars
-%             TSV{iRow,iColumn} = 'ListSkipped';
-%         end
-%         % Remove empty elements (Empty cells in the TSV can lead to reading errors)
-%         if isempty(TSV{iRow,iColumn})
-%             TSV{iRow,iColumn} = '_';
-%         end
-%         % Convert numeric NaNs to text n/a's (NaN can be exported as empty cells into the TSV, which can lead to reading errors. In addition n/a is BIDS compliant.)
-%         if isnumeric(TSV{iRow,iColumn})
-%             if isnan(TSV{iRow,iColumn})
-%                 TSV{iRow,iColumn} = 'n/a';
-%             else
-%                 TSV{iRow,iColumn} = xASL_num2str(TSV{iRow,iColumn});
-%             end
-%         end
-%     end
-% end
-
-% Write TSV
 xASL_tsvWrite(TSV, PathTSV, bOverwrite);
 
 
