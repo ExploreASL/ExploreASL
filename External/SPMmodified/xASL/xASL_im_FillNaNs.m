@@ -10,8 +10,8 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize)
 %                    extrapolating M0 smooth biasfield) (DEFAULT)
 %                 2: set to 0 (useful for e.g. DARTEL displacement fields,
 %                    where 0 means no displacement)
-%                 3: linearly extrapolate flow field (e.g. for transformation
-%                    mapping)
+%                 3: linearly extrapolate 
+%                 4: fill with flow field identity map (specific to MNI 1.5mm space used by CAT12/DARTEL)
 %                 (OPTIONAL, DEFAULT = 1)
 %   bQuality    - affects kernel size of the extrapolation performed in method 1
 %                 (extrapolating by smoothing goes much faster with smaller
@@ -54,10 +54,10 @@ if nargin<1 || isempty(InputPath)
 end
 
 if nargin<2 || isempty(UseMethod)
-    UseMethod = 3;
-elseif UseMethod<0 || UseMethod>3
+    UseMethod = 1;
+elseif UseMethod<0 || UseMethod>4
     warning('Illegal option chosen, setting to default value');
-    UseMethod = 3;
+    UseMethod = 1;
 end
 
 if nargin<3 || isempty(bQuality)
@@ -84,13 +84,14 @@ if UseMethod==1 % only method that needs VoxelSize
     end
 end
 
+
 %% ------------------------------------------------------------------------------
-%% 1) Load image
+%% 1. Load image
 IM = xASL_io_Nifti2Im(InputPath); % allows loading image from path or from image
 
 
 %% ------------------------------------------------------------------------------
-%% 2) Replace NaNs
+%% 2. Replace NaNs
 fprintf('%s', 'Cleaning up NaNs in image:  0%');
 TotalDim = size(IM,4)*size(IM,5)*size(IM,6)*size(IM,7);
 CurrentIt = 1;
@@ -110,6 +111,8 @@ for i4=1:size(IM,4)
                         % enough, keep in this loop for readability
                     case 3
                         IM(:,:,:,i4,i5,i6,i7) = xASL_im_ExtrapolateLinearlyOverNaNs(IM(:,:,:,i4,i5,i6,i7));
+                    case 4
+                        IM = xASL_im_FillNaNs_FlowFieldIdentity(IM);
                     otherwise
                         error('Invalid option');
                 end
@@ -123,12 +126,40 @@ end
 fprintf('\n');
         
 
+
 %% ------------------------------------------------------------------------------
-%% 3) Save image
+%% 3. Save image
 % Here we only output an image if the input path was a path and not an
 % image matrix
 if ~isnumeric(InputPath) && xASL_exist(InputPath, 'file')
     xASL_io_SaveNifti(InputPath, InputPath, IM, [], 0);
+end
+
+
+end
+
+
+
+%% ========================================================================================
+%% ========================================================================================
+function [IM] = xASL_im_FillNaNs_FlowFieldIdentity(IM)
+%xASL_im_FillNaNs_FlowFieldIdentity
+
+% Location of the identity transformation field
+pathIdentityTransf = fullfile(x.opts.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
+% Image of the identity transformation field
+imageIdentityTransf = xASL_io_Nifti2Im(pathIdentityTransf);
+
+% NaNs that need replacement
+mask2replace = isnan(IM);
+
+% Check that the images are equally sized
+if ~isequal( size(imageIdentityTransf), size(IM) )
+    error('Something going wrong with this flowfield size');
+elseif sum(mask2replace(:))==0
+    fprintf('%s\n', 'There were no NaNs to fill in this flow field, skipping');
+else
+    IM(mask2replace) = imageIdentityTransf(mask2replace);
 end
 
 
