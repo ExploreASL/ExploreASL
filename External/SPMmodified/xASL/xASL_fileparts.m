@@ -39,15 +39,13 @@ function [Fpath, Ffile, Fext, SuffixSPM] = xASL_fileparts(InputPath)
 
     Index1 = regexp(Fext, ',\d+$');
 
-    if isempty(Index1)
-        error('Something wrong with this file extension');
-        else
-            SuffixSPM = Fext(Index1:end);
-            InputPath = fullfile(Fpath, [Ffile Fext(1:Index1-1)]);
-        end
-    else
-        SuffixSPM = '';
-    end
+	if isempty(Index1)
+		% No SPM suffix in a format like filename.nii,1 detected
+		SuffixSPM = '';
+	else      
+		SuffixSPM = Fext(Index1:end);
+		InputPath = fullfile(Fpath, [Ffile Fext(1:Index1-1)]);
+	end
 
     %% 2. Manage .gz (double) extensions
     [Fpath, Ffile, Fext] = fileparts(InputPath);
