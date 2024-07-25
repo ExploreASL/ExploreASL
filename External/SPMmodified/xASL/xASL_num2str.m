@@ -1,7 +1,7 @@
 function [DataOut] = xASL_num2str(DataIn, stringFormat, bConcatenate, stringDelimiter, bUnique)
 %xASL_num2str Wrapper around Matlab builtin 'num2str', bypassing strings/characters & BIDS-compatible
 %
-% FORMAT: [DataOut] = xASL_num2str(DataIn[, stringFormat, bConcatenate, stringDelimiter])
+% FORMAT: [DataOut] = xASL_num2str(DataIn[, stringFormat, bConcatenate, stringDelimiter, bUnique])
 %
 % INPUT:
 %   DataIn 	        - Input data (can be any format) (REQUIRED, INTEGER or DOUBLE, SCALAR or ARRAY)

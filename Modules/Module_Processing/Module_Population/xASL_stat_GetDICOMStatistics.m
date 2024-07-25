@@ -1,7 +1,7 @@
 function xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions, bOverwrite)
 %xASL_stat_GetDICOMStatistics Collect JSON sidecar data in TSV file to check
 %
-% FORMAT: xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions)
+% FORMAT: xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions, bOverwrite])
 % 
 % INPUT:
 %   x           - struct containing pipeline environment parameters (REQUIRED)
@@ -58,9 +58,6 @@ for iSubject=1:x.dataset.nSubjects
         % Default parameters
         TSV{1+iSubjSess,1} = x.SUBJECTS{iSubject};
         TSV{1+iSubjSess,2} = x.SESSIONS{iSession};
-        
-        % TSV(1+iSubjSess, 3:nFields+2) = repmat({NaN}, [1 nFields]);
-        % x.S.par(iSubjSess,1:nFields) = NaN;
         
         % Define paths
 		if HasSessions
