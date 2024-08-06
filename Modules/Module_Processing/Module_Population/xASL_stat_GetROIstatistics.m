@@ -122,6 +122,9 @@ end
 % Defaulting outputs for ROI visualization
 pathOutput_sCoV = [];
 pathOutput_CBF = [];
+pathOutput_volume = [];
+pathOutput_nonASL_median = [];
+pathOutput_nonASL_CoV = [];
 
 
 %% 0.a Manage masking
@@ -600,18 +603,31 @@ for iSubject=1:x.dataset.nSubjects
 			else % keep ROIs as they are
 				pGM_here = pGM;
 				pWM_here = pWM;
-			end
+            end
+
 
 			if ~x.S.IsASL
 				CurrentMask = SubjectSpecificMasks(:,iROI) & isfinite(DataIm);
 				if x.S.IsVolume
-					VoxelVolume = prod(VoxelSize);
-                    % PM: ADD HERE VISUALIZATION AS WELL
-					x.S.DAT_sum_PVC0(SubjSess,iROI) = sum(DataIm(CurrentMask)) .* VoxelVolume;
+                    %% Volume
+                    % Visualization first
+		            fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1} '_volume_sum'];
+                    [pathOutput_volume] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_volume);
+                    
+					x.S.DAT_sum_PVC0(SubjSess,iROI) = sum(DataIm(CurrentMask)) .* prod(VoxelSize);
 				else
-					% PM: ADD HERE VISUALIZATION AS WELL
+                    %% Non-ASL median
+                    % Visualization first
+		            fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1} '_nonASL_median'];
+                    [pathOutput_volume] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_nonASL_median);
+
                     x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, 0, 0, 0);
-                    % PM: ADD HERE VISUALIZATION AS WELL
+                    
+                    %% Non-ASL CoV
+                    % Visualization first
+		            fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1} '_nonASL_CoV'];
+                    [pathOutput_volume] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_nonASL_CoV);
+
 					x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, 0, 0, 1);
 				end
             else
