@@ -98,7 +98,7 @@ end
 % If no registration happened, these are equal
 for iCheck=1:length(checkList)
     nii = xASL_io_ReadNifti(checkList{iCheck});
-    matEqual(iCheck) = min(min(nii.mat==nii.mat0));
+    matEqual(iCheck) = isequal(nii.mat, nii.mat0);
 end
 
 % Now we issue a warning if some NIfTIs had unequal orientation matrices
