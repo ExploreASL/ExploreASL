@@ -72,19 +72,19 @@ for iSubject=1:x.dataset.nSubjects
 		end
         
         % print all fields for subject_session & load them into x.S.par variabele for later calculations
-        matFields = fieldnames(Parms);
-        nFields = length(matFields);
+        jsonFields = fieldnames(Parms);
+        nFields = length(jsonFields);
         for iField=1:nFields
-            if ~isempty(Parms.(matFields{iField}))
+            if ~isempty(Parms.(jsonFields{iField}))
                 % Check if field already exists as column
-                iColumn = find(strcmp(TSV(1,:), matFields{iField}));
+                iColumn = find(strcmp(TSV(1,:), jsonFields{iField}));
                 if isempty(iColumn)
-                    TSV{1,end+1} = matFields{iField}; % create new column for this parameter
-                    TSV{1+iSubjSess,end} = xASL_num2str(Parms.(matFields{iField}), [], [], [], true); % add the value to the new column, and run unique
+                    TSV{1,end+1} = jsonFields{iField}; % create new column for this parameter
+                    TSV{1+iSubjSess,end} = xASL_num2str(Parms.(jsonFields{iField}), [], [], [], true); % add the value to the new column, and run unique
                 elseif numel(iColumn)>1
                     error('When making the DICOMparameters.TSV, columns with the same name');
                 else
-                    TSV{1+iSubjSess,iColumn} = xASL_num2str(Parms.(matFields{iField}), [], [], [], true); % add the value to the existing column, and run unique
+                    TSV{1+iSubjSess,iColumn} = xASL_num2str(Parms.(jsonFields{iField}), [], [], [], true); % add the value to the existing column, and run unique
                 end
             end
         end
