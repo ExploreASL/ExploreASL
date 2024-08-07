@@ -766,29 +766,9 @@ function [pathOutput] = xASL_stat_VisualizeSubjectWiseROI(x, MaskROI, Background
     end
 
 	if x.S.SubjectWiseVisualization && ~x.S.InputNativeSpace
-		% this takes extra computation time, hence best switched off
+		% this takes extra computation time, hence best switched off by default
 
-        % Prepare visualization settings
-        x.S.TraSlices = x.S.slices;
-        x.S.CorSlices = [110 90 x.S.slices(1:2)];
-        x.S.SagSlices = x.S.slices;
-    
-        %%%%%%%%%%%%%%%%
-        % PM: REPLACE WITH xASL_vis_CreateVisualFig
-        %%%%%%%%%%%%%%%%
-    
-        MaskROI = xASL_vis_TransformData2View(MaskROI);
-        BackgroundImage = xASL_vis_TransformData2View(BackgroundImage);
-        CombiIM = xASL_im_ProjectLabelsOverData(BackgroundImage, MaskROI, x);
-    
-        %%%%%%%%%%%%%%%%
-        % PM: REPLACE WITH xASL_vis_CreateVisualFig
-        %%%%%%%%%%%%%%%%
-    
-        xASL_adm_CreateDir(x.S.CheckMasksDir);
-        pathOutput = fullfile(x.S.CheckMasksDir, [fileName '.jpg']);
-
-        xASL_vis_Imwrite(CombiIM, pathOutput);
+        [~, pathOutput] = xASL_vis_CreateVisualFig(x, {BackgroundImage, MaskROI}, x.S.CheckMasksDir, [], fileName);
 
     end
 
