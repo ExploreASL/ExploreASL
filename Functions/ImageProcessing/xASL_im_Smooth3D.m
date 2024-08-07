@@ -36,6 +36,11 @@ if nargin < 3 || isempty(PSFtype)
 	PSFtype = {'gaussian','gaussian','gaussian'};
 end
 
+if ~isa(imIn, 'double')
+    imIn = double(imIn);
+    % PM: we might want to put the original number format back at the output
+end
+
 %% Prepare the separable kernels
 for tp=1:length(PSFtype)
     switch(PSFtype{tp})
