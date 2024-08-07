@@ -1,4 +1,4 @@
-function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize)
+function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, x)
 %xASL_im_FillNaNs Fill NaNs in image
 % FORMAT: xASL_im_FillNaNs(InputPath[, UseMethod, bQuality, VoxelSize])
 %
@@ -19,6 +19,8 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize)
 %                 (OPTIONAL, DEFAULT = 1)
 %   VoxelSize   - [X Y Z] vector for voxel size 
 %                 (OPTIONAL, DEFAULT = [1.5 1.5 1.5])
+%   x           - x is only needed for the location of the deformation identity field, if UseMethod is 4 (default)
+%                 so this parameter is often required (OPTIONAL, DEFAULT = [])
 %
 % OUTPUT:
 %   IM          - image matrix in which NaNs were filled
@@ -80,9 +82,17 @@ if UseMethod==1 % only method that needs VoxelSize
         else
                 VoxelSize = [1.5 1.5 1.5];
         end
-        
     end
 end
+
+if UseMethod==4
+    if nargin<5 || isempty(x)
+        error('We need the x Table input to fill NaNs with the identity transformation');
+    elseif ~isfield(x, 'D') || ~isfield(x.D, 'IdentityTransfRef')
+        error('Path to IdentityTransfRef missing in x Table');
+    end
+end
+
 
 
 %% ------------------------------------------------------------------------------
@@ -112,7 +122,7 @@ for i4=1:size(IM,4)
                     case 3
                         IM(:,:,:,i4,i5,i6,i7) = xASL_im_ExtrapolateLinearlyOverNaNs(IM(:,:,:,i4,i5,i6,i7));
                     case 4
-                        IM = xASL_im_FillNaNs_FlowFieldIdentity(IM);
+                        IM = xASL_im_FillNaNs_FlowFieldIdentity(x, IM);
                     otherwise
                         error('Invalid option');
                 end
@@ -142,26 +152,38 @@ end
 
 %% ========================================================================================
 %% ========================================================================================
-function [IM] = xASL_im_FillNaNs_FlowFieldIdentity(IM)
+function [IM] = xASL_im_FillNaNs_FlowFieldIdentity(x, IM)
 %xASL_im_FillNaNs_FlowFieldIdentity
+% For this function, x is needed to get the location of the identity deformation field
 
-% Location of the identity transformation field
-pathIdentityTransf = fullfile(x.opts.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
 % Image of the identity transformation field
-imageIdentityTransf = xASL_io_Nifti2Im(pathIdentityTransf);
+imageIdentityTransf = xASL_io_Nifti2Im(x.D.IdentityTransfRef);
 
 % NaNs that need replacement
-mask2replace = isnan(IM);
+mask2replace = isnan(IM) | IM==0;
 
 % Check that the images are equally sized
 if ~isequal( size(imageIdentityTransf), size(IM) )
     error('Something going wrong with this flowfield size');
 elseif sum(mask2replace(:))==0
     fprintf('%s\n', 'There were no NaNs to fill in this flow field, skipping');
-else
-    IM(mask2replace) = imageIdentityTransf(mask2replace);
+    return;
+elseif ndims(IM)>5
+    error('This flowfield has too many dimensions');
 end
 
+% Fill the NaNs
+IM(mask2replace) = imageIdentityTransf(mask2replace);
+% Now we smooth to avoid rough transitions between inside and outside the mask, with (default) 3 voxel-3D Gaussian PSF
+% We are usually in 1.5 mm space, which would give 8/1.5=5 voxels for a 8 mm FWHM
+for iY=1:size(IM, 4)
+    for iZ=1:size(IM, 5)
+        smoothedIM(:,:,:,iY,iZ) = xASL_im_Smooth3D(IM(:,:,:,iY,iZ), [5 5 5]);
+    end
+end
+
+% Put only the smoothed NaNs back
+IM(mask2replace) = smoothedIM(mask2replace);
 
 end
 
