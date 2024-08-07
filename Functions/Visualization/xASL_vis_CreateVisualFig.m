@@ -13,7 +13,7 @@ function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale,
 %   DirOut       - folder where output Figure file should be written (OPTIONAL, DEFAULT=omit writing output Figure file)
 %   IntScale     - vector specifying the relative intensity of each image layer, with same length of as ImIn (OPTIONAL, DEFAULT=1)
 %                  this allows setting transparancy, when the intensity of the overlay is reduced
-%   NamePrefix   - prefix for filename (OPTIONAL, DEFAULT = '')
+%   NamePrefix   - prefix for filename. Can also be used as full filename (OPTIONAL, DEFAULT = '')
 %   ColorMap     - colormaps used for each layer (OPTIONAL, DEFAULT =x.S.colors_ROI
 %                  x.S.colors_ROI = {gray red blue green yellow purple turqoise orange}
 %   bClip        - vector, false for disabling clipping (OPTIONAL, DEFAULT=true for first image, false for overlays)
@@ -133,6 +133,10 @@ if isempty(ImIn)
     return;
 end
 
+% Default Ffile as empty filename
+% Note that when saving a file at the end of this function, the prefix is used
+% When a file is saved but no input file was used, the prefix can be used as filename
+Ffile = '';
 
 % First check file existence (only for input images provided as FilePath)
 for iC=1:length(ImIn)
