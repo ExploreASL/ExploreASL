@@ -291,7 +291,10 @@ spm_jobman('run',matlabbatch); % this applies the SPM job (i.e. joint transforma
 for iL=1:length(PathIn)
     [Fpath, Ffile] = xASL_fileparts(PathIn{iL});
     wname = fullfile(Fpath, ['w' Ffile '.nii']);
-    xASL_delete(PathOut{iL}); % delete PathOut if it exists
+    
+    if ~isequal(wname, PathOut{iL})
+        xASL_delete(PathOut{iL}); % delete PathOut if it exists
+    end
     [Fpath, Ffile, Fext] = xASL_fileparts(PathOut{iL});
     PathOutNii = fullfile(Fpath, [Ffile '.nii']);
     if xASL_exist(wname, 'file') && ~strcmp(wname, PathOutNii)
