@@ -183,7 +183,11 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 			% The value is missing for the M0 with reversed PE, we assign the same default as for the ASL and M0 scans
 			if ~isfield(jsonM0, 'PhaseEncodingDirection')
 				jsonM0.PhaseEncodingDirection = 'j';
-				fprintf('Phase-encoding direction for reversed-PE M0 is not specified, using the default PA direction.\n');
+
+				% The default value of PhaseEncodingDirection is assigned in all cases, but the error is reported only when the file really exists
+				if xASL_exist([pathM0In '.nii'])
+					fprintf('Phase-encoding direction for reversed-PE M0 is not specified, using the default PA direction.\n');
+				end
 			end
 
 			% Define the direction tag and inversed-direction tag for the BIDS field name based on the DICOM value
