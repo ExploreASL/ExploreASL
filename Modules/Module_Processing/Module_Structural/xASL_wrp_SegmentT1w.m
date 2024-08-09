@@ -52,7 +52,7 @@ end
 
 
 %% --------------------------------------------------------------------------------
-%% 1) Administration
+%% 1. Administration
 if x.settings.Quality~=0 && x.settings.Quality~=1
     error('Wrong quality definition');
 end
@@ -83,7 +83,7 @@ xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, '^catreport.*\.pdf$');
 xASL_adm_RemoveTempFilesCAT12(x, true); % remove previous temporary CAT12 files
 
 %% --------------------------------------------------------------------------------
-%% 1.5 Fix resolution for CAT12 % if we would activate this, we should also
+%% 1.5. Fix resolution for CAT12 % if we would activate this, we should also
 %     fix the FLAIR resolution, otherwise this crashes when cleaning up the
 %     FLAIR WMH segmentation
 if x.modules.structural.bFixResolution % if we use CAT12 to segment
@@ -104,7 +104,7 @@ end
 
 
 %% --------------------------------------------------------------------------------
-%% 2) Extra segmentation options by Jan Petr (NEED MERGING WITH ABOVE)
+%% 2. Extra segmentation options by Jan Petr (NEED MERGING WITH ABOVE)
 % NOVICE study
 % x.Seg.DisableDARTEL = 1;
 
@@ -168,11 +168,8 @@ if x.Seg.DisableDARTEL
 end
 
 
-
-
-
 %% -------------------------------------------------------------------------------------------
-%% 3) Segmentation using CAT12
+%% 3. Segmentation using CAT12
 %  This runs by default (default = x.modules.structural.bSegmentSPM12 == 0)
 %  When it fails, it will pass x.modules.structural.bSegmentSPM12 == 1
 if ~bSegmentSPM12
@@ -180,12 +177,8 @@ if ~bSegmentSPM12
 end
 
 
-
-
-
-
 %% -------------------------------------------------------------------------------------------
-%% 4) Segmentation using SPM12
+%% 4. Segmentation using SPM12
 %  This usually gives poorer results than CAT12, but can be chosen if CAT12 doesnt work
 if bSegmentSPM12
     xASL_wrp_SPM12Segmentation(x);
@@ -195,14 +188,14 @@ if bSegmentSPM12
         xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.settings.Quality, x.P.Path_y_T1, 1);
     end
     return; % rest of the function is housekeeping for CAT12
-end
 
-close all;
+    close all;
+end
 
 
 
 %% ----------------------------------------------------------------------------------------
-%% 5) File management CAT12 names
+%% 5. File management CAT12 names
 InFile{1} = fullfile(x.dir.SUBJECTDIR,'mri',['p1' x.P.STRUCT '.nii']);
 InFile{2} = fullfile(x.dir.SUBJECTDIR,'mri',['p2' x.P.STRUCT '.nii']);
 InFile{3} = fullfile(x.dir.SUBJECTDIR,'mri',['p3' x.P.STRUCT '.nii']);
@@ -245,7 +238,7 @@ end
 
 
 %% ----------------------------------------------------------------------------------------
-%% 6) File management lesion segmentations
+%% 6. File management lesion segmentations
 %  Obtain paths of lesion files if they exist, to correct flowfields for
 Lesion_T1_list     = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['(?i)^Lesion_' x.P.STRUCT '_\d*\.nii$'],'FPList',[0 Inf]);
 Lesion_FLAIR_list  = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['(?i)^Lesion_' x.P.FLAIR '_\d*\.nii$'],'FPList',[0 Inf]);
@@ -272,7 +265,9 @@ xASL_adm_DeleteFileList(x.D.PopDir, ['^rLesion.*' x.P.SubjectID '\.nii'], 0, [0 
 
 
 %% ----------------------------------------------------------------------------------------
-%% 7) Resample all lesion masks to standard space (avoid differences between input spaces)
+%% 7. Combine lesion masks in standard space
+% This is only to avoid differences between input spaces of the lesion masks
+% Lesion saving in standard space itself, happens later, with the improved flow fields
 for iL=1:length(Lesion_FLAIR_list)
     rLesion_FLAIR_list{iL} = fullfile(x.D.PopDir, ['rLesion_' x.P.FLAIR '_' num2str(iL) '_' x.P.SubjectID '.nii']);
     xASL_spm_deformations(x,Lesion_FLAIR_list{iL}, rLesion_FLAIR_list{iL}, 2);
@@ -290,14 +285,10 @@ for iL=1:length(rLesionList)
     LesionIM(xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(rLesionList{iL}))) = 1;
     xASL_delete(rLesionList{iL});
 end
-% Lesion saving in standard space happens later, with the improved flow fields
-
-
-
 
 
 %% ----------------------------------------------------------------------------------------
-%% 8) Manage flowfields
+%% 8. Manage flowfields
 if xASL_stat_SumNan(LesionIM(:))>0
     % Mix the DARTEL (non-linear) and SPM (uniform) flowfields based on Euclidian distance matrix
     FlowfieldImage = xASL_wrp_CombineFlowFields(x, Path_Transf_SPM, Path_Transf_DARTEL, LesionIM);
@@ -311,25 +302,21 @@ else % if no lesion existed, keep the non-linear flowfield (if it exists, otherw
     end
 end
 
-if ~x.settings.Quality % With low quality, registration was performed on lower resolution,
-              % & transformation needs to be upsampled to correct resolution
+
+%% ----------------------------------------------------------------------------------------
+%% 9. Manage FoV & flowfield edges
+xASL_im_FillNaNs(x.P.Path_y_T1, 3, [], [], true);
+
+if ~x.settings.Quality
+    % With low quality, DARTEL/GS registration was performed on lower resolution,
+    % & transformation needs to be upsampled to correct resolution
     xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.settings.Quality, x.P.Path_y_T1, 1);
 end
 
-% Fill NaNs with identity for smooth edges of flow fields
-xASL_im_FillNaNs(x.P.Path_y_T1, 4, [], [], x);
-
-
-
 
 %% ----------------------------------------------------------------------------------------
-%% 9) File management
+%% 10. File management
 xASL_adm_RemoveTempFilesCAT12(x);
-
-
-
-
-
 
 
 end
