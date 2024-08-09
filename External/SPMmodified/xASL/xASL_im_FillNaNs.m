@@ -1,4 +1,4 @@
-function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, x)
+function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, bZeroes)
 %xASL_im_FillNaNs Fill NaNs in image
 % FORMAT: xASL_im_FillNaNs(InputPath[, UseMethod, bQuality, VoxelSize])
 %
@@ -19,8 +19,12 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, x)
 %                 (OPTIONAL, DEFAULT = 1)
 %   VoxelSize   - [X Y Z] vector for voxel size 
 %                 (OPTIONAL, DEFAULT = [1.5 1.5 1.5])
+%   bZeroes     - boolean for converting zeroes to NaNs and also changing them accordingly (OPTIONAL, DEFAULT = false)
 %   x           - x is only needed for the location of the deformation identity field, if UseMethod is 4 (default)
 %                 so this parameter is often required (OPTIONAL, DEFAULT = [])
+%   bIdentityMNIEdges   - boolean to fill the outer MNI flowfield lines with identity lines to MNI (OPTIONAL, DEFAULT=false)
+%                         This option is only used when UseMethod==4
+%
 %
 % OUTPUT:
 %   IM          - image matrix in which NaNs were filled
@@ -38,14 +42,14 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, x)
 %              This function performs the following 3 steps:
 %
 %              1. Load image
-%              2. Replace NaNs
+%              2. Replace NaNs using any of the methods
 %              3. Save image
 %
 % --------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:   for filling NaNs: xASL_im_FillNaNs('/MyStudy/sub-001/ASL_1/M0.nii');
+% EXAMPLE:   for filling NaNs in an image: xASL_im_FillNaNs('/MyStudy/sub-001/ASL_1/M0.nii');
 % EXAMPLE2:  for fixing flowfield edges: xASL_im_FillNaNs('/MyStudy/sub-001/y_T1.nii', 3);
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 
 %% Admin
 IM = NaN; % default
@@ -57,8 +61,8 @@ end
 
 if nargin<2 || isempty(UseMethod)
     UseMethod = 1;
-elseif UseMethod<0 || UseMethod>4
-    warning('Illegal option chosen, setting to default value');
+elseif UseMethod<0 || UseMethod>3
+    warning('Illegal option chosen, setting to default value method 1');
     UseMethod = 1;
 end
 
@@ -85,27 +89,30 @@ if UseMethod==1 % only method that needs VoxelSize
     end
 end
 
-if UseMethod==4
-    if nargin<5 || isempty(x)
-        error('We need the x Table input to fill NaNs with the identity transformation');
-    elseif ~isfield(x, 'D') || ~isfield(x.D, 'IdentityTransfRef')
-        error('Path to IdentityTransfRef missing in x Table');
+if nargin<5 || isempty(bZeroes)
+    if UseMethod==3
+        bZeroes = true;
+    else
+        bZeroes = false;
     end
 end
-
 
 
 %% ------------------------------------------------------------------------------
 %% 1. Load image
 IM = xASL_io_Nifti2Im(InputPath); % allows loading image from path or from image
 
+if bZeroes
+    % Zeros are also converted to NaNs - because this is sometimes unclear in the flow fields
+    IM(IM==0) = NaN;
+end
+
 
 %% ------------------------------------------------------------------------------
-%% 2. Replace NaNs
+%% 2. Replace NaNs using any of the methods
 fprintf('%s', 'Cleaning up NaNs in image:  0%');
 TotalDim = size(IM,4)*size(IM,5)*size(IM,6)*size(IM,7);
 CurrentIt = 1;
-
 for i4=1:size(IM,4)
     for i5=1:size(IM,5)
         for i6=1:size(IM,6)
@@ -114,15 +121,14 @@ for i4=1:size(IM,4)
 
                 switch UseMethod
                     case 1
+                        % Use this for cases where NaNs need to get border values (e.g. extrapolating a masked image)
                         IM(:,:,:,i4,i5,i6,i7) = xASL_im_ExtrapolateSmoothOverNaNs(IM(:,:,:,i4,i5,i6,i7), bQuality, VoxelSize);
                     case 2
                         IM(isnan(IM)) = 0;
-                        % This loops unnecessary but goes fast
-                        % enough, keep in this loop for readability
+                        % This loops unnecessary but goes fast enough, keep in this loop for readability
                     case 3
+                        % Use this for cases where NaNs need to expand linearly (e.g., extrapolating flowfields)
                         IM(:,:,:,i4,i5,i6,i7) = xASL_im_ExtrapolateLinearlyOverNaNs(IM(:,:,:,i4,i5,i6,i7));
-                    case 4
-                        IM = xASL_im_FillNaNs_FlowFieldIdentity(x, IM);
                     otherwise
                         error('Invalid option');
                 end
@@ -132,9 +138,7 @@ for i4=1:size(IM,4)
         end
     end
 end
-
 fprintf('\n');
-        
 
 
 %% ------------------------------------------------------------------------------
@@ -150,46 +154,14 @@ end
 
 
 
-%% ========================================================================================
-%% ========================================================================================
-function [IM] = xASL_im_FillNaNs_FlowFieldIdentity(x, IM)
-%xASL_im_FillNaNs_FlowFieldIdentity
-% For this function, x is needed to get the location of the identity deformation field
 
-% Image of the identity transformation field
-imageIdentityTransf = xASL_io_Nifti2Im(x.D.IdentityTransfRef);
 
-% NaNs that need replacement
-mask2replace = isnan(IM) | IM==0;
 
-% Check that the images are equally sized
-if ~isequal( size(imageIdentityTransf), size(IM) )
-    error('Something going wrong with this flowfield size');
-elseif sum(mask2replace(:))==0
-    fprintf('%s\n', 'There were no NaNs to fill in this flow field, skipping');
-    return;
-elseif ndims(IM)>5
-    error('This flowfield has too many dimensions');
-end
-
-% Fill the NaNs
-IM(mask2replace) = imageIdentityTransf(mask2replace);
-% Now we smooth to avoid rough transitions between inside and outside the mask, with (default) 3 voxel-3D Gaussian PSF
-% We are usually in 1.5 mm space, which would give 8/1.5=5 voxels for a 8 mm FWHM
-for iY=1:size(IM, 4)
-    for iZ=1:size(IM, 5)
-        smoothedIM(:,:,:,iY,iZ) = xASL_im_Smooth3D(IM(:,:,:,iY,iZ), [5 5 5]);
-    end
-end
-
-% Put only the smoothed NaNs back
-IM(mask2replace) = smoothedIM(mask2replace);
-
-end
 
 
 %% ========================================================================================
 %% ========================================================================================
+%% METHOD 1
 function [IM] = xASL_im_ExtrapolateSmoothOverNaNs(IM, bQuality, VoxelSize)
 %xASL_im_ExtrapolateLinearlyOverNaNs
 
@@ -211,29 +183,67 @@ end
 
 %% ========================================================================================
 %% ========================================================================================
-function [IM] = xASL_im_ExtrapolateLinearlyOverNaNs(IM)
+%% METHOD 3
+function [IM] = xASL_im_ExtrapolateLinearlyOverNaNs(IM, nEdgeVoxels)
 %xASL_im_ExtrapolateLinearlyOverNaNs
 % The input of this function is 3D (iterations of other dimensions are done
 % in the main function above)
+%
+% IM          - input image
+% nEdgeVoxels - number of voxels at the edges of the non-nan values that we check for weird interpolation values, 
+% to be set to NaN and ignored in the extrapolation
 
-% Zeros are also converted to NaNs - because this is sometimes unclear in the flow fields.
-IM(IM==0) = NaN;
+%% 0. Admin
+% Also catch Infs or imaginary numbers or whatever. Zeroes are already catched above in the main function.
 IM(~isfinite(IM)) = NaN;
 
-% Get distance transform
-distMap = xASL_im_DistanceTransform(~isfinite(IM));
+if nargin<2 || isempty(nEdgeVoxels)
+    nEdgeVoxels = 0;
+    % We can try this later, but it seems to work less well than doing the same based on the distance transform
+end
 
-IM(distMap<2) = NaN; % The first layer next to NaNs is sometimes intrapolated, so rather assigned to Nans as well
+
+%% 0.5 Fix interpolation edges
+% The first layer(s) next to the NaNs are sometimes interpolated as well
+% So here we try to estimate which voxels those are, by looking at the distance from the NaNs
+% together with the transformation difference from a smoothed transformation field
+% Note that this could also potentially fix extreme transformations
+
+% Get distance transform
+distMap = xASL_im_DistanceTransform(isnan(IM));
+
+% Smooth the image outside of the NaNs
+IMsmooth = xASL_im_ndnanfilter(IM, 'gauss', [8 8 8], 1);
+% Get an absolute difference image between the original and the smoothed transformation field
+deltaIm = abs(IM-IMsmooth);
+% Divide this absolute delta by the distance
+relativeDelta = deltaIm./distMap;
+
+% The relativeDelta is Rician-ish distributed, so we use the median and MAD to obtain a threshold
+medianRelativeDelta = xASL_stat_MedianNan(relativeDelta(:));
+MADRelativeDelta = xASL_stat_MadNan(relativeDelta(:));
+thresholdIs = medianRelativeDelta+3.5*MADRelativeDelta;
+
+% Determine the edges to avoid removing inside the image
+sizeIm = size(IM);
+if numel(sizeIm)<3
+    warning('Something wrong with this flowfield');
+end
+averageSize = mean(sizeIm(1:3));
+edgeDistance = round(0.1*averageSize);
+
+IM(relativeDelta>thresholdIs & distMap<edgeDistance) = NaN;
 
 nX = size(IM,1);
 nY = size(IM,2);
 nZ = size(IM,3);
 
-for Iteration = 1:3 % Applies twice along X Y Z dimensions to make sure all the corners are filled
-    if sum(isnan(IM(:)))>0 
+for Iteration = 1:3 % Applies thrice along each X Y Z dimension to make sure all corners are filled
+    if sum(isnan(IM(:)))>0
+        %% 1. Reshape 3D to 2D
         % Along the three dimensions (or two dimensions in case a 2D image is on the input)
-		% Check each line of the image along the dimension and checks NaNs at the start and end of each line
-		% And interpolates them using the values in the iddle
+	    % Check each line of the image along the dimension and checks NaNs at the start and end of each line
+	    % And interpolates them using the values in the middle
         for DimensionIs = 1:min(3,ndims(IM))
             % Takes a 3D image and concatenates to a 2D so that we can fill in the NaNs in each column
             switch(DimensionIs)
@@ -244,62 +254,162 @@ for Iteration = 1:3 % Applies twice along X Y Z dimensions to make sure all the 
                 case 3
                     imCol = reshape(IM, [nX*nY,nZ])';
             end
-
-			% Find those columns that incude NaNs, but there are more than 50% non-NaNs (only apply this condition on the first run)
-			if Iteration>1
-				indCol = sum(isnan(imCol),1)>0 & sum(~isnan(imCol),1)>(0.1*size(imCol,1));
-			else
-				indCol = sum(isnan(imCol),1)>0 & sum(~isnan(imCol),1)>(0.5*size(imCol,1));
-			end			
-			
+    
+		    % Find columns with a maximum amount of NaNs.
+            % Other NaNs will be dealt with by the xASL_im_ExtrapolateSmoothOverNaNs function below
+            % 50% at first iteration
+            % 10% at later iterations
+		    if Iteration==1
+			    indCol = sum(isnan(imCol),1)>0 & sum(~isnan(imCol),1)>(0.5*size(imCol,1));
+		    else
+			    indCol = sum(isnan(imCol),1)>0 & sum(~isnan(imCol),1)>(0.1*size(imCol,1));
+		    end			
+		    
             nCol = size(imCol,1);
-            nColHalf = floor(nCol/2);
-            % Find columns starting and ending with nans
+            % Find columns starting or ending with nans
             indColLow  = indCol & isnan(imCol(1,:));
-			indColHigh = indCol & isnan(imCol(end,:));
-
+		    indColHigh = indCol & isnan(imCol(end,:));
+    
+            %% 2. Linearly extrapolate NaNs for columns starting with NaNs
             % For each column starting with Nans checks how the values are changing in the non-NaN voxels and linearly
-			% interpolate in the NaNs
+		    % interpolate in the NaNs
             for ColumnIs = find(indColLow)
-                minInd = find(~isnan(imCol(:,ColumnIs)), 1, 'first');
-                meanDiff = sum(imCol(minInd:nColHalf,ColumnIs) - imCol((minInd+1):(nColHalf+1),ColumnIs))/(nColHalf-minInd+1);
-				if isnan(meanDiff)
-					meanDiff = xASL_stat_MeanNan(imCol(minInd:nColHalf,ColumnIs) - imCol((minInd+1):(nColHalf+1),ColumnIs));
-				end
-                imCol(1:(minInd-1),ColumnIs) = imCol(minInd,ColumnIs) + ((minInd-1):-1:1)*meanDiff;
-            end
+                % Take this column only
+                imThisCol = imCol(:,ColumnIs);
+                
+                [diffIs, minInd, maxInd, thresholdIs] = xASL_im_Extrapolate_FixEdges(imThisCol, 0);
 
-            % For each column ending with NaNs checks how the values are changing in the non-NaN voxels and linearly
-			% interpolate in the NaNs
+                % Now we check if we should remove edge voxels
+                % We try this nEdgeVoxels times (default=5)
+                nLayersProcessed = 0;
+                while nLayersProcessed<nEdgeVoxels
+                    if diffIs(end)>thresholdIs
+                        imThisCol(minInd) = NaN; % remove the edge voxel
+                        % If we have changed a first or last non-nan voxel, we rerun the difference determination 
+                        [diffIs, minInd, maxInd, thresholdIs] = xASL_im_Extrapolate_FixEdges(imThisCol, 1);
+                    end
+                    nLayersProcessed = nLayersProcessed+1;
+                end
+
+                meanDiff = xASL_stat_MeanNan(diffIs);
+                
+                % Create a robust first value, from 6 voxels
+                % This avoids extrapolating an extreme value at the edge
+                voxels6 = imThisCol(minInd:minInd+5); % select the first 6 voxels
+                voxels6 = voxels6(isfinite(voxels6)); % select those without NaNs
+                robustMedian = median(voxels6);
+                robustDiff = median(voxels6(1:end-1) - voxels6(2:end)); % mean difference
+                numVoxels = length(voxels6)/2;
+                robustValue = robustMedian + numVoxels*robustDiff;
+                % Now take the mean of the actual first value and the robust one
+                robustValue = mean([robustValue imThisCol(minInd)]);
+
+                % Apply this
+                imThisCol(1:minInd-1) = robustValue + (minInd-1:-1:1) * meanDiff;
+                % Put this column back in the image
+                imCol(:, ColumnIs) = imThisCol;
+            end
+            
+            %% 3. Linearly extrapolate NaNs for columns ending with NaNs
+            % For each column ending with NaNs check how the values are changing in the non-NaN voxels and linearly
+		    % interpolate in the NaNs
             for ColumnIs = find(indColHigh)
-                maxInd = find(~isnan(imCol(:,ColumnIs)),1, 'last');
-                meanDiff = sum(imCol(nColHalf:maxInd,ColumnIs)-imCol((nColHalf-1):(maxInd-1),ColumnIs))/(maxInd-nColHalf+1);
-				if isnan(meanDiff)
-					meanDiff = xASL_stat_MeanNan(imCol(nColHalf:maxInd,ColumnIs)-imCol((nColHalf-1):(maxInd-1),ColumnIs));
-				end
-                imCol((maxInd+1):end,ColumnIs) = imCol(maxInd,ColumnIs) + (1:(nCol-maxInd))*meanDiff;
-            end
+                % Take this column only
+                imThisCol = imCol(:,ColumnIs);
+    
+                % In this subfunction, we determine the difference within the current column
+                % Which we can use for extrapolation, and to check if we need to exclude edge voxels
+                % of the current column
+                [diffIs, minInd, maxInd, thresholdIs] = xASL_im_Extrapolate_FixEdges(imThisCol, 1);
 
-            % Put back together to the original image
+                % Now we check if we should remove edge voxels
+                % We try this nEdgeVoxels times (default=5)
+                nLayersProcessed = 0;
+                while nLayersProcessed<nEdgeVoxels
+                    % 
+                    if diffIs(end)>thresholdIs
+                        imThisCol(maxInd) = NaN; % remove the edge voxel
+                        % If we have changed a first or last non-nan voxel, we rerun the difference determination 
+                        [diffIs, minInd, maxInd, thresholdIs] = xASL_im_Extrapolate_FixEdges(imThisCol, 1);
+                    end
+                    nLayersProcessed = nLayersProcessed+1;
+                end
+
+                meanDiff = xASL_stat_MeanNan(diffIs);
+
+                % Create a robust last value, from 6 voxels
+                % This avoids extrapolating an extreme value at the edge
+                voxels6 = imThisCol(maxInd-5:maxInd); % select the last 6 voxels
+                voxels6 = voxels6(isfinite(voxels6)); % select those without NaNs
+                robustMedian = median(voxels6);
+                robustDiff = median(voxels6(2:end) - voxels6(1:end-1)); % mean difference
+                numVoxels = length(voxels6)/2;
+                robustValue = robustMedian + numVoxels*robustDiff;
+                % Now take the mean of the actual last value and the robust one
+                robustValue = mean([robustValue imThisCol(maxInd)]);
+
+                % Apply this
+                imThisCol(maxInd+1:end) = robustValue + (1:nCol-maxInd) * meanDiff;
+                % Put this column back in the image
+                imCol(:, ColumnIs) = imThisCol;
+            end
+    
+            %% 4. Reshape 2D back to 3D
             switch(DimensionIs)
                 case 1
                     IM = reshape(imCol, [nX,nY,nZ]);
                 case 2
-					% For 2D matrix and 3D matrix, the reshaping back is done differently
-					if ndims(IM)<3
-						IM = shiftdim(reshape(imCol,[nY,nX]),1);
-					else
-						IM = shiftdim(reshape(imCol,[nY,nZ,nX]),2);
-					end
+				    % For 2D matrix and 3D matrix, the reshaping back is done differently
+				    if ndims(IM)<3
+					    IM = shiftdim(reshape(imCol,[nY,nX]),1);
+				    else
+					    IM = shiftdim(reshape(imCol,[nY,nZ,nX]),2);
+				    end
                 case 3
                     IM = reshape(imCol', [nX,nY,nZ]);
             end % switch
         end % for DimensionIs
     end % sum(isnan(IM))
-end % for Iteration
+end
 
 % Any remaining NaNs had to be inside, so we interpolate them (setting them
 % to zeros creates artifacts!)
 IM = xASL_im_ExtrapolateSmoothOverNaNs(IM, 0);
+
+end
+
+
+function [diffIs, minInd, maxInd, thresholdIs] = xASL_im_Extrapolate_FixEdges(imThisCol, bSide)
+%xASL_im_Extrapolate_FixEdges Check if the edges of the non-NaN voxels within a column are outliers
+% from the distribution of differences between voxels. If they are outliers, they are probably interpolation 
+% errors from the SPM software, and we want to ignore them.
+%
+% input
+% imThisCol - vector of current column (REQUIRED)
+% bSide     - boolean specifying if we check the start/first non-NaN voxel (0)
+% %           or the end/last non-NaN voxel (1). (REQUIRED)
+
+
+minInd = find(~isnan(imThisCol), 1, 'first'); % Get the index of the first non-value
+maxInd = find(~isnan(imThisCol), 1, 'last'); % Get the index of the last non-value
+midInd = floor(minInd+(maxInd-minInd)/2); % Get the index of the middle voxel
+
+% Mean difference, from the middle index to the index of the last value
+% Calculated by their difference with their neighboring voxel            
+
+if ~bSide % start/first
+    diffIs = imThisCol(minInd:midInd) - imThisCol(minInd+1:midInd+1);
+else
+    diffIs = imThisCol(midInd:maxInd) - imThisCol(midInd-1:maxInd-1);
+end
+
+% Remove outlier voxels near the edges, due to interpolation
+% When a voxel near the edge has 1.96*SD larger diff than the mean of absolute diff, we set it to NaN
+% For a maximum of maxEdgeVoxels
+
+absDiff = abs(diffIs);
+meanAbsDiff = xASL_stat_MeanNan(absDiff);
+stdDiff = xASL_stat_StdNan(diffIs);
+thresholdIs = meanAbsDiff+3.5*stdDiff;
 
 end
