@@ -445,7 +445,12 @@ for iScanType=1:length(PreFixList)
                         end
                     end
                     
-                    CurrentSetsID = x.S.SetsID(LoadSetsID, :);
+                    if size(LoadSetsID, 1)>size(x.S.SetsID,1)
+                        warning('Somehow the number of subjects or sessions doesnt match between population and other folders');
+                        fprintf('%s/n', 'This could be due to a rerun with e.g. fewer sessions than an earlier run');
+                    else
+                        CurrentSetsID = x.S.SetsID(LoadSetsID, :);
+                    end
                     
                     if bProceedComputationMaps
                         % initialize image indices that will be included

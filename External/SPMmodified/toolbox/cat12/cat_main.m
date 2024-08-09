@@ -634,7 +634,7 @@ end
   %%%
   %%% ANOTHER EXPLOREASL HACK: remove NaNs from transformations before DARTEL
   if exist('Yy','var')
-    Yy = single(xASL_im_FillNaNs(Yy, 1, job.extopts.xasl_quality, [1.5 1.5 1.5]));
+    Yy = single(xASL_im_FillNaNs(Yy, 3, job.extopts.xasl_quality, [1.5 1.5 1.5]));
   end
   
   % call Dartel/Shooting registration 

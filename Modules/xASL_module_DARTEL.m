@@ -300,7 +300,7 @@ for iS=1:x.dataset.nSubjects
     if xASL_exist(y_file, 'file')
 
 		xASL_adm_UnzipNifti(y_file, 1);
-        xASL_im_FillNaNs(y_file, 4, [], [], x);
+        xASL_im_FillNaNs(y_file, 3);
 
         clear matlabbatch
         matlabbatch{1}.spm.util.defs.comp{1}.def = {y_file};
@@ -308,7 +308,7 @@ for iS=1:x.dataset.nSubjects
         if xASL_exist(u_file, 'file')
             % first unzip & fill NaNs, just to be sure
             xASL_adm_UnzipNifti(u_file, 1);
-            xASL_im_FillNaNs(u_file, 2);
+            xASL_im_FillNaNs(u_file, 3);
 
             matlabbatch{1}.spm.util.defs.comp{end+1}.dartel.flowfield = {u_file};
             matlabbatch{1}.spm.util.defs.comp{end}.dartel.times = [1 0];
@@ -327,7 +327,7 @@ for iS=1:x.dataset.nSubjects
         spm_jobman('run',matlabbatch);
 
         xASL_Move(y_y_file, y_file, true);
-        xASL_im_FillNaNs(y_file, 4, [], [], x);
+        xASL_im_FillNaNs(y_file, 3);
         xASL_delete(u_file);
 
         x.P.SubjectID = x.SUBJECTS{iS};

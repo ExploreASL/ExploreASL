@@ -62,7 +62,8 @@ sKernel = (EstimatedResolution.^2 - TemplateResolution.^2).^0.5; % assuming the 
 sKernel(EstimatedResolution<TemplateResolution) = 0;
 
 %% 2) Fill NaNs at edges y_T1.nii flowfield to prevent interpolation artifact
-xASL_im_FillNaNs(x.P.Path_y_T1, 4, [], [], x); % First fill NaNs, to prevent interpolation artifacts
+xASL_im_FillNaNs(x.P.Path_y_T1, 3, [], [], true); % First fill NaNs, to prevent interpolation artifacts
+
 
 %% 3) Smooth flowfield
 % Note that we provide the T1w resolution, not the resolution of y_T1,
@@ -78,7 +79,7 @@ xASL_im_PreSmooth(PathLowResNIfTI, x.P.Path_y_T1, x.P.Path_y_ASL, [], resSrc); %
 % respectively
 
 %% 4) Fill NaNs at edges y_ASL.nii
-xASL_im_FillNaNs(x.P.Path_y_ASL, 4, [], [], x); % Again fill NaNs, if needed
+xASL_im_FillNaNs(x.P.Path_y_ASL, 3, [], [], true); % Again fill NaNs, if needed
 
 
 end
