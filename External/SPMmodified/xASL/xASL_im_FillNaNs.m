@@ -1,6 +1,6 @@
 function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, bZeroes)
 %xASL_im_FillNaNs Fill NaNs in image
-% FORMAT: xASL_im_FillNaNs(InputPath[, UseMethod, bQuality, VoxelSize])
+% FORMAT: xASL_im_FillNaNs(InputPath[, UseMethod, bQuality, VoxelSize, bZeroes])
 %
 % INPUT:
 %   InputPath   - path to image, or image matrix (REQUIRED)
@@ -20,10 +20,6 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, bZer
 %   VoxelSize   - [X Y Z] vector for voxel size 
 %                 (OPTIONAL, DEFAULT = [1.5 1.5 1.5])
 %   bZeroes     - boolean for converting zeroes to NaNs and also changing them accordingly (OPTIONAL, DEFAULT = false)
-%   x           - x is only needed for the location of the deformation identity field, if UseMethod is 4 (default)
-%                 so this parameter is often required (OPTIONAL, DEFAULT = [])
-%   bIdentityMNIEdges   - boolean to fill the outer MNI flowfield lines with identity lines to MNI (OPTIONAL, DEFAULT=false)
-%                         This option is only used when UseMethod==4
 %
 %
 % OUTPUT:
@@ -43,6 +39,10 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, bZer
 %
 %              1. Load image
 %              2. Replace NaNs using any of the methods
+%               Method 1: extrapolate smooth over NaNs:
+%                         Use this for cases where NaNs need to get border values (e.g. extrapolating a masked image)
+%               Method 2: set NaNs to zeroes
+%               Method 3: Use this for cases where NaNs need to expand linearly (e.g., extrapolating flowfields)
 %              3. Save image
 %
 % --------------------------------------------------------------------------------------------------------------------
@@ -206,25 +206,28 @@ end
 %% 0.5 Fix interpolation edges
 % The first layer(s) next to the NaNs are sometimes interpolated as well
 % So here we try to estimate which voxels those are, by looking at the distance from the NaNs
-% together with the transformation difference from a smoothed transformation field
-% Note that this could also potentially fix extreme transformations
+% together with the transformation difference from a smoothed transformation field.
 
-% Get distance transform
+% First we get the distance transform
 distMap = xASL_im_DistanceTransform(isnan(IM));
 
-% Smooth the image outside of the NaNs
+% Then we create a copy of the image that is smoothed (outside of NaNs)
 IMsmooth = xASL_im_ndnanfilter(IM, 'gauss', [8 8 8], 1);
-% Get an absolute difference image between the original and the smoothed transformation field
+% We obtain an absolute difference image between the original transformation field, and the smoothed transformation field
+% This difference will show us how "extreme" the transformations are.
 deltaIm = abs(IM-IMsmooth);
-% Divide this absolute delta by the distance
+% This absolute difference image, is now divided by the distance.
+% Because we want to detect extreme transformation values that are close to the border (low distance)
+% So this would result in a high relativeDelta
 relativeDelta = deltaIm./distMap;
 
-% The relativeDelta is Rician-ish distributed, so we use the median and MAD to obtain a threshold
+% The relativeDelta is Rician-ish distributed, so we use the median and MAD to obtain a threshold for the relativeDelta
 medianRelativeDelta = xASL_stat_MedianNan(relativeDelta(:));
 MADRelativeDelta = xASL_stat_MadNan(relativeDelta(:));
 thresholdIs = medianRelativeDelta+3.5*MADRelativeDelta;
 
-% Determine the edges to avoid removing inside the image
+% We want to have a hard cutoff of distance from NaNs that we won't change
+% This is 10% of the transformation field size (e.g, for 121*145*121 transformation field, this is 13 voxels)
 sizeIm = size(IM);
 if numel(sizeIm)<3
     warning('Something wrong with this flowfield');
@@ -232,11 +235,14 @@ end
 averageSize = mean(sizeIm(1:3));
 edgeDistance = round(0.1*averageSize);
 
+% Set the voxels at the border where extreme values were detected to NaN as well
 IM(relativeDelta>thresholdIs & distMap<edgeDistance) = NaN;
 
 nX = size(IM,1);
 nY = size(IM,2);
 nZ = size(IM,3);
+
+% Now we start extrapolating all NaNs — including those that we just created ourselves at the border — with robust non-NaN values at the border
 
 for Iteration = 1:3 % Applies thrice along each X Y Z dimension to make sure all corners are filled
     if sum(isnan(IM(:)))>0
