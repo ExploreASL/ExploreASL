@@ -87,6 +87,9 @@ if UseMethod==1 % only method that needs VoxelSize
                 VoxelSize = [1.5 1.5 1.5];
         end
     end
+else
+    % We don't want the warning for methods other than 1, and we won't use VoxelSize for methods other than 1, but we predefine it here anyway.
+    VoxelSize = [1.5 1.5 1.5];
 end
 
 if nargin<5 || isempty(bZeroes)
