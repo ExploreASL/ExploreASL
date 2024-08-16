@@ -9,7 +9,7 @@ function [dist, x, y, z] = xASL_im_DistanceTransform(im)
 %
 % OUTPUT:
 %  dist     - distance map, distance in voxels to the closest point on the mask
-%  x,y,z    - X, Y, and Z coordinate of the closest voxel on the mask
+%  x,y,z    - X, Y, and Z coordinate of the closest voxel on the mask. Note that these are relative coordinates, and Y,X,Z
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Calculates the distance transform in a binary image
