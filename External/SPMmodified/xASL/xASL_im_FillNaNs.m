@@ -6,12 +6,9 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, bZer
 %   InputPath   - path to image, or image matrix (REQUIRED)
 %                 NB: if this is a path, it is overwritten
 %   UseMethod   - one of the following methods to fill the NaNs:
-%                 1: extrapolate by smoothing (useful for any image, e.g.
-%                    extrapolating M0 smooth biasfield) (DEFAULT)
-%                 2: set to 0 (useful for e.g. DARTEL displacement fields,
-%                    where 0 means no displacement)
-%                 3: linearly extrapolate 
-%                 4: fill with flow field identity map (specific to MNI 1.5mm space used by CAT12/DARTEL)
+%                 1: extrapolate by smoothing (useful for any image, e.g. extrapolating M0 smooth biasfield) (DEFAULT)
+%                 2: set to 0 (useful for e.g. DARTEL displacement fields, where 0 means no displacement)
+%                 3: extrapolate deformation field linearly - this method is adapted to SPM deformation fields XxYxZx3 
 %                 (OPTIONAL, DEFAULT = 1)
 %   bQuality    - affects kernel size of the extrapolation performed in method 1
 %                 (extrapolating by smoothing goes much faster with smaller
@@ -73,18 +70,23 @@ elseif bQuality~=0 && bQuality~=1
     bQuality = 1; % default
 end
 
-if UseMethod==1 % only method that needs VoxelSize
-    if nargin<4 || isempty(VoxelSize)
+if UseMethod == 1 || UseMethod == 3 % only methods that needs VoxelSize
+    if nargin < 4 || isempty(VoxelSize)
         if ~isnumeric(InputPath) && xASL_exist(InputPath, 'file')
             nii = xASL_io_ReadNifti(InputPath);
             VoxelSize = nii.hdr.pixdim(2:4);
+		elseif UseMethod == 3
+			% The Method 3 also need voxel-size, but it can estimate the voxel-size from the deformation fields
+			% Therefore in case of missing VoxelSize, it is initialized as an empty array and this is automatically
+			% estimated later when the image is properly loaded
+			VoxelSize = [];
         elseif bQuality
-                warning('Voxel size not specified, using default [1.5 1.5 1.5]');
-                % only when high quality will we use this parameter,
-                % so we dont give this warning for low quality
-                VoxelSize = [1.5 1.5 1.5];
+			warning('Voxel size not specified, using default [1.5 1.5 1.5]');
+			% only when high quality will we use this parameter,
+			% so we dont give this warning for low quality
+			VoxelSize = [1.5 1.5 1.5];
         else
-                VoxelSize = [1.5 1.5 1.5];
+			VoxelSize = [1.5 1.5 1.5];
         end
     end
 else
@@ -93,13 +95,12 @@ else
 end
 
 if nargin<5 || isempty(bZeroes)
-    if UseMethod==3
+    if UseMethod == 3
         bZeroes = true;
     else
         bZeroes = false;
     end
 end
-
 
 %% ------------------------------------------------------------------------------
 %% 1. Load image
@@ -110,39 +111,45 @@ if bZeroes
     IM(IM==0) = NaN;
 end
 
+% Also catch Infs or imaginary numbers or whatever. Zeroes are already catched above in the main function.
+IM(~isfinite(IM)) = NaN;
 
 %% ------------------------------------------------------------------------------
 %% 2. Replace NaNs using any of the methods
-fprintf('%s', 'Cleaning up NaNs in image:  0%');
-TotalDim = size(IM,4)*size(IM,5)*size(IM,6)*size(IM,7);
-CurrentIt = 1;
-for i4=1:size(IM,4)
-    for i5=1:size(IM,5)
-        for i6=1:size(IM,6)
-            for i7=1:size(IM,7)
-                xASL_TrackProgress(CurrentIt, TotalDim);
+% Run only if there were actual NaNs present
+if sum(isnan(IM(:))) > 0
+	switch UseMethod
+		case 1
+			% Method run is run independently for each 3D volume
+			fprintf('%s', 'Cleaning up NaNs in image:  0%');
+			TotalDim = size(IM,4)*size(IM,5)*size(IM,6)*size(IM,7);
+			CurrentIt = 1;
+			for i4=1:size(IM,4)
+				for i5=1:size(IM,5)
+					for i6=1:size(IM,6)
+						for i7=1:size(IM,7)
+							xASL_TrackProgress(CurrentIt, TotalDim);
 
-                switch UseMethod
-                    case 1
-                        % Use this for cases where NaNs need to get border values (e.g. extrapolating a masked image)
-                        IM(:,:,:,i4,i5,i6,i7) = xASL_im_ExtrapolateSmoothOverNaNs(IM(:,:,:,i4,i5,i6,i7), bQuality, VoxelSize);
-                    case 2
-                        IM(isnan(IM)) = 0;
-                        % This loops unnecessary but goes fast enough, keep in this loop for readability
-                    case 3
-                        % Use this for cases where NaNs need to expand linearly (e.g., extrapolating flowfields)
-                        IM(:,:,:,i4,i5,i6,i7) = xASL_im_ExtrapolateLinearlyOverNaNs(IM(:,:,:,i4,i5,i6,i7));
-                    otherwise
-                        error('Invalid option');
-                end
-
-                CurrentIt = CurrentIt+1;
-            end
-        end
-    end
+							% Use this for cases where NaNs need to get border values (e.g. extrapolating a masked image)
+							IM(:,:,:,i4,i5,i6,i7) = xASL_im_ExtrapolateSmoothOverNaNs(IM(:,:,:,i4,i5,i6,i7), bQuality, VoxelSize);
+							CurrentIt = CurrentIt+1;
+						end
+					end
+				end
+			end
+			fprintf('\n');
+		case 2
+			IM(isnan(IM)) = 0;
+		case 3
+			% Use this for cases where NaNs need to expand linearly (e.g., extrapolating deformation flowfields)
+			if ndims(IM) ~= 4 || size(IM, 4) ~= 3
+				error('Selected method works only for 4D deformation fields');
+			end
+			IM = xASL_im_ExtrapolateLinearlyOverNaNs(IM);
+		otherwise
+			error('Invalid option');
+	end
 end
-fprintf('\n');
-
 
 %% ------------------------------------------------------------------------------
 %% 3. Save image
@@ -197,14 +204,10 @@ function [IM] = xASL_im_ExtrapolateLinearlyOverNaNs(IM, nEdgeVoxels)
 % to be set to NaN and ignored in the extrapolation
 
 %% 0. Admin
-% Also catch Infs or imaginary numbers or whatever. Zeroes are already catched above in the main function.
-IM(~isfinite(IM)) = NaN;
-
 if nargin<2 || isempty(nEdgeVoxels)
     nEdgeVoxels = 0;
     % We can try this later, but it seems to work less well than doing the same based on the distance transform
 end
-
 
 %% 0.5 Fix interpolation edges
 % The first layer(s) next to the NaNs are sometimes interpolated as well
