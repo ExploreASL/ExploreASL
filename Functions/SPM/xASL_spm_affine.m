@@ -49,7 +49,7 @@ end
 if ~isempty(otherList) && bDCT
 	% It can happen that the list is a cell and it contains only a first empty string - that is effectively empty though not captured as empty by isempty
 	if ~iscell(otherList) || numel(otherList) > 1 || ~isempty(otherList{1,1})
-		warning('otherList not empty and bDCT==1. DCT produces a _sn.mat file with transformation parameters, it cannot apply the transformation to the files in the otherList');
+		warning('otherList not empty and bDCT==1. DCT produces a _sn.mat file with transformation parameters. The files in the files in the otherList are not touched');
 	end
 end
 
