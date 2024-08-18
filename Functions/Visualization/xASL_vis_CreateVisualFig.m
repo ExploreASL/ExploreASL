@@ -69,7 +69,9 @@ function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale,
 
 %% ----------------------------------------------
 %% 1. Admin
-ImOut = NaN; % if anything goes wrong
+% if anything goes wrong, this function needs default empty outputs
+ImOut = NaN;
+FileName = [];
 
 % Get visualization settings if required
 if nargin<1 || isempty(x)
@@ -269,7 +271,7 @@ for iIm=1:numel(ImIn)
 
         Um = unique(IM{iIm}(:));
         if length(Um)==1 && Um==0
-            warning('This image cannot be sorted, skipping');
+            warning('This image cannot be intensity clipped, skipping');
             return;
         end
 
