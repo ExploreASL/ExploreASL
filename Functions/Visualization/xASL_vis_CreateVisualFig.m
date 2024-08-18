@@ -131,7 +131,7 @@ if nargin<13 || isempty(bContour)
 end
 
 if isempty(ImIn)
-    fprintf('%s\n', 'xASL_vis_CreateVisualFig:No image data, skipping image creation');
+    fprintf('%s\n', ['xASL_vis_CreateVisualFig: No ' NamePrefix ' image data, skipping image creation']);
     return;
 end
 
@@ -144,7 +144,7 @@ Ffile = '';
 for iC=1:length(ImIn)
     if numel(ImIn{iC})<512 % assume this is a FilePath
         if ~xASL_exist(ImIn{iC}, 'file')
-            fprintf('%s\n','xASL_vis_CreateVisualFig: No image data, skipping image creation');
+            fprintf('%s\n', ['xASL_vis_CreateVisualFig: detected ' NamePrefix ' FilePath but this file did not exist, skipping figure creation']);
             return;
         else
             [~, Ffile{iC}] = xASL_fileparts(ImIn{iC});
@@ -152,7 +152,24 @@ for iC=1:length(ImIn)
     end
 end
 
+%% 1.5 Generate filename for warnings and saving
+% If requested, we use the FileName for saving
+% It might be empty, depending on the NamePrefix, but if it is not empty, 
+% it can be useful to print the name with the warnings
 
+FileName = NamePrefix;
+for iC=1:length(Ffile)
+	if isempty(FileName)
+		FileName = Ffile{iC};
+	elseif FileName(end) == '_'
+		FileName = [FileName Ffile{iC}];
+	else
+		FileName = [FileName '_' Ffile{iC}];
+	end
+	if iC>1 && bContour
+		FileName = [FileName '_Contour'];
+	end
+end
 
 %% ------------------------------------------------------------------------
 %% 2. Process image layers
@@ -183,7 +200,7 @@ for iIm=1:numel(ImIn)
     DimIm = size(IM{iIm});
 
     if length(DimIm)>3
-        fprintf('Minor warning, xASL_vis_CreateVisualFig: image had multiple 3D images, using first only\n');
+        fprintf('%s\n', ['Warning, xASL_vis_CreateVisualFig: ' FileName ' image had multiple 3D images, using first only']);
     end
     IM{iIm} = IM{iIm}(:,:,:,1,1,1,1,1,1,1,1,1);
 
@@ -194,7 +211,7 @@ for iIm=1:numel(ImIn)
     end
 
     if xASL_stat_SumNan(IM{iIm}(:))==0 && iIm>1
-        fprintf('Minor warning, xASL_vis_CreateVisualFig: overly image is empty\n');
+        fprintf('%s\n', ['Warning, xASL_vis_CreateVisualFig: ' FileName ' overlay image is empty']);
         IM{iIm} = zeros(size(IM{1}));
     else
 
@@ -271,7 +288,7 @@ for iIm=1:numel(ImIn)
 
         Um = unique(IM{iIm}(:));
         if length(Um)==1 && Um==0
-            warning('This image cannot be intensity clipped, skipping');
+            fprintf('%s\n', ['Warning, xASL_vis_CreateVisualFig: ' FileName ' image cannot be intensity clipped, skipping...']);
             return;
         end
 
@@ -294,7 +311,7 @@ for iIm=1:numel(ImIn)
         %% c) Convert image layer to colors
         SzC = size(ColorMap{iIm},1);
         if SzC<250 || SzC>260
-            warning(['Colormap expects 256 indices, but had only ' num2str(SzC)]);
+            warning([FileName ' image: Colormap expects 256 indices, but had only ' num2str(SzC)]);
             fprintf('This can lead to image clipping artifacts\n');
             % PM: here we can resample the input colormap into 256 if it is a power of
             % e.g. 32/64
@@ -375,19 +392,7 @@ end
 % requested. If DirOut is provided, this image is also saved as jpg file
 if numel(DirOut)>1 && numel(ImOut)>1 % when DirOut or ImOut==NaN, skip this
     xASL_adm_CreateDir(DirOut);
-	FileName = NamePrefix;
-    for iC=1:length(Ffile)
-		if isempty(FileName)
-			FileName = Ffile{iC};
-		elseif FileName(end) == '_'
-			FileName = [FileName Ffile{iC}];
-		else
-			FileName = [FileName '_' Ffile{iC}];
-		end
-		if iC>1 && bContour
-			FileName = [FileName '_Contour'];
-		end
-    end
+
     OutputFile = fullfile(DirOut,[FileName '.jpg']);
     xASL_vis_Imwrite(ImOut, OutputFile);
 end
