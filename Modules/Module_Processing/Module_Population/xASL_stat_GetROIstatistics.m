@@ -354,7 +354,7 @@ for iSubject=1:x.dataset.nSubjects
 					pGM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii'));
 					pWM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii'));
 
-					fprintf('Expanding ROIs for PVC:    ');
+					fprintf('Expanding ROIs with WM for PVC:    ');
 					for iROI=1:size(x.S.InputMasks,2)
 						xASL_TrackProgress(iROI,size(x.S.InputMasks,2));
 						for iMask=1:size(x.S.InputMasks,3)
@@ -362,7 +362,8 @@ for iSubject=1:x.dataset.nSubjects
 								x.S.InputMasks(:,iROI,iMask) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,iROI,iMask), pGM_MNI, pWM_MNI);
 							end
 						end
-					end
+                    end
+                    fprintf('\n');
 					bDoOnceROIPVEC = 0;
 				end
 			end
@@ -528,9 +529,12 @@ for iSubject=1:x.dataset.nSubjects
 			DataIm = zeros([sum(x.S.masks.WBmask(:)) 1],'single');
 			VascularMask = logical(DataIm);
 			DataIm(:) = NaN;
-		end
-		%% 4.d Show ROIs projected on ASL image (%% PM %% : ALSO DONE BELOW)
-		LabelIM = xASL_vis_Convert4D_3D_atlas(xASL_im_Column2IM(SubjectSpecificMasks(:, 1:3:end), x.S.masks.WBmask));
+        end
+
+
+		%% 4.d Show ROIs projected on ASL image
+        % This is after expansion with WM for PVC
+		LabelIM = xASL_vis_Convert4D_3D_atlas(xASL_im_Column2IM(SubjectSpecificMasks(:,[1:3:end]), x.S.masks.WBmask));
 		fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1}];
         
         xASL_stat_VisualizeSubjectWiseROI(x, LabelIM, Data3D, fileName);
@@ -539,6 +543,7 @@ for iSubject=1:x.dataset.nSubjects
 		%         % Labeling efficiency normalization
 		%         if  x.LabEffNorm; temp = xASL_im_NormalizeLabelingTerritories( temp, logical(x.masks.Data.data(:,iSub,1)), x); end
 
+        
 		%% 4.e Actual data computations
 
 		SusceptibilityMask = xASL_im_IM2Column(x.S.masks.WBmask, x.S.masks.WBmask); % default = no susceptibility mask
@@ -593,7 +598,7 @@ for iSubject=1:x.dataset.nSubjects
 				% we are interested in WM instead of pGM
 				pGM_here = pWM;
 				pWM_here = pGM;
-			else % keep ROIs as they are
+            else % we want GM, so keep tissue masks as they are
 				pGM_here = pGM;
 				pWM_here = pWM;
             end
@@ -613,21 +618,21 @@ for iSubject=1:x.dataset.nSubjects
 				if x.S.IsVolume
                     %% Volume
                     % Visualization first
-		            fileName = [x.S.output_ID(1:end-16) '_' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_volume_sum'];
+		            fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_volume_sum'];
                     [pathOutput_volume] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_volume);
                     
 					x.S.DAT_sum_PVC0(SubjSess,iROI) = sum(DataIm(CurrentMask)) .* prod(VoxelSize);
 				else
                     %% Non-ASL median
                     % Visualization first
-		            fileName = [x.S.output_ID(1:end-16) '_' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_nonASL_median'];
+		            fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_nonASL_median'];
                     [pathOutput_nonASL_median] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_nonASL_median);
 
                     x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, 0, 0, 0);
                     
                     %% Non-ASL CoV
                     % Visualization first
-		            fileName = [x.S.output_ID(1:end-16) '_' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_nonASL_CoV'];
+		            fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_nonASL_CoV'];
                     [pathOutput_nonASL_CoV] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_nonASL_CoV);
 
 					x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, 0, 0, 1);
@@ -652,7 +657,7 @@ for iSubject=1:x.dataset.nSubjects
 					bSkipPVC = 1;
 				end
 
-				% Apply tissue-masking (which is turned of for Lesions)
+				% Apply tissue-masking (which is de facto turned off for Lesions, because the masks are volumes completely filled with ones)
 				CurrentMask = logical(single(SubjectSpecificMasks(:,iROI)) .* (pGM_here>0.5));
 
 				% Apply susceptibility mask
@@ -672,16 +677,16 @@ for iSubject=1:x.dataset.nSubjects
 
                 % Now check for empty masks
                 if xASL_stat_SumNan(CurrentMask(:)) == 0
-                    fprintf('%s\n', ['Empty mask for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
+                    fprintf('%s\n', ['*** Empty mask for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                 elseif xASL_stat_SumNan(pGM_here(:)) == 0
-                    fprintf('%s\n', ['Empty pGM for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
+                    fprintf('%s\n', ['*** Empty pGM for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                 elseif xASL_stat_SumNan(pWM_here(:)) == 0
-                    fprintf('%s\n', ['Empty pWM for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
+                    fprintf('%s\n', ['*** Empty pWM for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                 else                    
 
                     %% CoV
                     % Visualization first
-		            fileName = [x.S.output_ID(1:end-16) '_' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
+		            fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
                     [pathOutput_sCoV] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_sCoV);
 
                     x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 0);
@@ -705,7 +710,7 @@ for iSubject=1:x.dataset.nSubjects
                     else
 
                         % Visualization first (this differs from sCoV only by the vascular mask)
-		                fileName = [x.S.output_ID(1:end-16) '_' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_CBF'];
+		                fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_CBF'];
                         [pathOutput_CBF] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_CBF);
 
                         x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0, 1);
