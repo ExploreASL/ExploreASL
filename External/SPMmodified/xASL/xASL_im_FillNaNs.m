@@ -306,13 +306,14 @@ for iDim = 1:3
 end
 
 % We now subtract the voxel-size adjusted relative coordinate difference from these newly filled voxels
-IM(:, :, :, 1) = IM(:, :, :, 1) - distX(:, :, :)*VoxelSize(1);
-IM(:, :, :, 2) = IM(:, :, :, 2) - distY(:, :, :)*VoxelSize(2);
-IM(:, :, :, 3) = IM(:, :, :, 3) - distZ(:, :, :)*VoxelSize(3);
+IM(:, :, :, 1) = IM(:, :, :, 1) + distX(:, :, :)*VoxelSize(1);
+IM(:, :, :, 2) = IM(:, :, :, 2) + distY(:, :, :)*VoxelSize(2);
+IM(:, :, :, 3) = IM(:, :, :, 3) + distZ(:, :, :)*VoxelSize(3);
 
 %% Smoothing of voxels
-% Any remaining NaNs had to be inside, so we interpolate them (setting them
-% to zeros creates artifacts!)
-IM = xASL_im_ExtrapolateSmoothOverNaNs(IM, 0);
+% Any remaining NaNs had to be inside, so we interpolate them (setting them to zeros creates artifacts!)
+for iDim = 1:3
+	IM(:, :, :, iDim) = xASL_im_ExtrapolateSmoothOverNaNs(IM(:, :, :, iDim), 0);
+end
 
 end
