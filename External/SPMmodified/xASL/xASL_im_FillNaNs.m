@@ -235,18 +235,15 @@ if isempty(VoxelSize)
 	% We calculate the mean over nonNaN values, which gives the average update including the correct direction
 	diffIM = IM(2:end, :, :, 1) - IM(1:end-1, :, :, 1);
 	diffIM = diffIM(~maskNaN(2:end, :, :));
-	VoxelSize(1) = mean(diffIM(~isnan(diffIM)));
 	VoxelSize(1) = xASL_stat_MeanNan(diffIM);
 
 
 	diffIM = IM(:, 2:end, :, 2)-IM(:, 1:end-1, :, 2);
 	diffIM = diffIM(~maskNaN(:, 2:end, :));
-	VoxelSize(2) = mean(diffIM(~isnan(diffIM)));
 	VoxelSize(2) = xASL_stat_MeanNan(diffIM);
 
 	diffIM = IM(:, :, 2:end, 3)-IM(:, :, 1:end-1, 3);
 	diffIM = diffIM(~maskNaN(:, :, 2:end));
-	VoxelSize(3) = mean(diffIM(~isnan(diffIM)));
 	VoxelSize(3) = xASL_stat_MeanNan(diffIM);
 end
 
@@ -291,26 +288,27 @@ edgeDistance = round(0.1*averageSize);
 maskNaN(relativeDelta > thresholdIs & distMapInward < edgeDistance) = 1;
 
 %% Extrapolation of values based on the edge values 
-% Calculate the distance map from the non-Nan towards NaN
-[~, distY, distX, distZ] = xASL_im_DistanceTransform(~maskNaN);
+% Calculate the relative distance map from the non-Nan towards NaN. Note that for non-NaNs, these relative coordinates are zero
+[~, distX, distY, distZ] = xASL_im_DistanceTransform(~maskNaN);
 
-% We calculate the meshgrid
+% We calculate the meshgrid - three 3D matrices that give, respectively, for each voxel its X, Y, and Z coordinates.
 [gridX, gridY, gridZ] = ndgrid(1:size(IM, 1), 1:size(IM, 2), 1:size(IM, 3));
 
-% We calculate the coordinates of the border voxel
+% We calculate the coordinates of the border voxel, note that for non-NaNs this gives the original voxel location
 borderX = distX + gridX;
 borderY = distY + gridY;
 borderZ = distZ + gridZ;
 
 for iDim = 1:3
 	% To each NaN voxel, we assign the border value in the original image
+	% Note that for non-NaN voxels, this keeps the exact original value
 	IM(:, :, :, iDim) = IM(borderX + size(IM, 1) * (borderY-1 + size(IM, 2) * (borderZ-1 + size(IM, 3) * (iDim-1))));
 end
 
-% We now subtract the voxel-size adjusted coordinate difference from these newly filled voxels
-IM(:, :, :, 1) = IM(:, :, :, 1) - borderX(:, :, :)*VoxelSize(1);
-IM(:, :, :, 2) = IM(:, :, :, 2) - borderY(:, :, :)*VoxelSize(2);
-IM(:, :, :, 3) = IM(:, :, :, 3) - borderZ(:, :, :)*VoxelSize(3);
+% We now subtract the voxel-size adjusted relative coordinate difference from these newly filled voxels
+IM(:, :, :, 1) = IM(:, :, :, 1) - distX(:, :, :)*VoxelSize(1);
+IM(:, :, :, 2) = IM(:, :, :, 2) - distY(:, :, :)*VoxelSize(2);
+IM(:, :, :, 3) = IM(:, :, :, 3) - distZ(:, :, :)*VoxelSize(3);
 
 %% Smoothing of voxels
 % Any remaining NaNs had to be inside, so we interpolate them (setting them
