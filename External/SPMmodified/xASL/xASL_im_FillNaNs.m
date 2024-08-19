@@ -1,4 +1,4 @@
-function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, bZeroes)
+function [IMout] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, bZeroes)
 %xASL_im_FillNaNs Fill NaNs in image
 % FORMAT: xASL_im_FillNaNs(InputPath[, UseMethod, bQuality, VoxelSize, bZeroes])
 %
@@ -8,7 +8,7 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, bZer
 %   UseMethod   - one of the following methods to fill the NaNs:
 %                 1: extrapolate by smoothing (useful for any image, e.g. extrapolating M0 smooth biasfield) (DEFAULT)
 %                 2: set to 0 (useful for e.g. DARTEL displacement fields, where 0 means no displacement)
-%                 3: extrapolate deformation field linearly - this method is adapted to SPM deformation fields XxYxZx3 
+%                 3: extrapolate deformation field linearly - this method is adapted to SPM deformation fields XxYxZx3 or XxYxZx1x3
 %                 (OPTIONAL, DEFAULT = 1)
 %   bQuality    - affects kernel size of the extrapolation performed in method 1
 %                 (extrapolating by smoothing goes much faster with smaller
@@ -20,7 +20,7 @@ function [IM] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, bZer
 %
 %
 % OUTPUT:
-%   IM          - image matrix in which NaNs were filled
+%   IMout       - image matrix in which NaNs were filled
 % --------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function fills any NaNs in an image. In SPM, any voxels
 %              outside the boundary box/field of view are filled by NaNs
@@ -120,7 +120,7 @@ IM(~isfinite(IM)) = NaN;
 if sum(isnan(IM(:))) > 0
 	switch UseMethod
 		case 1
-			% Method run is run independently for each 3D volume
+			% Method 1 is run independently for each 3D volume
 			fprintf('%s', 'Cleaning up NaNs in image:  0%');
 			TotalDim = size(IM,4)*size(IM,5)*size(IM,6)*size(IM,7);
 			CurrentIt = 1;
@@ -138,17 +138,36 @@ if sum(isnan(IM(:))) > 0
 				end
 			end
 			fprintf('\n');
+			IMout = IM;
 		case 2
 			IM(isnan(IM)) = 0;
+			IMout = IM;
 		case 3
 			% Use this for cases where NaNs need to expand linearly (e.g., extrapolating deformation flowfields)
-			if ndims(IM) ~= 4 || size(IM, 4) ~= 3
-				error('Selected method works only for 4D deformation fields');
+			% First handle the two input options XxYxZx1x3 and XxYxZx3 by always changing it to XxYxZx3
+			if ndims(IM) == 5 && size(IM, 4) == 1 && size(IM, 5) == 3
+				% Squeeze from XxYxZx1x3 to XxYxZx3
+				bAddDimension = true;
+				IM = squeeze(IM);
+			elseif ndims(IM) == 4 && size(IM, 4) == 3
+				% No need to squeeze dimensions
+				bAddDimension = false;
+			else
+				error('Selected method works only for 4D or 5D deformation fields of sizes XxYxZx3 or XxYxZx1x3');
 			end
 			IM = xASL_im_ExtrapolateLinearlyOverNaNs(IM, [], VoxelSize);
+
+			% Recreate the correct dimensions for the output
+			if bAddDimension
+				IMout(:, :, :, 1, 1:3) = IM; 
+			else
+				IMout = IM;
+			end
 		otherwise
 			error('Invalid option');
 	end
+else
+	IMout = IM;
 end
 
 %% ------------------------------------------------------------------------------
@@ -156,7 +175,7 @@ end
 % Here we only output an image if the input path was a path and not an
 % image matrix
 if ~isnumeric(InputPath) && xASL_exist(InputPath, 'file')
-    xASL_io_SaveNifti(InputPath, InputPath, IM, [], 0);
+    xASL_io_SaveNifti(InputPath, InputPath, IMout, [], 0);
 end
 
 
@@ -217,14 +236,18 @@ if isempty(VoxelSize)
 	diffIM = IM(2:end, :, :, 1) - IM(1:end-1, :, :, 1);
 	diffIM = diffIM(~maskNaN(2:end, :, :));
 	VoxelSize(1) = mean(diffIM(~isnan(diffIM)));
+	VoxelSize(1) = xASL_stat_MeanNan(diffIM);
+
 
 	diffIM = IM(:, 2:end, :, 2)-IM(:, 1:end-1, :, 2);
 	diffIM = diffIM(~maskNaN(:, 2:end, :));
 	VoxelSize(2) = mean(diffIM(~isnan(diffIM)));
+	VoxelSize(2) = xASL_stat_MeanNan(diffIM);
 
 	diffIM = IM(:, :, 2:end, 3)-IM(:, :, 1:end-1, 3);
 	diffIM = diffIM(~maskNaN(:, :, 2:end));
 	VoxelSize(3) = mean(diffIM(~isnan(diffIM)));
+	VoxelSize(3) = xASL_stat_MeanNan(diffIM);
 end
 
 %% 0.5 Fix interpolation edges
@@ -232,7 +255,7 @@ end
 % So here we try to estimate which voxels those are, by looking at the distance from the NaNs
 % together with the transformation difference from a smoothed transformation field.
 
-% First we get the distance transform from NaNs towards the real values
+% First we get the distance transform from mask (1 where NaNs are) inwards
 distMapInward = xASL_im_DistanceTransform(maskNaN);
 
 % Then we create a copy of the image that is smoothed (outside of NaNs)
