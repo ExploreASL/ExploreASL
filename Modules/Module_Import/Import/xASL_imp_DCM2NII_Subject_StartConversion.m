@@ -57,6 +57,16 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
         else %% Convert DICOM files
             %% Start the conversion. Note that the dicom filter is only in effect when a directory is specified as input.
             try
+                % First we try to see if there are deeper layers
+                [fPath, ~, fExt] = xASL_fileparts(scanpath);
+                if isempty(fExt) % run this part only for folders
+                    filepathsNonRecursive = xASL_adm_GetFileList(fPath, x.modules.import.imPar.dcmExtFilter, 'FPList');
+                    filepathsRecursive = xASL_adm_GetFileList(fPath, x.modules.import.imPar.dcmExtFilter, 'FPListRec');
+                    if isempty(filepathsNonRecursive) && ~isempty(filepathsRecursive)
+                        scanpath = fileparts(filepathsRecursive{1});
+                    end
+                end
+                
                 [nii_files, scan_name, first_match, MsgDcm2nii] = xASL_io_dcm2nii(scanpath, destdir, scan_name, x.modules.import.imPar, x.opts.MyPath);
 
                 % If dcm2nii produced a warning or error, catch this & store it
