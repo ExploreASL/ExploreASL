@@ -49,10 +49,9 @@ function [IMout] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, b
 % Copyright (C) 2015-2024 ExploreASL
 
 %% Admin
-IM = NaN; % default
-
 if nargin<1 || isempty(InputPath)
     warning('Illegal input path, skipping');
+	IMout = NaN;
     return;
 end
 
