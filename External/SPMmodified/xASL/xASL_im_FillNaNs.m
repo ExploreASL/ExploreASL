@@ -14,7 +14,7 @@ function [IMout] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, b
 %                 (extrapolating by smoothing goes much faster with smaller
 %                 kernel but this creates ringing artifacts)
 %                 (OPTIONAL, DEFAULT = 1)
-%   VoxelSize   - [X Y Z] vector for voxel size 
+%   VoxelSize   - [X Y Z] vector for voxel size, used only for UseMethod == 1 
 %                 (OPTIONAL, DEFAULT = [1.5 1.5 1.5])
 %   bZeroes     - boolean for converting zeroes to NaNs and also changing them accordingly (OPTIONAL, DEFAULT = false)
 %
@@ -49,9 +49,10 @@ function [IMout] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, b
 % Copyright (C) 2015-2024 ExploreASL
 
 %% Admin
+IMout = NaN;
+
 if nargin<1 || isempty(InputPath)
     warning('Illegal input path, skipping');
-	IMout = NaN;
     return;
 end
 
@@ -69,16 +70,11 @@ elseif bQuality~=0 && bQuality~=1
     bQuality = 1; % default
 end
 
-if UseMethod == 1 || UseMethod == 3 % only methods that needs VoxelSize
+if UseMethod == 1 % only methods that needs VoxelSize
     if nargin < 4 || isempty(VoxelSize)
         if ~isnumeric(InputPath) && xASL_exist(InputPath, 'file')
             nii = xASL_io_ReadNifti(InputPath);
             VoxelSize = nii.hdr.pixdim(2:4);
-		elseif UseMethod == 3
-			% The Method 3 also need voxel-size, but it can estimate the voxel-size from the deformation fields
-			% Therefore in case of missing VoxelSize, it is initialized as an empty array and this is automatically
-			% estimated later when the image is properly loaded
-			VoxelSize = [];
         elseif bQuality
 			warning('Voxel size not specified, using default [1.5 1.5 1.5]');
 			% only when high quality will we use this parameter,
@@ -90,7 +86,7 @@ if UseMethod == 1 || UseMethod == 3 % only methods that needs VoxelSize
     end
 else
     % We don't want the warning for methods other than 1, and we won't use VoxelSize for methods other than 1, but we predefine it here anyway.
-    VoxelSize = [1.5 1.5 1.5];
+    VoxelSize = [];
 end
 
 if nargin<5 || isempty(bZeroes)
@@ -110,8 +106,10 @@ if bZeroes
     IM(IM==0) = NaN;
 end
 
-% Also catch Infs or imaginary numbers or whatever. Zeroes are already catched above in the main function.
-IM(~isfinite(IM)) = NaN;
+if UseMethod == 3
+	% Also catch Infs or imaginary numbers for method 3
+	IM(~isfinite(IM)) = NaN;
+end
 
 %% ------------------------------------------------------------------------------
 %% 2. Replace NaNs using any of the methods
@@ -154,10 +152,11 @@ if sum(isnan(IM(:))) > 0
 			else
 				error('Selected method works only for 4D or 5D deformation fields of sizes XxYxZx3 or XxYxZx1x3');
 			end
-			IM = xASL_im_ExtrapolateLinearlyOverNaNs(IM, [], VoxelSize);
+			IM = xASL_im_ExtrapolateLinearlyOverNaNs(IM);
 
 			% Recreate the correct dimensions for the output
 			if bAddDimension
+				IMout = [];
 				IMout(:, :, :, 1, 1:3) = IM; 
 			else
 				IMout = IM;
@@ -202,27 +201,12 @@ end
 %% ========================================================================================
 %% ========================================================================================
 %% METHOD 3
-function [IM] = xASL_im_ExtrapolateLinearlyOverNaNs(IM, nEdgeVoxels, VoxelSize)
+function [IM] = xASL_im_ExtrapolateLinearlyOverNaNs(IM)
 %xASL_im_ExtrapolateLinearlyOverNaNs
 % The input of this function is 3D (iterations of other dimensions are done
 % in the main function above)
 %
 % IM          - input image
-% nEdgeVoxels - number of voxels at the edges of the non-nan values that we check for weird interpolation values, 
-% to be set to NaN and ignored in the extrapolation
-% VoxelSize   - voxel size is needed for extrapolating correctly as the transformation is given in mm and not voxels
-
-%% 0. Admin
-if nargin<2 || isempty(nEdgeVoxels)
-    nEdgeVoxels = 0;
-    % We can try this later, but it seems to work less well than doing the same based on the distance transform
-end
-
-if nargin < 3 || isempty(VoxelSize)
-	% The voxel-size is not provided and needs to be estimated from the transformation maps
-	% We set it here to empty in admin and estimate it later
-	VoxelSize = [];
-end
 
 %% Create masks and estimate voxel size
 % Create NaN mask for all 3D volumes together
@@ -233,23 +217,15 @@ maskNaN = sum(isnan(IM), 4) > 0;
 % We calculate the mean over nonNaN values, which gives the average update including the correct direction
 diffIM = IM(2:end, :, :, 1) - IM(1:end-1, :, :, 1);
 diffIM = diffIM(~maskNaN(2:end, :, :));
-VoxelSizeEst(1) = xASL_stat_MeanNan(diffIM);
+VoxelSize(1) = xASL_stat_MeanNan(diffIM);
 
 diffIM = IM(:, 2:end, :, 2)-IM(:, 1:end-1, :, 2);
 diffIM = diffIM(~maskNaN(:, 2:end, :));
-VoxelSizeEst(2) = xASL_stat_MeanNan(diffIM);
+VoxelSize(2) = xASL_stat_MeanNan(diffIM);
 
 diffIM = IM(:, :, 2:end, 3)-IM(:, :, 1:end-1, 3);
 diffIM = diffIM(~maskNaN(:, :, 2:end));
-VoxelSizeEst(3) = xASL_stat_MeanNan(diffIM);
-
-if isempty(VoxelSize)
-	% If the voxel size is empty, we take the estimate fully
-	VoxelSize = VoxelSizeEst;
-else
-	% Otherwise, we take the provided voxel-size but adapt the axes orientations
-	VoxelSize = VoxelSize .* sign(VoxelSizeEst);
-end
+VoxelSize(3) = xASL_stat_MeanNan(diffIM);
 
 %% 0.5 Fix interpolation edges
 % The first layer(s) next to the NaNs are sometimes interpolated as well
@@ -293,25 +269,25 @@ maskNaN(relativeDelta > thresholdIs & distMapInward < edgeDistance) = 1;
 
 %% Extrapolation of values based on the edge values 
 % Calculate the relative distance map from the non-Nan towards NaN. Note that for non-NaNs, these relative coordinates are zero
-[~, distX, distY, distZ] = xASL_im_DistanceTransform(~maskNaN);
+[~, distanceX, distanceY, distanceZ] = xASL_im_DistanceTransform(~maskNaN);
 
 % We calculate the meshgrid - three 3D matrices that give, respectively, for each voxel its X, Y, and Z coordinates.
-[gridX, gridY, gridZ] = ndgrid(1:size(IM, 1), 1:size(IM, 2), 1:size(IM, 3));
+[coordinateOriginalX, coordinateOriginalY, coordinateOriginalZ] = ndgrid(1:size(IM, 1), 1:size(IM, 2), 1:size(IM, 3));
 
 % We calculate the coordinates of the border voxel, note that for non-NaNs this gives the original voxel location
-borderX = distX + gridX;
-borderY = distY + gridY;
-borderZ = distZ + gridZ;
+coordinateBorderX = distanceX + coordinateOriginalX;
+coordinateBorderY = distanceY + coordinateOriginalY;
+coordinateBorderZ = distanceZ + coordinateOriginalZ;
 
 for iDim = 1:3
 	% To each NaN voxel, we assign the border value in the original image
 	% Note that for non-NaN voxels, this keeps the exact original value
-	IM(:, :, :, iDim) = IM(borderX + size(IM, 1) * (borderY-1 + size(IM, 2) * (borderZ-1 + size(IM, 3) * (iDim-1))));
+	IM(:, :, :, iDim) = IM(coordinateBorderX + size(IM, 1) * (coordinateBorderY-1 + size(IM, 2) * (coordinateBorderZ-1 + size(IM, 3) * (iDim-1))));
 end
 
 % We now subtract the voxel-size adjusted relative coordinate difference from these newly filled voxels
-IM(:, :, :, 1) = IM(:, :, :, 1) - distX(:, :, :)*VoxelSize(1);
-IM(:, :, :, 2) = IM(:, :, :, 2) - distY(:, :, :)*VoxelSize(2);
-IM(:, :, :, 3) = IM(:, :, :, 3) - distZ(:, :, :)*VoxelSize(3);
+IM(:, :, :, 1) = IM(:, :, :, 1) - distanceX(:, :, :)*VoxelSize(1);
+IM(:, :, :, 2) = IM(:, :, :, 2) - distanceY(:, :, :)*VoxelSize(2);
+IM(:, :, :, 3) = IM(:, :, :, 3) - distanceZ(:, :, :)*VoxelSize(3);
 
 end
