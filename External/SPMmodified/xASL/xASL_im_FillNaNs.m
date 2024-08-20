@@ -228,22 +228,27 @@ end
 % Create NaN mask for all 3D volumes together
 maskNaN = sum(isnan(IM), 4) > 0;
 
-% The voxel-size needs to be estimated
+% We estimate the voxel-size and axis directions
+% For each volume, we calculate the difference of neighboring voxels
+% We calculate the mean over nonNaN values, which gives the average update including the correct direction
+diffIM = IM(2:end, :, :, 1) - IM(1:end-1, :, :, 1);
+diffIM = diffIM(~maskNaN(2:end, :, :));
+VoxelSizeEst(1) = xASL_stat_MeanNan(diffIM);
+
+diffIM = IM(:, 2:end, :, 2)-IM(:, 1:end-1, :, 2);
+diffIM = diffIM(~maskNaN(:, 2:end, :));
+VoxelSizeEst(2) = xASL_stat_MeanNan(diffIM);
+
+diffIM = IM(:, :, 2:end, 3)-IM(:, :, 1:end-1, 3);
+diffIM = diffIM(~maskNaN(:, :, 2:end));
+VoxelSizeEst(3) = xASL_stat_MeanNan(diffIM);
+
 if isempty(VoxelSize)
-	% For each volume, we calculate the difference of neighboring voxels
-	% We calculate the mean over nonNaN values, which gives the average update including the correct direction
-	diffIM = IM(2:end, :, :, 1) - IM(1:end-1, :, :, 1);
-	diffIM = diffIM(~maskNaN(2:end, :, :));
-	VoxelSize(1) = xASL_stat_MeanNan(diffIM);
-
-
-	diffIM = IM(:, 2:end, :, 2)-IM(:, 1:end-1, :, 2);
-	diffIM = diffIM(~maskNaN(:, 2:end, :));
-	VoxelSize(2) = xASL_stat_MeanNan(diffIM);
-
-	diffIM = IM(:, :, 2:end, 3)-IM(:, :, 1:end-1, 3);
-	diffIM = diffIM(~maskNaN(:, :, 2:end));
-	VoxelSize(3) = xASL_stat_MeanNan(diffIM);
+	% If the voxel size is empty, we take the estimate fully
+	VoxelSize = VoxelSizeEst;
+else
+	% Otherwise, we take the provided voxel-size but adapt the axes orientations
+	VoxelSize = VoxelSize .* sign(VoxelSizeEst);
 end
 
 %% 0.5 Fix interpolation edges
@@ -305,14 +310,8 @@ for iDim = 1:3
 end
 
 % We now subtract the voxel-size adjusted relative coordinate difference from these newly filled voxels
-IM(:, :, :, 1) = IM(:, :, :, 1) + distX(:, :, :)*VoxelSize(1);
-IM(:, :, :, 2) = IM(:, :, :, 2) + distY(:, :, :)*VoxelSize(2);
-IM(:, :, :, 3) = IM(:, :, :, 3) + distZ(:, :, :)*VoxelSize(3);
-
-%% Smoothing of voxels
-% Any remaining NaNs had to be inside, so we interpolate them (setting them to zeros creates artifacts!)
-for iDim = 1:3
-	IM(:, :, :, iDim) = xASL_im_ExtrapolateSmoothOverNaNs(IM(:, :, :, iDim), 0);
-end
+IM(:, :, :, 1) = IM(:, :, :, 1) - distX(:, :, :)*VoxelSize(1);
+IM(:, :, :, 2) = IM(:, :, :, 2) - distY(:, :, :)*VoxelSize(2);
+IM(:, :, :, 3) = IM(:, :, :, 3) - distZ(:, :, :)*VoxelSize(3);
 
 end
