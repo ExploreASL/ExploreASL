@@ -538,7 +538,7 @@ for iSubject=1:x.dataset.nSubjects
 			DataIm(:) = NaN;
 		end
 		%% 4.d Show ROIs projected on ASL image (%% PM %% : ALSO DONE BELOW)
-		LabelIM = xASL_vis_Convert4D_3D_atlas(xASL_im_Column2IM(SubjectSpecificMasks(:,[1:3:end]), x.S.masks.WBmask));
+		LabelIM = xASL_vis_Convert4D_3D_atlas(xASL_im_Column2IM(SubjectSpecificMasks(:, 1:3:end), x.S.masks.WBmask));
 		fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1}];
         xASL_stat_VisualizeSubjectWiseROI(x, LabelIM, Data3D, fileName);
 

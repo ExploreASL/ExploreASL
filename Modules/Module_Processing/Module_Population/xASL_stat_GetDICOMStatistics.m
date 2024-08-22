@@ -92,9 +92,13 @@ for iSubject=1:x.dataset.nSubjects
 end
 fprintf('\n');
 
-
+% Verify that all gathered cells include strings and not cells inside
+listCells = find(cellfun(@iscell, TSV(:)));
+for indexCells = 1:numel(listCells)
+	% Replace all cells by a string created by concatenating the strings inside
+	TSV{listCells(indexCells)} = strjoin(TSV{listCells(indexCells)}, '/');
+end
 %% 2. Write TSV file
 xASL_tsvWrite(TSV, PathTSV, bOverwrite);
-
 
 end
