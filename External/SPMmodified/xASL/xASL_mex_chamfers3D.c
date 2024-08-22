@@ -18,7 +18,7 @@
 #include "mex.h"
 
 #ifndef CDA
-#define CDA 1
+#define CDA 1.0
 #endif
 
 #ifndef CDB
@@ -38,7 +38,7 @@
 #endif
 
 #ifndef CDF
-#define CDF 3
+#define CDF 3.0
 #endif
 
 
@@ -61,10 +61,10 @@ void update_dist(double *poimd,
             double *poimx,
             double *poimy,        
             double *poimz,
-            mwSignedIndex i,
-            mwSignedIndex j,
-            mwSignedIndex k,
-            mwIndex inei,
+            long i,
+            long j,
+            long k,
+            long inei,
             double D)
 {
     *(poimd) = *(poimd+inei) + D;
@@ -77,13 +77,13 @@ void check_dist(double *poimd,
                 double *poimx,
                 double *poimy,        
                 double *poimz,
-                mwSignedIndex i,
-                mwSignedIndex j,
-                mwSignedIndex k,
+                long i,
+                long j,
+                long k,
                 mwSize dim[3],
                 double D)
 {
-    mwIndex inei;
+    long inei;
     
     // Calculate the neighbor index and proceed only if within the image
     inei = i + j*dim[0] + k*dim[0]*dim[1];
@@ -101,13 +101,13 @@ void do_it(double  *iima,
            double  *oimy,
            double  *oimz)
 {
-    int x,y,z;
-    int inei;
-    int n,nx,nxy,n2x,n2xy;
+    long x,y,z;
+    long inei;
+    long n,nx,nxy,n2x,n2xy;
     double *piima;
     double *poimd,*poimx,*poimy,*poimz;
-    int z2,z1,zm1,zm2,x2,x1,xm1,xm2,y2,y1,ym1,ym2;
-    int m1mn2xmn2xy,p1mn2xmn2xy,m2mnxmn2xy,
+    long z2,z1,zm1,zm2,x2,x1,xm1,xm2,y2,y1,ym1,ym2;
+    long m1mn2xmn2xy,p1mn2xmn2xy,m2mnxmn2xy,
             m1mnxmn2xy,
             mnxmn2xy,
             p1mnxmn2xy,
@@ -207,9 +207,10 @@ void do_it(double  *iima,
 	
     //mexPrintf("Size: %d,%d,%d\n",(int) dim[0],(int) dim[1],(int) dim[2]);
     
-    // Initialize the distance and shift components to inf/zero and zero 
+    // Initialize the shift components to zero 
+	// Initialize the distance to zero for mask==1 and N (maximal value) for mask==0
     piima = iima;
-    poimd = oimd;
+	poimd = oimd;
     poimx = oimx;
     poimy = oimy;
     poimz = oimz;
@@ -218,7 +219,7 @@ void do_it(double  *iima,
         *(poimx++) = 0;
         *(poimy++) = 0;
         *(poimz++) = 0;
-        if (*piima++ > 0)
+        if (*(piima++) > 0)
             *poimd = 0;
         else
             *poimd = n;
@@ -237,7 +238,7 @@ void do_it(double  *iima,
             for (x=0;x<dim[0];x++)
             {
 				
-                // Only execute if the distance is greater than 1 as 0 or 1 cannot be improved 
+                // Only execute if the distance is greater than 1, as 0 or 1 cannot be improved 
                 
                 if ((*poimd) > 1)
                 {
@@ -283,7 +284,7 @@ void do_it(double  *iima,
                         }
                         if (y2)
                         {
-                            if (xm1) {inei = p1pn2xmn2xy;if (*(poimd)>(*(poimd+inei)+CDF)) update_dist(poimd,poimx,poimy,poimz,-1,2,-2,inei,CDF);}
+                            if (xm1) {inei = m1pn2xmn2xy;if (*(poimd)>(*(poimd+inei)+CDF)) update_dist(poimd,poimx,poimy,poimz,-1,2,-2,inei,CDF);}
                             if (x1)  {inei = p1pn2xmn2xy;if (*(poimd)>(*(poimd+inei)+CDF)) update_dist(poimd,poimx,poimy,poimz, 1,2,-2,inei,CDF);}
                         }
                     }
@@ -495,7 +496,6 @@ void do_it(double  *iima,
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     mwSize        ndim=0;
-    int           i;
     const mwSize  *cdim = NULL;
     mwSize        dim[3];
     double        *iima = NULL;

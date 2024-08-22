@@ -33,11 +33,11 @@ pathXASL = pathCurrent(1:end-14);
 % Detect environment
 if ispc
     fprintf('%s\n', 'Windows PC environment detected, trying recompiling...');
-    if ~exist('c:\MinGW\64\', 'dir')
+    if ~exist('c:\mingw64-off\', 'dir')
         error('No MinGW compilation tool found at the usual location, skipping');
     end
    
-    setenv('MW_MINGW64_LOC', 'c:\MinGW\64\');
+    setenv('MW_MINGW64_LOC', 'c:\mingw64-off\');
     environmentIs = 'w64';
 elseif ismac
     [~, result] = system('uname -m');
