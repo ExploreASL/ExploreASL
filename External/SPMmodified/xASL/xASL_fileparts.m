@@ -14,9 +14,11 @@ function [Fpath, Ffile, Fext, SuffixSPM] = xASL_fileparts(InputPath)
 %              If a file ending at nii.gz is given, then the whole nii.gz is returned as the extension.
 %              Does not verify the existence of the file, or existence of .nii or .nii.gz.
 %              This function uses the following steps:
-%              1. Catch SPM suffixes
-%              2. Manage .gz (double) extensions  
-%              3. Manage folders differently than files
+%
+%              1. Skip folders
+%              2. Catch SPM volume suffixes
+%              3. Manage .nii.gz (double) extensions  
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLES: ['/path' 'file' '.nii']         = xASL_fileparts('/path/file.nii');
 %          ['/path' 'file' '.nii.gz']      = xASL_fileparts('/path/file.nii.gz');
@@ -34,20 +36,31 @@ function [Fpath, Ffile, Fext, SuffixSPM] = xASL_fileparts(InputPath)
         InputPath = InputPath{1};
     end
 
-    %% 1. Catch SPM suffixes
     [Fpath, Ffile, Fext] = fileparts(InputPath);
 
+    % Default output volume Suffix for SPM
+    SuffixSPM = '';
+
+    %% 1. Skip folders
+    if exist(InputPath, 'dir')
+        % when running this for a folder, there is no extension. So any 
+        % extension should be ignored and put back to the Ffile
+        Ffile = [Ffile Fext];
+        Fext = '';
+        return;
+    end
+
+
+    %% 2. Catch SPM volume suffixes
     Index1 = regexp(Fext, ',\d+$');
 
-	if isempty(Index1)
-		% No SPM suffix in a format like filename.nii,1 detected
-		SuffixSPM = '';
-	else      
+	if ~isempty(Index1)
+		% If a SPM volume suffix in a format like filename.nii,1 is detected
 		SuffixSPM = Fext(Index1:end);
 		InputPath = fullfile(Fpath, [Ffile Fext(1:Index1-1)]);
 	end
 
-    %% 2. Manage .gz (double) extensions
+    %% 3. Manage the double extension .nii.gz
     [Fpath, Ffile, Fext] = fileparts(InputPath);
     [~, Ffile2, Fext2] = fileparts(Ffile);
     
@@ -56,12 +69,5 @@ function [Fpath, Ffile, Fext, SuffixSPM] = xASL_fileparts(InputPath)
         Fext = [Fext2 Fext];
     end
     
-    %% 3. Manage folders differently than files
-    if exist(InputPath, 'dir')
-        % when running this for a folder, there is no extension. So any 
-        % extension should be ignored and put back to the Ffile
-        Ffile = [Ffile Fext];
-        Fext = '';
-    end
 
 end
