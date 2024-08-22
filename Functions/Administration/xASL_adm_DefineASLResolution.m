@@ -125,7 +125,7 @@ function x = xASL_im_ResolutionEstim(x)
     end
 
     %% Clip vascular extremes
-    qnt             = sort(imCBF(:),'ascend');
+    qnt             = sort(imCBF(~isnan(imCBF)), 'ascend');
     qnt             = qnt(floor(length(qnt).*0.95));
     imCBF           = imCBF./qnt;
     imCBF(imCBF>1)  = 1;
