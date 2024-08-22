@@ -380,7 +380,7 @@ function statCell = xASL_stat_PrintStats_FillStatCellArray(x, statCell, rowNum, 
 	% iSubjectSession_SetsID - index in the general dataset of all ASL scans
 	% iSubjectSession_DAT - index in the specific extracted dataset by xASL_wrp_GetROIStatistics - these two indexes can differ
     % Skip the first two rows and columns (Labels & Legend, Subjects & Sessions)
-    rowNum = iSubjectSession_DAT + 2;
+    rowNum = rowNum + 2;
     iCell = 3;
     
     % 1. print values for other covariates
