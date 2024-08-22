@@ -70,7 +70,7 @@ if ~isempty(x.Q.AcquisitionVoxelSize) && numel(x.Q.AcquisitionVoxelSize) == 3
 elseif x.MagneticFieldStrength > 3
 	% For more than 3T scanners, we don't have this estimated as the resolutions are much higher
 	EffectiveResolution = NativeResolution;
-	fprintf('%s\n', ['Assume effective resolution equal to voxel size ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(3)) )
+	fprintf('%s\n', ['Assume effective resolution equal to voxel size ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(3))]);
 elseif ~isfield(x.Q, 'PulseSequenceType') || ~isfield(x.Q, 'MRAcquisitionType') || ~isfield(x.Q.Vendor)
 	% If sequence or vendor are still missing we skip this function
 	error('Settings of x.Q.PulseSequenceType or x.Q.MRAcquisitionType or x.Q.Vendor are missing');
@@ -105,9 +105,22 @@ else
 
 	%% ----------------------------------------------------------------------------------------
 	%% 2) Attempt accounting for in-plane interpolation in reconstruction
-	if strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D') && NativeResolution(1)<4
-		NativeResolution(1:2) = max(NativeResolution(1:2),[3.75 3.75]);
-		% to account for in-plane interpolation
+	if strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D')
+		% GE tends to upsample their spiral acquisitions to 1.6-1.9mm voxels
+		% For non-GE, or in-plane resolution higher than 2mm, we can't assume that the reconstruction was upsampled and we leave the native resolution intact
+		if regexpi(x.Q.Vendor, 'GE') && NativeResolution(1) < 2
+			% The individual resolution will also depend on the FOV, so we cannot set a fixed resolution but rather modify it based on the native resolution
+			if isempty(x.Q.NumberOfArms)
+				warning('Number of spirals not defined for a GE sequence');
+			elseif x.Q.NumberOfArms == 8
+				% For the standard number of spirals, we use 2 times the native resolution
+				NativeResolution(1:2) = 2 * NativeResolution(1:2);
+			elseif x.Q.NumberOfArms == 4
+				NativeResolution(1:2) = 3 * NativeResolution(1:2);
+			else
+				warning('Number of spirals for a GE sequence is not in the common range of 4 or 8')
+			end
+		end
 	elseif strcmpi(x.Q.PulseSequenceType, 'GRASE') && strcmpi(x.Q.MRAcquisitionType, '3D') && NativeResolution(1)<3
 		NativeResolution(1:2) = max(NativeResolution(1:2),[3.8 3.8]);
 	end
