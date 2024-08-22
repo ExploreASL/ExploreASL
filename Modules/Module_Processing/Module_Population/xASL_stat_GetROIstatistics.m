@@ -131,27 +131,38 @@ if ~x.S.IsASL
     x.S.bMasking(3) = 0; % disable tissue masking
 end
 
-% Print the applied masking settings
-if isequal(x.S.bMasking, [1 1 1 1])
-    fprintf('All ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask)\n');
-elseif isequal(x.S.bMasking, [0 0 0 0])
-    fprintf('No ASL-masking applied (susceptibility mask, vascular mask, tissue-specific mask)\n');
-else
-    fprintf('We will apply the following masking:');
-    if x.S.bMasking(1)==1
-        fprintf('susceptibility mask:');
-    end
-    if x.S.bMasking(2)==1
-        fprintf('vascular mask:');
-    end
-    if x.S.bMasking(3)==1
-        fprintf('tissue-specific mask:');
-    end
-    if x.S.bMasking(4)==1
-        fprintf('WholeBrain mask:');
-    end
-    fprintf('\n');
+if ~isfield(x.S, 'bWMH')
+    x.S.bWMH = false; % by default, WMH are excluded from all ROIs
 end
+
+% Print the applied masking settings
+fprintf('\n%s\n', 'We will apply the following ASL masking:');
+if x.S.bMasking(1)==1
+    fprintf('%s\n', 'susceptibility mask: enabled');
+else
+    fprintf('%s\n', 'susceptibility mask: disabled');
+end
+if x.S.bMasking(2)==1
+    fprintf('%s\n', 'vascular mask: enabled');
+else
+    fprintf('%s\n', 'vascular mask: disabled');
+end
+if x.S.bMasking(3)==1
+    fprintf('%s\n', 'tissue-specific mask: enabled');
+else
+    fprintf('%s\n', 'tissue-specific mask: disabled');
+end
+if x.S.bMasking(4)==1
+    fprintf('%s\n', 'WholeBrain mask: enabled');
+else
+    fprintf('%s\n', 'WholeBrain mask: disabled');
+end
+if x.S.bWMH==1
+    fprintf('%s\n', 'pvWMH ignored & included in all ROIs (affects mainly WM ROIs)');
+else
+    fprintf('%s\n', 'pvWMH excluded from all ROIs (affects mainly WM ROIs)');
+end
+fprintf('\n');
 
 
 %% 0.b Native space atlas input
@@ -421,8 +432,8 @@ for iSubject=1:x.dataset.nSubjects
 					continue;
 				end
 
-				%% 4.b Correct for WMH SEGM -> IS THIS STILL REQUIRED???
-				if xASL_exist(x.P.Path_PVwmh, 'file')
+				%% 4.b Correct for WMH SEGM
+				if ~x.S.bWMH && xASL_exist(x.P.Path_PVwmh, 'file')
 					pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVwmh), x.S.masks.WBmask);
 					% we take sqrt(pWMH) to mimic the effective resolution of ASL (instead of smoothing)
 					pWMH(pWMH<0) = 0;
@@ -455,15 +466,15 @@ for iSubject=1:x.dataset.nSubjects
 						continue;
 					end
 
-					%% 4.b.b Correct for WMH SEGM -> IS THIS STILL REQUIRED???
+					%% 4.b.b Correct for WMH SEGM
 					WMHfile = fullfile(x.D.PopDir, ['PV_WMH_SEGM_' x.SUBJECTS{iSubject} '.nii']);
-					if xASL_exist(WMHfile,'file')
+					if ~x.S.bWMH && xASL_exist(WMHfile,'file')
 						% The newer version with PV_WMH already pre-calculated
 						pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(WMHfile), x.S.masks.WBmask);
 						pWMH(pWMH<0) = 0;
 						pGM = max(0, pGM - pWMH);
 						pWM = max(0, pWM - pWMH);
-					else
+                    elseif ~x.S.bWMH
 						% The older version with PV_WMH not calculated.
 						% Keep it for backwards compatibility, but issue a warning
 						WMHfile = fullfile(x.D.PopDir, ['rWMH_SEGM_' x.SUBJECTS{iSubject} '.nii']);
@@ -475,7 +486,7 @@ for iSubject=1:x.dataset.nSubjects
 							pWMH(pWMH<0) = 0;
 							pGM = max(0, pGM - pWMH.^0.67);
 							pWM = max(0, pWM - pWMH.^0.67);
-						end
+                        end
 					end
 				end
 
