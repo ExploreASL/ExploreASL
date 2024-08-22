@@ -135,8 +135,10 @@ if bFollowSubjectSessions % see header. This boolean is only true when we force 
                 x.modules.population.(thisFile){iSubjectSession+2,1} = x.S.SubjectSessionID{iSubjectSession, 1};
 
                 %% Print the covariates and data
+				iSubjectSession_SetsID = iSubjectSession;
+                iSubjectSession_DAT = iSubjectSession;
                 bPrintSessions = true;
-                x.modules.population.(thisFile) = xASL_stat_PrintStats_FillStatCellArray(x, x.modules.population.(thisFile), iSubjectSession, bPrintSessions);
+                x.modules.population.(thisFile) = xASL_stat_PrintStats_FillStatCellArray(x, x.modules.population.(thisFile), iSubjectSession, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);
 
             end
         end
@@ -232,7 +234,7 @@ else
                                 bPrintSessions = false;
                                 
                                 % Write it to the cell array instead
-                                x.modules.population.(thisFile) = xASL_stat_PrintStats_FillStatCellArray(x, x.modules.population.(thisFile), iSubjSess, bPrintSessions);
+                                x.modules.population.(thisFile) = xASL_stat_PrintStats_FillStatCellArray(x, x.modules.population.(thisFile), iSubjSess, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);
                             end
                         end
                     end
@@ -371,7 +373,7 @@ function statCell = xASL_stat_PrintStats_AddSubjectSessionStatCellArray(x,statCe
 end
 
 %% Fill the stat cell array with all subjects and sessions xASL_tsvWrite later on
-function statCell = xASL_stat_PrintStats_FillStatCellArray(x, statCell, iSubjectSession_DAT, bPrintSessions)
+function statCell = xASL_stat_PrintStats_FillStatCellArray(x, statCell, rowNum, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions)
 
     % statCell - we write into this structure
 	% rowNum   - number of the row in this structure to write to
