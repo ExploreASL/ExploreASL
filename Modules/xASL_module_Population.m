@@ -247,7 +247,28 @@ if ~x.mutex.HasState(StateName{8})
         % Iterate over atlases
         x.dir.dirAtlas = fullfile(x.opts.MyPath, 'external', 'Atlases');
 
-        for iAtlas=1:length(x.S.Atlases)        
+        % Default subject-wise tissue masking
+        if ~isfield(x.S, 'TissueMasking')
+            x.S.TissueMasking = [1 2];
+            % This is valid for our default ROIs/atlases {TotalGM DeepWM}
+
+            % Note that this should be in the same order as the atlases/ROIs
+            % A mismatch (e.g. TissueMasking=GM for ROI=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
+            % PM: should this definition go elsewhere, where also the default for x.S.Atlases is set?
+        end
+
+        if length(x.S.Atlases)~=length(x.S.TissueMasking)
+            error('Not the same number of ROI atlases as subject-wise tissue-types provided');
+        end
+
+        for iAtlas=1:length(x.S.Atlases)
+            % Note that the number of ROI atlases here should be the same the number of tissue masking chosen
+            % If needed, an atlas or tissue type can be provided multiple times in different combinations
+
+            % We use the tissue type belonging to the atlas
+            x.S.bTissueMasking = x.S.TissueMasking(iAtlas);
+            
+            % Find the path of the atlas
             pathAtlas = fullfile(x.dir.dirAtlas, [x.S.Atlases{iAtlas} '.nii']);
             
             % Check if atlas name is in path list
@@ -267,6 +288,7 @@ if ~x.mutex.HasState(StateName{8})
 			x.S.bSubjectSpecificROI = false; % lesion/ROIs designated per subject (e.g., Lesion_T1_2.nii)
             % x.S.SubjectWiseVisualization = true; defaulted to false,
             % set this to true for visualization ROIs
+
             xASL_wrp_GetROIstatistics(x);
             % ROI statistics (optional: native space)
             if x.modules.population.bNativeSpaceAnalysis
