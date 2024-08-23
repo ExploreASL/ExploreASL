@@ -89,6 +89,10 @@ function []                 = xASL_stat_PrintCluster_ROI_Stats(MaskMap,x,printTi
         x             = PrintXYZcoordinates(x,X,Y,Z); % print MNI-coordinates for centroid
 
         %% Collect info of HO-regions that lie in the label area
+        % Note that this atlas is only free for non-commercial usage. So once we use this code for commercial purposes, we need to replace this atlas with another one.
+        % by the MindBoggle atlas, which is free for commercial usage.
+
+        warning('This Harvard-Oxford atlas is only free for non-commercial usage');
 
         x.S.iNext                     = 1;
         Atlases                     = {'HOcort_CONN' 'HOsub_CONN'};
