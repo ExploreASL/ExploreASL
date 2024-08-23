@@ -107,7 +107,7 @@ if bZeroes
 end
 
 if UseMethod == 3
-	% Also catch Infs or imaginary numbers for method 3
+	% Also catch Infs for method 3
 	IM(~isfinite(IM)) = NaN;
 end
 
@@ -179,6 +179,7 @@ end
 
 end
 
+
 %% ========================================================================================
 %% ========================================================================================
 %% METHOD 1
@@ -198,6 +199,7 @@ function [IM] = xASL_im_ExtrapolateSmoothOverNaNs(IM, bQuality, VoxelSize)
 	end
 end
 
+
 %% ========================================================================================
 %% ========================================================================================
 %% METHOD 3
@@ -207,40 +209,47 @@ function [IM] = xASL_im_ExtrapolateLinearlyOverNaNs(IM)
 % in the main function above)
 %
 % IM          - input image
+% Note that this function assumes a flowfield with absolute NIfTI/image coordinates!
+% Because the average difference of the coordinattes will be the voxel size, we call this variable "VoxelSize"
 
-%% Create masks and estimate voxel size
+
+%% 1. Initialize nan mask
 % Create NaN mask for all 3D volumes together
 maskNaN = sum(isnan(IM), 4) > 0;
 
+
+%% 2. Estimate voxel-size (i.e. the average coordinate displacement)
 % We estimate the voxel-size and axis directions
 % For each volume, we calculate the difference of neighboring voxels
 % We calculate the mean over nonNaN values, which gives the average update including the correct direction
-diffIM = IM(2:end, :, :, 1) - IM(1:end-1, :, :, 1);
+diffIM = IM(2:end,     :,     :, 1) - IM(1:end-1,       :,       :, 1);
 diffIM = diffIM(~maskNaN(2:end, :, :));
 VoxelSize(1) = xASL_stat_MeanNan(diffIM);
 
-diffIM = IM(:, 2:end, :, 2)-IM(:, 1:end-1, :, 2);
+diffIM = IM(    :, 2:end,     :, 2) - IM(      :, 1:end-1,       :, 2);
 diffIM = diffIM(~maskNaN(:, 2:end, :));
 VoxelSize(2) = xASL_stat_MeanNan(diffIM);
 
-diffIM = IM(:, :, 2:end, 3)-IM(:, :, 1:end-1, 3);
+diffIM = IM(    :,     :, 2:end, 3) - IM(      :,       :, 1:end-1, 3);
 diffIM = diffIM(~maskNaN(:, :, 2:end));
 VoxelSize(3) = xASL_stat_MeanNan(diffIM);
 
-%% 0.5 Fix interpolation edges
-% The first layer(s) next to the NaNs are sometimes interpolated as well
+
+%% 3. Fix corrupt flowfield edges
+% The edges of the flowfield — i.e. the first layer(s) next to the NaNs — are sometimes corrupt, e.g. by interpolation
 % So here we try to estimate which voxels those are, by looking at the distance from the NaNs
 % together with the transformation difference from a smoothed transformation field.
 
-% First we get the distance transform from mask (1 where NaNs are) inwards
+% First we get the distance transform from the mask (1 where NaNs are) inwards
 % We also need to remove the borders if we want a proper distance also from the image edges
 distMapInward = maskNaN;
-distMapInward(1,:,:) = 1; distMapInward(end,:,:) = 1;
-distMapInward(:,1,:) = 1; distMapInward(:,end,:) = 1;
-distMapInward(:,:,1) = 1; distMapInward(:,:,end) = 1;
+distMapInward(1,:,:) = 1; distMapInward(end,  :,  :) = 1;
+distMapInward(:,1,:) = 1; distMapInward(  :,end,  :) = 1;
+distMapInward(:,:,1) = 1; distMapInward(  :,  :,end) = 1;
 distMapInward = xASL_im_DistanceTransform(distMapInward);
 
 % We exclude several border voxels - calculated as around 7% of the image size
+% E.g., this equates to 10 voxels for [121 145 121]
 maskRestricted = distMapInward > mean(size(IM, 1:3))*0.07;
 
 % We try linearly extrapolating over the restricted mask to identify voxels with outlying transformation
@@ -260,15 +269,23 @@ if sum(maskRestricted(:)) > 0
 	maskNaN(maskExtreme > 0) = 1;
 end
 
-% Perorm the final interpolation
+
+%% 4. Perform the final extrapolation
+% Note that "VoxelSize" here refers to the average coordinate change, since we use flowfields containing absolute NIfTI/image coordinates
 IM = xASL_im_ExtrapolateLinearlyFromEdge(IM, ~maskNaN, VoxelSize);
+
 
 end
 
+
+%% ========================================================================================
+%% ========================================================================================
 function IM = xASL_im_ExtrapolateLinearlyFromEdge(IM, maskIM, VoxelSize)
-	% IM the input and output image
-	% maskIM is the mask of the correct values and we extrapolate over maskIM==0
-	% VoxelSize is the size of the voxel in the transformation field
+%xASL_im_ExtrapolateLinearlyFromEdge
+% IM            - 3D input image
+% maskIM        - the flowfield mask (i.e. inverse of maskNaN above)
+% VoxelSize     - the average coordinate displacement, which equals to the voxel size of this coordinate flowfield
+
 
 %% Extrapolation of values based on the edge values 
 % Calculate the relative distance map from the non-Nan towards NaN. Note that for non-NaNs, these relative coordinates are zero
@@ -292,5 +309,6 @@ end
 IM(:, :, :, 1) = IM(:, :, :, 1) - distanceX(:, :, :)*VoxelSize(1);
 IM(:, :, :, 2) = IM(:, :, :, 2) - distanceY(:, :, :)*VoxelSize(2);
 IM(:, :, :, 3) = IM(:, :, :, 3) - distanceZ(:, :, :)*VoxelSize(3);
+
 
 end
