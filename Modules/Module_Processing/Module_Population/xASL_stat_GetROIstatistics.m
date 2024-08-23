@@ -40,7 +40,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %                        3 = whole brain (WB = GM+WM)
 %                        4 = ...
 %                        (REQUIRED, single value)
-%                        Cannot be a vector. Iterate outside this function over multiple x.S.Atlases-x.S.TissueMasking combinations.
+%                        Cannot be a vector. Iterate outside this function over multiple x.S.Atlases-x.S.bTissueMasking combinations.
 %                        Note that a ROI needs to have a minimal volume. So a deepWM ROI for which pvGM is requested will be skipped.
 %
 %
