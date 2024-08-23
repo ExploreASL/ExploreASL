@@ -8,7 +8,7 @@ function [IMout] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, b
 %   UseMethod   - one of the following methods to fill the NaNs:
 %                 1: extrapolate by smoothing (useful for any image, e.g. extrapolating M0 smooth biasfield) (DEFAULT)
 %                 2: set to 0 (useful for e.g. DARTEL displacement fields, where 0 means no displacement)
-%                 3: extrapolate deformation field linearly - this method is adapted to SPM deformation fields XxYxZx3 or XxYxZx1x3
+%                 3: extrapolate deformation field linearly - this method is adapted to SPM deformation fields XxYxZx3 or XxYxZx1x3, it fills both NaNs and INFs
 %                 (OPTIONAL, DEFAULT = 1)
 %   bQuality    - affects kernel size of the extrapolation performed in method 1
 %                 (extrapolating by smoothing goes much faster with smaller
@@ -233,43 +233,46 @@ VoxelSize(3) = xASL_stat_MeanNan(diffIM);
 % together with the transformation difference from a smoothed transformation field.
 
 % First we get the distance transform from mask (1 where NaNs are) inwards
-distMapInward = xASL_im_DistanceTransform(maskNaN);
+% We also need to remove the borders if we want a proper distance also from the image edges
+distMapInward = maskNaN;
+distMapInward(1,:,:) = 1; distMapInward(end,:,:) = 1;
+distMapInward(:,1,:) = 1; distMapInward(:,end,:) = 1;
+distMapInward(:,:,1) = 1; distMapInward(:,:,end) = 1;
+distMapInward = xASL_im_DistanceTransform(distMapInward);
 
-% Then we create a copy of the image that is smoothed (outside of NaNs)
-IMsmooth = IM;
-for iDim = 1:3
-	IMsmooth(:, :, :, iDim) = xASL_im_ndnanfilter(IM(:, :, :, iDim), 'gauss', [8 8 8], 1);
+% We exclude several border voxels - calculated as around 7% of the image size
+maskRestricted = distMapInward > mean(size(IM, 1:3))*0.07;
+
+% We try linearly extrapolating over the restricted mask to identify voxels with outlying transformation
+% We only perform this step when there is a remaining restricted mask
+% In case the restricted mask was missing, we revert to the original NaN-mask
+if sum(maskRestricted(:)) > 0
+	IMfirstTry = xASL_im_ExtrapolateLinearlyFromEdge(IM, maskRestricted, VoxelSize);
+
+	% We obtain an absolute difference image between the original transformation field, and the extrapolated field from the restricted mask
+	% This difference will show us how "extreme" the transformations are.
+	IMdelta = max(abs(IM-IMfirstTry), [], 4);
+
+	% We identify outlying transformation values as differing by 3 times more from the linear extrapolation (based on the average voxel size)
+	maskExtreme = IMdelta > (3*mean(abs(VoxelSize)));
+
+	% Add the outlying values to the NaN mask
+	maskNaN(maskExtreme > 0) = 1;
 end
 
-% We obtain an absolute difference image between the original transformation field, and the smoothed transformation field
-% This difference will show us how "extreme" the transformations are.
-deltaIm = mean(abs(IM-IMsmooth), 4);
-% This absolute difference image, is now divided by the distance.
-% Because we want to detect extreme transformation values that are close to the border (low distance)
-% So this would result in a high relativeDelta
-relativeDelta = deltaIm./distMapInward;
+% Perorm the final interpolation
+IM = xASL_im_ExtrapolateLinearlyFromEdge(IM, ~maskNaN, VoxelSize);
 
-% The relativeDelta is Rician-ish distributed, so we use the median and MAD to obtain a threshold for the relativeDelta
-medianRelativeDelta = xASL_stat_MedianNan(relativeDelta(:));
-MADRelativeDelta = xASL_stat_MadNan(relativeDelta(:));
-thresholdIs = medianRelativeDelta + 3.5*MADRelativeDelta;
-
-% We want to have a hard cutoff of distance from NaNs that we won't change
-% This is 10% of the transformation field size (e.g, for 121*145*121 transformation field, this is 13 voxels)
-sizeIm = size(IM);
-if numel(sizeIm)<3
-    warning('Something wrong with this flowfield');
 end
-averageSize = mean(sizeIm(1:3));
-edgeDistance = round(0.1*averageSize);
 
-% Set the voxels at the border where extreme values were detected to NaN as well
-% We update the NaN mask instead of modifying the image
-maskNaN(relativeDelta > thresholdIs & distMapInward < edgeDistance) = 1;
+function IM = xASL_im_ExtrapolateLinearlyFromEdge(IM, maskIM, VoxelSize)
+	% IM the input and output image
+	% maskIM is the mask of the correct values and we extrapolate over maskIM==0
+	% VoxelSize is the size of the voxel in the transformation field
 
 %% Extrapolation of values based on the edge values 
 % Calculate the relative distance map from the non-Nan towards NaN. Note that for non-NaNs, these relative coordinates are zero
-[~, distanceX, distanceY, distanceZ] = xASL_im_DistanceTransform(~maskNaN);
+[~, distanceX, distanceY, distanceZ] = xASL_im_DistanceTransform(maskIM);
 
 % We calculate the meshgrid - three 3D matrices that give, respectively, for each voxel its X, Y, and Z coordinates.
 [coordinateOriginalX, coordinateOriginalY, coordinateOriginalZ] = ndgrid(1:size(IM, 1), 1:size(IM, 2), 1:size(IM, 3));
