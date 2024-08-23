@@ -71,7 +71,7 @@ elseif x.MagneticFieldStrength > 3
 	% For more than 3T scanners, we don't have this estimated as the resolutions are much higher
 	EffectiveResolution = NativeResolution;
 	fprintf('%s\n', ['Assume effective resolution equal to voxel size ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(3))]);
-elseif ~isfield(x.Q, 'PulseSequenceType') || ~isfield(x.Q, 'MRAcquisitionType') || ~isfield(x.Q.Vendor)
+elseif ~isfield(x.Q, 'PulseSequenceType') || ~isfield(x.Q, 'MRAcquisitionType') || ~isfield(x.Q, 'Vendor')
 	% If sequence or vendor are still missing we skip this function
 	error('Settings of x.Q.PulseSequenceType or x.Q.MRAcquisitionType or x.Q.Vendor are missing');
 else	
