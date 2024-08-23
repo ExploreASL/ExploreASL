@@ -1,5 +1,7 @@
 The maps in this folder all originate from SPM and/or CAT12, and thus distributed under GNU GPL.
+They are used for image processing in ExploreASL.
 
+brainCentralityMap: created from rbrainmask, using distance transform.
 brainmask.nii: ICBM_152_nonlinear_symm brainmask, resampled to 1.5 mm MNI
 brainmask_supratentorial.nii: same, but without structures outside cerebrum
 CentralWM_QC.nii: ICBM_152_nonlinear_symm pWM eroded to center & resampled to 1.5 mm MNI
@@ -16,16 +18,6 @@ rc3T1.nii & rc3T1_ASL_res.nii: created from rc1T1 & rc2T1, see below
 rgrey.nii: SPM OldSeg pGM (ICBM_152_lin) resampled to 1.5 mm MNI
 rT1.nii: ICBM T1 template resampled to 1.5 mm MNI
 TotalGM.nii, TotalWM.nii, WholeBrain.nii: ICBM wholebrain mask, resampled to 1.5 mm MNI
-
-MNI structural atlas, available at fsl.fmrib.ox.ac.uk/fsl/fslwiki/Atlases, but created under the ICBM license.
-
-9 anatomical structural regions, kindly provided by Jack Lancaster at the Research Imaging Center, UTHSCSA, Texas (originally from the McConnell Brain Imaging Centre, MNI).
-
-References:
-
-Collins et al. Automatic 3-D model-based neuroanatomical segmentation. Human Brain Mapping 3(3): 190-208. (1995)
-Mazziotta et al. A probabilistic atlas and reference system for the human brain: International Consortium for Brain Mapping (ICBM). Phil. Trans. Royal Soc. B Biol. Sci. 356(1412):1293-1322 (2001)
-
 
 Several of these maps stem from the ICBM_152_linear & the ICBM_152_nonlinear atlas, which is free for all use (see license below):
 
