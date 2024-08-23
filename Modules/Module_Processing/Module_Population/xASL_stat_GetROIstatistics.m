@@ -31,6 +31,19 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %                       0 = [0 0 0 0]
 %                       Can be useful for e.g. loading lesion masks outside the GM
 %                       (OPTIONAL, DEFAULT=1)
+%   x.S.bWMH           - boolean specifying if we should mask a ROI with pvWMH (by subtracting pvWMH in ASL resolution)
+%                        true = include WMH (no masking), false = exclude WMH (OPTIONAL, DEFAULT=false)
+%   x.S.bTissueMasking - value specifying which subject-wise tissue type we will mask with. Cannot be a vector
+%                        (loop outside this function for multiple tissue types)
+%                        1 = gray matter (GM)
+%                        2 = white matter (WM)
+%                        3 = whole brain (WB = GM+WM)
+%                        4 = ...
+%                        (REQUIRED) ->>>>>>>>>>>>>>>>>>>>>>>>>>>, set DEFAULT outside this code as [1 2])
+%                                   ->>>>>>>>>>>>>>>>>>>>>>>>>>>
+%                        Note that a ROI needs to have a minimal volume. So a deepWM ROI for which pvGM is requested will be skipped.
+%
+%
 % OUTPUT:
 %   x                            - same as input
 %   x.S.SubjectSessionID 		 - %   x.S.SubjectSessionID       - names of the Subject/Sessions in the order of x.S.SetsID/x.S.DAT
@@ -596,22 +609,34 @@ for iSubject=1:x.dataset.nSubjects
 
 			% Skip PVC for certain ROI and mask combination as the result might not be meaningful
 			bSkipPVC = 0;
-			
+
+            % pGM_here is the main tissue type that is investigated
+            % pWM_here is the other tissue type that is used with PVC
+
+            %   x.S.bTissueMasking - value specifying which subject-wise tissue type we will mask with. Cannot be a vector
+            %                        (loop outside this function for multiple tissue types)
+            %                        1 = gray matter (GM)
+            %                        2 = white matter (WM)
+            %                        3 = whole brain (WB = GM+WM)
+
 			if ~x.S.IsASL
 				pGM_here = ones(size(DataIm)); % no masking
 				bSkipPVC = 1;
-			elseif ~isempty(findstr(lower(namesROIuse{iROI}),'whole brain')) || ~isempty(findstr(lower(namesROIuse{iROI}),'wb')) || ~isempty(findstr(lower(namesROIuse{iROI}),'wholebrain'))
+            elseif x.S.bTissueMasking==1
+                % we want GM, so keep tissue masks as they are
+				pGM_here = pGM;
+				pWM_here = pWM;
+			elseif x.S.bTissueMasking==2
+                % we want WM, so we flip the ROIs, using GM as "WM" in PVC
+                pGM_here = pWM;
+				pWM_here = pGM;
+			elseif x.S.bTissueMasking==3
+                % we want WB, i.e. GM+WM, using CSF as "WM" in PVC
 				pGM_here = pGM+pWM;
 				pWM_here = ones(size(pGM)) - pGM - pWM; % CSF
 				bSkipPVC = 1;
-			elseif  ~isempty(findstr(lower(namesROIuse{iROI}),'white matter')) || ~isempty(findstr(lower(namesROIuse{iROI}),'wm'))  || ~isempty(findstr(lower(namesROIuse{iROI}),'whitematter'))
-				% flip the ROIs:
-				% we are interested in WM instead of pGM
-				pGM_here = pWM;
-				pWM_here = pGM;
-            else % we want GM, so keep tissue masks as they are
-				pGM_here = pGM;
-				pWM_here = pWM;
+            else
+                error('Unknown tissue type chosen, should be one out of 1:GM, 2:WM, 3:WB');
             end
 
             % Defaulting outputs for ROI visualization
@@ -654,6 +679,9 @@ for iSubject=1:x.dataset.nSubjects
                     % Check for empty CBF map first
                     fprintf('%s\n', ['Warning: Empty image for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess)]);
 				end
+
+                % pGM_here is the main tissue type that is investigated
+                % pWM_here is the other tissue type that is used with PVC
 
 				if x.S.bMasking(3)==0 % no tissue-masking
                     pGM_here = ones(size(DataIm));
