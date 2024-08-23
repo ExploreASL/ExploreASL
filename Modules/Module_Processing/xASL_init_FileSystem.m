@@ -184,6 +184,7 @@ x.P.Atlas.TotalGM                           = fullfile(x.D.MapsSPMmodifiedDir, '
 x.P.Atlas.TotalWM                           = fullfile(x.D.MapsSPMmodifiedDir, 'TotalWM.nii');
 x.P.Atlas.DeepWM                            = fullfile(x.D.MapsSPMmodifiedDir, 'DeepWM.nii');
 x.P.Atlas.WholeBrain                        = fullfile(x.D.MapsSPMmodifiedDir, 'WholeBrain.nii');
+x.P.Atlas.Supratentorial                    = fullfile(x.D.MapsSPMmodifiedDir, 'Supratentorial_GM_WM.nii');
 x.P.Atlas.Tatu_ACA_MCA_PCA                  = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'Tatu_ACA_MCA_PCA.nii.gz');
 x.P.Atlas.Tatu_ICA_PCA                      = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'Tatu_ICA_PCA.nii.gz');
 x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'Tatu_ICA_L_ICA_R_PCA.nii.gz');

@@ -1,7 +1,11 @@
 The maps in this folder all originate from SPM and/or CAT12, and thus distributed under GNU GPL.
 
 brainmask.nii: ICBM_152_nonlinear_symm brainmask, resampled to 1.5 mm MNI
-brainmask_supratentorial.nii: same, but without structures outside cerebrum
+brainmask_supratentorial.nii: same, but without structures outside cerebrum.
+For which we excluded the following Mindboggle regions: 1 cerebellum exterior,
+2 cerebellum WM, 10 ventral dentate nucleus, 11 basal forebrain, 12-14 cerebellar vermis.
+(see /CustomScripts/Atlases/Supratentorial.m; private repository)
+
 CentralWM_QC.nii: ICBM_152_nonlinear_symm pWM eroded to center & resampled to 1.5 mm MNI
 DeepWM.nii: ICBM_152_nonlinear_symm pWM eroded to deep WM & resampled to 1.5 mm MNI
 Identity_Deformation_y_T1.nii: SPM deformation field, modified for no displacement, but resample to 1.5 mm MNI
