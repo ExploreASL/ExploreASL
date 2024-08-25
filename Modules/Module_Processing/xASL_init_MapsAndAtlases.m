@@ -43,7 +43,7 @@ end
 
 
 %% --------------------------------------------------------
-%% 2. Add all atlas/ROI NIFTIs to the x.P.Atlas field
+%% 2. Add all atlas/ROI NIFTIs to the x.D.Atlas field
 
 % Get all NIfTI files in atlas subfolders (recursively)
 % Note that these atlases need to have the .nii.mat sidecar
@@ -53,7 +53,7 @@ filesInAtlasDir = xASL_adm_GetFileList(x.D.AtlasDir, '^.+\.nii\.mat$', 'FPListRe
 for iFile=1:numel(filesInAtlasDir)
     % Get current atlas
     [fPath, currentAtlas] = xASL_fileparts(filesInAtlasDir{iFile});
-    x.P.Atlas.(currentAtlas) = fullfile(fPath, [currentAtlas '.nii']);
+    x.D.Atlas.(currentAtlas) = fullfile(fPath, [currentAtlas '.nii']);
 end
 
 
