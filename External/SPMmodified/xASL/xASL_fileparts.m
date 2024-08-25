@@ -60,11 +60,11 @@ function [Fpath, Ffile, Fext, SuffixSPM] = xASL_fileparts(InputPath)
 		InputPath = fullfile(Fpath, [Ffile Fext(1:Index1-1)]);
 	end
 
-    %% 3. Manage the double extension .nii.gz
+    %% 3. Manage the double extension .nii.gz or .nii.mat
     [Fpath, Ffile, Fext] = fileparts(InputPath);
     [~, Ffile2, Fext2] = fileparts(Ffile);
     
-    if strcmpi(Fext, '.gz') && ~isempty(Fext2)
+    if strcmpi(Fext, '.gz') || strcmpi(Fext, '.mat')  && ~isempty(Fext2)
         Ffile = Ffile2;
         Fext = [Fext2 Fext];
     end
