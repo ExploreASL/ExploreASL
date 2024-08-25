@@ -10,6 +10,8 @@ function [x] = xASL_init_FileSystem(x)
 %   x           - struct containing pipeline environment parameters, useful when only initializing ExploreASL/debugging
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function initializes the file system used throughout ExploreASL, for processing a single dataset/scan.
+% So note that ExploreASL-wide parameters, that are not specific to a single scan, are not defined here.
+% E.g., the atlas paths are defined in xASL_init_MapsAndAtlases.m
 % It is repeated for each scan, and runs the following parts:
 %
 % 1. Create folders
@@ -17,12 +19,11 @@ function [x] = xASL_init_FileSystem(x)
 % 3. Add prefixes & suffixes
 % 4. Add Subject-specific prefixes
 % 5. Add sidecars
-% 6. Add atlas paths
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_init_FileSystem(x);
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
 %% ------------------------------------------------------------------------------------
@@ -177,35 +178,5 @@ for iL=12:length(FieldList) % here we should remove the prefixes
     end
 end    
 
-
-%% ------------------------------------------------------------------------------------------
-%% 6) Add atlas paths
-x.P.Atlas.TotalGM                           = fullfile(x.D.MapsSPMmodifiedDir, 'TotalGM.nii');
-x.P.Atlas.TotalWM                           = fullfile(x.D.MapsSPMmodifiedDir, 'TotalWM.nii');
-x.P.Atlas.DeepWM                            = fullfile(x.D.MapsSPMmodifiedDir, 'DeepWM.nii');
-x.P.Atlas.WholeBrain                        = fullfile(x.D.MapsSPMmodifiedDir, 'WholeBrain.nii');
-x.P.Atlas.Tatu_ACA_MCA_PCA                  = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'Tatu_ACA_MCA_PCA.nii.gz');
-x.P.Atlas.Tatu_ICA_PCA                      = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'Tatu_ICA_PCA.nii.gz');
-x.P.Atlas.Tatu_ICA_L_ICA_R_PCA              = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'Tatu_ICA_L_ICA_R_PCA.nii.gz');
-x.P.Atlas.Tatu_ACA_MCA_PCA_Prox_Med_Dist    = fullfile(x.D.MapsSPMmodifiedDir, 'VascularTerritories', 'Tatu_ACA_MCA_PCA_Prox_Med_Dist.nii.gz');
-x.P.Atlas.DKT                  = fullfile(x.D.AtlasDir, 'Desikan_Killiany_MNI_SPM12.nii');
-
-% Add atlases from atlasDir
-x = xASL_init_AtlasList(x,x.D.AtlasDir);
-
-end
-
-% Add all NIFTIs from the atlasDir to the x.P.Atlas field
-function [x] = xASL_init_AtlasList(x,atlasDir)
-
-% Get all files in atlas directory
-filesInAtlasDir = xASL_adm_GetFileList(atlasDir,'^.+\.nii$');
-
-% Iterate over atlases
-for iFile=1:numel(filesInAtlasDir)
-    % Get current atlas
-    [~,currentAtlas] = xASL_fileparts(filesInAtlasDir{iFile});
-    x.P.Atlas.(currentAtlas) = filesInAtlasDir{iFile};
-end
 
 end
