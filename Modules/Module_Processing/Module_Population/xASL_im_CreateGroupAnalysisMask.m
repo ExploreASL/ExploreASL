@@ -109,11 +109,8 @@ pathMaskInputList = ...
 	 fullfile(x.D.MapsSPMmodifiedDir,'LeftRight.nii')};
  
 for iAtlas = 1:length(x.S.Atlases)	
-	if strcmp(x.P.Atlas.(x.S.Atlases{iAtlas})((end-2):end),'.gz')
-		pathMaskInputList{iAtlas+2} = x.P.Atlas.(x.S.Atlases{iAtlas})(1:(end-3));
-	else
-		pathMaskInputList{iAtlas+2} = x.P.Atlas.(x.S.Atlases{iAtlas});
-	end
+	pathMaskInputList{iAtlas+2} = x.D.Atlas.(x.S.Atlases{iAtlas});
+	% Note that since #900, all atlases are stored in the x.D.Atlas field, with extension .nii only
 end
 
 %% B2) Save FOV mask for each subject

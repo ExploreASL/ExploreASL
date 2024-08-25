@@ -135,7 +135,7 @@ function [x] = xASL_init_VisualizationSettings(x)
         x.settings.BILAT_FILTER = false;
     end
 
-    ImageWB = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir,'WholeBrain.nii'));
+    ImageWB = xASL_io_Nifti2Im(x.D.Atlas.WholeBrain);
     if x.S.bMasking(4)==0
         x.S.masks.WBmask = true(size(ImageWB));
     else

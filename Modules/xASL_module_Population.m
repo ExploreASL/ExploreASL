@@ -251,13 +251,13 @@ if ~x.mutex.HasState(StateName{8})
             pathAtlas = fullfile(x.dir.dirAtlas, [x.S.Atlases{iAtlas} '.nii']);
             
             % Check if atlas name is in path list
-            if isfield(x.P.Atlas, x.S.Atlases{iAtlas})
+            if isfield(x.D.Atlas, x.S.Atlases{iAtlas})
                 % Atlas is found in the default atlas list
-                x.S.InputAtlasPath = x.P.Atlas.(x.S.Atlases{iAtlas});
+                x.S.InputAtlasPath = x.D.Atlas.(x.S.Atlases{iAtlas});
             elseif xASL_exist(pathAtlas, 'file')
                     % try to find the atlas in the default folder
-                    x.P.Atlas.(x.S.Atlases{iAtlas}) = pathAtlas;
-                    x.S.InputAtlasPath = x.P.Atlas.(x.S.Atlases{iAtlas});
+                    x.D.Atlas.(x.S.Atlases{iAtlas}) = pathAtlas;
+                    x.S.InputAtlasPath = x.D.Atlas.(x.S.Atlases{iAtlas});
             else
                 warning(['Unknown atlas: ' x.S.Atlases{iAtlas} ', skipping']);
             end

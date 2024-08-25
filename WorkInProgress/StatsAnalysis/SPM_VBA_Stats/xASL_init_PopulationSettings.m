@@ -23,8 +23,6 @@ else
     x.STRUCT_TEMPLATE_IM = fullfile(x.D.TemplateDir,'rc1T1.nii');
 end
 
-% x.GradualSkull = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir,
-% 'rbrainmask.nii')); % not useed
 
 % Load T1 background image
 load_T1         = fullfile(x.D.PopDir, 'Templates', [x.P.STRUCT '_bs-mean.nii']);

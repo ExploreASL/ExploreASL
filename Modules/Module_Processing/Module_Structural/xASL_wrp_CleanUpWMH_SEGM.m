@@ -50,7 +50,9 @@ function xASL_wrp_CleanUpWMH_SEGM(x)
 CleanUpFile = [x.P.Path_WMH_SEGM(1:end-4) '_CleanUp.nii'];
 PreMaskFile = fullfile(x.dir.SUBJECTDIR, 'Ones.nii');
 MaskFile = fullfile(x.dir.SUBJECTDIR, 'mask_Ones.nii');
-PathMNIMask = fullfile(x.D.MapsSPMmodifiedDir, 'brainmask_supratentorial.nii');
+PathMNIMask = x.D.Atlas.Supratentorial_GM_WM;
+
+
 
 if xASL_exist(x.P.Path_rWMH_SEGM, 'file')
     WMH_File = x.P.Path_rWMH_SEGM;
