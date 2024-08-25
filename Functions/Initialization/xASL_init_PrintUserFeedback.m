@@ -20,7 +20,8 @@ function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
 
 
     %% Print user feedback
-    if currentState==0
+    if currentState==0 % Start of the pipeline
+
         % If this is true, we break here
         if x.opts.bProcessData && ~isdeployed && x.opts.bPause
             fprintf('%s\n','Press any key to start processing & analyzing');
@@ -34,17 +35,24 @@ function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
             fprintf('Data loading requested but no output structure defined...\n');
             fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
         end
-    else
+    else % End of the pipeline
+
+        % If the population module was performed, print atlas notes
+        if x.opts.bProcessData && x.opts.bProcess(3)
+            fprintf('\n====================================================================================\n');
+            fprintf('%s\n', 'Please cite any atlases that you used to create ROI-wise derivatives');
+            fprintf('%s\n', 'Most atlases provided with ExploreASL do not fall under the ExploreASL license');
+            fprintf('%s\n', 'If you use ExploreASL for commercial purposes, some atlases may require a license');
+            fprintf('\n');
         % Only print final feedback if data import or processing was performed
         if x.opts.bImportData || x.opts.bProcessData
-            fprintf('Many thanks for using <a href="https://github.com/ExploreASL" rel="nofollow">ExploreASL</a>, ');
-            fprintf('please don''t forget to cite <a href="https://pubmed.ncbi.nlm.nih.gov/32526385/" rel="nofollow">https://pubmed.ncbi.nlm.nih.gov/32526385/</a>.\n');
+            fprintf('%s\n', 'Many thanks for using <a href="https://github.com/ExploreASL" rel="nofollow">ExploreASL</a>');
+            fprintf('please don''t forget to cite <a href="https://pubmed.ncbi.nlm.nih.gov/32526385/" rel="nofollow">https://pubmed.ncbi.nlm.nih.gov/32526385/</a>\n');
             fprintf('Note that ExploreASL is a collaborative effort.\n');
-            fprintf('Therefore, please don''t hesitate to contribute by feedback, adding code snippets, or clinical experience!\n');
+            fprintf('Do not hesitate to contribute by feedback, code snippets, or (clinical) experience!\n');
+            fprintf('====================================================================================\n');
         end
     end
 
 
 end
-
-
