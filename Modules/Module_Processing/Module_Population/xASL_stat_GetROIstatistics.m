@@ -35,10 +35,9 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %                        true = include WMH (no masking), false = exclude WMH (OPTIONAL, DEFAULT=false)
 %   x.S.bTissueMasking - value specifying which subject-wise tissue type we will mask with. Cannot be a vector
 %                        (loop outside this function for multiple tissue types)
-%                        1 = gray matter (GM)
-%                        2 = white matter (WM)
-%                        3 = whole brain (WB = GM+WM)
-%                        4 = ...
+%                        'GM' = gray matter (GM)
+%                        'WM' = white matter (WM)
+%                        'WB' = whole brain (WB = GM+WM)
 %                        (REQUIRED, single value)
 %                        Cannot be a vector. Iterate outside this function over multiple x.S.Atlases-x.S.bTissueMasking combinations.
 %                        Note that a ROI needs to have a minimal volume. So a deepWM ROI for which pvGM is requested will be skipped.
@@ -615,28 +614,31 @@ for iSubject=1:x.dataset.nSubjects
 
             %   x.S.bTissueMasking - value specifying which subject-wise tissue type we will mask with. Cannot be a vector
             %                        (loop outside this function for multiple tissue types)
-            %                        1 = gray matter (GM)
-            %                        2 = white matter (WM)
-            %                        3 = whole brain (WB = GM+WM)
+            % 'GM' = gray matter
+            % 'WM' = white matter
+            % 'WB' = whole brain (= GM+WM)            
 
 			if ~x.S.IsASL
 				pGM_here = ones(size(DataIm)); % no masking
 				bSkipPVC = 1;
-            elseif x.S.bTissueMasking==1
-                % we want GM, so keep tissue masks as they are
-				pGM_here = pGM;
-				pWM_here = pWM;
-			elseif x.S.bTissueMasking==2
-                % we want WM, so we flip the ROIs, using GM as "WM" in PVC
-                pGM_here = pWM;
-				pWM_here = pGM;
-			elseif x.S.bTissueMasking==3
-                % we want WB, i.e. GM+WM, using CSF as "WM" in PVC
-				pGM_here = pGM+pWM;
-				pWM_here = ones(size(pGM)) - pGM - pWM; % CSF
-				bSkipPVC = 1;
             else
-                error('Unknown tissue type chosen, should be one out of 1:GM, 2:WM, 3:WB');
+                switch x.S.bTissueMasking
+                    case 'GM'
+                        % we want GM, so keep tissue masks as they are
+				        pGM_here = pGM;
+				        pWM_here = pWM;
+                    case 'WM'
+                        % we want WM, so we flip the ROIs, using GM as "WM" in PVC
+                        pGM_here = pWM;
+				        pWM_here = pGM;
+                    case 'WB'
+                        % we want WB, i.e. GM+WM, using CSF as "WM" in PVC
+				        pGM_here = pGM+pWM;
+				        pWM_here = ones(size(pGM)) - pGM - pWM; % CSF
+				        bSkipPVC = 1;
+                    otherwise
+                        error('Unknown tissue type chosen, should be one out of ''GM'', ''WM'', ''WB''');
+                end
             end
 
             % Defaulting outputs for ROI visualization

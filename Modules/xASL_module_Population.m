@@ -249,9 +249,9 @@ if ~x.mutex.HasState(StateName{8})
             % If needed, an atlas or tissue type can be provided multiple times in different combinations
 
             % We use the specified tissue type
-            % 1 = gray matter (GM)
-            % 2 = white matter (WM)
-            % 3 = whole brain (WB = GM+WM)            
+            % 'GM' = gray matter
+            % 'WM' = white matter
+            % 'WB' = whole brain (= GM+WM)
             x.S.bTissueMasking = x.S.TissueMasking(iAtlas);
             
             % Find the path of the atlas
@@ -390,10 +390,10 @@ if ~bAtlasTissueMatch
     fprintf('\n%s\n', 'ExploreASL''s population module produces ROI values that are obtained by a ');
     fprintf('%s\n', 'combination of an MNI ROI atlas with subject-specific GM and WM segmentations.');
     fprintf('%s\n', 'When custom ROI atlases are provided in x.S.Atlases, their tissue types ');
-    fprintf('%s\n', 'need to be provided as well, with option 1=GM, 2=WM, 3=WB (GM+WM).');
+    fprintf('%s\n', 'need to be provided as well, with either option ''GM'', ''WM'', ''WB'' (GM+WM).');
     fprintf('%s\n', 'E.g., when not provided, these default to:');
     fprintf('%s\n', 'x.S.Atlases = {''TotalGM'' ''DeepWM''}');
-    fprintf('%s\n\n', 'x.S.TissueMasking = [1 2]');
+    fprintf('%s\n\n', 'x.S.TissueMasking = {''GM'' ''WM''}');
     
     error('Not the same number of ROI atlases as subject-wise tissue-types, skipping');
 end
@@ -403,10 +403,15 @@ if ~isfield(x.S,'Atlases')
 	x.S.Atlases = {'TotalGM','DeepWM'}; % Default
 end
 if ~isfield(x.S, 'TissueMasking')
-    x.S.TissueMasking = [1 2]; % GM WM, fits with the TotalGM & DeepWM above
+    x.S.TissueMasking = {'GM' 'WM'}; % GM WM, fits with the TotalGM & DeepWM above
     % Note that this should be in the same order as the atlases/ROIs
     % A mismatch (e.g. TissueMasking=GM for ROI=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
 end
 
+fprintf('\nThe following ROI atlases have been selected with the following tissue:\n')
+for iAtlas=1:length(x.S.Atlases)
+    fprintf('%s\n', [x.S.TissueMasking{iAtlas} ' tissue within ' x.S.Atlases{iAtlas} ' ROIs']);
+end
+fprintf('\n');
 
 end
