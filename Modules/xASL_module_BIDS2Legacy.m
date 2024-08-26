@@ -102,7 +102,26 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
             %% 2. Parse modality
             
             pathLegacy_SubjectSession = fullfile(x.dir.xASLDerivatives, SubjectSession);
-            
+            bFolderExisted = exist(pathLegacy_SubjectSession, 'dir')==7;
+
+            % Backwards compatibility: rename sub-*** to sub-***_1
+            if strcmp(SessionID, '1')
+                pathLegacy_SubjectSession_OLD = fullfile(x.dir.xASLDerivatives, SubjectID);
+                if ~bFolderExisted && exist(pathLegacy_SubjectSession_OLD, 'dir')==7
+                    warning(['Renaming ' pathLegacy_SubjectSession_OLD '->' SubjectSession]);
+                    xASL_Move(pathLegacy_SubjectSession_OLD, pathLegacy_SubjectSession, 1, 0);
+                    bFolderExisted = true;
+                end
+            end
+
+            % Provide warning that we are going to overwrite the folder
+            if bFolderExisted
+                warning(['Overwriting rawdata copied to: ' pathLegacy_SubjectSession]);
+                fprintf('%s\n', 'Note that we do not overwrite any derivatives');
+                fprintf('%s\n', 'Rather, we merge them with the freshly copied rawdata');
+                fprintf('%s\n', 'It is always cleanest to remove all derivatives before rerunning');
+            end
+
             % Create subject/session directory (to enable reruns for pre-imported or crashed datasets, we need a subject level here/above!)
             xASL_adm_CreateDir(pathLegacy_SubjectSession);
 
