@@ -43,10 +43,7 @@ if x.opts.nWorkers>1 % don't run population module when ExploreASL is paralleliz
     return;
 end
 
-% Default atlases/ROIs
-if ~isfield(x.S,'Atlases')
-	x.S.Atlases = {'TotalGM','DeepWM'}; % Default
-end
+x = xASL_wrp_Population_PrepareAtlas4ROI(x); % Parse x.S.Atlases & x.S.TissueMasking
 
 % Default datatypes
 if ~isfield(x.S,'DataTypes') || isempty(x.S.DataTypes)
@@ -247,20 +244,6 @@ if ~x.mutex.HasState(StateName{8})
         % Iterate over atlases
         x.dir.dirAtlas = fullfile(x.opts.MyPath, 'external', 'Atlases');
 
-        % Default subject-wise tissue masking
-        if ~isfield(x.S, 'TissueMasking')
-            x.S.TissueMasking = [1 2];
-            % This is valid for our default ROIs/atlases {TotalGM DeepWM}
-
-            % Note that this should be in the same order as the atlases/ROIs
-            % A mismatch (e.g. TissueMasking=GM for ROI=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
-            % PM: should this definition go elsewhere, where also the default for x.S.Atlases is set?
-        end
-
-        if length(x.S.Atlases)~=length(x.S.TissueMasking)
-            error('Not the same number of ROI atlases as subject-wise tissue-types provided');
-        end
-
         for iAtlas=1:length(x.S.Atlases)
             % Note that the number of ROI atlases here should be the same the number of tissue masking chosen
             % If needed, an atlas or tissue type can be provided multiple times in different combinations
@@ -380,5 +363,50 @@ x.mutex.AddState('999_ready');
 x.mutex.Unlock();
 result = true;
 close all;
+
+
+end
+
+
+
+
+%% -----------------------------------------------------------------------------
+%% -----------------------------------------------------------------------------
+function [x] = xASL_wrp_Population_PrepareAtlas4ROI(x)
+%xASL_wrp_Population_PrepareAtlas4ROI Parse x.S.Atlases & x.S.TissueMasking
+
+bAtlasTissueMatch = true;
+if isfield(x.S, 'Atlases') && ~isfield(x.S, 'TissueMasking')
+    fprintf('\n%s\n', 'Warning: custom ROI atlas-selection detected without the tissue-types for these ROIs');
+    bAtlasTissueMatch = false;
+elseif ~isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking')
+    fprintf('\n%s\n', 'Warning: custom tissue-types specified without ROI atlas-selection');
+    bAtlasTissueMatch = false;
+elseif isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking') && length(x.S.Atlases)~=length(x.S.TissueMasking)
+    fprintf('\n%s\n', 'Warning: not the same number of ROI atlases as subject-wise tissue-types provided');
+    bAtlasTissueMatch = false;
+end
+if ~bAtlasTissueMatch
+    fprintf('\n%s\n', 'ExploreASL''s population module produces ROI values that are obtained by a ');
+    fprintf('%s\n', 'combination of an MNI ROI atlas with subject-specific GM and WM segmentations.');
+    fprintf('%s\n', 'When custom ROI atlases are provided in x.S.Atlases, their tissue types ');
+    fprintf('%s\n', 'need to be provided as well, with option 1=GM, 2=WM, 3=WB (GM+WM).');
+    fprintf('%s\n', 'E.g., when not provided, these default to:');
+    fprintf('%s\n', 'x.S.Atlases = {''TotalGM'' ''DeepWM''}');
+    fprintf('%s\n\n', 'x.S.TissueMasking = [1 2]');
+    
+    error('Not the same number of ROI atlases as subject-wise tissue-types, skipping');
+end
+
+% Default atlases/ROIs & tissue masks
+if ~isfield(x.S,'Atlases')
+	x.S.Atlases = {'TotalGM','DeepWM'}; % Default
+end
+if ~isfield(x.S, 'TissueMasking')
+    x.S.TissueMasking = [1 2]; % GM WM, fits with the TotalGM & DeepWM above
+    % Note that this should be in the same order as the atlases/ROIs
+    % A mismatch (e.g. TissueMasking=GM for ROI=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
+end
+
 
 end
