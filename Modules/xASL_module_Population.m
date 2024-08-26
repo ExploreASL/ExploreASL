@@ -265,7 +265,10 @@ if ~x.mutex.HasState(StateName{8})
             % Note that the number of ROI atlases here should be the same the number of tissue masking chosen
             % If needed, an atlas or tissue type can be provided multiple times in different combinations
 
-            % We use the tissue type belonging to the atlas
+            % We use the specified tissue type
+            % 1 = gray matter (GM)
+            % 2 = white matter (WM)
+            % 3 = whole brain (WB = GM+WM)            
             x.S.bTissueMasking = x.S.TissueMasking(iAtlas);
             
             % Find the path of the atlas
