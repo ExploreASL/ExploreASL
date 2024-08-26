@@ -213,6 +213,29 @@ end
 %% G. ASL processing & quantification parameters
 x = xASL_module_ASL_ParseParameters(x, bOutput);
 
+%% H. For GE 3D spiral ASL and M0, check for parts outside of the FoV
+% With a non-Cartesian FoV, there can be voxels in the image matrix that are outside the FoV.
+% If these are not explicitly to NaNs, the original FoV can be wrongly interpreted.
+% This led to a misalignment in the case of registering an ASL where the brain was too close to the edge of the FoV.
+% By setting these voxels to NaNs, the registration algorithms know to skip these voxels outside the FoV.
+
+if strcmpi(x.Q.Vendor, 'GE') && strcmpi(x.Q.MRAcquisitionType, '3D') && strcmpi(x.Q.PulseSequenceType, 'spiral')
+    % Once we have a GE 3D spiral sequence
+    
+    niftiList = {x.P.Path_ASL4D, x.P.Path_M0};
+    for iNifti=1:length(niftiList)
+        if xASL_exist(niftiList{iNifti})
+    
+            IM = xASL_io_Nifti2Im(niftiList{iNifti});
+            IM(IM==0) = NaN;
+            xASL_io_SaveNifti(niftiList{iNifti}, niftiList{iNifti}, IM, [], 0);
+        end
+    end
+
+end
+
+
+
 %% ========================================================================================================================
 %% 1 TopUp (WIP, only supported if FSL installed)
 Path_RevPE = xASL_adm_GetFileList(x.dir.SESSIONDIR, '^(ASL4D|M0).*RevPE\.nii$', 'FPList', [0 Inf]);
@@ -738,6 +761,7 @@ if strcmp(x.Q.M0, 'Absent')
     end
 end
 
+
 end
 
 %% ========================================================================================================================
@@ -926,5 +950,6 @@ elseif x.modules.asl.SaveCBF4D && (x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQu
 	warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, setting SaveCBF4D = false');
 	x.modules.asl.SaveCBF4D = false;
 end
+
 
 end
