@@ -34,7 +34,7 @@ function xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, P
 % EXAMPLE:      xASL_im_CreateASLDeformationField(x);
 %               xASL_im_CreateASLDeformationField(x, 1, [3 3 7]);
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 
 
 %% Admin
@@ -79,7 +79,13 @@ xASL_im_PreSmooth(PathLowResNIfTI, x.P.Path_y_T1, x.P.Path_y_ASL, [], resSrc); %
 % respectively
 
 %% 4) Fill NaNs at edges y_ASL.nii
-xASL_im_FillNaNs(x.P.Path_y_ASL, 3, [], [], true); % Again fill NaNs, if needed
+% Convn function is presmoothing is messing up the edges, so we need to remove the single voxel boundary and fill it 
+imYASL = xASL_io_Nifti2Im(x.P.Path_y_ASL);
+imYASL(1,:,:,:,:) = NaN;imYASL(:,1,:,:,:) = NaN;imYASL(:,:,1,:,:) = NaN;
+imYASL(end,:,:,:,:) = NaN;imYASL(:,end,:,:,:) = NaN;imYASL(:,:,end,:,:) = NaN;
 
+imYASL = xASL_im_FillNaNs(imYASL, 3, [], [], true); % Again fill NaNs, if needed
 
+% Save the image to the original location
+xASL_io_SaveNifti(x.P.Path_y_ASL, x.P.Path_y_ASL, imYASL, [], 0);
 end
