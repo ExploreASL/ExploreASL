@@ -263,7 +263,7 @@ if sum(maskRestricted(:)) > 0
 	IMdelta = max(abs(IM-IMfirstTry), [], 4);
 
 	% We identify outlying transformation values as differing by 3 times more from the linear extrapolation (based on the average voxel size)
-	maskExtreme = IMdelta > (3*mean(abs(VoxelSize)));
+	maskExtreme = IMdelta > (2*mean(abs(VoxelSize)));
 
 	% Add the outlying values to the NaN mask
 	maskNaN(maskExtreme > 0) = 1;
