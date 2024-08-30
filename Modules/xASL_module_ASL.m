@@ -219,7 +219,7 @@ x = xASL_module_ASL_ParseParameters(x, bOutput);
 % This led to a misalignment in the case of registering an ASL where the brain was too close to the edge of the FoV.
 % By setting these voxels to NaNs, the registration algorithms know to skip these voxels outside the FoV.
 
-if contains(lower(x.Q.Vendor), 'ge') && contains(lower(x.Q.MRAcquisitionType), '3d') && contains(lower(x.Q.PulseSequenceType), 'spiral')
+if ~isempty(regexpi(x.Q.Vendor, 'ge')) && ~isempty(regexpi(x.Q.MRAcquisitionType, '3d')) && ~isempty(regexpi(x.Q.PulseSequenceType, 'spiral'))
     % Once we have a GE 3D spiral sequence
     
     niftiList = {x.P.Path_ASL4D, x.P.Path_M0};
