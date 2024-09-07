@@ -377,13 +377,15 @@ function [x] = xASL_wrp_Population_PrepareAtlas4ROI(x)
 
 bAtlasTissueMatch = true;
 if isfield(x.S, 'Atlases') && ~isfield(x.S, 'TissueMasking')
-    fprintf('\n%s\n', 'Warning: custom ROI atlas-selection detected without the tissue-types for these ROIs');
+    fprintf('\n%s\n', 'Warning: custom ROI atlas-selection detected in x.S.Atlases without the tissue-types for these ROIs in x.S.TissueMasking');
     bAtlasTissueMatch = false;
 elseif ~isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking')
     fprintf('\n%s\n', 'Warning: custom tissue-types specified without ROI atlas-selection');
     bAtlasTissueMatch = false;
 elseif isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking') && length(x.S.Atlases)~=length(x.S.TissueMasking)
     fprintf('\n%s\n', 'Warning: not the same number of ROI atlases as subject-wise tissue-types provided');
+    fprintf('%s\n', ['x.S.Atlases: ' strjoin(x.S.Atlases)]);
+    fprintf('%s\n', ['x.S.TissueMasking: ' strjoin(x.S.TissueMasking)]);
     bAtlasTissueMatch = false;
 end
 if ~bAtlasTissueMatch
@@ -413,5 +415,6 @@ for iAtlas=1:length(x.S.Atlases)
     fprintf('%s\n', [x.S.TissueMasking{iAtlas} ' tissue within ' x.S.Atlases{iAtlas} ' ROIs']);
 end
 fprintf('\n');
+
 
 end
