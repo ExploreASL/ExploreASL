@@ -33,13 +33,13 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %                       (OPTIONAL, DEFAULT=1)
 %   x.S.bWMH           - boolean specifying if we should mask a ROI with pvWMH (by subtracting pvWMH in ASL resolution)
 %                        true = include WMH (no masking), false = exclude WMH (OPTIONAL, DEFAULT=false)
-%   x.S.bTissueMasking - value specifying which subject-wise tissue type we will mask with. Cannot be a vector
+%   x.S.TissueMaskingLocal - value specifying which subject-wise tissue type we will mask with. Cannot be a vector
 %                        (loop outside this function for multiple tissue types)
 %                        'GM' = gray matter (GM)
 %                        'WM' = white matter (WM)
 %                        'WB' = whole brain (WB = GM+WM)
 %                        (REQUIRED, single value)
-%                        Cannot be a vector. Iterate outside this function over multiple x.S.Atlases-x.S.bTissueMasking combinations.
+%                        Cannot be a vector. Iterate outside this function over multiple x.S.Atlases-x.S.TissueMaskingLocal combinations.
 %                        Note that a ROI needs to have a minimal volume. So a deepWM ROI for which pvGM is requested will be skipped.
 %
 %
@@ -602,7 +602,7 @@ for iSubject=1:x.dataset.nSubjects
 			% Swap tissue compartments if needed (this is easier scripting-wise)
 			%
 			% With ASL normally we are interested in GM only
-			% which is why we compute the pGM of a ROI throughout this script
+			% which is why we, by default, compute the pGM of a ROI throughout this script
 			% For the case of WholeBrain or WM, we swap the tissue compartments
 			% such that the pGM represents the WholeBrain or WM
 
@@ -612,7 +612,7 @@ for iSubject=1:x.dataset.nSubjects
             % pvPrimary is the main tissue type that is investigated
             % pvSecondary is the other tissue type that is used with PVC
 
-            %   x.S.bTissueMasking - value specifying which subject-wise tissue type we will mask with. Cannot be a vector
+            %   x.S.TissueMaskingLocal - value specifying which subject-wise tissue type we will mask with. Cannot be a vector
             %                        (loop outside this function for multiple tissue types)
             % 'GM' = gray matter
             % 'WM' = white matter
@@ -622,7 +622,7 @@ for iSubject=1:x.dataset.nSubjects
 				pvPrimary = ones(size(DataIm)); % no masking
 				bSkipPVC = 1;
             else
-                switch x.S.bTissueMasking
+                switch x.S.TissueMaskingLocal
                     case 'GM'
                         % we want GM, so keep tissue masks as they are
 				        pvPrimary = pGM;
@@ -726,9 +726,9 @@ for iSubject=1:x.dataset.nSubjects
                 if xASL_stat_SumNan(CurrentMask(:)) == 0
                     fprintf('%s\n', ['*** Empty mask for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                 elseif xASL_stat_SumNan(pvPrimary(:)) == 0
-                    fprintf('%s\n', ['*** Empty pGM for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
+                    fprintf('%s\n', ['*** Empty pv' pvPrimaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                 elseif xASL_stat_SumNan(pvSecondary(:)) == 0
-                    fprintf('%s\n', ['*** Empty pWM for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
+                    fprintf('%s\n', ['*** Empty pv' pvSecondaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                 else                    
 
                     %% CoV

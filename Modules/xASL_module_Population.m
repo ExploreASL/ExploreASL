@@ -252,7 +252,7 @@ if ~x.mutex.HasState(StateName{8})
             % 'GM' = gray matter
             % 'WM' = white matter
             % 'WB' = whole brain (= GM+WM)
-            x.S.bTissueMasking = x.S.TissueMasking(iAtlas);
+            x.S.TissueMaskingLocal = x.S.TissueMasking(iAtlas);
             
             % Find the path of the atlas
             pathAtlas = fullfile(x.dir.dirAtlas, [x.S.Atlases{iAtlas} '.nii']);
