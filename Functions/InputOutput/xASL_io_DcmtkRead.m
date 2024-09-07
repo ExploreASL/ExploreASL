@@ -1,13 +1,18 @@
-function header = xASL_io_DcmtkRead(filepath, bPixel, bTryDCMTK)
+function header = xASL_io_DcmtkRead(filepath, bPixel, bTryDCMTK, bSkipNonDicoms)
 % ------------------------------------------------------------------------------------------------------------------------------------------------------
 % SHORT DESCRIPTION: Reads DICOM headers using DCMTK
 %
-% FORMAT: header = xASL_io_DcmtkRead(filepath[, bPixel, bTryDCMTK])
+% FORMAT: header = xASL_io_DcmtkRead(filepath[, bPixel, bTryDCMTK, bSkipNonDicoms])
 %
 % INPUT:
-%         filepath   - full path to the DICOM file (REQUIRED, STRING)
-%         bPixel     - read pixel data (OPTIONAL, BOOLEAN, DEFAULT = false)
-%         bTryDCMTK  - try using DCMTK, if false then directly use SPM (OPTIONAL, BOOLEAN, DEFAULT = true)
+%         filepath          - full path to the DICOM file (REQUIRED, STRING)
+%         bPixel            - read pixel data (OPTIONAL, BOOLEAN, DEFAULT = false)
+%         bTryDCMTK         - try using DCMTK, if false then directly use SPM (OPTIONAL, BOOLEAN, DEFAULT = true)
+%         bSkipNonDicoms    - catch any errors reading a file and instead of crashing the code, skip the file
+%                             this is useful e.g. when parsing multiple folders that are partly filled with DICOMs
+%                             e.g., with xASL_adm_SortDicomToFolders
+%                             as DICOM files do not necessarily have a unique extension
+%                             (OPTIONAL, DEFAULT=false)
 % OUTPUT:
 %         header (structure) - structure containing parsed DICOM header
 %
@@ -32,6 +37,10 @@ if nargin < 3 || isempty(bTryDCMTK)
 	bTryDCMTK = true;
 end
 
+if nargin < 4 || isempty(bSkipNonDicoms)
+    bSkipNonDicoms = false;
+end
+
 if bTryDCMTK
 	try
 		% Read using DCMTK
@@ -40,11 +49,19 @@ if bTryDCMTK
         fprintf('%s%s\n','Warning, reading a DICOM with DCMTK failed. Will continue with SPM. Warning message: ', ME.message);
 		% Read using SPM routines
 		header = spm_dicom_headers(filepath);
+
+        % Verify that this is a DICOM file
+        if xASL_io_DcmtkRead_bSkipNonDicoms(bSkipNonDicoms, header, filepath), return; end
+
 		header = xASL_io_DcmtkRead_TrimSPM(header{1});
 	end
 else
 	% Read using SPM routines
 	header = spm_dicom_headers(filepath);
+
+    % Verify that this is a DICOM file
+    if xASL_io_DcmtkRead_bSkipNonDicoms(header, filepath), return; end
+
 	header = xASL_io_DcmtkRead_TrimSPM(header{1});
 end
 
@@ -332,4 +349,29 @@ for iField=1:length(listFieldsKeep)
 		header.(listFieldsKeep{iField}) = [];
 	end
 end
+end
+
+
+function [isNotADicom] = xASL_io_DcmtkRead_bSkipNonDicoms(bSkipNonDicoms, header, filepath)
+%xASL_io_DcmtkRead_bSkipNonDicoms Manage bSkipNonDicoms
+%
+%         bSkipNonDicoms    - catch any errors reading a file and instead of crashing the code, skip the file
+%                             this is useful e.g. when parsing multiple folders that are partly filled with DICOMs
+%                             e.g., with xASL_adm_SortDicomToFolders
+%                             as DICOM files do not necessarily have a unique extension
+%                             (OPTIONAL, DEFAULT=false)
+
+isNotADicom = false;
+
+if isempty(header)
+    if bSkipNonDicoms
+        fprintf('%s\n', ['Non-dicom: ' filepath]);
+        fprintf('Skipping\n');
+        isNotADicom = true;
+    else
+        error(['Non-dicom: ' filepath]);
+    end
+end
+
+
 end
