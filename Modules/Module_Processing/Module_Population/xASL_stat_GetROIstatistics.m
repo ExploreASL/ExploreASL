@@ -609,8 +609,8 @@ for iSubject=1:x.dataset.nSubjects
 			% Skip PVC for certain ROI and mask combination as the result might not be meaningful
 			bSkipPVC = 0;
 
-            % pGM_here is the main tissue type that is investigated
-            % pWM_here is the other tissue type that is used with PVC
+            % pvPrimary is the main tissue type that is investigated
+            % pvSecondary is the other tissue type that is used with PVC
 
             %   x.S.bTissueMasking - value specifying which subject-wise tissue type we will mask with. Cannot be a vector
             %                        (loop outside this function for multiple tissue types)
@@ -619,22 +619,28 @@ for iSubject=1:x.dataset.nSubjects
             % 'WB' = whole brain (= GM+WM)            
 
 			if ~x.S.IsASL
-				pGM_here = ones(size(DataIm)); % no masking
+				pvPrimary = ones(size(DataIm)); % no masking
 				bSkipPVC = 1;
             else
                 switch x.S.bTissueMasking
                     case 'GM'
                         % we want GM, so keep tissue masks as they are
-				        pGM_here = pGM;
-				        pWM_here = pWM;
+				        pvPrimary = pGM;
+				        pvSecondary = pWM;						
+						pvPrimaryName = 'GM';
+						pvSecondaryName = 'WM';
                     case 'WM'
                         % we want WM, so we flip the ROIs, using GM as "WM" in PVC
-                        pGM_here = pWM;
-				        pWM_here = pGM;
+                        pvPrimary = pWM;
+				        pvSecondary = pGM;
+						pvPrimaryName = 'WM';
+						pvSecondaryName = 'GM';
                     case 'WB'
                         % we want WB, i.e. GM+WM, using CSF as "WM" in PVC
-				        pGM_here = pGM+pWM;
-				        pWM_here = ones(size(pGM)) - pGM - pWM; % CSF
+				        pvPrimary = pGM+pWM;
+				        pvSecondary = ones(size(pGM)) - pGM - pWM; % CSF
+						pvPrimaryName = 'WB';
+						pvSecondaryName = 'CSF';
 				        bSkipPVC = 1;
                     otherwise
                         error('Unknown tissue type chosen, should be one out of ''GM'', ''WM'', ''WB''');
@@ -682,24 +688,24 @@ for iSubject=1:x.dataset.nSubjects
                     fprintf('%s\n', ['Warning: Empty image for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess)]);
 				end
 
-                % pGM_here is the main tissue type that is investigated
-                % pWM_here is the other tissue type that is used with PVC
+                % pvPrimary is the main tissue type that is investigated
+                % pvSecondary is the other tissue type that is used with PVC
 
 				if x.S.bMasking(3)==0 % no tissue-masking
-                    pGM_here = ones(size(DataIm));
-                    pWM_here = ones(size(DataIm));
+                    pvPrimary = ones(size(DataIm));
+                    pvSecondary = ones(size(DataIm));
 					bSkipPVC = 1;
 				end
 
 				% Skip tissue masking for Lesions, but apply it for ROIs and Atlases
 				if x.S.bSubjectSpecificROI && ~isempty(strfind(x.S.InputAtlasPath, 'rLesion'))
-					pGM_here = ones(size(DataIm));
-                    pWM_here = ones(size(DataIm));
+					pvPrimary = ones(size(DataIm));
+                    pvSecondary = ones(size(DataIm));
 					bSkipPVC = 1;
 				end
 
 				% Apply tissue-masking (which is de facto turned off for Lesions, because the masks are volumes completely filled with ones)
-				CurrentMask = logical(single(SubjectSpecificMasks(:,iROI)) .* (pGM_here>0.5));
+				CurrentMask = logical(single(SubjectSpecificMasks(:,iROI)) .* (pvPrimary>0.5));
 
 				% Apply susceptibility mask
 				if x.S.bMasking(1) 
@@ -719,9 +725,9 @@ for iSubject=1:x.dataset.nSubjects
                 % Now check for empty masks
                 if xASL_stat_SumNan(CurrentMask(:)) == 0
                     fprintf('%s\n', ['*** Empty mask for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
-                elseif xASL_stat_SumNan(pGM_here(:)) == 0
+                elseif xASL_stat_SumNan(pvPrimary(:)) == 0
                     fprintf('%s\n', ['*** Empty pGM for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
-                elseif xASL_stat_SumNan(pWM_here(:)) == 0
+                elseif xASL_stat_SumNan(pvSecondary(:)) == 0
                     fprintf('%s\n', ['*** Empty pWM for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                 else                    
 
@@ -733,7 +739,7 @@ for iSubject=1:x.dataset.nSubjects
                     x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 0);
 					if ~bSkipPVC
                         % No visualization here, because there is no different masking
-						x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 2, 1, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+						x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMask, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 					end
 
                     %% CBF (now remove vascular artifacts)
@@ -757,8 +763,8 @@ for iSubject=1:x.dataset.nSubjects
                         x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0, 1);
                         x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 0, 0);
 						if ~bSkipPVC
-							% x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 1, 1, pGM_here); % PVC==1, "single-compartment" PVC (regress pGM only)
-							x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 2, 1, pGM_here, pWM_here); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+							% x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 1, 1, pvPrimary); % PVC==1, "single-compartment" PVC (regress pGM only)
+							x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMask, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 						end
                     end
                 end
@@ -766,8 +772,8 @@ for iSubject=1:x.dataset.nSubjects
 				%% Diff_CoV, new parameter by Jan Petr
 				% x.S.DAT_Diff_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMask, 0);
 				% if ~bSkipPVC
-					% x.S.DAT_Diff_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMask, 1, pGM_here, [], 0);
-					% x.S.DAT_Diff_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMask, 2, pGM_here, pWM_here, 0);
+					% x.S.DAT_Diff_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMask, 1, pvPrimary, [], 0);
+					% x.S.DAT_Diff_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMask, 2, pvPrimary, pvSecondary, 0);
 				% end
 
 			end
