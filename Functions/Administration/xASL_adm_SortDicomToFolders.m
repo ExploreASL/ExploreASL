@@ -48,7 +48,7 @@ else
 		if bVerbose; xASL_TrackProgress(iL, length(Flist)); end
 
 		% Read the DICOM file - all error handling is inside this function
-		tDcm = xASL_io_DcmtkRead(Flist{iL}, false, bUseDCMTK);
+		tDcm = xASL_io_DcmtkRead(Flist{iL}, false, bUseDCMTK, true);
 
 		% Check that the header was read and contains the basic tags
 		if isempty(tDcm) || ~isfield(tDcm, 'EchoTime') || ~isfield(tDcm, 'RepetitionTime') ||...
