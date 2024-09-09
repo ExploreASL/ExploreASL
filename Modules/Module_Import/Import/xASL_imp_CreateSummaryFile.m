@@ -131,13 +131,13 @@ function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
 			
 			for iSession=1:thisVisit.nSessions
 				fprintf(fid_summary,',"');
-				fprintf(fid_summary,'%s ',thisVisit.scanNames{logical(thisSubject.globalCounts.missing_scans(iSubject, iVisit, iSession,:))});
+				fprintf(fid_summary,'%s ',thisVisit.scanNames{logical(sum(thisSubject.globalCounts.missing_scans(iSubject, iVisit, iSession,:)))});
 				fprintf(fid_summary,'"');
 			end
 			
 			for iSession=1:thisVisit.nSessions
 				fprintf(fid_summary,',"');
-				fprintf(fid_summary,'%s ',thisVisit.scanNames{logical(thisSubject.globalCounts.skipped_scans(iSubject, iVisit, iSession,:))});
+				fprintf(fid_summary,'%s ',thisVisit.scanNames{logical(sum(thisSubject.globalCounts.skipped_scans(iSubject, iVisit, iSession,:)))});
 				fprintf(fid_summary,'"');
 			end
 			
