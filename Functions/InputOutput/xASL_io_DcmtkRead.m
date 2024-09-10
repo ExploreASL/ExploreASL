@@ -60,7 +60,7 @@ else
 	header = spm_dicom_headers(filepath);
 
     % Verify that this is a DICOM file
-    if xASL_io_DcmtkRead_bSkipNonDicoms(header, filepath), return; end
+    if xASL_io_DcmtkRead_bSkipNonDicoms(bSkipNonDicoms, header, filepath), return; end
 
 	header = xASL_io_DcmtkRead_TrimSPM(header{1});
 end
