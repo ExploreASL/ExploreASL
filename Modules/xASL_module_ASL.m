@@ -185,7 +185,8 @@ end
 %% F. DeltaM and CBF parsing - check if all/some volumes are deltams or CBFs
 % If TSV file exist
 % We don't have a subtraction image by default
-x.modules.asl.bContainsSubtracted = false;
+x.modules.asl.bContainsSubtracted = false; % Contains any kind of subtracted image like deltaM or CBF
+x.modules.asl.bContainsCBF = false; % Contains quantified CBF image
 % Load TSV file
 if xASL_exist(x.P.Path_ASL4Dcontext, 'file')
 	aslContext = xASL_tsvRead(x.P.Path_ASL4Dcontext);
@@ -198,6 +199,7 @@ if xASL_exist(x.P.Path_ASL4Dcontext, 'file')
 	% Check for presence of CBF volumes
 	if ~isempty(regexpi(strjoin(aslContext(2:end)),bidsPar.stringCbf, 'once'))
 		x.modules.asl.bContainsSubtracted = true;
+		x.modules.asl.bContainsCBF = true;
 	end
 else
 	% In case the ASL-context file is missing we set containsDeltaM to true for all NIfTIs with a single volume only
@@ -732,13 +734,22 @@ end
 
 %% 6. Default quantification parameters in the Q field
 if ~isfield(x.modules.asl,'ApplyQuantification') || isempty(x.modules.asl.ApplyQuantification)
-    x.modules.asl.ApplyQuantification = [1 1 1 1 1 1]; % by default we perform scaling/quantification in all steps
+	if 	x.modules.asl.bContainsCBF
+		x.modules.asl.ApplyQuantification = [0 0 0 0 0 0]; % if ASLContext contains CBF images, then we default to no quantification
+	else
+		x.modules.asl.ApplyQuantification = [1 1 1 1 1 1]; % by default we perform scaling/quantification in all steps
+	end
 elseif length(x.modules.asl.ApplyQuantification)>6
     warning('x.modules.asl.ApplyQuantification had too many parameters');
     x.modules.asl.ApplyQuantification = x.modules.asl.ApplyQuantification(1:6);
 elseif length(x.modules.asl.ApplyQuantification)<6
-    warning('x.modules.asl.ApplyQuantification had too few parameters, using default 1');
-    x.modules.asl.ApplyQuantification(length(x.modules.asl.ApplyQuantification)+1:6) = 1;
+	if 	x.modules.asl.bContainsCBF
+		warning('x.modules.asl.ApplyQuantification had too few parameters and ASLContext contains CBF image, using default 0');
+		x.modules.asl.ApplyQuantification(length(x.modules.asl.ApplyQuantification)+1:6) = 0;
+	else
+		warning('x.modules.asl.ApplyQuantification had too few parameters, using default 1');
+		x.modules.asl.ApplyQuantification(length(x.modules.asl.ApplyQuantification)+1:6) = 1;
+	end
 end
 
 if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSuppressionNumberPulses')
