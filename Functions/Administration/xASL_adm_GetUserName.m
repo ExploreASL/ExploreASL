@@ -15,7 +15,7 @@ function UserName = xASL_adm_GetUserName()
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 
-    if isunix || ismac 
+    if isunix
         UserName = getenv('USER'); 
     else 
         UserName = getenv('username'); 

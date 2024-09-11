@@ -108,7 +108,7 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
             oldPath = pwd;
             cd(x.opts.MyPath);
             
-            [ResultIs, xASL_gitCommit] = xASL_system(['git rev-parse HEAD']);
+            [ResultIs, xASL_gitCommit] = xASL_system('git rev-parse HEAD');
             cd(oldPath);
             if ResultIs~=0
                 Software.ExploreASL_git = 'SomethingWrong';
