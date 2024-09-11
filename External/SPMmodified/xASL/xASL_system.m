@@ -49,10 +49,28 @@ end
 
 
 %% 1. Initialize the user-specific startup lines
-if ismac
-    Command = ['source ~/.zshrc;' Command];
-elseif isunix
-    Command = ['source ~/.bashrc;' Command];
+if isunix % for macOS and Linux
+    [Result1, Result2] = system('echo $0');
+    if Result1~=0
+        error('Something going wrong trying to identify this shell ');
+    else
+        if ~isempty(regexpi(Result2, 'zsh'))
+            Command = ['source ~/.zshrc;' Command]; % Z-shell
+        elseif ~isempty(regexpi(Result2, 'bash'))
+            Command = ['source ~/.bashrc;' Command]; % Bourne Again Shell
+        % PM: THE NEXT PART NEEDS TESTING BUT DOESN'T OCCUR FREQUENTLY
+        % elseif ~isempty(regexpi(Result2, 'fish'))
+        %     Command = ['source ~/.config/fish/config.fish;' Command]; % Fish shell (untested!)
+        % elseif ~isempty(regexpi(Result2, 'ksh'))
+        %     Command = ['source ~/.kshrc;' Command];  % Korn shell (untested!)
+        % elseif ~isempty(regexpi(Result2, 'tcsh'))
+        %     Command = ['source ~/.cshrc;' Command]; % or tcshrc (untested!)
+        % elseif ~isempty(regexpi(Result2, 'sh'))
+        %     Command = ['source ~/.profile;' Command]; % Bourne shell (untested!)
+        % else
+        %     warning('Unknown shell');
+        end
+    end
 else % e.g., Windows
     % then we don't change the command line
 end
@@ -60,7 +78,6 @@ end
 
 %% 2. Run the command
 [result1, result2] = system(Command, VerbosityString);
-
 
 
 end
