@@ -68,6 +68,14 @@ elseif isfield(x, 'FSLdir') && ~isfield(x, 'RootFSLdir') && ~ispc
     RootWSLdir = FSLdir;
 
     return
+else
+    % Try getenv
+    x.FSLdir = getenv('FSLDIR');
+    if ~isempty(x.FSLdir)
+        RootWSLdir = x.FSLdir;
+        FSLdir = x.FSLdir;
+        return;
+    end
 end
 
 %% Detect OS
