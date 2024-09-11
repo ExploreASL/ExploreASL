@@ -622,7 +622,7 @@ for iSubject=1:x.dataset.nSubjects
 				pvPrimary = ones(size(DataIm)); % no masking
 				bSkipPVC = 1;
             else
-                switch x.S.TissueMaskingLocal
+                switch x.S.TissueMaskingLocal{1}
                     case 'GM'
                         % we want GM, so keep tissue masks as they are
 				        pvPrimary = pGM;
@@ -656,6 +656,9 @@ for iSubject=1:x.dataset.nSubjects
                 pathOutput_nonASL_median = [];
                 pathOutput_nonASL_CoV = [];
             end
+
+            % Add tissue-type to the ROI name
+            namesROIuse{iROI} = [namesROIuse{iROI} '_' pvPrimaryName];
 
 			if ~x.S.IsASL
 				CurrentMask = SubjectSpecificMasks(:,iROI) & isfinite(DataIm);

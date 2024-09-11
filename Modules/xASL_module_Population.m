@@ -380,7 +380,7 @@ if isfield(x.S, 'Atlases') && ~isfield(x.S, 'TissueMasking')
     fprintf('\n%s\n', 'Warning: custom ROI atlas-selection detected in x.S.Atlases without the tissue-types for these ROIs in x.S.TissueMasking');
     bAtlasTissueMatch = false;
 elseif ~isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking')
-    fprintf('\n%s\n', 'Warning: custom tissue-types specified without ROI atlas-selection');
+    fprintf('\n%s\n', 'Warning: custom tissue-types (x.S.TissueMasking)  specified without ROI atlas-selection (x.S.Atlases)');
     bAtlasTissueMatch = false;
 elseif isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking') && length(x.S.Atlases)~=length(x.S.TissueMasking)
     fprintf('\n%s\n', 'Warning: not the same number of ROI atlases as subject-wise tissue-types provided');
