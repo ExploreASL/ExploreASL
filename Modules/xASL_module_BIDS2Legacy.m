@@ -116,10 +116,11 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
 
             % Provide warning that we are going to overwrite the folder
             if bFolderExisted
-                warning(['Overwriting rawdata copied to: ' pathLegacy_SubjectSession]);
-                fprintf('%s\n', 'Note that we do not overwrite any derivatives');
-                fprintf('%s\n', 'Rather, we merge them with the freshly copied rawdata');
-                fprintf('%s\n', 'It is always cleanest to remove all derivatives before rerunning');
+                warning(['Any rawdata copies will be overwritten in the /derivatives folder: ' pathLegacy_SubjectSession]);
+                fprintf('%s\n', ['Note that /rawdata itself remains untouched. And we only overwrite the copies of /rawdata in /derivatives, ' ...
+                    'any processing results in /derivatives will not be overwritten,' ...
+                    'but we merge previously processed results with fresh copies of original files from /rawdata']);
+                fprintf('\n%s\n\n', 'Nevertheless, it is always cleanest to remove all derivatives before rerunning ExploreASL');
             end
 
             % Create subject/session directory (to enable reruns for pre-imported or crashed datasets, we need a subject level here/above!)
