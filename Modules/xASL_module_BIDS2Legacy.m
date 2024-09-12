@@ -106,10 +106,34 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
 
             % Backwards compatibility: rename sub-*** to sub-***_1
             if strcmp(SessionID, '1')
-                pathLegacy_SubjectSession_OLD = fullfile(x.dir.xASLDerivatives, SubjectID);
+                pathLegacy_SubjectSession_OLD = fullfile(x.dir.xASLDerivatives, SubjectID); % it should be [SubjectID '_' SessionID] now
                 if ~bFolderExisted && exist(pathLegacy_SubjectSession_OLD, 'dir')==7
                     warning(['Renaming ' pathLegacy_SubjectSession_OLD '->' SubjectSession]);
-                    xASL_Move(pathLegacy_SubjectSession_OLD, pathLegacy_SubjectSession, 1, 0);
+                    
+                    % Rename all files
+                    fList = xASL_adm_GetFileList(x.dir.xASLDerivatives, SubjectID, 'FPListRec');
+                    for iList=1:length(fList)
+                        newPath = replace(fList{iList}, SubjectID, SubjectSession);
+                        if isempty(regexpi(newPath, [SubjectSession '_1'])) && ~xASL_exist(newPath, 'file') % avoid pre-existing files (e.g., current BIDS2Legacy lock & log files)
+                            xASL_Move(fList{iList}, newPath);
+                        end
+                    end
+                    
+                    % Rename all folders
+                    fList = xASL_adm_GetFileList(x.dir.xASLDerivatives, [SubjectID '$'], 'FPListRec', [], 1);
+                    for iList=1:length(fList)
+                        newPath = replace(fList{iList}, SubjectID, SubjectSession);
+                        if isempty(regexpi(newPath, [SubjectSession '_1'])) % avoid pre-existing files (e.g., current BIDS2Legacy lock & log files)
+                            if xASL_exist(newPath, 'dir')
+                                addpath(fullfile(x.opts.MyPath, 'WorkInProgress', 'General'));
+                                xASL_MoveDirMerge(fList{iList}, newPath);
+                                rmdir(fList{iList});
+                            else
+                                xASL_Move(fList{iList}, newPath);
+                            end
+                        end
+                    end
+
                     bFolderExisted = true;
                 end
             end
