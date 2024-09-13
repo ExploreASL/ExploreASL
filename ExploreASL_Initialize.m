@@ -34,6 +34,16 @@ function [x] = ExploreASL_Initialize(varargin)
 
 
     %% 1. Admin
+
+    % If a diary file "sticks" in Matlab's memory from a previous ExploreASL run
+    % (or another software for that matter) it can cause issues down the road as
+    % we check with xASL_TrackProgress if a diary is on, turn it off and turn it on again
+    % If that diary file is in the meantime removed, we will get an error
+    % So out of precaution, we disable any diary here
+    % (PM: if this would cause issues, we could always add an if statement:
+    % if strcmp(get(0, 'Diary'), 'on')
+    diary('off');
+    
     % Validate Matlab version, parse input parameters, check which modules should be run.
 
 	if ~exist('x','var') || isempty(x)
