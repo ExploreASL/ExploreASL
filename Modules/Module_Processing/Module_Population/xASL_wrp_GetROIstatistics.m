@@ -136,7 +136,9 @@ else
     x.S.output_ID = [x.S.output_ID '_']; % add underscore if not empty
 end
 
-x.S.output_ID = [x.S.output_ID x.S.InputDataStr];
+% Add subject/run-wise input data (e.g., qCBF) and subject/run-wise tissue mask (e.g., GM)
+x.S.output_ID = [x.S.output_ID x.S.InputDataStr '_' x.S.TissueMaskingLocal{1}];
+
 if x.S.InputNativeSpace
 	x.S.output_ID = [x.S.output_ID '_NativeSpace'];
 else

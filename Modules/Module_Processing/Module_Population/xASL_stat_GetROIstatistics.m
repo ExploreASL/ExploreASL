@@ -657,9 +657,6 @@ for iSubject=1:x.dataset.nSubjects
                 pathOutput_nonASL_CoV = [];
             end
 
-            % Add tissue-type to the ROI name
-            namesROIuse{iROI} = [namesROIuse{iROI} '_' pvPrimaryName];
-
 			if ~x.S.IsASL
 				CurrentMask = SubjectSpecificMasks(:,iROI) & isfinite(DataIm);
 				if x.S.IsVolume
