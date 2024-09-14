@@ -32,40 +32,35 @@ function xASL_qc_CreatePDF(x, DoSubject)
 % EXAMPLE: xASL_qc_CreatePDF(x);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if ~usejava('jvm') % only if JVM loaded
     fprintf('Warning: skipping PDF report, JVM missing\n');
     return;
 end
-
 fprintf('Printing ExploreASL PDF report:   ');
-
-
 %% -----------------------------------------------------------------------------------------------
 %  Admin
 if length(DoSubject)~=1
     warning('Too many indices provided for PDF creation! Using first subject only');
 end
-
 % Determine x.mat file
 PathX = fullfile(x.dir.SUBJECTDIR,'x.mat');
-
 % Check if x.mat file exists already
 if ~exist(PathX, 'file')
     warning([PathX ' didnt exist, skipping xASL_qc_CreateOutputPDF']);
     return;
 end
 x = xASL_adm_LoadX(x, PathX, false); % Assume memory x is newer than x.mat
-
 % Determine subject and session
 SuSeID = [x.SUBJECTS{DoSubject(1)} '_' x.SESSIONS{1}];
 iSubjSess = (DoSubject(1)-1)*x.dataset.nSessions+1;
-
 % Make sure that the directory exists
 PrintDir = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{DoSubject(1)});
 xASL_adm_CreateDir(PrintDir);
-
 % Delete existing xASL report files
 ExistingPrintFiles = xASL_adm_GetFileList(pwd, '^xASL_Report_.+$');
 if ~isempty(ExistingPrintFiles)
@@ -73,16 +68,12 @@ if ~isempty(ExistingPrintFiles)
 end
 PrintFile = ['xASL_Report_' x.SUBJECTS{DoSubject(1)} '.pdf'];
 PrintPath = fullfile(PrintDir, PrintFile);        
-
 try
     clear Str fg ax OutputFields StrucFields
-
     %% Create the Figure
     fg = spm_figure('FindWin','Graphics'); 
     set(0,'CurrentFigure',fg);
-
     fg = spm_figure('Create','Graphics','visible','off');
-
     set(fg,'windowstyle','normal'); 
     spm_figure('Clear','Graphics'); 
     % Determine font size
@@ -91,21 +82,17 @@ try
     elseif isunix || ismac
         fontsize = 6.5;
     end
-
     %% Print the title
     ax=axes('Position',[0.01 0.75 1 0.24],'Visible','off','Parent',fg);
     text(0,1,  ['xASL report: ' x.dataset.name ', ' SuSeID],...
       'FontSize',fontsize+1,'FontWeight','bold','Interpreter','none','Parent',ax);
-
   %% -----------------------------------------------------------------------------------------------
     %% Collect field name & field values to print
     OutputFields = fieldnames(x.Output);
     nOutputFields = length(OutputFields);
-
     if nOutputFields>5
         fprintf('%s\n',['Printing QC for ' num2str(nOutputFields) ' modalities, not sure if this fits']);
     end
-
     for iField=1:nOutputFields
         if length(x.Output.(OutputFields{iField}))<iSubjSess
             Ind = 1;
@@ -116,7 +103,6 @@ try
 			% Save the fields to print and their name for the given substructure
 			printFields{iField} = x.Output.(OutputFields{iField});
 			StrucFields{iField} = sort(fieldnames(x.Output.(OutputFields{iField})));
-
 			% Select the ASL session with the lowest number
 			aslField = length(StrucFields{iField});
 			for iF = length(StrucFields{iField}):-1:1
@@ -124,7 +110,6 @@ try
 					aslField = iF;
 				end
 			end
-
 			% Take fields only for that ASL session
 			printFields{iField} = printFields{iField}.(StrucFields{iField}{aslField});
 			StrucFields{iField} = sort(fieldnames(printFields{iField}));
@@ -150,21 +135,17 @@ try
             Str{iField}(iV).value = printFields{iField}.(StrucFields{iField}{iV});
         end
     end 
-
-
     %% -----------------------------------------------------------------------------------------------
     %% 1) Print first column with text fields
     % Get maximal length of Str's to print
     for iField=1:length(Str)
         lengthStr(iField) = length(Str{iField}); 
     end
-
     % Text positions
     iY  = 0.11; % same with image positions below
     tI  = 0.055; % text line shift
     tX  = 0; % text x positions
     tX2 = 0.22; % text x positions
-
     %% Determine vertical starting positions for each output category
     InitialVertPos = 0.97;
     for iL=1:nOutputFields % lines per output category
@@ -173,23 +154,19 @@ try
     for ii=1:nOutputFields
         InitialVertPos(ii+1) = InitialVertPos(ii) - 1*nLines(ii)*tI-0.1;
     end
-
     for iField=1:length(Str) % iterating over categories
         VertPos = InitialVertPos(iField)-tI;
         % Printing header/title
         text(0,VertPos, OutputFields{iField} ,'FontWeight','bold','FontSize',fontsize, 'Interpreter','none','Parent',ax);
         VertPos = VertPos - tI;
         for ii=1:size(Str{iField},2) % iterating over text lines
-
             TempName = Str{iField}(ii).name;
-
             % Prepare text to print
             if ~isstruct(Str{iField}(ii).value) % no extra layer
                 TempValue  = Str{iField}(ii).value;
                 if isnumeric(TempValue) || islogical(TempValue)
                     TempValue = num2str(TempValue,4); 
                 end
-
             else % add extra layer
                 TempFields = fieldnames(printFields{iField}.(Str{iField}(ii).name));
                 TempValue = '';
@@ -202,16 +179,12 @@ try
                     TempValue = [TempValue ' ' TV2];
                 end
             end
-
             % Print the text (Name & Value columns)
             htext(1,ii,1) = text( tX,VertPos, TempName,'FontSize',fontsize, 'Interpreter','none','Parent',ax);
             htext(1,ii,2) = text(tX2,VertPos, TempValue,'FontSize',fontsize, 'Interpreter','none','Parent',ax);
             VertPos = VertPos - tI; % Vertical Position
         end
     end
-
-
-
     %% -----------------------------------------------------------------------------------------------
     %% 2) Print second column with image fields
     %  First synchronize the text fields & image fields
@@ -225,24 +198,19 @@ try
             end
         end
     end
-
     % The images are square (122x122 for 1.5 mm MNI), but
     % the PDF output has a ratio 0.647, 0.16 0.11 works
-
     % Create image positions
     SX = 0.16; SY = 0.11; % dimensions single image slice
     iX = 0.16; % horizontal difference between images
     bY = 1-1*iY-0.004; % vertical position
     bX = 0.36; % horizontal start position
-
     for iI=1:9 % Define image positions in PDF
         Pos((iI-1)*8+[1:4],1:4) = [[bX:iX:bX+3*iX]' repmat(bY,4,1) repmat(SX,4,1) repmat(SY,4,1)]; 
         bY = bY-iY;
         Pos((iI-1)*8+[5:8],1:4) = [[bX:iX:bX+3*iX]' repmat(bY,4,1) repmat(SX,4,1) repmat(SY,4,1)];
         bY = bY-iY-0.01;
     end
-
-
     % Print images
     for iField=1:length(ImFieldsOrder)
 		imsCurrField = x.Output_im.(ImFieldNames{ImFieldsOrder(iField)});
@@ -261,7 +229,6 @@ try
             end
             CurrentIm = CurrentIm+eps;
             CurrentIm = CurrentIm./max(CurrentIm(:)); % rescale
-
             % Then print the image at respective position
             iI=(iField-1)*16+iImage; % determine the position
             % set the ax handle
@@ -273,7 +240,6 @@ try
             set(ax,'handlevisibility','off','visible','off');
         end
     end
-
     % Create PDF file
     xASL_delete(PrintPath);
     print(fg, '-dpdf', '-r600', PrintPath);
@@ -281,10 +247,7 @@ catch ME
     fprintf('%s\n', ['Creation of ' PrintFile ' failed:']);
     warning(ME.message);
 end
-
 %% Clean-up (add empty line, close the Matlab figure)
 fprintf('\n');
 close all;
-
-
 end

@@ -23,7 +23,10 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
 % REFERENCES:       ...
 % __________________________________
 % Copyright @ 2015-2020 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Input Check
     
@@ -31,7 +34,6 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
     if nargin < 1
         error('Missing input parameters...');
     end
-
     %% Defaults
     debug = false;
     parameterList = {'Name','Value'};
@@ -40,7 +42,6 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
     
 	% Remove tabs
 	rawPhoenixProtocol = strrep(rawPhoenixProtocol,sprintf('\t'),'');
-
     % Phoenix protocol in cell array format
     phoenixProtocol = [strsplit(rawPhoenixProtocol,'\n')]';
    
@@ -106,11 +107,9 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
                     fprintf('%s: %s\n',parameterToExtract,valueToExtract);
                 end
             end
-
         end
     end
     
-
     %% Extract parameters
     protocolStarted = false;
     protocolEnded = false;
@@ -154,6 +153,3 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
     end
     
 end
-
-
-

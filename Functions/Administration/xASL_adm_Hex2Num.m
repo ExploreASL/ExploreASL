@@ -27,19 +27,21 @@ function outNum = xASL_adm_Hex2Num(inStr, type, endian)
 %
 % __________________________________
 % Copyright � 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2019-03-29 JP
-
 % Not enough input parameters
 if (nargin<1) || isempty(inStr)
 	outNum = NaN;
 	error('Not enough input parameters...');
 end
-
 if (nargin<2) || isempty(type)
 	type = 'float';
 end
-
 if (nargin<3) || isempty(endian)
 	if strcmpi(type,'decimal') || strcmpi(type,'char')
 		endian = 1;
@@ -47,13 +49,11 @@ if (nargin<3) || isempty(endian)
 		endian = 0;
 	end
 end
-
 % Takes only char on input
 if ~ischar(inStr)
 	outNum = NaN;
 	error('Input should be a char (array)...');
 end
-
 % If the output is supposed to be char, then check if the input is not char already
 if strcmpi(type,'char')
 	if sum((inStr>'f' & inStr<'z')+(inStr>'F' & inStr<'Z'))
@@ -61,12 +61,9 @@ if strcmpi(type,'char')
 		return
 	end
 end
-
 % Take out the backslashes
 %outNum = xASL_adm_CorrectName(inStr,2);
 outNum = strrep(inStr,'\','');
-
-
 % Skip padding with zeros for now...
 % 
 % 	% Pad with zeros to 8 characters
@@ -88,7 +85,6 @@ outNum = strrep(inStr,'\','');
 % 				outNum((32-length(outNum)+1):32) = tmp;
 % 			end
 % 		end
-
 % Needs to have even length
 if mod(length(outNum),2)
 	error('xASL_adm_Hex2Num: Even number of characters is required for a HEX number.');
@@ -101,7 +97,6 @@ if ~endian
 		outNum((1:2)+(2*(ii-1))) = tmp((length(outNum)+[-1,0]) - 2*(ii-1));
 	end
 end
-
 switch (lower(type))
 	case 'char'
 		% Delivered as a decimal string in hex
@@ -222,4 +217,3 @@ switch (lower(type))
 	otherwise
 		error(['xASL_adm_Hex2Num: Unknown type ' type]);
 end
-

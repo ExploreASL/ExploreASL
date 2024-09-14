@@ -20,7 +20,10 @@ function [x] = xASL_quant_SliceTiming_ShortestTR(x)
 % EXAMPLE: x = xASL_quant_SliceTiming_ShortestTR(x);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% ---------------------------------------------------
     %% Admin
@@ -29,13 +32,11 @@ function [x] = xASL_quant_SliceTiming_ShortestTR(x)
     elseif ~isfield(x.Q, 'SliceReadoutTime')
         error('x.Q.SliceReadoutTime missing');
     end
-
     %% ---------------------------------------------------
     %% Compute SliceReadoutTime in case of shortest TR
     if ~isnumeric(x.Q.SliceReadoutTime) && strcmpi(x.Q.SliceReadoutTime,'shortestTR')
         % Load ASL parms
         ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
-
         if isfield(ASL_parms,'RepetitionTime')
             %  Load original file to get nSlices
 			imASL = xASL_io_ReadNifti(x.P.Path_ASL4D);
@@ -45,7 +46,6 @@ function [x] = xASL_quant_SliceTiming_ShortestTR(x)
             warning('ASL_parms.RepetitionTime expected but did not exist!');
         end
     end
-
     %% ---------------------------------------------------
     %% Check output
     if max(isnan(x.Q.SliceReadoutTime))
@@ -60,5 +60,4 @@ function [x] = xASL_quant_SliceTiming_ShortestTR(x)
 			warning(['SliceTime=' num2str(ScalarSliceReadoutTime) ' is outside of its valid range 5-400 ms']);
 		end
     end
-
 end

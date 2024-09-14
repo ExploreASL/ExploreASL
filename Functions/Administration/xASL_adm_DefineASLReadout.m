@@ -21,17 +21,18 @@ function [xQ] = xASL_adm_DefineASLReadout(xQ, bVerbose)
 % EXAMPLE: xQ = xASL_adm_DefineASLReadout(xQ);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Check quantification fields MRAcquisitionType & xQ.PulseSequenceType
 if nargin<2 || isempty(bVerbose)
     bVerbose = true;
 end
-
 if ~isfield(xQ, 'MRAcquisitionType') || isempty(xQ.MRAcquisitionType)
     warning('xQ.MRAcquisitionType parameter missing');
 end
-
 % Check for illegal pulse sequence definitions
 if isfield(xQ, 'PulseSequenceType')
     if isempty(regexpi(xQ.PulseSequenceType, '(epi|grase|spiral)', 'once'))
@@ -40,7 +41,6 @@ if isfield(xQ, 'PulseSequenceType')
         xQ = rmfield(xQ, 'PulseSequenceType');
     end
 end
-
 %% Check vendor field
 % Assume vendor=GE for spiral readout 
 % (though this is tricky for special cases, Siemens and Philips are both working on a 3D spiral)
@@ -50,7 +50,6 @@ if isfield(xQ, 'PulseSequenceType') && (~isfield(xQ, 'Vendor') || isempty(xQ.Ven
         xQ.Vendor = 'GE';
     end
 end
-
 if ~isfield(xQ, 'Vendor') || isempty(xQ.Vendor)
     warning('xQ.Vendor missing, skipping determining ASL readout');
 elseif  isempty(regexpi(xQ.Vendor, 'Gold Standard Phantoms|GE|Philips|Siemens', 'once'))
@@ -58,8 +57,6 @@ elseif  isempty(regexpi(xQ.Vendor, 'Gold Standard Phantoms|GE|Philips|Siemens', 
 elseif ~isempty(regexpi(xQ.Vendor, 'Gold Standard Phantoms', 'once'))
     fprintf('%s\n', 'Digital Reference Object ASL-DRO detected');
 end
-
-
 %% Try to work out which ASL readout we have
 % First assume that 2D is 2D EPI, irrespective of Vendor
 if ~isfield(xQ, 'PulseSequenceType') && isfield(xQ, 'MRAcquisitionType') 
@@ -91,12 +88,10 @@ if ~isfield(xQ, 'PulseSequenceType') && isfield(xQ, 'MRAcquisitionType')
 		end
 	end
 end
-
 %% Warn if we couldn't detect a readout
 if ~isfield(xQ, 'PulseSequenceType') || isempty(xQ.PulseSequenceType) || ~isfield(xQ, 'MRAcquisitionType') || isempty(xQ.MRAcquisitionType)
     error('We cannot detect the PulseSequenceType and/or MRAcquisitionType')
 else
     if bVerbose; fprintf('%s\n', [xQ.PulseSequenceType ' readout detected']); end
 end
-
 end

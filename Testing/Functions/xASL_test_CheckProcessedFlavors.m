@@ -16,6 +16,11 @@ function loggingTable = xASL_test_CheckProcessedFlavors(testConfig, flavorData, 
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright (c) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
     
     % Iterate over flavors
     for iList=1:numel(testConfig.flavorList)
@@ -39,10 +44,7 @@ function loggingTable = xASL_test_CheckProcessedFlavors(testConfig, flavorData, 
             warning('No derivatives data...');
         end
     end
-
 end
-
-
 %% Check the current processed flavor, if there is something missing then we return a logging entry
 function loggingTable = xASL_test_CheckProcessedFlavor(pathFlavor,currentFlavor,loggingTable,currentData)
     
@@ -85,13 +87,9 @@ function loggingTable = xASL_test_CheckProcessedFlavor(pathFlavor,currentFlavor,
             clear logEntry
         end
     end
-
 end
-
-
 %% Get the data of this flavor
 function currentData = xASL_test_GetCurrentFlavorData(flavorData,currentFlavor)
-
     currentData = [];
     for iFlavor = 1:numel(flavorData)
         [~, currentName] = xASL_fileparts(currentFlavor);
@@ -100,7 +98,4 @@ function currentData = xASL_test_GetCurrentFlavorData(flavorData,currentFlavor)
             return 
         end
     end
-
 end
-
-

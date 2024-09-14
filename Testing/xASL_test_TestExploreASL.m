@@ -63,54 +63,47 @@ function [comparison] = xASL_test_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 % VUmc server:   [ResultsTable] = xASL_test_TestExploreASL('/radshare/ExploreASL_Test/ExploreASL_TestCases', '/radshare/ExploreASL_Test/ExploreASL_TestCasesProcessed', 1);
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % ============================================================
 %% Admin
-
 % Run ExploreASL to get directories
 if isempty(which('ExploreASL'))
     cd ..;
 else
     cd(fileparts(which('ExploreASL')));
 end
-
 % Validate the input options
 if nargin < 3 || isempty(TestDirOrig) || isempty(TestDirDest) || isempty(RunMethod)
 	error('Require three input parameters -TestDirOrig, TestDirDest, RunMethod');
 end
-
 if nargin < 4 || isempty(bTestSPM)
 	bTestSPM = true;
 end
-
 if nargin < 5 || isempty(MatlabPath)
 	MatlabPath = 'matlab';
 end
-
 if nargin < 6 || isempty(EmailAddress)
 	EmailAddress = '';
 end
-
 if nargin < 7 || isempty(Password)
 	Password = '';
 end
-
 if nargin < 8 || isempty(bOverwrite)
 	bOverwrite = true;
 end
-
 if nargin < 9 || isempty(testDataUsed)
 	testDataUsed = 0;
 end
-
 if nargin < 10 || isempty(RunTimePath)
 	RunTimePath = '';
 end
-
 if nargin < 11 || isempty(bPull)
 	bPull = true;
 end
-
 % Check Matlab path and Runtime path for corresponding run method
 if RunMethod>2
     if isempty(MatlabPath) || ~exist(MatlabPath, 'file') || ~strcmp(MatlabPath(end-2:end),'.sh')
@@ -121,43 +114,34 @@ if RunMethod>2
         return;        
     end
 end
-
 % ============================================================
 %% 1) Pull latest GitHub version
 xASL_adm_BreakString('1. Update ExploreASL','=');
-
 % Assuming we are in ExploreASL folder
 if bPull
     xASL_system('git fetch');
     xASL_system('git pull');
 end
-
 % Initialize ExploreASL
 x = ExploreASL;
-
 % ============================================================
 %% 2) Copy all data for testing
 xASL_adm_BreakString('2. Copy the test data','=');
-
 % Ask for directories if they were not defined
 xASL_test_CopyTestData(TestDirDest, TestDirOrig, bOverwrite);
-
 % ============================================================
 %% 3) Initialize & test standalone SPM on low quality
 xASL_adm_BreakString('3. Initialize & test standalone SPM','=');
 if bTestSPM
     xASL_test_SPM(TestDirDest, testDataUsed);
 end
-
 % ============================================================
 %% 4) Test ExploreASL itself
-
 % Here we return the ExploreASL paths, which we removed above for testing SPM
 x = ExploreASL;
 Dlist = xASL_adm_GetFileList(TestDirDest,'^.*$','List',[0 Inf], true);
 xASL_adm_BreakString('4. Test ExploreASL','=');
 LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, MatlabPath, RunTimePath, x, Dlist);
-
 % ============================================================
 %% 5) Pause until all results exist (if running parallel in background)
 xASL_adm_BreakString('5. Pause','=');
@@ -165,7 +149,6 @@ if RunMethod==2 || RunMethod==4
     CountTime = 0;
     TimeStepSeconds = 30;
     fprintf(xASL_adm_ConvertSeconds2TimeString(CountTime));
-
     while max(cellfun(@(y) ~exist(y,'file'), LogFiles)) % logs don't exist
         pause(TimeStepSeconds);
         CountTime = CountTime+TimeStepSeconds;
@@ -174,12 +157,10 @@ if RunMethod==2 || RunMethod==4
     end
     fprintf('\n');
 end
-
 % ============================================================
 %% 6) Compile results table
 xASL_adm_BreakString('6. Compile results table and compare with references','=');
 comparison = xASL_test_CompareReference(fullfile(x.opts.MyPath,'Testing','Reference','ReferenceValues.tsv'), TestDirDest, TestDirOrig);
-
 % Comparison with mat file
 try
     % Determine the difference table
@@ -196,7 +177,6 @@ end
     
 save(comparison.SaveFile, 'comparison');
 end
-
 %% Copy the test data
 function xASL_test_CopyTestData(TestDirDest, TestDirOrig, bOverwrite)
     if isempty(TestDirDest)
@@ -205,7 +185,6 @@ function xASL_test_CopyTestData(TestDirDest, TestDirOrig, bOverwrite)
     if isempty(TestDirOrig)
         TestDirOrig = uigetdir(pwd, 'Select datasets for testing...');
     end
-
     % Clone testdataset repository if not detected
     if ~xASL_exist(TestDirOrig, 'dir')
         TestDirRoot = fileparts(TestDirOrig);
@@ -215,7 +194,6 @@ function xASL_test_CopyTestData(TestDirDest, TestDirOrig, bOverwrite)
         xASL_system(['cd ' TestDirRoot]);
         xASL_system(['git clone ' TestDataSetRepository]);
     end
-
     % Remove previous results
     if bOverwrite && exist(TestDirDest,'dir')
         fprintf('Deleting previous results...\n');
@@ -228,8 +206,6 @@ function xASL_test_CopyTestData(TestDirDest, TestDirOrig, bOverwrite)
     % Copy data sets into testing directory
     xASL_Copy(TestDirOrig, TestDirDest);    
 end
-
-
 %% Determine the difference table
 function DifferenceTable = xASL_test_DetermineDifferenceTable(TestDirOrig, ResultsTable, ResultTableFile)
     % Find all result tables in directory
@@ -261,8 +237,6 @@ function DifferenceTable = xASL_test_DetermineDifferenceTable(TestDirOrig, Resul
         DifferenceTable = [];
     end
 end
-
-
 %% E-Mail the results
 function xASL_test_EmailResults(EmailAddress, Password, DifferenceTable)
     % First convert table to string to send by e-mail
@@ -283,8 +257,6 @@ function xASL_test_EmailResults(EmailAddress, Password, DifferenceTable)
         end
         NewTable{iX,1} = [NewTable{iX,1} DifferenceTable{iX,1}];
     end
-
-
     % See here: https://nl.mathworks.com/help/matlab/import_export/sending-email.html
     fprintf('Sending e-mail with results\n');
     setpref('Internet', 'SMTP_Server', 'smtp.gmail.com');
@@ -299,20 +271,14 @@ function xASL_test_EmailResults(EmailAddress, Password, DifferenceTable)
     EmailAddresses = {'Patricia.Clement@ugent.be', 'Pieter.Vandemaele@UZGENT.be', 'j.petr@hzdr.de', 'henkjanmutsaerts@gmail.com'};
     sendmail(EmailAddresses, 'ExploreASL TestRun: %AsymmetryIndexWithTemplateResults (should be <0.01%)', NewTable);
 end
-
-
-
-
 %% ==============================================================================================================
 %% Test all individual test datasets
 function LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, MatlabPath, RunTimePath, x, Dlist)
-
     % Remove lock folders, useful for rerun when debugging
     LockFolders = xASL_adm_GetFileList(TestDirDest, '(?i)^locked$', 'FPListRec', [0 Inf], true);
     if ~isempty(LockFolders)
         cellfun(@(y) xASL_delete(y), LockFolders, 'UniformOutput', false);
     end
-
     % Evaluate parallelization in linux
     if isunix && (RunMethod==2 || RunMethod==4)
         [Result1, Result2] = system('screen -dmS TryOut exit');
@@ -322,10 +288,8 @@ function LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, Matlab
             error('Skipping...');
         end
     end
-
     % Get list of data to test
     LogFiles = cellfun(@(y) fullfile(TestDirDest,y,'log','xASL_module_Population.log'), Dlist, 'UniformOutput',false);
-
     % Iterate over test datasets
     for iList=1:length(Dlist)
         
@@ -348,19 +312,11 @@ function LogFiles = xASL_test_TestAllTestdatasets(TestDirDest, RunMethod, Matlab
         end
     end
 end
-
-
-
-
-
-
 %% ==============================================================================================================
 %% Test one individual test dataset
 function xASL_test_IndividualTestdataset(RunMethod, MatlabPath, RunTimePath, x, dirBIDS, ScreenName)
-
     % Run ExploreASL
     cd(x.opts.MyPath);
-
     % Prepare compilation testing
     if RunMethod>2
         [Fpath, Ffile, Fext] = fileparts(MatlabPath);
@@ -370,7 +326,6 @@ function xASL_test_IndividualTestdataset(RunMethod, MatlabPath, RunTimePath, x, 
             CompilationString = ['cd ' Fpath '; ' Ffile Fext ' ' RunTimePath ' ' dirBIDS];
         end
     end
-
     switch RunMethod
         case 1
             % Run ExploreASL serially (can we run screen from here? or run matlab in background, linux easy)

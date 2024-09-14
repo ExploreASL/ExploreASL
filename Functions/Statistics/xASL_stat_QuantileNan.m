@@ -20,19 +20,21 @@ function y = xASL_stat_QuantileNan(x,quant,dim)
 %
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2017-00-00 JP
-
 %% Check input arguments
 if nargin < 2 || isempty(quant)
 	quant = 0.5;
 end
-
 % quant needs to be between 0 and 1 if outside this range, then throw and error
 if (quant < 0) || (quant > 1)
 	error('xASL_stat_QuantileNan: the value needs to be between 0 and 1');
 end
-
 %% Determine result
 if isempty(x)
 	if nargin < 3
@@ -146,16 +148,13 @@ else
 	
 end
 end
-
 % calculate the position quant from N
 function n=getPosQuantile(quant,N)
 n = round(N*quant);
 if n<1
 	n = 1;
 end
-
 if n>N
 	n = N;
 end
-
 end

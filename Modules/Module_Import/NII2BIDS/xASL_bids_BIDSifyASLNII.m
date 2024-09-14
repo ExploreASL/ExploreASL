@@ -21,22 +21,22 @@ function jsonOut = xASL_bids_BIDSifyASLNII(jsonIn, bidsPar, pathIn, pathOutPrefi
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Remove the AslContext field and save it as a separate file
 filenameTSV = [pathOutPrefix '_' bidsPar.stringAslContext '.tsv'];
 [pathTSV,~,~] = fileparts(filenameTSV);
-
 xASL_adm_CreateDir(pathTSV);
-
 % Write volume types (asl context) to file
 fContext = fopen(filenameTSV,'w+');
 fwrite(fContext,sprintf('volume_type\n'));
 fwrite(fContext,jsonIn.ASLContext);
 fclose(fContext);
-
 % Remove context field
 jsonOut = rmfield(jsonIn,'ASLContext');
-
 % Validate ASL NIFTI output path
 [~,outputFileASL,outputExtensionASL] = xASL_fileparts([pathOutPrefix '_asl.nii.gz']);
 outputFilenameASL = [outputFileASL outputExtensionASL];
@@ -63,9 +63,5 @@ else
 	% Move the ASL
 	xASL_Move(pathIn,[pathOutPrefix '_asl.nii.gz'],1);
 end
-
 jsonOut = rmfield(jsonOut,'scaleFactor');
-
 end
-
-

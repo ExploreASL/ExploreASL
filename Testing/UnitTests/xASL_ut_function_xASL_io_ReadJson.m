@@ -15,20 +15,19 @@ function UnitTest = xASL_ut_function_xASL_io_ReadJson(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_io_ReadJson(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Test run 1
-
 % Give your individual subtest a name
 UnitTest.tests(1).testname = 'Read test file';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 testFile = fullfile(TestRepository, 'UnitTesting', 'io_files', 'testFile.json');
 CellContents = xASL_io_ReadJson(testFile);
-
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
 if ~(isstruct(CellContents))
@@ -43,18 +42,13 @@ end
 if ~(size(CellContents.tokenSessionAliases,1) == 4 && size(CellContents.tokenOrdering,1) == 4)
     testCondition = false; % Test failed
 end
-
 if ~(isequal(strcmp(CellContents.folderHierarchy{2}, '^(ASL|T1w|M0|T2|FLAIR)(\d)$'), 1))
 	testCondition = false; % Test failed
 end
-
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
-
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
-
 end

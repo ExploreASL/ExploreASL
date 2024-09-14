@@ -21,10 +21,12 @@ function xASL_dev_DocInitialize(baseOutputFolder)
 % EXAMPLE:      xASL_dev_DocInitialize(fullfile(x.opts.MyPath,'Development','Documentation_GitHub'));
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 1. Administration
-
     % Initialize ExploreASL
     x = ExploreASL_Initialize;
     
@@ -63,7 +65,6 @@ function xASL_dev_DocInitialize(baseOutputFolder)
     
     % Copy and modify the index README
     xASL_Copy(fullfile(x.opts.MyPath,'README.md'),fullfile(outputFolder,'index.md'),1);
-
 	% Update figure links in these files
 	
 	% Logo
@@ -103,7 +104,6 @@ function xASL_dev_DocInitialize(baseOutputFolder)
     
     % Create the functions markdown file
     xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'External','SPMmodified','xASL'), fullfile(outputFolder,'SPMxASL.md'),'SPMxASL');
-
     % Convert and copy lincense file
     convertLicenseToMarkdown(fullfile(x.opts.MyPath,'LICENSE-EXPLOREASL'),fullfile(outputFolder,'License.md'));
     
@@ -122,9 +122,7 @@ function xASL_dev_DocInitialize(baseOutputFolder)
     xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','Module_Processing','Module_ASL'), fullfile(outputFolder,'ASL_Module.md'),'ASLModule');
     xASL_dev_DocCrawler(fullfile(x.opts.MyPath,'Modules','Module_Processing','Module_Population'), fullfile(outputFolder,'Population_Module.md'),'PopulationModule');
     
-
 end
-
 %% Function to swap text segments of documentation files
 function swapTextInFile(filePath,text2swap,newText,onlyFirst)
     changeText = true;
@@ -167,9 +165,7 @@ function swapTextInFile(filePath,text2swap,newText,onlyFirst)
         fprintf(file_id,'%s\n', text_cell{i});
     end
     fclose(file_id);
-
 end
-
 %% Convert license file to markdown file
 function convertLicenseToMarkdown(filePath,newPath)
     %% Open file
@@ -185,7 +181,6 @@ function convertLicenseToMarkdown(filePath,newPath)
         end
     end
     fclose(file_id);
-
     %% Markdown styling
     for curLine=1:numel(text_cell)
         if ~isempty(text_cell{curLine,1})
@@ -203,12 +198,10 @@ function convertLicenseToMarkdown(filePath,newPath)
             end
         end
     end
-
     %% Save new file
     file_id=fopen(newPath,'w');
     for i=1:length(text_cell)    
         fprintf(file_id,'%s\n', text_cell{i});
     end
     fclose(file_id);
-
 end

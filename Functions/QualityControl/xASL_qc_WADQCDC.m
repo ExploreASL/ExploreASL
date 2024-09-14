@@ -40,14 +40,15 @@ function xASL_qc_WADQCDC(x, iSubject, ScanType)
 % EXAMPLE: xASL_qc_WADQCDC(x, 10, 'ASL');
 % __________________________________
 % Copyright (C) 2015-2020 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Loop over Scantypes
 ScanTypes = {'Structural', 'ASL', 'func', 'dwi'};
 SubPath = {x.SUBJECTS{iSubject}, fullfile(x.SUBJECTS{iSubject}, x.SESSIONS{1}), fullfile(x.SUBJECTS{iSubject}, 'func'), fullfile(x.SUBJECTS{iSubject}, 'dwi')};
 NIfTIname = {'T1', 'ASL4D', 'func', 'dwi'};
-
 if nargin>2 && ~isempty(ScanType)
     % if we have specified Current ScanType (i.e. when running within a
     % specific module)
@@ -56,13 +57,10 @@ if nargin>2 && ~isempty(ScanType)
     SubPath = {SubPath{CurrInd}};
     NIfTIname = {NIfTIname{CurrInd}};
 end % otherwise, simply iterate over all scantypes below
-
 for iScanType=1:length(ScanTypes)
-
     WAD_Path = fullfile(x.dir.xASLDerivatives, SubPath{iScanType}, ['qcdc_' x.SUBJECTS{iSubject} '_' ScanTypes{iScanType} '.json']);
     DummyDir = fullfile(x.dir.xASLDerivatives, SubPath{iScanType});
     DummyFile = xASL_adm_GetFileList(DummyDir, ['^DummyDicom_' NIfTIname{iScanType} '.*.dcm$'],'List',[0 Inf]);
-
     if ~exist(WAD_Path,'file')
         warning([WAD_Path ' missing, skipping qcdc']);
         continue;
@@ -74,7 +72,6 @@ for iScanType=1:length(ScanTypes)
     end
     DummyFile = DummyFile{1};
     DummyPath = fullfile(DummyDir, DummyFile);
-
 %         %% Check if the AcquisitionDate parameter exists
 %         Info = xASL_io_ReadTheDicom(false, DummyPath); % try to use DCM_TK
 %
@@ -88,17 +85,14 @@ for iScanType=1:length(ScanTypes)
 %         else
 %             ExistDCMStudyDateField = false;
 %         end
-
     %% a) Define Gaspare's script (QCDC)
     QCDC_Path = fullfile(x.opts.MyPath, 'CustomScripts', 'EPAD', 'QCDC', 'src', 'qc_data_collector.py');
     QCDC_sh1 = fullfile(x.opts.MyPath, 'CustomScripts', 'EPAD', 'QCDC', 'src', 'bash', 'create_dcm_only_wadqc.sh');
     QCDC_sh2 = fullfile(x.opts.MyPath, 'CustomScripts', 'EPAD', 'QCDC', 'src', 'bash', 'sendwadqc.sh');
-
     %% b) Check for Python installation
     [StatusPython, dummy] = system('ls -d /data/usr/local/anaconda2/bin'); % Victory VUmc cloud
     [StatusPython2, dummy] = system('wsl ls -d /usr/src/Python-2.7.16'); % Victory VUmc cloud
     [StatusPython3, dummy] = system('ls -d /usr/bin/python'); % AMC flux
-
     if StatusPython==0
         PythonPath = '/data/usr/local/anaconda2/bin/python';
         RunPython = true;
@@ -111,11 +105,9 @@ for iScanType=1:length(ScanTypes)
     else
         RunPython = false;
     end
-
     %% c) CleanUp previous QCDC results
     QCDCDir = [x.dir.xASLDerivatives 'qcdc_output_qcdc_' x.SUBJECTS{iSubject} '_' ScanTypes{iScanType}];
     xASL_adm_DeleteFileList(QCDCDir, '.*', true, [0 Inf]);
-
     %% d) Run QCDC
     if RunPython
         fprintf('Incorporating QC results into dummy dicom...\n');
@@ -124,12 +116,10 @@ for iScanType=1:length(ScanTypes)
         system(['chmod +x ' xASL_adm_UnixPath(QCDC_sh1)]);
         system(['chmod +x ' xASL_adm_UnixPath(QCDC_sh2)]);
         result = system([PythonPath ' ' xASL_adm_UnixPath(QCDC_Path) ' ' xASL_adm_UnixPath(WAD_Path) ' ' xASL_adm_UnixPath(x.dir.xASLDerivatives)]);
-
         if result~=0
             % throw error
             fprintf('Couldnt incorporate QC results in dicom, QCDC failed\n');
         end
-
         %% e) Clean up QCDC output results
         TempPath = fullfile(QCDCDir, DummyFile);
         NewPath = fullfile(x.dir.xASLDerivatives, SubPath{iScanType}, ['qcdc_' DummyFile]);
@@ -141,9 +131,7 @@ for iScanType=1:length(ScanTypes)
             fprintf('Imported WAD-QC DICOM missing, QCDC failed\n');
             IsSuccess = false;
         end
-
         xASL_delete(QCDCDir, true);
-
         %% f) Try sending the DICOM to WAD-QC server
         if IsSuccess
             cd(x.dir.xASLDerivatives);
@@ -157,6 +145,4 @@ for iScanType=1:length(ScanTypes)
         end
     end
 end
-
-
 end

@@ -21,20 +21,21 @@ function [x] = xASL_init_Parallelization(x)
 % EXAMPLE:        [x] = xASL_init_Parallelization(x);
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % ------------------------------------------------------------------------------------------------
 %% Parallelization: If running parallel, select cases for this worker
 if x.opts.nWorkers>1
     nSubjPerWorker = x.dataset.nTotalSubjects/x.opts.nWorkers; % ceil to make sure all subjects are processed
-
     % e.g., if nWorkers=3 & nTotalSubjects=10
     % iWorker 1 does [1 2 3]
     % iWorker 2 does [4 5 6 7]
     % iWorker 3 does [8 9 10]
-
     iStartSubject = round((x.opts.iWorker-1)*nSubjPerWorker+1);
     iEndSubject = min( round(x.opts.iWorker*nSubjPerWorker), x.dataset.nTotalSubjects);
-
     if iStartSubject>x.dataset.nTotalSubjects
         warning('Closing down this worker, had too many workers');
         exit;
@@ -43,11 +44,8 @@ if x.opts.nWorkers>1
     % Adapt SUBJECTS
     x.dataset.TotalSubjects = x.dataset.TotalSubjects(iStartSubject:iEndSubject);
     x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
-
     
     fprintf(['I am worker ' num2str(x.opts.iWorker) '/' num2str(x.opts.nWorkers) '\n']);
     fprintf(['I will process subjects ' num2str(iStartSubject) '-' num2str(iEndSubject) '\n']);
 end
-
-
 end

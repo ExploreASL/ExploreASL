@@ -31,44 +31,40 @@ function [strOut, bCorrected] = xASL_adm_CorrectName(strIn, bOption, strExclude)
 %
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Admin
     % By default use Option 1
     if nargin < 2 || isempty(bOption)
         bOption = 1;
     end
-
     % By default, exclude no strings
     if nargin < 3
         strExclude = [];
     end
-
 	% By default, nothing is corrected
 	bCorrected = false;
-
     % Don't take more than three input arguments
     if nargin > 3
         error('xASL_adm_CorrectName: Too many input parameters.');
     end
-
     if ~ischar(strIn)
         warning('Input string wasnt a string, check input format');
         strOut = strIn;
         return;
     end
-
     % Making own list is deprecated - we use the regexp function now
     IllegalList = {' ' '*' '.' '"' '/' '\' '[' ']' '{' '}' ':' ';' '+' '=' ',' '<' '>' '?' '~' '@' '#' '$' '%' '^' '&' '*' '(' ')' '-' '|'};
-
     % Here we define a character to replace the illegal characters with
     % By default this is an underscore, but if bOption==2 and we want to
     % keep the underscore (i.e. inside strExclude) we need something else
-
     %% Replacement string
     
     % Default
     ReplaceString = '_';
-
     %% Correction
     if bOption==2 && ~isempty(strExclude) && ~isempty(regexp(strExclude,'_', 'once'))
         IndicesString = find(cellfun(@(y) isempty(regexp(strExclude,y, 'once')), IllegalList(2:end)));
@@ -77,18 +73,14 @@ function [strOut, bCorrected] = xASL_adm_CorrectName(strIn, bOption, strExclude)
         end % else keep default
     end
     strOut(1:length(strIn)) = ReplaceString;
-
     % Find the wrong characters
     strReg = '\w';
     if ~isempty(strExclude)
         strReg(4:2:(4+(length(strExclude)-1)*2)) = strExclude;
         strReg(3:2:(3+(length(strExclude)-1)*2)) = '|';
     end
-
     indPass = regexp(strIn,strReg);
-
     strOut(indPass) = strIn(indPass);
-
     if bOption==2
         % Remove all replacements
         strOut = strOut(strOut~=ReplaceString);
@@ -115,4 +107,3 @@ function [strOut, bCorrected] = xASL_adm_CorrectName(strIn, bOption, strExclude)
 		bCorrected = true;
 	end
 end
-

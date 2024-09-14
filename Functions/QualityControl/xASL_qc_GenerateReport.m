@@ -22,18 +22,20 @@ function [x] = xASL_qc_GenerateReport(x, subject)
 % EXAMPLE: xASL_qc_GenerateReport(x);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if ~usejava('jvm') % only if JVM loaded
     fprintf('Warning: skipping PDF report, JVM missing\n');
     config = NaN;
     return;
 end
-
 % check input
 if nargin < 1 || isempty(x)
     error('No x structure provided');
 end
-
 % check input
 subjectOld = [];
 if nargin < 2 || isempty(subject)
@@ -48,7 +50,6 @@ else
     end
     x.SUBJECT = subject;
 end
-
 % Fix <SESSION> not existing
 bRemoveSESSIONfield = false;
 if ~isfield(x, 'SESSION')
@@ -59,7 +60,6 @@ if ~isfield(x, 'SESSION')
         warning('x.SESSIONS was missing, this might go wrong');
     end
 end
-
 % Fix x.P not existing
 if ~isfield(x, 'P') || isempty(x.P) || isempty(fields(x.P))
     if ~isfield(x, 'dir')
@@ -71,25 +71,19 @@ if ~isfield(x, 'P') || isempty(x.P) || isempty(fields(x.P))
     if ~isfield(x.dir, 'SESSIONDIR')
         x.dir.SESSIONDIR = fullfile(x.dir.SUBJECTDIR, x.SESSION);
     end
-
     x = xASL_init_FileSystem(x);
 end
-
 % Determine x.mat file
 PathX = fullfile(x.dir.xASLDerivatives, subject, 'x.mat');
-
 % Check if x.mat file exists already
 if ~exist(PathX, 'file')
     warning([PathX ' didnt exist, skipping xASL_qc_CreateOutputPDF']);
     return;
 end
-
 x = xASL_adm_LoadX(x, PathX, true); % Assume memory x is newer than x.mat
-
 % Make sure that the directory exists
 PrintDir = fullfile(x.dir.xASLDerivatives, subject);
 xASL_adm_CreateDir(PrintDir);
-
 % Delete existing xASL report files
 ExistingPrintFiles = xASL_adm_GetFileList(PrintDir, '^xASL_Report_.+$');
 if ~isempty(ExistingPrintFiles)
@@ -97,17 +91,13 @@ if ~isempty(ExistingPrintFiles)
         xASL_delete(ExistingPrintFiles{iFile});
     end
 end
-
 % Load Pdf configuration
 config = xASL_qc_LoadPdfConfig(x);
-
 % Print the title
 fprintf('Printing ExploreASL PDF report in:   \n');
 fprintf([PrintDir '\n']);
-
 % Parse the entire Json Stack automatically making all the pages.
 xASL_qc_ParsePdfConfig(config, x);
-
 % Householding
 if ~isempty(subjectOld)
     % restore x.SUBJECT
@@ -117,5 +107,4 @@ if bRemoveSESSIONfield
     x = rmfield(x, 'SESSION');
 end
     
-
 end

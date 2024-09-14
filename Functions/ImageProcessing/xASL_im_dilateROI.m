@@ -17,32 +17,30 @@ function xASL_im_dilateROI(PathIn, PathOut, minVolume)
 % EXAMPLE:      xASL_im_dilateROI('test.nii', [], 40)
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 if nargin<2 || isempty(PathOut)
     PathOut = PathIn;
 end
-
 if nargin<3 || isempty(minVolume)
 	minVolume = 40;
 end
-
 %% Loads the image and converts to a binary mask
 IM      = xASL_io_Nifti2Im(PathIn);
 IM      = xASL_im_ConvertMap2Mask(IM);
-
 %% Obtains the voxel volume
 HDR     = xASL_io_ReadNifti(PathIn);
 pixdim  = prod(HDR.hdr.pixdim(2:4));
 IMvol   = sum(IM(:)).*pixdim;
-
 %% Iteratively dilate until the minimal volume value is reached
 while  IMvol<minVolume
        IM = xASL_im_DilateErodeFull(IM,'dilate',xASL_im_DilateErodeSphere(2));
        IMvol   = sum(IM(:)).*pixdim;
 end
-
 %% Saves the dilated ROI
 xASL_io_SaveNifti(PathIn, PathOut, IM, [], false);
-
 end

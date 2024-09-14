@@ -19,47 +19,42 @@ function mssim=xASL_stat_MeanSSIM(imRef,imSrc,dynRange)
 %            visibility to structural similarity, IEEE Transactions on Image Processing, 13(4):600-612, 2004.
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2019-04-24 JP, HM
-
 % Initialization
 if nargin < 2
 	error('xASL_stat_MeanSSIM: Needs to input images.');
 end
-
 if ~isequal(size(imRef),size(imSrc))
 	error('xASL_stat_MeanSSIM: Input images need to have the same size.');
 end
-
 if nargin < 3 || isempty(dynRange)
 	% By default, set the dynamic range to maximal values
 	dynRange = max(abs(min(imRef(:))),abs(max(imRef(:))));
 end
-
 % Constants set according to the original article
 K1 = 0.01;
 K2 = 0.03;
-
 C1 = (K1*dynRange).^2;                  
 C2 = (K2*dynRange).^2;
-
 imRef = double(imRef);
 imSrc = double(imSrc);
-
 % Mean over the local window and its square
 mu1         = xASL_im_ndnanfilter(imRef,'gauss',[4 4 4]);
 mu2         = xASL_im_ndnanfilter(imSrc,'gauss',[4 4 4]);
 mu1_2       = mu1.^2;
 mu2_2       = mu2.^2;
 mu1_mu2     = mu1.*mu2;
-
 % Squared standard deviation computed as mean of square - square of mean
 sigma1_2    = xASL_im_ndnanfilter(imRef.^2,'gauss',[4 4 4]) - mu1_2;
 sigma2_2    = xASL_im_ndnanfilter(imSrc.^2,'gauss',[4 4 4]) - mu2_2;
 sigma12     = xASL_im_ndnanfilter(imRef.*imSrc,'gauss',[4 4 4]) - mu1_mu2;
-
 % Calculate the similarity map and the mean SSIM
 ssim_map    =  ((2*mu1_mu2 + C1).*(2*sigma12 + C2)) ./ ((mu1_2 + mu2_2 + C1).*(sigma1_2 + sigma2_2 + C2));
 mssim       = 100*xASL_stat_MeanNan(ssim_map(:)); % in percentages
-
 end

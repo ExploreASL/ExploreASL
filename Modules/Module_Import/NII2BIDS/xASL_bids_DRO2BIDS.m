@@ -29,9 +29,12 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
 %               
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% DRO 2 BIDS
-
     % Check input arguments
     if nargin<2 || isempty(droSubject)
         droSubject = 'sub-Sub1'; % DEFAULT
@@ -43,24 +46,19 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
         warning('Using dummy ExploreASL version...');
         exploreaslVersion = '1.2.3';
     end
-
     % Directory definitions
     perfDirectory = fullfile(droTestPatient,'rawdata',droSubject,'perf');
     groundTruthDirectory = fullfile(droTestPatient,'rawdata',droSubject,'ground_truth');
     anatDirectory = fullfile(droTestPatient,'rawdata',droSubject,'anat');
-
     % Rename asl to perf
     xASL_Move(fullfile(droTestPatient,'rawdata',droSubject,'asl'),perfDirectory,1);
-
     % Rename ASL
     xASL_Move(fullfile(perfDirectory,'001_asl.json'),fullfile(perfDirectory,[droSubject,'_asl.json']),1);
     xASL_Move(fullfile(perfDirectory,'001_asl.nii.gz'),fullfile(perfDirectory,[droSubject,'_asl.nii.gz']),1);
     xASL_Move(fullfile(perfDirectory,'001_aslcontext.tsv'),fullfile(perfDirectory,[droSubject,'_aslcontext.tsv']),1);
-
     % Rename T1w
     xASL_Move(fullfile(anatDirectory,'002_anat.json'),fullfile(anatDirectory,[droSubject,'_T1w.json']),1);
     xASL_Move(fullfile(anatDirectory,'002_anat.nii.gz'),fullfile(anatDirectory,[droSubject,'_T1w.nii.gz']),1);
-
     % Remove the ground truth files
     if deleteGroundTruth
         xASL_delete(groundTruthDirectory,true);
@@ -79,49 +77,36 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
             % Change field name from LabelingType to ArterialSpinLabelingType
             jsonASL.ArterialSpinLabelingType = jsonASL.LabelingType;
             jsonASL = rmfield(jsonASL,'LabelingType');
-
             % Change field name from RepetitionTime to RepetitionTimePreparation
             jsonASL.RepetitionTimePreparation = jsonASL.RepetitionTime;
             jsonASL = rmfield(jsonASL,'RepetitionTime');
-
             % Change field name from MrAcquisitionType to MRAcquisitionType
             jsonASL.MRAcquisitionType = jsonASL.MrAcquisitionType;
             jsonASL = rmfield(jsonASL,'MrAcquisitionType');
-
             % Add necessary fields
             jsonASL.Manufacturer = 'Philips'; % ExploreASL expects a Manufacturer, so we use GE as our dummy Manufacturer here
             jsonASL.M0Type = 'Included';
             jsonASL.BackgroundSuppression = false;
             jsonASL.TotalAcquiredPairs = 1;
-
             % Write JSON file
             xASL_io_WriteJson(fullfile(perfDirectory,[droSubject,'_asl.json']),jsonASL);
-
             %% dataset_description.json
-
             % Define required fields
             jsonTemplate.Name = 'DRO_Digital_Reference_Object';
-
             % Call script to fix missing fields
             [jsonDescription] = xASL_bids_CreateDatasetDescriptionTemplate(jsonTemplate,exploreaslVersion);
-
             % Write dataset_description file
             xASL_io_WriteJson(fullfile(droTestPatient,'rawdata','dataset_description.json'),jsonDescription);
-
             %% sourceStructure.json
-
             % Define sourceStructure
             sourceStructure.folderHierarchy = {'^(.)+$','^(ASL|T1w|M0|T2|FLAIR)$'};
             sourceStructure.tokenOrdering = [1,0,2];
             sourceStructure.tokenSessionAliases = {'',''};
             sourceStructure.tokenScanAliases = {'^ASL$','ASL4D','^T1w$','T1w','^M0$','M0','^T2$','T2w','^FLAIR$','FLAIR'};
             sourceStructure.bMatchDirectories = true;
-
             % Write sourceStructure file
             xASL_io_WriteJson(fullfile(droTestPatient,'sourceStructure.json'),sourceStructure);
-
             %% studyPar.json
-
             % Define studyPar
             studyPar.DatasetType = 'raw';
             studyPar.License = 'license';
@@ -134,15 +119,10 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
             studyPar.DatasetDOI = 'https://pypi.org/project/asldro/';
             studyPar.LabelingType = jsonASL.ArterialSpinLabelingType;
             studyPar.ASLContext = 'm0scan,control,label';
-
             % Write sourceStructure file
             xASL_io_WriteJson(fullfile(droTestPatient,'studyPar.json'),studyPar);
             
         otherwise
             warning('Unknown DRO version...');
     end
-
 end
-
-
-

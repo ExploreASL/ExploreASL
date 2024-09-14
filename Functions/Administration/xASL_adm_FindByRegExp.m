@@ -33,6 +33,10 @@ function [tree, optionalTokens] = xASL_adm_FindByRegExp(root, dirSpecs, varargin
 % EXAMPLE: ...
 % __________________________________
 % Copyright @ 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Setup argument parse for variable arguments
     p = inputParser;
@@ -43,14 +47,12 @@ function [tree, optionalTokens] = xASL_adm_FindByRegExp(root, dirSpecs, varargin
     possibleMatches = {'Files', 'Directories', 'FilesAndDirectories'};
     addOptional(p, 'Match', 'Files', @(x) any(validatestring(x,possibleMatches)));
     addOptional(p, 'SortBy', [], @isnumeric);
-
     % Parse parameters
     parse(p,varargin{:});
 	
 	if nargin < 2
 		error('xasl_adm_FindByRegExp: Minimum number of required parameters is two.');
 	end
-
     % Copy results to struct and convert some for easy use
     parms = p.Results;
     switch p.Results.Match
@@ -64,7 +66,6 @@ function [tree, optionalTokens] = xASL_adm_FindByRegExp(root, dirSpecs, varargin
             parms.MatchFiles = true;
             parms.MatchDirectories = true;
     end
-
     % Check root folder
     if isempty(root)
         root = pwd;
@@ -107,7 +108,6 @@ function [tree, optionalTokens] = xASL_adm_FindByRegExp(root, dirSpecs, varargin
     if ~isstruct(dirSpecs)
         error('xasl_adm_FindByRegExp: dirSpecs argument must be a string, cellstr or structure');
     end
-
     % Setup parameters for recursive calls
     currentlevel = 1;
     tree = {}; 
@@ -130,23 +130,19 @@ function [tree, optionalTokens] = xASL_adm_FindByRegExp(root, dirSpecs, varargin
         optionalTokens = mytokens;
     end
 end
-
 % Internal recursive implementation
 function [tree, rectokens] = FindByRegExpRec( root, dirSpecs, currentlevel, tree, parms, rectokens, parenttokens )
-
     L = dirSpecs(currentlevel);
 	if parms.IgnoreCase
 		casearg = 'ignorecase';
 	else
 		casearg = 'matchcase';
 	end
-
 	if isfield(L,'pattern')
 		pattern = L.pattern;
 	else
 		pattern = '*';
 	end
-
 	entries = dir(fullfile(root, pattern));
 	for iEntry=1:length(entries)
 		E = entries(iEntry);

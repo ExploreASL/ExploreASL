@@ -20,17 +20,18 @@ function xASL_wrp_Deface(x)
 % EXAMPLE:     xASL_wrp_Deface(x);
 % __________________________________
 % Copyright 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Initialize
     if nargin<1
         error('Please provide an x struct...');
     end
-
     if ~isfield(x.modules.import.imPar,'BidsRoot')
         error('It seems as if the initialization of the deface module failed...');
     end
-
     % Print feedback
     xASL_adm_BreakString('DEFACING');
     
@@ -45,10 +46,8 @@ function xASL_wrp_Deface(x)
         
         % Only run it for the current subject (maybe we can do this more elegantly in the future)
         if ~isempty(regexpi(listSubjects{iSubject}, subjectName))
-
             %% 2. Get subject labels
             subjectLabel = listSubjects{iSubject};
-
             %% 3. Process all anatomical files
             if exist(fullfile(x.modules.import.imPar.BidsRoot, subjectLabel, 'anat'), 'dir') 
                 % Single-session
@@ -68,14 +67,9 @@ function xASL_wrp_Deface(x)
             
         end
     end
-
 end
-
-
-
 % Actual defacing
 function xASL_imp_RunDeface(x, fileAnat, subjectLabel, sessionName)
-
     % Check that list is not empty
     if ~isempty(fileAnat)
         for iAnat = 1:length(fileAnat)
@@ -105,7 +99,4 @@ function xASL_imp_RunDeface(x, fileAnat, subjectLabel, sessionName)
             
         end
     end
-
 end
-
-

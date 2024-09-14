@@ -38,6 +38,10 @@ function xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath)
 % Pareto D, Sastre-Garriga J, Aymerich FX, et al. Lesion filling effect in regional brain volume estimations: a study in multiple sclerosis patients with low lesion load. Neuroradiology. Neuroradiology; 2016;58(5):467?474http://dx.doi.org/10.1007/s00234-016-1654-5.
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if nargin < 2 || isempty(rWMHPath)
 	error('Requires at least 2 input arguments');
@@ -45,24 +49,17 @@ elseif ~xASL_exist(rWMHPath, 'file')
     warning([rWMHPath ' missing, skipping']);
     return;
 end
-
-
 %% ----------------------------------------------------------------------------------
 %% 1) File management
 [Fpath, Ffile] = fileparts(rWMHPath);
 T1_filledName = fullfile(Fpath, ['T1_filled_' Ffile(6:end) '.nii']);
-
 fprintf('\n%s\n','----------------------------------------');
 fprintf('%s\n','Removing segmented WMH from T1w, and fill lesions with values interpolated from neighborhood');
-
-
 %% ----------------------------------------------------------------------------------
 %% 2) Clean up the WMH segmentation used for lesion filling
 xASL_im_CleanupWMHnoise(rWMHPath, rWMHPath, 200, 0.5);
 % cutoff of 200 mm^3 lesion volume & pWMH>50%
 % This makes sure that we only fill significant lesions
-
-
 %% ----------------------------------------------------------------------------------
 %% 3) Run lesion filling
 if ~(xASL_stat_SumNan(xASL_stat_SumNan(xASL_stat_SumNan(xASL_io_Nifti2Im(rWMHPath))))>0)
@@ -74,33 +71,27 @@ else
     matlabbatch{1}.spm.tools.LST.filling.html_report = 0; % saves time
     spm_jobman('run',matlabbatch);
     close all
-
     %% ----------------------------------------------------------------------------------
     %% 4) Correction of too much/erronous lesion filling
     % LST lesion filling can create artifacts, which we try to remove here
     % Note that this part assumes a T1w contrast!
     T1w = xASL_io_Nifti2Im(x.P.Path_T1);
     T1wFilled = xASL_io_Nifti2Im(T1_filledName);
-
     % we assume that lesion filling should increase the intensity, i.e.
     % correcting the WM lesion hypointensity in the T1w to the higher WM
     % intensity. Everywhere the intensity is reduced, this is erroneous.
     if length(size(T1wFilled))~=length(size(T1w)) || ~min(size(T1wFilled)==size(T1w))
         warning('Original & filled T1 differ in size, something going wrong');
     end
-
     T1wFilled(T1wFilled<T1w) = T1w(T1wFilled<T1w);
     xASL_io_SaveNifti(T1_filledName, T1_filledName, T1wFilled, [], 0);
 end
-
-
 %% ----------------------------------------------------------------------------------
 %% 5) File management
 if x.settings.DELETETEMP
     xASL_delete(rWMHPath);
     xASL_adm_DeleteFileList(Fpath, '^LST_.*FLAIR\.mat$', false, [0 Inf]); % LST mat-file
 end
-
 % Rename lesion filled T1w
 % If both lesion-filled & original T1 exist, rename original T1 to T1w_ORI,
 % & rename the lesion-filled T1 to T1:
@@ -111,6 +102,4 @@ if  xASL_exist(x.P.Path_T1, 'file') && xASL_exist(T1_filledName, 'file')
     end
     xASL_Move(T1_filledName, x.P.Path_T1, true);
 end
-
-
 end

@@ -19,7 +19,10 @@ function [QA_Output] = xASL_qc_CAT12_IQR(InputImage, InputC1, InputC2, InputC3, 
 %               InputC3 = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/p3T1.nii';
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if nargin<5 || isempty(bFLAIR)
     bFLAIR = false;
@@ -28,27 +31,21 @@ end
 if isempty(which('cat_vol_qa'))
     error('Please install/initialize CAT12 for this QC function');
 end 
-
 fprintf('Obtaining CAT12 IQR parameter\n');
-
 [Fpath, Ffile, Fext] = xASL_fileparts(InputImage);
 PathM = fullfile(Fpath, ['m' Ffile Fext]); % biasfield-corrected image
 PathSegm{1} = InputC1;
 PathSegm{2} = InputC2;
 PathSegm{3} = InputC3;
-
 % Some other stuff for CAT12
 job=struct;
 job.extopts = struct;
 job.extopts.species = 'human';
 job.opts = struct;
-
 cat_warnings = struct('identifier',{},'message',{});
-
 %% Load segmentations & get volumes
 fprintf('Loading segmentations (& reslicing if needed)\n');
 niiMain = xASL_io_ReadNifti(InputImage); % Obtain orientation matrix for main image
-
 for iSegm=1:length(PathSegm)
     niiC{iSegm} = xASL_io_ReadNifti(PathSegm{iSegm});
     if ~isequal(niiC{iSegm}.mat,niiMain.mat)
@@ -84,17 +81,14 @@ for iSegm=1:length(PathSegm)
 end
 vol_TIV = VolumeSegm{1}+VolumeSegm{2}+VolumeSegm{3};
 vol_rel_CGW = [VolumeSegm{3} VolumeSegm{1} VolumeSegm{2} eps eps]./vol_TIV;
-
 % Fill the volumes for CAT12
 qa = struct;
 qa.subjectmeasures = struct;
 qa.subjectmeasures.vol_TIV = vol_TIV;
 qa.subjectmeasures.vol_rel_CGW = vol_rel_CGW;
-
 %% Get biasfield-corrected image
 fprintf('Obtaining biasfield information\n');
 xASL_spm_BiasfieldCorrection(InputImage, [], false, [], PathM);
-
 % Load biasfield NIfTI for CAT12
 res = struct;
 res.image.fname = PathM;
@@ -106,23 +100,19 @@ res.image.n = [1 1];
 res.image.dt = double([res.image.private.hdr.datatype 0]);
 res.image.pinfo = [1;0;res.image.private.hdr.vox_offset];
 Ym = xASL_io_Nifti2Im(PathM);
-
 %% create combined label/segmentation map
 fprintf('Creating combined label/segmentation map\n');
 Yp0 = (IM_C{3}.*255)/5 + (IM_C{1}.*255)/5*2 + (IM_C{2}.*255)/5*3;
 WBmask = (IM_C{1}+IM_C{2}+IM_C{3})>0.5;
-
 % low resolution Yp0b
 [indx, indy, indz] = ind2sub(size(Yp0),find(WBmask));
 indx = max((min(indx) - 1),1):min((max(indx) + 1),size(Yp0,1));
 indy = max((min(indy) - 1),1):min((max(indy) + 1),size(Yp0,2));
 indz = max((min(indz) - 1),1):min((max(indz) + 1),size(Yp0,3));
 Yp0b = Yp0(indx,indy,indz);
-
 Yp0 = zeros(size(Yp0),'single'); 
 Yp0(indx,indy,indz) = single(Yp0b)/255*5; 
 Yp0(Yp0>3.00001) = nan;
-
 %% Run the CAT12 QC function
 fprintf('Running CAT12 QC function\n');
 if bFLAIR
@@ -134,7 +124,6 @@ else
 end
       
 QA_Output = qa.qualityratings;
-
 %% Householding
 xASL_delete(PathM);
 if ~strcmp(PathSegm{1}, InputC1)
@@ -146,6 +135,4 @@ end
 if ~strcmp(PathSegm{3}, InputC3)
     xASL_delete(PathSegm{3});
 end
-
 end
-

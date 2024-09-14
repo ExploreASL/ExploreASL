@@ -16,7 +16,10 @@ function imageType = xASL_bids_determineImageTypeGE(jsonPar)
 %              imageType = xASL_bids_determineImageTypeGE(iHeader);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Starts looking for the correct image type
 	imageType = '';
@@ -35,7 +38,6 @@ function imageType = xASL_bids_determineImageTypeGE(jsonPar)
     else
         return;
     end
-
     % ["ImageType": ["DERIVED", "PRIMARY", "ASL", "PERFUSION", "ASL"] - deltaM
     if length(jsonPar.ImageType) == 5 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
             strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'PERFUSION') && strcmpi(jsonPar.ImageType{5},'ASL')
@@ -47,13 +49,11 @@ function imageType = xASL_bids_determineImageTypeGE(jsonPar)
             strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'PERFUSION') && strcmpi(jsonPar.ImageType{5},'ASL') && strcmpi(jsonPar.ImageType{6},'REAL')
         imageType = 'deltam';
     end
-
     % ["DERIVED", "PRIMARY", "ASL", "PERFUSION_ASL"] - deltaM
     if length(jsonPar.ImageType) == 4 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
             strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'PERFUSION_ASL')
         imageType = 'deltam';
 	end
-
 	% ["ORIGINAL", "PRIMARY", "ASL", "REAL"] - M0
     if length(jsonPar.ImageType) == 4 && strcmpi(jsonPar.ImageType{1},'ORIGINAL') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
             strcmpi(jsonPar.ImageType{3},'ASL') && strcmpi(jsonPar.ImageType{4},'REAL')
@@ -65,17 +65,14 @@ function imageType = xASL_bids_determineImageTypeGE(jsonPar)
             strcmpi(jsonPar.ImageType{3},'ASL')
         imageType = 'm0scan';
     end
-
     % ["DERIVED", "PRIMARY", "CBF", "CBF"] - CBF
     if length(jsonPar.ImageType) == 4 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
             strcmpi(jsonPar.ImageType{3},'CBF') && strcmpi(jsonPar.ImageType{4},'CBF')
         imageType = 'cbf';
 	end
-
 	% ["DERIVED", "PRIMARY", "CBF", "CBF", "REAL"] - CBF
     if length(jsonPar.ImageType) == 5 && strcmpi(jsonPar.ImageType{1},'DERIVED') && strcmpi(jsonPar.ImageType{2},'PRIMARY') &&...
             strcmpi(jsonPar.ImageType{3},'CBF') && strcmpi(jsonPar.ImageType{4},'CBF') && strcmpi(jsonPar.ImageType{5},'REAL')
         imageType = 'cbf';
     end
-
 end

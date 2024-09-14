@@ -22,21 +22,20 @@ function [FA_Outliers_mL] = xASL_qc_FA_Outliers(InputFA)
 %
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Read the header and get voxelsize
 FAnii = xASL_io_ReadNifti(InputFA);
 VoxelSize_mm = prod(FAnii.hdr.pixdim(2:4));
-
 %Read image
 FAimage = xASL_io_Nifti2Im(InputFA);
-
 %Detect FA outliers
 nFA_OutliersPos = xASL_stat_SumNan(FAimage(:)>1); % get number of positive FA outliers
 nFA_OutliersNeg = xASL_stat_SumNan(FAimage(:)<0); % get number of negative FA outliers
 nFA_Outliers = nFA_OutliersPos+nFA_OutliersNeg; % get total number of outliers
-
 FA_Outliers_mm = nFA_Outliers*VoxelSize_mm;
 FA_Outliers_mL = FA_Outliers_mm/1000;
-
-
 end 

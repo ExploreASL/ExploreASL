@@ -14,6 +14,10 @@ function stackText = xASL_test_StackToString(stack)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Fallback
     stackText = '';
@@ -30,6 +34,4 @@ function stackText = xASL_test_StackToString(stack)
     if ~isempty(stackText) && length(stackText)>3
         stackText = stackText(3:end);
     end
-
 end
-

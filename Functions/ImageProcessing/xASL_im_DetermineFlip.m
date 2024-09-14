@@ -25,6 +25,10 @@ function [LR_flip_YesNo] = xASL_im_DetermineFlip(PathOrientationResults)
 % EXAMPLE: LR_flip_YesNo = xASL_im_DetermineFlip(PathOrientationResults);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% ============================================================
     %% Admin
@@ -34,11 +38,8 @@ function [LR_flip_YesNo] = xASL_im_DetermineFlip(PathOrientationResults)
         error([PathOrientationResults ' non-existing, skipping']);
         % PM: this error may be a warning
     end
-
     LR_flip_YesNo = NaN; % default
-
     [~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathOrientationResults);
-
     %% ============================================================    
     %% 1. Determine correct row, differs between Matlab versions
     if size(CellTSV,1)<2 || size(CellTSV,2)<26
@@ -53,7 +54,6 @@ function [LR_flip_YesNo] = xASL_im_DetermineFlip(PathOrientationResults)
     else
         firstRow = 2;
     end
-
     %% ============================================================
     %% 3. Determine column indices
     columnDetOri = find(strcmp(CellTSV(1,:), 'DetOrigin'));

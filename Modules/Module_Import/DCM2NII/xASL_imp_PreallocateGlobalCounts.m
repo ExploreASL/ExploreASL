@@ -19,7 +19,10 @@ function [subject,visit] = xASL_imp_PreallocateGlobalCounts(nSubjects, subject, 
 %
 % __________________________________
 % Copyright 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % keep a count of all individual scans
     subject.globalCounts.converted_scans = zeros(nSubjects, subject.nVisits, visit.nSessions, visit.nScans,'uint8');
@@ -32,9 +35,4 @@ function [subject,visit] = xASL_imp_PreallocateGlobalCounts(nSubjects, subject, 
     
     % define a cell array for storing info for parameter summary file
     subject.summary_lines = cell(nSubjects, subject.nVisits, visit.nSessions, visit.nScans);
-
-
 end
-
-
-

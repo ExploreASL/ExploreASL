@@ -33,6 +33,10 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 % REFERENCES:
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% ----------------------------------------------------------------------------------
 	% 1. Admin
@@ -132,7 +136,6 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			else
 				seriesNumberList(iJSON) = 0;
 			end
-
 			imageTypeList{iJSON} = '';
 			if isfield(tmpJSON, 'ImageType')
 				if iscell(tmpJSON.ImageType)
@@ -144,8 +147,6 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				end
 				imageTypeList{iJSON} = regexprep(imageTypeList{iJSON},'[^a-zA-Z]','');
 			end
-
-
 		end
 		% Create a cell of parms
 		parms{iJSON} = struct();
@@ -289,12 +290,10 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			
 			% Find the matching instanceNumber
 			parmsIndexInstance = (currentInstanceNumber >= instanceNumberList);
-
 			% If none matches, then accept all
 			if sum(parmsIndexInstance) == 0
 				parmsIndexInstance = ones(size(parmsIndexInstance));
 			end
-
 			% If there is a unique way to match the ImageType - then choose that
 			imageTypeMatch = regexpi(imageTypeList, currentImageType);
 			parmsIndexImageType = ~cellfun(@isempty,imageTypeMatch);
@@ -303,10 +302,8 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			if sum(parmsIndexImageType ) == 0
 				parmsIndexImageType  = ones(size(parmsIndexImageType ));
 			end
-
 			% Find all matching volumes
 			parmsIndex = parmsIndexSeries & parmsIndexInstance & parmsIndexImageType;
-
 			% Take the best matching index
 			if sum(parmsIndex) == 1
 				% Single matching index
@@ -350,13 +347,11 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                 % for simplicity, take the first value from the enhanced
                 % sequences and store them in the temp-struct as if it is a
                 % classic structure.
-
                 if ~isfield(temp, 'PerFrameFunctionalGroupsSequence')
                     warning('xASL_adm_Dicom2JSON: Enhanced DICOM but PerFrameFunctionalGroupsSequence not found');
                 else
                     itemNames = fieldnames(temp.PerFrameFunctionalGroupsSequence);
                     SequenceFields = temp.PerFrameFunctionalGroupsSequence.(itemNames{1}); % here we assume the same ScaleSlope for all images in the sequence
-
                     % Fill temp dicominfo with these fields
                     Fields1Are = fields(SequenceFields);
                     for iField1=1:length(Fields1Are)
@@ -365,7 +360,6 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
                         elseif isstruct(SequenceFields.(Fields1Are{iField1}))
                             Fields2Are = fields(SequenceFields.(Fields1Are{iField1}));
                             SequenceFields2 = SequenceFields.(Fields1Are{iField1}).(Fields2Are{1});
-
                             Fields3Are = fields(SequenceFields2);
                             for iField3=1:length(Fields3Are)
                                 temp.(Fields3Are{iField3}) = SequenceFields2.(Fields3Are{iField3});
@@ -463,7 +457,6 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 			if instanceNumberList(indexInstance) > 0
 				parmsIndex = indexInstance;
 			end
-
 			if max(instanceNumberList) == 0
 				parmsIndex = indexInstance;
 			end
@@ -699,10 +692,7 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
     end
     % Newline after track progress
     fprintf('   \n');
-
-
 end
-
 %% Obtain a value from a structure 
 function val = GetDicomValue(I, fieldname, default)
 if nargin>2
@@ -710,7 +700,6 @@ if nargin>2
 else
 	val = [];
 end
-
 if isfield(I, fieldname)
 	val = I.(fieldname);
 end

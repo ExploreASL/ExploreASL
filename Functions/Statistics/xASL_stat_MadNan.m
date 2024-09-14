@@ -22,22 +22,23 @@ function y = xASL_stat_MadNan(x,flag,dim)
 %
 % __________________________________
 % Copyright © 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2017-00-00 JP
-
 % Set the flag if missing
 if nargin < 2 || isempty(flag)
     flag = 0;
 end
-
 % For empty input return Nan
 if isequal(x,[])
     y = NaN;
     return;
 end
-
 x = double(x); % Single failed in large arrays according to CAT12
-
 % Set the dimension if missing
 if nargin < 3 || isempty(dim)
 	% Figure out which dimension nanmean will work along.
@@ -46,11 +47,9 @@ if nargin < 3 || isempty(dim)
 		dim = 1;
 	end
 end
-
 % Need to tile the output of nanmean to center X.
 rpsize = ones(1,max(ndims(x),dim));
 rpsize(dim) = size(x,dim);
-
 if flag == 0
     % Mean absolute deviation
     y = xASL_stat_MeanNan( abs(x - repmat(xASL_stat_MeanNan(x,dim), rpsize)) ,dim);

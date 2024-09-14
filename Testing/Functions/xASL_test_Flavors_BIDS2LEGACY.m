@@ -14,6 +14,10 @@ function loggingTable = xASL_test_Flavors_BIDS2LEGACY(testConfig, loggingTable)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Go through all studies
     for iList=1:numel(testConfig.flavorList)
@@ -31,14 +35,9 @@ function loggingTable = xASL_test_Flavors_BIDS2LEGACY(testConfig, loggingTable)
                 xFlavor.logging.name = testConfig.flavorList{iList};
                 xFlavor.logging.stack = ME.stack;
             end
-
             if isfield(xFlavor,'logging')
                 loggingTable = xASL_test_AddLoggingEntryToTable(testConfig.flavorList{iList},loggingTable,xFlavor.logging);
             end
-
         end
     end
-
 end
-
-

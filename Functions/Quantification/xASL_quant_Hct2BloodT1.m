@@ -28,13 +28,15 @@ function BloodT1 = xASL_quant_Hct2BloodT1(Hematocrit, Y, B0, bVerbose)
 % REFERENCE: Hales, 2016 JCBFM, DOI: 10.1177/0271678X15605856
 % __________________________________
 % Copyright (C) 2015-2022 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ---------------------------------------------------------
 %% Admin
-
 % Default output
 BloodT1 = [];
-
 if nargin<4 || isempty(bVerbose)
     bVerbose = true;
 end
@@ -61,8 +63,6 @@ elseif isnan(Hematocrit)
     xASL_quant_Hct2BloodT1_printMissingHctWarning;
     return;
 end
-
-
 %% ---------------------------------------------------------
 %% 1) Check fraction vs percentage hematocrit & Y, should be between 0 and 1
 if Hematocrit>0 && Hematocrit<1
@@ -75,7 +75,6 @@ else
     xASL_quant_Hct2BloodT1_printMissingHctWarning;
     return;
 end
-
 if Y>0 && Y<1
     % this is fine, just continue
 elseif Y>1 && y<100
@@ -86,45 +85,31 @@ else
     xASL_quant_Hct2BloodT1_printMissingHctWarning;
     return;
 end
-
-
 %% ---------------------------------------------------------
 %% 2) Specify defaults (Hb, Fe)
 Hb = 5.15;  % mean corpuscular haemoglobin concentration (mmol Hb tetramer / L plasma)
 Fe = (0.70*Hematocrit)/((0.70*Hematocrit)+(0.95*(1-Hematocrit))); % Water fraction in erythrocytes
-
-
 %% ---------------------------------------------------------
 %% 3) Perform calculation
 part1 = 1.099 - (0.057*B0) + ((0.033*Hb)*(1-Y));
 part2 = (1-Fe)*(0.496-(0.023*B0));
-
 BloodT1 = (1/((Fe*part1)+part2)) + 0.108;  % (seconds)
 % 0.108 is on offset for in-vivo measurement (without it for in-vitro)
-
-
 %% ---------------------------------------------------------
 %% 4) Convert s to ms
 BloodT1 = BloodT1*1000;
-
 %% ---------------------------------------------------------
 %% 5) Print what we did
 if bVerbose
     fprintf('%s\n', ['Calculated blood T1 ' num2str(BloodT1) ' ms from Hct ' num2str(Hematocrit)]);
     fprintf('%s\n', ['Assuming field strength ' xASL_num2str(B0) 'T, arterial O2 saturation ' xASL_num2str(Y)]);
 end
-
-
 end
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function xASL_quant_Hct2BloodT1_printMissingHctWarning(x)
 %xASL_quant_Hct2BloodT1_printMissingHctWarning We may print this message in
 %different cases, which is why this subfunction comes in handy
-
-
 fprintf('\n\n\n');
 fprintf('%s\n', 'WARNING: POSSIBLE CBF BIAS');
 fprintf('\n');
@@ -132,5 +117,4 @@ fprintf('%s\n', 'Please be warned that if you are correcting CBF values for hema
 fprintf('%s\n', 'this scan will NOT be corrected and ExploreASL will use the default blood T1 value');
 fprintf('%s\n', 'This can create a significant CBF bias');
 fprintf('\n\n\n');
-
 end

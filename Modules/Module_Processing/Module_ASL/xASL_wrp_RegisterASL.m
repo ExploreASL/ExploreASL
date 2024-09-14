@@ -83,6 +83,11 @@ function x = xASL_wrp_RegisterASL(x)
 % EXAMPLE: xASL_wrp_RegisterASL(x);
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% ----------------------------------------------------------------------------------------

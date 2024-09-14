@@ -29,7 +29,10 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresTSV(differences
 % REFERENCES:       ...
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Read files if they exist
     if xASL_exist(currentFileA,'file') && xASL_exist(currentFileB,'file')
@@ -56,6 +59,4 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresTSV(differences
             end
         end
     end
-
 end
-

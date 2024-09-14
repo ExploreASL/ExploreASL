@@ -25,15 +25,16 @@ function x = xASL_imp_BasicParameterChecks(x)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Basic checks
-
     % Fix x.dir.DatasetRoot if the last character is a forward or backward slash
     if strcmp(x.dir.DatasetRoot(end),'\') || strcmp(x.dir.DatasetRoot(end),'/')
         x.dir.DatasetRoot = x.dir.DatasetRoot(1:end-1);
     end
-
     % Check the imagePar input file
     if isempty(x.dir.sourceStructure) && x.opts.bImport(1)
         % If the path is empty, then try to find sourceStructure.json or sourcestruct.json
@@ -51,7 +52,6 @@ function x = xASL_imp_BasicParameterChecks(x)
             x.dir.sourceStructure = fullfile(x.dir.DatasetRoot,x.dir.sourceStructure);
         end
     end
-
     % Find the studyPar input file
     if isempty(x.dir.studyPar)
         % If the path is empty, then try to find studyPar.json
@@ -67,7 +67,6 @@ function x = xASL_imp_BasicParameterChecks(x)
             x.dir.studyPar = fullfile(x.dir.DatasetRoot,x.dir.studyPar);
         end
     end
-
     if isempty(x.opts.bImport)
         x.opts.bImport = [1 1 0];
     else
@@ -75,19 +74,16 @@ function x = xASL_imp_BasicParameterChecks(x)
             error('x.opts.bImport must have length 3...');
         end
     end
-
     % By default don't copy DICOMs for anonymization reasons
     if isempty(x.modules.import.settings.bCopySingleDicoms)
         x.modules.import.settings.bCopySingleDicoms = false;
     end
-
     if isempty(x.modules.import.settings.bUseDCMTK)
         % Default set to using DCM-TK
         x.modules.import.settings.bUseDCMTK = true;
     elseif ~x.modules.import.settings.bUseDCMTK && isempty(which('dicomdict'))
         error('Dicomdict missing, image processing probably not installed, try DCMTK instead');
     end
-
     if isempty(x.modules.import.settings.bCheckPermissions)
         if isunix
             x.modules.import.settings.bCheckPermissions = true;
@@ -95,11 +91,4 @@ function x = xASL_imp_BasicParameterChecks(x)
             x.modules.import.settings.bCheckPermissions = false;
         end
     end
-
-
-
-
 end
-
-
-

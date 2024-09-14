@@ -15,24 +15,22 @@ function UnitTest = xASL_ut_function_xASL_adm_CompareLists(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_adm_CompareLists(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Test run 1
-
 % Give your individual subtest a name
 UnitTest.tests(1).testname = 'Simple list example';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 testListA = {1, 2, 3, 'A', 'B', 'C'}';
 testListB = {4, 5, 6, 'A', 'B', 'C'}';
 [newList] = xASL_adm_CompareLists(testListA, testListB);
-
 % Define one or multiple test conditions here
 testCondition = true;
-
 % Define one or multiple test conditions here
 if ~isempty(newList{1,1}) || ~isempty(newList{2,1}) || ~isempty(newList{3,1}) || ...
    ~isempty(newList{1,2}) || ~isempty(newList{2,2}) || ~isempty(newList{3,2})
@@ -41,30 +39,21 @@ end
 if ~strcmp(newList{4,1},'A') || ~strcmp(newList{5,1},'B') || ~strcmp(newList{6,1},'C') || ...
    ~newList{4,2} || ~newList{5,2} || ~newList{6,2}
 end
-
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
-
-
 %% Test run 2
-
 % Give your individual subtest a name
 UnitTest.tests(2).testname = 'Different list length example';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 testListA = {1, 2, 3, 'A', 'B', 'C'}';
 testListB = {4, 5, 6, 'A', 'B'}';
 [newList] = xASL_adm_CompareLists(testListA, testListB);
-
 % Define one or multiple test conditions here
 testCondition = true;
-
 % Define one or multiple test conditions here
 if ~isempty(newList{1,1}) || ~isempty(newList{2,1}) || ~isempty(newList{3,1}) || ...
    ~isempty(newList{1,2}) || ~isempty(newList{2,2}) || ~isempty(newList{3,2})
@@ -73,17 +62,10 @@ end
 if ~strcmp(newList{4,1},'A') || ~strcmp(newList{5,1},'B') || ~strcmp(newList{6,1},'C') || ...
    ~newList{4,2} || ~newList{5,2} || newList{6,2}
 end
-
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(2).passed = testCondition;
-
-
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
-
 end
-
-

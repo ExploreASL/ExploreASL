@@ -47,8 +47,12 @@ function xASL_im_SplitImageLabels(ImagePaths, LabelTable, OutputFolder, bOverwri
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % Copyright 2015-2020 ExploreASL
-    
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
+    
 if nargin<7 || isempty(sessionFolder)
     warning('No session folder provided, hint: x.SESSIONS{1} within ExploreASL');
     fprintf('%s\n', 'Defaulting to ASL_1');
@@ -75,22 +79,18 @@ end
 if nargin<1 || isempty(ImagePaths)
     error('Please provide (a list of) path(s) to image(s) containing label(s)');
 end
-
 if ~iscell(ImagePaths)
     ImagePaths = {ImagePaths};
 end
-
 if isempty(OutputFolder)
     bResetOutputFolder = true;
 else
     bResetOutputFolder = false;
 end
-
 %% -------------------------------
 %% 1. Load label table
 if ~iscell(LabelTable) && ischar(LabelTable)
     [~, ~, Fext] = xASL_fileparts(LabelTable);
-
     if strcmp(Fext, '.csv')
         try
             LabelTable = xASL_csvRead(LabelTable);
@@ -125,11 +125,9 @@ else
     end
 end
     
-
 %% -------------------------------
 %% 2. Process images
 fprintf('Process images:   ');
-
 for iImage=1:length(ImagePaths)
     xASL_TrackProgress(iImage, length(ImagePaths));
     % Get original filename
@@ -175,6 +173,4 @@ for iImage=1:length(ImagePaths)
     end
 end        
 fprintf('\n');
-
-
 end

@@ -39,7 +39,10 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
 % EXAMPLE:     n/a
 % __________________________________
 % Copyright 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 4.1 Initialize variables
     
@@ -56,7 +59,6 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         CounterT = thisVisit.nSessions*thisVisit.nScans;
         xASL_TrackProgress(CounterN, CounterT);
     end
-
     %% 4.2 Convert scan ID to a suitable name and set scan-specific parameters
     if size(x.modules.import.imPar.tokenScanAliases,2)==2
         iAlias = find(~cellfun(@isempty,regexpi(scanID,x.modules.import.imPar.tokenScanAliases(:,1),'once')));
@@ -78,7 +80,6 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         end
     end
     scan_name = thisVisit.scanNames{scanFields.iScan};
-
     %% 4.3 Minimalistic feedback of where we are
     if x.modules.import.imPar.bVerbose
         if isempty(scanFields.name)
@@ -88,7 +89,6 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         end
         fprintf('Subject = %s, visit = %s, session = %s, scan = %s\n',scanFields.subjectID, scanFields.visitID, printSession, scan_name);
     end
-
 %     % Defaults
     bOneScanIsEnough = false; % PM: THIS USED TO BE TRUE FOR ANATOMICAL SCANS
     bPutInSessionFolder = true; % THIS USED TO BE FALSE FOR ANATOMICAL SCANS
@@ -107,7 +107,6 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
 	else
 		error('Unrecognized scantype');
     end
-
     
     %% 4.4 Now pick the matching one from the folder list
     
@@ -134,12 +133,10 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         thisSubject.summary_lines{scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan} = summary_line;
         return
     end
-
     %% 4.5 Determine input and output paths
     bSkipThisOne = false;
     branch = matches{iMatch};
     scanpath = fullfile(x.modules.import.imPar.RawRoot,branch);
-
     if ~isempty(strfind(thisVisit.scanNames{scanFields.iScan}, 'ASL4D')) || ~isempty(strfind(thisVisit.scanNames{scanFields.iScan}, 'M0'))
         session_name = scanFields.name;
     elseif ~isempty(strfind(thisVisit.scanNames{scanFields.iScan}, 'DSC4D'))
@@ -148,7 +145,6 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         % Allow multiple ScanTypes for sessions
         session_name = [thisVisit.scanNames{scanFields.iScan} '_' num2str(scanFields.numberSession)]; 
     end
-
     % Determine the subject directory name in the temp folder
     if bPutInSessionFolder
         % Put in a subject_session folder
@@ -166,7 +162,6 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         bSkipThisOne = true;
         destdir = [];
     end
-
     %% 4.6 Start the conversion if this scan should not be skipped
     
     % In case a previous run crashed we should remove the existing temp data here
@@ -175,17 +170,13 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
     %    fprintf(2,'Remove existing temp data...\n');
     %    xASL_delete(destdir,true);
     % end
-
     % Conversion
     [thisSubject.globalCounts, x, ~, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = ...
         xASL_imp_DCM2NII_Subject_StartConversion(...
         thisSubject.globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, scanFields);
-
-
     %% 4.7 Store JSON files
     jsonFiles = {};
     if ~isempty(nii_files)
-
         for iFile = 1:length(nii_files)
             [Fpath, Ffile, ~] = xASL_fileparts(nii_files{iFile});
             newFile = xASL_adm_GetFileList(Fpath,['^' Ffile '.json$'],'FPList');
@@ -200,7 +191,6 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
                 x.modules.import.imPar, jsonFiles, first_match, x.modules.import.settings.bUseDCMTK, x.modules.import.pathDcmDict);
         end
     end
-
     
     %% 4.8 Sort ASL Volumes
     if ~bAnatomical % skip this for anatomical scans
@@ -208,7 +198,6 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         % shuffle the dynamics from CCCC...LLLL order to CLCLCLCL... order.
         [x,nii_files, summary_line, thisSubject.globalCounts] = ...
             xASL_imp_DCM2NII_Subject_SortASLVolumes(x, thisSubject.globalCounts, scanpath, scan_name, nii_files, scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan);
-
         % Correct nifti rescale slope if parms.RescaleSlopeOriginal =~1 but nii.dat.scl_slope==1 (this can happen in case
         % of hidden scale slopes in private Philips header, that is dealt with by xASL_bids_Dicom2JSON but not by dcm2niiX.
         if ~isempty(nii_files) && exist('parms','var')
@@ -216,33 +205,20 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
             summary_line = [summary_line TempLine];
         end
     end
-
     %% 4.9 Copy single dicom as QC placeholder
     if x.modules.import.settings.bCopySingleDicoms && ~isempty(first_match) && ~regexpi(fExt, '\.(nii|nii\.gz)')
         xASL_Copy(first_match, fullfile(destdir, ['DummyDicom_' scan_name '.dcm']), x.modules.import.imPar.bOverwrite, x.modules.import.imPar.bVerbose);
     end
-
     %% 4.10 Store the summary info so it can be sorted and printed below
     thisSubject.summary_lines{scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan} = summary_line;
-
     %% 4.11 Check DCM2NIIX output
     xASL_imp_Check_DCM2NII_Output(nii_files,scanID);
-
-
 end
-
-
-
-
 %% Check the DCM2NII output
 function xASL_imp_Check_DCM2NII_Output(nii_files,scanID)
-
     % For some ADNI cases there are multiple anatomical scans in a single session (case 006_S_4485 e.g.).
     % This can be troublesome for NII2BIDS and BIDS2LEGACY.
     if (~isempty(regexpi(scanID, 't1w', 'once')) ||  ~isempty(regexpi(scanID, 'flair', 'once'))) && numel(nii_files)>1
         fprintf('Multiple anatomical NIfTIs for a single session...\n');
     end
-
 end
-
-

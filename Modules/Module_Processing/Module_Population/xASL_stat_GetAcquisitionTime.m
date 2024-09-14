@@ -27,6 +27,11 @@ function x = xASL_stat_GetAcquisitionTime(x)
 % EXAMPLE: x = xASL_stat_GetAcquisitionTime(x);
 % __________________________________
 % Copyright 2016-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 

@@ -18,18 +18,18 @@ function xASL_mex_compileAll()
 % EXAMPLE:     xASL_compile_all;
 % __________________________________
 % Copyright © 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 % Obtain the current path
 pathCurrent = matlab.desktop.editor.getActiveFilename;
-
 % Remove the filename
 [pathCurrent,~,~] = fileparts(pathCurrent);
-
 % Go to the basic ExploreASL folder
 pathXASL = pathCurrent(1:end-14);
-
 % Detect environment
 if ispc
     fprintf('%s\n', 'Windows PC environment detected, trying recompiling...');
@@ -54,18 +54,13 @@ elseif isunix
 else
     error('Unknown or not supported environment, stopping compiling');
 end
-
 % Setup for C++ compiling
 mex -setup C++
-
-
 %% 1. Compile the xASL files in the SPM folder
 fprintf('%s\n', 'Compiling the SPM xASL folder...');
 cd(fullfile(pathXASL,'External','SPMmodified','xASL'));
 mex xASL_mex_chamfers3D.c
 mex xASL_mex_conv3Dsep.c
-
-
 %% 2. Compile the xASL files in the mex folder
 fprintf('%s\n', 'Compiling the xASL proper folder...');
 cd(fullfile(pathXASL,'Functions','mex'));
@@ -73,12 +68,9 @@ mex xASL_mex_conv3DsepGauss.c
 mex xASL_mex_dilate_erode_3D.c
 mex xASL_mex_dilate_erode_single.c
 mex xASL_mex_JointHist.c
-
-
 %% 3. Compile the xASL DICOM reading using the DCMTK library
 fprintf('%s\n', 'Compiling the DCMtK folder...');
 cd(fullfile(pathXASL,'External','DCMTK'));
-
 switch environmentIs
     case 'maca64'
         mex -v -f xASL_mex_DcmtkMacARM64.xml xASL_mex_DcmtkRead.cpp
@@ -89,5 +81,4 @@ switch environmentIs
     case 'w64'
 	    mex -v -f xASL_mex_DcmtkWin.xml xASL_mex_DcmtkRead.cpp
 end
-
 end

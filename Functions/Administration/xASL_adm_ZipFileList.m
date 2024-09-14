@@ -35,6 +35,10 @@ function filepaths = xASL_adm_ZipFileList(strDirectory, strRegExp, bRecurse, bUs
 %
 % __________________________________
 % Copyright 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Check input arguments
     if nargin<3 || isempty(bRecurse)
@@ -49,7 +53,6 @@ function filepaths = xASL_adm_ZipFileList(strDirectory, strRegExp, bRecurse, bUs
     if nargin<6 || isempty(bDelete)
         bDelete = false; % by default don't delete the zipped source file(s)
     end
-
 	% Set recursive or non-recursive delete
     if bRecurse
         mode='FPListRec'; 

@@ -26,14 +26,16 @@ function [ColumnOut] = xASL_im_IM2Column(ImageIn, BrainMask, ApplyShiftDim)
 % EXAMPLE: ColumnOut = xASL_im_IM2Column(ImageIn, BrainMask);
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %%  ------------------------------------------------------------
 %% Shift dims, if multiple subjects
 if nargin<3 || isempty(ApplyShiftDim)
     ApplyShiftDim = true;
 end
-
 if length(size(ImageIn))>3
 	if ApplyShiftDim
 		ImageIn = shiftdim(ImageIn,length(size(ImageIn))-3);
@@ -45,9 +47,7 @@ if length(size(ImageIn))>3
 else
     ApplyShiftDim = false; % to avoid re-shifting below
 end
-
 SizeIM = size(ImageIn);
-
 %%  ------------------------------------------------------------
 %%  Apply dimension change (compression, IM2column)
 if size(ImageIn,3)>1 && min(SizeIM(1:3)==[121 145 121]) % here we apply iteration, to avoid using too much memory
@@ -65,10 +65,7 @@ else
         error('%s\n', ME.message);
     end
 end
-
 if ApplyShiftDim
     ColumnOut = shiftdim(ColumnOut,1);
 end
-
-
 end

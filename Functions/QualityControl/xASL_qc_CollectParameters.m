@@ -19,14 +19,15 @@ function x = xASL_qc_CollectParameters(x, iSubject, ScanType, iSession)
 %          x = xASL_qc_CollectParameters(x, 10, 'ASL', 4);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% -----------------------------------------------------------------------------------------------
 %% Admin
 fclose all;
-
 fprintf('Collecting QC parameters...\n');
-
 if nargin<3 || isempty(ScanType)
     % Run collecting and saving for all
     error('Missing ScanType...');
@@ -35,7 +36,6 @@ if nargin<2 || isempty(iSubject)
     % Run collecting and saving for all
     error('Missing iSubject...');
 end
-
 % It is recommended to provide session number for ASL
 if nargin<4 || isempty(iSession)
 	iSession = 1;
@@ -43,17 +43,14 @@ if nargin<4 || isempty(iSession)
 		warning(['Missing iSession for ' ScanType ', setting to 1']);
 	end
 end
-
 if ~isfield(x, 'Output')
     x.Output  = struct; 
 end
 if ~isfield(x.Output, ScanType)
     x.Output.(ScanType) = struct; 
 end
-
 %% -----------------------------------------------------------------------------------------------
 %% Collect subject-specific (i.e. structural/anatomical) QC results
-
 switch ScanType
     case 'Structural'
         x = xASL_qc_CollectQC_Structural(x, iSubject);
@@ -65,18 +62,14 @@ switch ScanType
 		warning('QC collection is not yet implemented for DWI');
 end
 fprintf('\n');
-
 if ~isfield(x,'DoWADQCDC')
     x.DoWADQCDC = false; % default
 end
-
 %% Remove empty fields
 FN = fieldnames(x.Output);
 TF = cellfun(@(c) isempty(fields(x.Output.(c))), FN);
 x.Output = rmfield(x.Output, FN(TF));
-
 %% Save QC data
-
 % Backward compatibility (used to store multiple subjects in single x.mat)
 FieldsAre = fields(x.Output);
 for iField=1:length(FieldsAre)
@@ -85,11 +78,9 @@ for iField=1:length(FieldsAre)
         x.Output.(FieldsAre{iField}) = x.Output.(FieldsAre{iField})(iSubject);
     end
 end
-
 %% -----------------------------------------------------------------------------------------------
 %% Query current software versions    
 x = xASL_qc_CollectSoftwareVersions(x);
-
 % Module-specific software versions:
 switch ScanType
     case 'Structural'
@@ -105,17 +96,13 @@ switch ScanType
 end
 % now remove the SoftwareVersion field to avoid redundancy
 x.Output = rmfield(x.Output,'SoftwareVersion');
-
 %% -----------------------------------------------------------------------------------------------
 %% Save QC output
 % Save current QC
 QC_Path = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, ['QC_collection_' x.SUBJECTS{iSubject} '.json']);
 xASL_delete(QC_Path);
 xASL_io_WriteJson(QC_Path, x.Output);
-
 % Generate WAD-QC Descriptor 
 % Run once for each subject
 xASL_qc_WADQC_GenerateDescriptor(x, iSubject, ScanType); % skipped when ~x.DoWADQCDC
-
-
 end

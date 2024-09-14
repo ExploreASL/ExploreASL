@@ -24,22 +24,21 @@ function xASL_qc_ReportLeftRightFlips(dirRoot, bZip)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     if nargin<1 || isempty(dirRoot)
         error('Root folder missing');
     elseif nargin<2 || isempty(bZip)
         bZip = true;
     end
-
     niftiList = xASL_adm_GetFileList(dirRoot, '^.*\.nii$', 'FPListRec');
     fileName = 'AllNiftis';
     xASL_qc_PrintOrientation(niftiList, dirRoot, fileName);
-
     PathOrientationResults = fullfile(dirRoot, ['xASL_qc_PrintOrientation_' fileName '.tsv']);
-
     LR_flip_YesNo = xASL_im_DetermineFlip(PathOrientationResults);
-
     savePath = fullfile(dirRoot, 'ReportLeftRightFlips.tsv');
     
     if ~isempty(LR_flip_YesNo)

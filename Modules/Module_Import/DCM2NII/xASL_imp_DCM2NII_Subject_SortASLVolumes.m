@@ -36,9 +36,12 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
 %
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 1. Fallbacks
-
     % Fallback
     ASLContext = '';
     
@@ -48,7 +51,6 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     %% 2. Fill NIfTI Table
     % The idea is to sort the NIfTIs based on the InstanceNumbers, to make sure that we have the same
     % ASL context on every OS. Before doing this part, there were some differences between Linux & Windows.
-
     % Iterate over NIfTI files
     for iNii = 1:size(niiTable,1)
     	% Get current NIfTI path
@@ -155,7 +157,6 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
 			
 			niftiData = xASL_io_ReadNifti(nii_files{1});
 			mat = niftiData.mat;
-
 			% We check for a special case of image center in the Z-direction not being crossing 0
 			if (sum(mat(:,3)) > 0) && (mat(3,4) > 0)
 				% The image is mirrored in the Z-direction, we need to fix the image matrix and the orientation matrix
@@ -163,7 +164,6 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
 				im = im(:,:,end:-1:1,:,:,:,:);
 				
 				mat(1:3, 4) = mat(1:3, 4) - size(im,3) * mat(1:3,3);
-
 				% Change both mat and mat0 to the new matrix
 				fprintf('Need to re-orient the ASL volume. Changing both mat and mat0, please ignore warnings during NIfTI saving\n');
 				xASL_io_SaveNifti(nii_files{1}, nii_files{1}, im, [], [], mat, [], [], [], [], mat);
@@ -173,20 +173,15 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     
     % Check if the current sequence is a FME (Fraunhofer Mevis) time encoded sequence
     [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfFME(nii_files, bTimeEncoded, bTimeEncodedFME);
-
     % Reorder TEs and PLDs accordingly for time encoded sequences
     xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncoded, bTimeEncodedFME, timeEncodedMatrixSize, vectorPLD, resultJSON);
     
     %% 6. Extract relevant parameters from nifti header and append to summary file
     summary_line = xASL_imp_AppendNiftiParameters(nii_files);
     globalCounts.converted_scans(iSubject, iVisit, iSession, iScan) = 1;
-
 end
-
-
 %% Determine if we have a Hadamard sequence based on the parameters of the studyPar.json
 function [bTimeEncoded, timeEncodedMatrixSize, vectorPLD] = xASL_imp_DCM2NII_CheckIfTimeEncoded(x, bTimeEncoded, iSubject, iVisit, iSession)
-
     if nargin<2 || isempty(bTimeEncoded)
         bTimeEncoded = false; % default
     end
@@ -194,7 +189,6 @@ function [bTimeEncoded, timeEncodedMatrixSize, vectorPLD] = xASL_imp_DCM2NII_Che
     % Set default output
     timeEncodedMatrixSize = [];
     vectorPLD = [];
-
     if isfield(x.dir, 'studyPar') && ~isempty(x.dir.studyPar)
         if xASL_exist(x.dir.studyPar, 'file')
             % Get the specific studyPar parameters
@@ -220,8 +214,4 @@ function [bTimeEncoded, timeEncodedMatrixSize, vectorPLD] = xASL_imp_DCM2NII_Che
 			end
         end
     end
-
 end
-
-
-

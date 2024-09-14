@@ -15,16 +15,16 @@ function UnitTest = xASL_ut_function_xASL_adm_OrderFields(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_adm_OrderFields(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Test run 1
-
 % Give your individual subtest a name
 UnitTest.tests(1).testname = 'Extract integer example';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 inStruct.A = 'test';
 inStruct.D = 'test';
@@ -36,10 +36,8 @@ orderStruct.C = 'test';
 orderStruct.D = 'test';
 outStruct = xASL_adm_OrderFields(inStruct,orderStruct);
 fieldNamesOutStruct = fieldnames(outStruct);
-
 % Define one or multiple test conditions here
 testCondition = true;
-
 % Define one or multiple test conditions here
 if ~strcmp(fieldNamesOutStruct(1),'A') || ...
    ~strcmp(fieldNamesOutStruct(2),'B') || ...
@@ -47,17 +45,10 @@ if ~strcmp(fieldNamesOutStruct(1),'A') || ...
    ~strcmp(fieldNamesOutStruct(4),'D')
     testCondition = false;
 end
-
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
-
-
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
-
 end
-
-

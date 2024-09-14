@@ -49,89 +49,73 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bPVC,
 %             Physics, Biology and Medicine. 2018 Dec 1;31(6):725-34.
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 1. Admin
 if nargin<1
 	error('imCBF is a required input parameter');
 end
-
 if nargin<2 || isempty(imMask)
 	imMask = ones(size(imCBF));
 end
-
 if nargin<3 || isempty(nMinSize)
 	nMinSize = 0;
 end
-
 if nargin<4 || isempty(bPVC)
 	bPVC = 0;
 end
-
 if nargin<5 || isempty(bParametric)
 	bParametric = 1;
 end
-
 if bPVC>0 && bParametric == 0
 	error('Non-parametric PVC is not implemented yet')
 end
-
 if nargin<6 
 	imGM = [];
 end
-
 if nargin<7 
 	imWM = [];
 end
-
 % Initialize the output
 CBF_GM = NaN;
 CBF_WM = NaN;
-
 if nargout>1 && bPVC~=2
 	warning('Calculates CBF_WM only for PVC==2 option');
 end
-
 if (nargout>1) && isempty(imWM)
 	warning('Cannot calculate CBF_WM when imWM is not provided');
 end
-
 if sum(isfinite(imCBF(:)))==0
     warning('CBF image is empty, skipping');
     return;
 end
-
 if bPVC == 2
 	% If running PVC, then need imGM and imWM of the same size as imCBF
 	if ~isequal(size(imCBF),size(imGM)) || ~isequal(size(imCBF),size(imWM))
 		warning('When running PVC, need imGM and imWM of the same size as imCBF');
 	end
 end
-
 %% 2. Mask calculations
-
 % Only compute in real data
 imMask = imMask>0 & isfinite(imCBF);
-
 imMask = imMask & (imCBF~=0); % Exclude zero values as well
-
 % Constrain calculation to the mask and to finite values
 imCBF = imCBF(imMask);
-
 % Limit imGM and imWM to imMask, if provided
 if ~isempty(imGM)
 	imGM = imGM(imMask); 
 end
-
 if ~isempty(imWM)
 	imWM = imWM(imMask); 
 end
-
 if sum(imMask(:))<nMinSize 
     CBF_GM = NaN;
     CBF_WM = NaN;
     return;
 end
-
 %% 3. Calculate the ROI statistics
 switch (bPVC)
 	case 0
@@ -143,7 +127,6 @@ switch (bPVC)
 			%% 3b. No PVC and median
 			CBF_GM = xASL_stat_MedianNan(imCBF); % this is non-parametric
 		end
-
 	case 1
 		%% 3c. Simple PVC
 		if isempty(imGM)
@@ -156,7 +139,6 @@ switch (bPVC)
 		% although assuming that CBF in CSF = 0, that maps are optimally resampled (cave
 		% smoothing of c1T1 & c2T1 to ASL smoothness!) and that TotalVolume-GM-WM = CSF
 		% The current absence of modulation here will not change a lot according to Jan Petr
-
 		% Real original Partial Volume Error Correction (PVEC)
 		% Normal matrix inverse solves a system of linear equations.
 		% If the matrix is not square = more equations than unknowns, then the pseudo-inverse gives solution in the least-square sense - meaning the sum of squares
@@ -165,14 +147,12 @@ switch (bPVC)
 		% you can see how close you get:
 		% gwcbf*gwpv'
 		% gwcbf*gwpv' - cbf'
-
 		gwpv                       = imGM;
 		gwpv(:,2)                  = imWM;
 		gwcbf                      = (imCBF')*pinv(gwpv');
 		CBF_GM                     = gwcbf(1);
 		CBF_WM                     = gwcbf(2);
 end
-
     % % Print histograms to check validity
     % IMPLEMENT THIS LATER ON GROUP LEVEL FOR EACH ROI                            
     % pGMmask         = logical((GMmask) .*TempCurrentMask);
@@ -199,4 +179,3 @@ end
     % print(gcf,'-djpeg','-r200', OutputFile);
     % close    
 end
-

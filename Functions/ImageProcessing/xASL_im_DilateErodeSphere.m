@@ -14,22 +14,21 @@ function el = xASL_im_DilateErodeSphere(R)
 % EXAMPLE:  el = xASL_im_DilateErodeSphere(2)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 if nargin < 1 || isempty(R)
 	R = 1;
 end
-
 % Size of the element
 N=2*R+1;
-
 % Field for distance calculation
 [a,b,c] = meshgrid(1:N,1:N,1:N);
-
 % Calculate the distance from the center
 C=R+1;
 d=sqrt((a-C).^2 + (b-C).^2 + (c-C).^2);
-
 el = d<=R;
-
 end

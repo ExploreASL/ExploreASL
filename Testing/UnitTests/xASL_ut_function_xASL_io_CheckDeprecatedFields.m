@@ -15,16 +15,16 @@ function UnitTest = xASL_ut_function_xASL_io_CheckDeprecatedFields(TestRepositor
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_io_CheckDeprecatedFields(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Test run 1
-
 % Give your individual subtest a name
 UnitTest.tests(1).testname = 'Deprecated field renaming';
-
 % Start the test
 testTime = tic;
-
 % Prepare the x-struct with deprecated names
 x.RepetitionTime = 4400;
 x.EchoTime = 14.3660;
@@ -50,10 +50,8 @@ x.Q.LabelingDuration = 1800;
 x.Q.BloodT1 = 1818;
 x.Q.BackgroundSuppressionNumberPulses = 2;
 x.Q.Initial_PLD = 1800;
-
 % Run the conversion
 xResult = xASL_io_CheckDeprecatedFieldsX(x);
-
 % Create the reference file
 xReference.RepetitionTime = 4400;
 xReference.Q.EchoTime = 14.3660;
@@ -79,25 +77,18 @@ xReference.Q.nCompartments = 2;
 xReference.Q.M0 = 'separate_scan';
 xReference.modules.structural.bSegmentSPM12 = 1;
 xReference.modules.asl.M0_conventionalProcessing = 1;
-
 % Compare the result with the reference
 testCondition = true; % Fallback
-
 if isempty(xResult)
 	testCondition = false;
 end
-
 if ~isequal(xResult, xReference)
 	testCondition = false;
 end
-
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
-
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
-
 end

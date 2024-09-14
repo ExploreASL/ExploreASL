@@ -30,10 +30,13 @@ function [x, IsLoaded] = xASL_adm_LoadX(x, Path_xASL, bOverwrite)
 %
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 1. Admin
 IsLoaded = false; % default
-
 % Check for deprecated field SUBJECTDIR
 if isfield(x,'SUBJECTDIR')
 	warning('Deprecated field. Please use x.dir.SUBJECTDIR instead of x.SUBJECTDIR');
@@ -42,19 +45,16 @@ if isfield(x,'SUBJECTDIR')
 	end
 	x = rmfield(x,'SUBJECTDIR');
 end
-
 if nargin<2 || isempty(Path_xASL)
 	if ~isfield(x.dir,'SUBJECTDIR')
 		error('Path_xASL not provided and x.dir.SUBJECTDIR not defined.');
 	end
 	Path_xASL = fullfile(x.dir.SUBJECTDIR,'x.mat');
 end
-
 if nargin<3 || isempty(bOverwrite)
     bOverwrite = false;
 end
 FieldNames = {'Output', 'Output_im'};
-
 %% 2. Load X-struct from disc
 if ~exist(Path_xASL, 'file')
     fprintf('%s\n',['Couldnt load ' Path_xASL]);
@@ -63,10 +63,8 @@ else
     OldX = load(Path_xASL, '-mat');
     IsLoaded = true;
 end
-
 %% 3. Look for and update deprecated fields
 OldX.x = xASL_io_CheckDeprecatedFieldsX(OldX.x,true);
-
 %% 4. Add fields from disc to the current x-struct
 for iField=1:length(FieldNames)
     % Check if x.mat contained the field
@@ -79,11 +77,4 @@ for iField=1:length(FieldNames)
         IsLoaded = false;
     end
 end
-
-
 end
-
-
-
-
-

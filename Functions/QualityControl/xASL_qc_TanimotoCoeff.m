@@ -53,7 +53,10 @@ function TC = xASL_qc_TanimotoCoeff(Image1, Image2, imMask, type, bClip, bSmooth
 %        International Journal of Data Science and Analytics, 2017.
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Administration
     if nargin<6 || isempty(bSmooth)
@@ -65,18 +68,14 @@ function TC = xASL_qc_TanimotoCoeff(Image1, Image2, imMask, type, bClip, bSmooth
 	if nargin < 2 || isempty(Image1) || isempty(Image2)
 		error('Need to have at least two inputs');
     end
-
     Image1 = xASL_io_Nifti2Im(Image1); % this allows for image matrix or NIfTI path input
     Image2 = xASL_io_Nifti2Im(Image2); % this allows for image matrix or NIfTI path input
-
 	if ~isequal(size(Image1),size(Image2))
 		error('The two input images need to have the same size');
 	end
-
 	if nargin < 3 || isempty(imMask)
 		imMask = ones(size(Image1));
 	end
-
 	if nargin < 4 || isempty(type)
         fprintf('Warning, didnt know image type, automatically selecting one\n');
 		if islogical(Image1) && islogical(Image2)
@@ -92,7 +91,6 @@ function TC = xASL_qc_TanimotoCoeff(Image1, Image2, imMask, type, bClip, bSmooth
 			end
 		end
     end
-
     %% Deal with clipping
     if bClip~=0
         % Clip below zero
@@ -109,7 +107,6 @@ function TC = xASL_qc_TanimotoCoeff(Image1, Image2, imMask, type, bClip, bSmooth
         Image1 = Image1./Threshold1;
         Image2 = Image2./Threshold2;
     end
-
     %% Apply smoothing
     if bSmooth(1)~=0
         Image1 = xASL_im_ndnanfilter(Image1,'gauss',[bSmooth(1) bSmooth(1) bSmooth(1)]);
@@ -117,13 +114,11 @@ function TC = xASL_qc_TanimotoCoeff(Image1, Image2, imMask, type, bClip, bSmooth
     if bSmooth(2)~=0
         Image2 = xASL_im_ndnanfilter(Image2,'gauss',[bSmooth(2) bSmooth(2) bSmooth(2)]);
     end
-
     %% Deal with mask
 	imMask = imMask.*(1-isnan(Image1)).*(1-isnan(Image2));
 	imMask = imMask > 0;
 	Image1 = Image1(imMask);
 	Image2 = Image2(imMask);
-
     %% Compute the TC
 	switch (type)
 		case 1
@@ -131,12 +126,10 @@ function TC = xASL_qc_TanimotoCoeff(Image1, Image2, imMask, type, bClip, bSmooth
 			if ~islogical(Image1)
 				Image1 = Image1>0;
 			end
-
 			if ~islogical(Image2)
 				Image2 = Image2>0;
 			end
 			TC = sum(Image1&Image2)/sum(Image1|Image2);
-
 		case 2
 			TC = sum(min([Image1,Image2],[],2))/sum(max([Image1,Image2],[],2));
 		case 3
@@ -144,6 +137,4 @@ function TC = xASL_qc_TanimotoCoeff(Image1, Image2, imMask, type, bClip, bSmooth
 		otherwise
 			error('Unknown Tanimoto Coefficient type to compute');
     end
-
-
 end

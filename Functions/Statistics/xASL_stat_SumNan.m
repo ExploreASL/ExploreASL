@@ -18,14 +18,16 @@ function y = xASL_stat_SumNan(x,dim)
 %
 % __________________________________
 % Copyright © 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2017-00-00 JP
-
 x = double(x); % Single failed in large arrays according to CAT12
-
 % Sets nans to zero
 x(isnan(x)) = 0;
-
 % if the dimension is not given
 if nargin < 2  
     y = sum(x);
@@ -33,5 +35,4 @@ if nargin < 2
 else           
     y = sum(x,dim);
 end
-
 end

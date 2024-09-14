@@ -24,19 +24,20 @@ function [MeanAI_PreTopUp_Perc, MeanAI_PostTopUp_Perc] = xASL_vis_VisualQC_TopUp
 %
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Define images
 Image{1} = xASL_io_Nifti2Im(PathPopB0);
 Image{2} = xASL_io_Nifti2Im(PathPopUnwarped);
-
 if sum(sum(sum(sum(isfinite(Image{1})))))==0 || sum(sum(sum(sum(isfinite(Image{2})))))==0
     warning('Something wrong with TopUp images in standard space, they are empty, please check');
     MeanAI_PreTopUp_Perc = NaN;
     MeanAI_PostTopUp_Perc = NaN;
     return;
 end
-
 %% Reinforce transversal slices
 if isfield(x.S, 'CorSlices')
     x.S = rmfield(x.S, 'CorSlices');
@@ -45,13 +46,11 @@ if isfield(x.S, 'SagSlices')
     x.S = rmfield(x.S, 'SagSlices');
 end
 x.S.TraSlices = x.S.slicesLarge;
-
 %% Create the figure parts
 IM1 = xASL_vis_CreateVisualFig(x, Image{1}(:,:,:,1));
 IM2 = xASL_vis_CreateVisualFig(x, Image{1}(:,:,:,2));
 IM3 = xASL_vis_CreateVisualFig(x, Image{2}(:,:,:,1));
 IM4 = xASL_vis_CreateVisualFig(x, Image{2}(:,:,:,2));
-
 %% Create the asymmetry figure parts
 for ii=1:2
     Image{ii}(Image{ii}<0) = 0;
@@ -59,40 +58,30 @@ for ii=1:2
     MeanIm{ii} = xASL_stat_MeanNan(Image{ii},4);
     AsymIndexIm{ii} = DeltaIm{ii} ./ MeanIm{ii};
 end
-
 %% Masking
 MaskInt = sort(MeanIm{1}(isfinite(MeanIm{1})));
 MaskInt = MaskInt(round(0.75*length(MaskInt)));
 BrainMask = MeanIm{1}>MaskInt;
-
 %% Calculate mean asymmetry indices
 for ii=1:2
     MeanAsym(ii) = 100*xASL_stat_MeanNan(AsymIndexIm{ii}(BrainMask));
 end
-
 MeanAI_PreTopUp_Perc = MeanAsym(1);
 MeanAI_PostTopUp_Perc = MeanAsym(2);
-
 fprintf('%s\n','TopUp reduced the mean voxel-wise asymmetry index between NormPE & RevPE');
 fprintf('%s\n',['within the BrainMask from ' xASL_num2str(MeanAI_PreTopUp_Perc) '% to ' xASL_num2str(MeanAI_PostTopUp_Perc) '%']);
-
 %% Image clipping
 % Clip both images manually now, at the same top
 ClipValue = 0.95;
 SortInt = sort(DeltaIm{1}(isfinite(DeltaIm{1})));
 SortInt = SortInt(round(ClipValue*length(SortInt)));
-
 for ii=1:2
     DeltaIm{ii}(DeltaIm{ii}>SortInt) = SortInt; % clip
     RMSimS{ii} = xASL_vis_CreateVisualFig(x, DeltaIm{ii}, [], [], [], x.S.jet256, false);
 end
-
 %% Save the Figure
 ComposIm = [IM1,IM2,RMSimS{1};IM3,IM4,RMSimS{2}];
-
 OutputFile = fullfile(CheckDir, ['TopUp_QC_' x.SUBJECTS{iSubject} '.jpg']);
 xASL_delete(OutputFile);
 xASL_vis_Imwrite(ComposIm, OutputFile);
-
-
 end

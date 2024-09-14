@@ -17,8 +17,10 @@ function imPar = xASL_imp_TokenBackwardsCompatibility(imPar)
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Check token ordering
     if length(imPar.tokenOrdering)==3
@@ -32,7 +34,4 @@ function imPar = xASL_imp_TokenBackwardsCompatibility(imPar)
         % Backwards compatibility Visits & sessions
         imPar.tokenOrdering = [imPar.tokenOrdering(1) 0 0 imPar.tokenOrdering(2)]; % insert sessions & visits(none)
     end
-
-
-
 end

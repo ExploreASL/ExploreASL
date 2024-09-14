@@ -28,17 +28,17 @@ function [Hematocrit] = xASL_quant_AgeSex2Hct(age, sex)
 % Ser Public Health Serv Publ 1967
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if nargin < 1
 	age = [];
 end
-
 if nargin < 2 || isempty(sex)
 	sex = nan(size(age));
 end
-
-
-
     nHct = numel(age);
     Hematocrit = zeros(1,nHct);
     Hematocrit(:) = NaN; % start with missing values as default
@@ -249,10 +249,7 @@ end
             end
         end % if sex(h)==1
     end % for h=1:nHct
-
-
 end
-
 % See example code for visualization below
 % Age         = [0.005 0.015 0.035 0.06 0.29  1.25 3.5  6.5  10 15   22.5 29   39   49   59   69   79];
 % HctMale     = [53    51     48    40   35.5 35.5 36.5 38.5 39 41.5 46.7 47   46.6 46.5 46.1 45.8 45.1];

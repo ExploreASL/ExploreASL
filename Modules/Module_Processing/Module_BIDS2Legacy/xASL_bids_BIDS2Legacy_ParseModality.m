@@ -21,7 +21,10 @@ function xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjS
 % EXAMPLE:     xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite);
 % __________________________________
 % Copyright 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Iterate over modalities
     for iModality=1:nModalities % iterate modalities in this Subject/Visit
@@ -29,7 +32,6 @@ function xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjS
         if isfield(BIDS.subjects(iSubjSess), ModalityIs) && ~isempty(BIDS.subjects(iSubjSess).(ModalityIs))
             ModalityFields = BIDS.subjects(iSubjSess).(ModalityIs);
             nScans = length(ModalityFields);
-
             % Parse fields of this modality for combinations ScanType & Run, in a reference table
             Reference = {'index' 'ScanType' 'run'};
             for iScan=1:nScans % iterate NIfTIs in this Subject/Visit/Modality
@@ -40,24 +42,14 @@ function xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjS
                     Reference{iScan+1, 3} = 1; % default to 1st run
                 end
             end
-
 			[Reference(2:end,:), iSort] = sortrows(Reference(2:end,:), [2, 3]); % first sort for ScanType then run
 			ModalityFields = ModalityFields(iSort);
-
             RunsAre = cellfun(@(y) y, Reference(2:end, 3));
             RunsUnique = unique(RunsAre);
-
-
             %% Parse scantype
             modalityIndices = find(strcmp(bidsPar.BIDS2LegacyFolderConfiguration(2:end,2), ModalityIs));
             modalityConfiguration = bidsPar.BIDS2LegacyFolderConfiguration(1+modalityIndices, :);
             xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite, Reference, bidsPar, ModalityIs, iSubjSess, BIDS, ModalityFields, pathLegacy_SubjectVisit);
-
-
         end
     end
-
-
 end
-
-

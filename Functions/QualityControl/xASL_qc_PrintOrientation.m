@@ -41,6 +41,11 @@ function xASL_qc_PrintOrientation(niftiList, outputDir, outputFile)
 % EXAMPLE:      xASL_qc_PrintOrientation(niftiList, outputDir, outputFile)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 %% Administration TSV
 savePath = fullfile(outputDir,['xASL_qc_PrintOrientation_' outputFile '.tsv']);

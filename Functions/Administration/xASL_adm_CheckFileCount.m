@@ -26,6 +26,10 @@ function [result, files] = xASL_adm_CheckFileCount(path, expr, mincount, failifm
 %
 % __________________________________
 % Copyright © 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     if nargin<2
 		error('xASL_adm_CheckFileCount:Need at least 2 input arguments');
@@ -51,7 +55,6 @@ function [result, files] = xASL_adm_CheckFileCount(path, expr, mincount, failifm
     elseif ~bOK
         error('xASL_adm_CheckFileCount:missingfiles','Expected %d files, but found %d',mincount,n);
 	end
-
 	% Output the files if the second output argument is given
     if nargout>=2
         files = filepaths;

@@ -99,23 +99,23 @@ function [M, P] = xASL_im_DecomposeAffineTransformation(Mtransformation)
 %          0         0         0    1.0000
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 0) Start with an output P and M struct
 M.Full = Mtransformation;
 P.Full = spm_imatrix(M.Full); % translate into parameters
-
 %% 1) Obtain translations
 M.Translation = eye(4,4);
 M.Translation(1:3,4) = M.Full(1:3,4);
 P.Translation = M.Translation(1:3,4);
-
 %% 2) Obtain zoom
 PZoom = zeros(1,12);
 PZoom(7:9) = P.Full(7:9);
 M.Zoom = spm_matrix(PZoom);
 P.Zoom = diag(M.Zoom(1:3,1:3));
-
 %% 3) Obtain 90degree rotations
 Rad90 = 90/(180/pi); % this is a ninety degree rotation in radians
 Rotations90 = round(P.Full(4:6)./Rad90); % These are the round 90 degrees rotations
@@ -124,17 +124,11 @@ Protations90(7:9) = 1;
 Protations90(4:6) = Rotations90; % This contains the 90 degree rotations only
 M.rotations90 = spm_matrix(Protations90);
 P.rotations90 = Protations90(4:6);
-
 %% 4) Obtain subtle rotations & shearing
 M.rotationsMinor = eye(4,4); % identity matrix
 M.rotationsMinor(1:3,1:3) = M.Full(1:3,1:3)/M.Zoom(1:3,1:3)/M.rotations90(1:3,1:3);
-
 %% 5) Check the rounding errors of the decomposition
 DiffMatrix = M.Full - M.Translation*M.rotationsMinor*M.rotations90*M.Zoom;
 SumRoundingErrors = xASL_stat_SumNan(xASL_stat_SumNan(DiffMatrix./M.Full));
-
 fprintf('%s\n',['Orientation matrix decomposed with a sum of ' xASL_num2str(SumRoundingErrors) ' rounding error']);
-
-
 end
-

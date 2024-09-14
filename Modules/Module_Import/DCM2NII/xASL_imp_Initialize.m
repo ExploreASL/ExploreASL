@@ -23,12 +23,14 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
 % EXAMPLE:     imPar = xASL_imp_Initialize(studyPath, imParPath);
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 1. Read study file
-
     % Initialize the imPar field
     [fpath, fname, fext] = fileparts(studyPath);
-
     % Load the imPar from the file
     if ~isempty(imParPath) && xASL_exist(imParPath,'file')==2
         % DCM2NII
@@ -37,7 +39,6 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
         % NII2BIDS, DEFACE & BIDS2LEGACY
         imPar = struct;
     end
-
     %% 2. Specify paths
     if ~isfield(imPar, 'studyID') || isempty(imPar.studyID)
         imPar.studyID = [fname fext];
@@ -51,14 +52,12 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     if ~isfield(imPar, 'BidsRoot') || isempty(imPar.BidsRoot)
         imPar.BidsRoot = fpath;
     end
-
     %% 3. Finalize the directories
     imPar.RawRoot = fullfile(imPar.RawRoot, imPar.studyID, 'sourcedata');
     imPar.DerivativesRoot = fullfile(imPar.TempRoot, imPar.studyID, 'derivatives');
     imPar.TempRoot = fullfile(imPar.DerivativesRoot, 'ExploreASL', 'temp');
     imPar.LockRoot = fullfile(imPar.DerivativesRoot, 'ExploreASL', 'lock');
     imPar.BidsRoot = fullfile(imPar.BidsRoot, imPar.studyID, 'rawdata');
-
     %% 4. Specify the tokens
     
     % Specify the imPar struct
@@ -66,7 +65,6 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     
     % Warn the user if token aliases are invalid according to our pipeline/BIDS
     xASL_imp_InitializeCheckTokens(imPar);
-
     %% 5. Specify the additional details of the conversion
     if ~isfield(imPar, 'bVerbose') || isempty(imPar.bVerbose)
         imPar.bVerbose = true;
@@ -89,12 +87,9 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
     
     % Create the lock files directory (especially for the import lock files)
     xASL_adm_CreateDir(imPar.LockRoot);
-
 end
-
 %% Specify the imPar struct
 function imPar = xASL_imp_InitializeBuildImPar(imPar)
-
     if ~isfield(imPar, 'folderHierarchy')
         imPar.folderHierarchy = {}; % must define this per study; use a cell array of regular expressions. One cell per directory level.
     end
@@ -103,7 +98,6 @@ function imPar = xASL_imp_InitializeBuildImPar(imPar)
     else
         imPar.tokenOrdering = imPar.tokenOrdering(:)';
     end
-
     if ~isfield(imPar, 'tokenScanAliases')
         warning('tokenScanAliases was not defined, defaulting to empty');
         imPar.tokenScanAliases = [];
@@ -113,7 +107,6 @@ function imPar = xASL_imp_InitializeBuildImPar(imPar)
             imPar.tokenScanAliases(:,1) = tokenScanAliasesOld(1:2:end);
             imPar.tokenScanAliases(:,2) = tokenScanAliasesOld(2:2:end);
     end
-
     if ~isfield(imPar, 'tokenVisitAliases') || isempty(imPar.tokenVisitAliases)
 		% tokenVisitAliases are not defined at all in sourceStructure.json or is empty (does not even contain empty strings)
         imPar.tokenVisitAliases = [];
@@ -127,7 +120,6 @@ function imPar = xASL_imp_InitializeBuildImPar(imPar)
             imPar.tokenVisitAliases(:,1) = tokenVisitAliasesOld(1:2:end);
             imPar.tokenVisitAliases(:,2) = tokenVisitAliasesOld(2:2:end);
     end
-
     if ~isfield(imPar, 'tokenSessionAliases')
         imPar.tokenSessionAliases = [];
     elseif (size(imPar.tokenSessionAliases,2) > 2) || (size(imPar.tokenSessionAliases,2) == 1)
@@ -136,18 +128,13 @@ function imPar = xASL_imp_InitializeBuildImPar(imPar)
             imPar.tokenSessionAliases(:,1) = tokenSessionAliasesOld(1:2:end);
             imPar.tokenSessionAliases(:,2) = tokenSessionAliasesOld(2:2:end);
     end
-
     if ~isfield(imPar,'bMatchDirectories')
         warning('bMatchDirectories was not defined, defaulting to true');
         imPar.bMatchDirectories  = true;
     end
-
 end
-
-
 %% Warn the user if token aliases are invalid according to our pipeline/BIDS
 function xASL_imp_InitializeCheckTokens(imPar)
-
     % Check tokenScanAliases
     if isfield(imPar, 'tokenScanAliases')
         if size(imPar.tokenScanAliases,2)==2
@@ -164,5 +151,4 @@ function xASL_imp_InitializeCheckTokens(imPar)
             end
         end
     end
-
 end

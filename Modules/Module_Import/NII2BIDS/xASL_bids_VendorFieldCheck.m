@@ -18,21 +18,21 @@ function jsonOut = xASL_bids_VendorFieldCheck(jsonIn)
 %
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Basic structs
 jsonOut = struct;
 jsonRemove = struct;
-
 % Check required fields
 if ~isfield(jsonIn,'Manufacturer')
 	warning('Missing vendor information...');
 	jsonOut = jsonIn;
 	return
 end
-
 % Rename certain fields from the vendor-name to BIDS name
-
 % Rename the coil names for different manufacturers
 if isfield(jsonIn,'CoilString')
 	switch jsonIn.Manufacturer
@@ -47,7 +47,6 @@ if isfield(jsonIn,'CoilString')
 	end
 	jsonRemove.CoilString = '';
 end
-
 if isfield(jsonIn,'EffectiveEchoSpacing') 
 	if isempty(jsonIn.EffectiveEchoSpacing) || sum(jsonIn.EffectiveEchoSpacing == 0) || sum(isnan(jsonIn.EffectiveEchoSpacing))
 		jsonRemove.EffectiveEchoSpacing = '';
@@ -55,7 +54,6 @@ if isfield(jsonIn,'EffectiveEchoSpacing')
 		jsonIn.EffectiveEchoSpacing = abs(jsonIn.EffectiveEchoSpacing);
 	end
 end
-
 if isfield(jsonIn,'TotalReadoutTime') 
 	if isempty(jsonIn.TotalReadoutTime) || sum(jsonIn.TotalReadoutTime == 0) || sum(isnan(jsonIn.TotalReadoutTime))
 		jsonRemove.TotalReadoutTime = '';
@@ -63,14 +61,12 @@ if isfield(jsonIn,'TotalReadoutTime')
 		jsonIn.TotalReadoutTime = abs(jsonIn.TotalReadoutTime);
 	end
 end
-
 % Rename the fields with number of segments
 jsonRemove.NumberOfAverages = '';
 if isfield(jsonIn,'NumberSegments')
 	jsonOut.NumberShots = jsonIn.NumberSegments;
 	jsonRemove.NumberSegments = '';
 end
-
 % Rename the phase encoding directions fields
 if isfield(jsonIn,'PhaseEncodingAxis')
 	if ~isfield(jsonIn,'PhaseEncodingDirection')
@@ -78,12 +74,10 @@ if isfield(jsonIn,'PhaseEncodingAxis')
 	end
 	jsonRemove.PhaseEncodingAxis = '';
 end
-
 % Go through all input fields and copy to output, but skip those in jsonRemove
 for nameField = fieldnames(jsonIn)'
 	if ~isfield(jsonRemove, nameField{1})
 		jsonOut.(nameField{1}) = jsonIn.(nameField{1});
 	end
 end
-
 end

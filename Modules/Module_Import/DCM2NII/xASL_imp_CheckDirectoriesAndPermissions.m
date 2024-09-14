@@ -22,20 +22,21 @@ function [x] = xASL_imp_CheckDirectoriesAndPermissions(x)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Create the basic folder structure for sourcedata & derivative data
     if x.opts.bImport(1)
         if ~exist(x.modules.import.imPar.RawRoot, 'dir')
             warning(['Could not find ' x.modules.import.imPar.RawRoot ', trying to find a different folder instead...']);
-
             % Find any folder except for temp, sourcedata, rawdata, derivatives
             % xASL_adm_GetFileList uses regular expressions, to create a nice list of foldernames,
             % with/without FullPath (FPList), with/without recursive (FPListRec)
             % very powerful once you know how these work
             FolderNames = xASL_adm_GetFileList(fullfile(x.modules.import.imPar.RawRoot, x.modules.import.imPar.studyID), ...
                 '^(?!(temp|derivatives|source|sourcedata)).*$', 'FPList', [0 Inf], true);
-
             if length(FolderNames)==1
                 x.modules.import.imPar.RawRoot = FolderNames{1};
                 fprintf('%s\n', ['Found ' x.modules.import.imPar.RawRoot ' as sourcedata folder']);
@@ -56,7 +57,6 @@ function [x] = xASL_imp_CheckDirectoriesAndPermissions(x)
             xASL_adm_CheckPermissions(x.modules.import.imPar.TempRoot, false);
         end
     end
-
     % Path to the dictionary to initialize - we need to keep track if the dictionary has been set, 
     % because Dicominfo can be used despite bUSEDCMTK==1 when DCMTK fails
     if x.opts.bImport(1) || x.opts.bImport(2)
@@ -66,9 +66,4 @@ function [x] = xASL_imp_CheckDirectoriesAndPermissions(x)
             dicomdict('set', x.modules.import.pathDcmDict);
         end
     end
-
-
 end
-
-
-

@@ -25,9 +25,13 @@ function [x] = xASL_init_LoadDataPar(x)
 % REFERENCES:  n/a
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
-    
-    
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
+    
+    
     %% 1. Generate warning for incompatibility with old dataPar.m
     [~, ~, Dext] = fileparts(x.dir.dataPar);
     if strcmp(Dext,'.m')
@@ -35,33 +39,26 @@ function [x] = xASL_init_LoadDataPar(x)
     elseif strcmp(Dext,'.mat')
         warning('No .mat file backwards compatibility starting v1.10.0...');
     end
-
-
     %% 2. Choose the dataPar location
-
     bUseRoot = false;
     bUseRawdata = false;
     bUseDerivatives = false;
-
     % Check dataPar inside the root folder /
     listRoot = xASL_adm_GetFileList(x.dir.DatasetRoot, '(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
     if ~isempty(listRoot)
         bUseRoot = true;
     end   
-
     % Check dataPar inside the rawdata folder /rawdata
     listRawdata = xASL_adm_GetFileList(x.dir.RawData, '(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
     if ~isempty(listRawdata)
         warning([xASL_num2str(length(listRawdata)) ' dataPar.json (or similar) file(s) found in ' x.dir.RawData ', will try this but this is not the appropriate location']);
         bUseRawdata = true;
     end
-
     % Check dataPar inside the processing folder /derivatives/ExploreASL
     fListLegacy = xASL_adm_GetFileList(x.dir.xASLDerivatives, '(?i)(^dataPar.*\.json$)', 'FPList', [], 0);
     if ~isempty(fListLegacy)
         bUseDerivatives = true;
     end
-
     % Choose folder & filelist
     if bUseDerivatives && bUseRoot
             % We prioritize existing dataPar.json in the derivatives folder
@@ -83,8 +80,6 @@ function [x] = xASL_init_LoadDataPar(x)
     else
         listDatapar = {};
     end
-
-
     %% 3. Load pre-existing dataPar
     if length(listDatapar)>1
         fprintf('Warning: multiple dataPar.json files found, using the first\n');
@@ -97,16 +92,12 @@ function [x] = xASL_init_LoadDataPar(x)
     else
         dataPar.x = xASL_io_ReadDataPar(listDatapar{1});
     end
-
-
     %% 4. Populate dataPar with missing parameters
-
     % Fills in important information in the dataPar if missing
     if ~isfield(dataPar, 'x')
         % Add x field
         dataPar.x = struct;
     end
-
     % Check for settings fields
     if ~isfield(dataPar.x,'settings')
         dataPar.x.settings = struct;
@@ -120,11 +111,9 @@ function [x] = xASL_init_LoadDataPar(x)
         dataPar.x.settings.DELETETEMP = true;
 	end
 	
-
     %% Write final dataPar
     x.dir.dataPar = fullfile(x.dir.xASLDerivatives, 'dataPar.json');
     xASL_io_WriteJson(x.dir.dataPar, dataPar);
-
     
     %% Load dataPar
     x = xASL_adm_MergeStructs(dataPar.x, x);

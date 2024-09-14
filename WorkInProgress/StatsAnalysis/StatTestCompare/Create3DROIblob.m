@@ -1,4 +1,9 @@
 % Copyright 2015-2024 ExploreASL (Works In Progress code)
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 function [BLOB ROIvar] = Create3DROIblob( x, ASL, MaskChoice, PeakValue)
 %Create3DROIblob Creates 3D Gaussian blob within ROI
 % as artificial signal

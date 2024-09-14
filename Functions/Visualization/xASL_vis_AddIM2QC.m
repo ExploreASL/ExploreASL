@@ -20,12 +20,15 @@ function [x] = xASL_vis_AddIM2QC(x,parms)
 % EXAMPLE:      ...
 % __________________________________
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Admin
 	if nargin < 2
 		error('Two parameters required');
 	end
-
 	parms = xASL_HandleInputPars(parms, 'bCrop', true); % crop by default
     parms = xASL_HandleInputPars(parms, 'FileName', 'n/a');
     [parms, DidntContain] = xASL_HandleInputPars(parms,'IM',[]);
@@ -48,11 +51,9 @@ function [x] = xASL_vis_AddIM2QC(x,parms)
         X = size(IM,1); Y = size(IM,2);
         IM = squeeze(IM(ceil(0.33*X)+2:floor(0.67*X)-1,ceil(Y/4+1):floor(Y/2),:)); % slice 6
     end
-
     if  xASL_stat_SumNan(IM(:))==0 % if the image was empty
         return; % exit function
     end    
-
     %% Create the fields
     if ~isfield(x,'Output_im') || isempty(fields(x.Output_im))
         IndexIm = 1;
@@ -83,26 +84,19 @@ function [x] = xASL_vis_AddIM2QC(x,parms)
 	else
 		x.Output_im.(parms.ModuleName).(x.SESSION){IndexIm} = IM;
 	end
-
 end
-
-
 %% ========================================================================================
 %% ========================================================================================
 function [StructIn DidntContain] = xASL_HandleInputPars(StructIn,FieldName,DefaultV)
 %xASL_HandleInputPars Summary of this function goes here
 %   Detailed explanation goes here
-
 DidntContain        = false;
 if     ~isfield(StructIn,FieldName)
         DidntContain    = true;
 elseif  isempty(StructIn.(FieldName))
         DidntContain    = true;
 end
-
 if  DidntContain
     StructIn        = setfield(StructIn,FieldName,DefaultV); % create field with default value
 end
-
-
 end

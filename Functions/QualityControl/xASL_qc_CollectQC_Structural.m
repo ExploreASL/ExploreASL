@@ -25,28 +25,25 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
 % EXAMPLE: x = xASL_qc_CollectQC_Structural(x, 10);
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% -----------------------------------------------------------------------------------------------
     %% T1w determinant
     % The determinant of the current matrix and old matrix should be the same,
     % otherwise this is suspicious of a left-right flip.
-
     Struct.ID = x.SUBJECTS{iSubject};
-
     PathOrientationResults = fullfile(x.dir.SUBJECTDIR,'xASL_qc_PrintOrientation_RigidRegT1.tsv');
     Struct.T1w_LR_flip_YesNo = uint8(xASL_im_DetermineFlip(PathOrientationResults));
     % Whether left-right orientation has been flipped through registrations yes/no
-
     if Struct.T1w_LR_flip_YesNo>0
         fprintf(['LR flip found for ' Struct.ID]);
     end
-
-
     %% -----------------------------------------------------------------------------------------------
     %% WMH results
     PathLST = xASL_adm_GetFileList(x.D.TissueVolumeDir,['^WMH_LST_(LGA|LPA)_' Struct.ID '\.tsv$'],'FPList',[0 Inf]);
-
     if length(PathLST)>1
         warning('Too many LST volumetric results found, using first');
         bProcess = true;
@@ -73,8 +70,6 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
             end
         end    
     end
-
-
     %% -----------------------------------------------------------------------------------------------
     %% CAT12 QC output
     PathIQRresults = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' Struct.ID '.mat']);
@@ -86,25 +81,20 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
         warning('Didnt find any CAT12 volumetric results');
         Struct.T1w_IQR_Perc = NaN;
     end
-
-
     %% -----------------------------------------------------------------------------------------------
     %% CAT12 volumetric output
     PathCAT12Results = fullfile(x.D.TissueVolumeDir,['TissueVolume_' Struct.ID '.tsv']);
     if exist(PathCAT12Results,'file')
         [~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathCAT12Results);
-
         for iC=1:size(CellTSV,1)
             if ~isempty(findstr(CellTSV{iC,1}, Struct.ID))
                 Struct.T1w_GM_vol_mL = xASL_round(xASL_str2num(CellTSV{iC,2})*1000);
                 Struct.T1w_WM_vol_mL = xASL_round(xASL_str2num(CellTSV{iC,3})*1000);
                 Struct.T1w_CSF_vol_mL = xASL_round(xASL_str2num(CellTSV{iC,4})*1000,1);
-
                 Struct.T1w_ICV_vol_mL = xASL_round(Struct.T1w_GM_vol_mL+Struct.T1w_WM_vol_mL+Struct.T1w_CSF_vol_mL);
                 Struct.T1w_GM_ICV_Ratio = xASL_round(Struct.T1w_GM_vol_mL/Struct.T1w_ICV_vol_mL,3);
                 Struct.T1w_WM_ICV_Ratio = xASL_round(Struct.T1w_WM_vol_mL/Struct.T1w_ICV_vol_mL,3);
                 Struct.T1w_CSF_ICV_Ratio = xASL_round(Struct.T1w_CSF_vol_mL/Struct.T1w_ICV_vol_mL,3);
-
             end
         end        
     else % fill in the blanks
@@ -117,7 +107,6 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
         Struct.T1w_WM_ICV_Ratio = NaN;
         Struct.T1w_CSF_ICV_Ratio = NaN;
     end
-
     %% -----------------------------------------------------------------------------------------------    
     %% Set struct fields to 4 decimals
     FieldNames  = fields(Struct);
@@ -127,17 +116,12 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
             Struct.(FieldNames{iN}) = xASL_round(V, 4);
         end
     end      
-
     x.Output.Structural = xASL_qc_FillFields(x.Output.Structural, Struct); % Fill fields
-
 end
-
-
 function [OutputFields] = xASL_qc_FillFields(OutputFields, InputFields)
 %xASL_qc_FillFields
         
 FieldsI = fields(InputFields);
-
 for iO=1:length(FieldsI)
     CurrentField = InputFields.(FieldsI{iO});
     if isnumeric(CurrentField) && length(CurrentField)>1
@@ -145,5 +129,4 @@ for iO=1:length(FieldsI)
     end
     OutputFields.(FieldsI{iO}) = CurrentField;
 end
-
 end

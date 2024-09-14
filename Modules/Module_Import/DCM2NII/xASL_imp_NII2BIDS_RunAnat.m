@@ -23,8 +23,12 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
 % EXAMPLE:     n/a
 % __________________________________
 % Copyright 2015-2021 ExploreASL
-    
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
+    
     %% 1. Define the pathnames
     if (length(listRuns)>1) || (str2num(listRuns{1}(5))>1)
         anatLabel = num2str(iRun);
@@ -38,7 +42,6 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
         anatOutLabelRelative = fullfile('anat', ['sub-' subjectSessionLabel]);
     end
     
-
     %% Iterate over files
     for iAnatType = bidsPar.listAnatTypes
         
@@ -49,7 +52,6 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
         % File paths within subfolder or main subject/session level
         anatFileInSubfolder = fullfile(imPar.TempRoot, nameSubjectSession, [iAnatType{1} '_1'], [iAnatType{1} '.nii']);
         anatFileInMainLevel = fullfile(imPar.TempRoot, nameSubjectSession, [iAnatType{1} '.nii']);
-
         % Check if it exists
         anatPath = '';
 		if xASL_exist(anatFileInSubfolder, 'file')
@@ -67,13 +69,10 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
             [baseDir, fileName] = xASL_fileparts(checkAnatListMainLevel{1});
             anatPath = fullfile(baseDir,fileName);
 		end
-
         % If anatomical file of this type exist, then BIDSify its structure
         if ~isempty(anatPath)
-
             % Create the anatomical directory
             xASL_adm_CreateDir(anatOutDirLabel);
-
             % Current scan name
             [~, scanName] = xASL_fileparts([anatOutLabel '_' iAnatType{1}]);
             
@@ -83,24 +82,19 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
             % Move the NiFTI file
             anatNiiPath = [anatOutLabel '_' iAnatType{1} '.nii.gz'];
             xASL_Move([anatPath '.nii'], anatNiiPath, 1);
-
             % Load the JSON
             jsonPath = [anatPath '.json'];
             if ~xASL_exist(jsonPath, 'file')
                 warning(['JSON file missing: ' jsonPath]);
             else
                 jsonAnat = xASL_io_ReadJson(jsonPath);
-
                 % Save the JSON
                 jsonAnat = xASL_bids_BIDSifyAnatJSON(jsonAnat, studyPar);
                 jsonAnat = xASL_bids_VendorFieldCheck(jsonAnat);
                 jsonAnat = xASL_bids_JsonCheck(jsonAnat, '');
-
                 jsonWritePath = [anatOutLabel '_' iAnatType{1} '.json'];
                 xASL_io_WriteJson(jsonWritePath, jsonAnat);
 			end
         end
     end
-
 end
-

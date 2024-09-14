@@ -35,12 +35,14 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     if nargin<2 || isempty(bVerbose)
         bVerbose = false;
     end
-
     % Get conversion table
     conversionTable = xASL_adm_GetDeprecatedFields();
     
@@ -60,7 +62,6 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
                 if ~isempty(conversionTable{iField,3}) && ~isfield(x,conversionTable{iField,2})
                     x.(conversionTable{iField,2}) = struct;
 				end
-
 				% Second field does not exist and it is supposed to be structure
 				% If the second level field is structure (conversionTable at column 4 is not empty) and the structure doesn't exist in x-struct, then create it
                 if ~isempty(conversionTable{iField,4}) && ~isfield(x.(conversionTable{iField,2}),conversionTable{iField,3})
@@ -96,5 +97,4 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
             fprintf(2,'%s -> %s\n', detectedFields{iField,1}, renamedFields{iField,1});
         end
     end
-
 end

@@ -78,17 +78,18 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 %     Inside xASL_quant_ASL: [PWI] = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ========================================================================================
 %% 1. Admin & checks
 % Input image volumes should be correct
 % Creation of the PWI3D or PWI4D image volumes can be skipped if they are provided as input
-
 if nargin<1 || isempty(x)
     error('x input missing');
 end
-
 if nargin<2
     error('path_ASL4D input missing');
 elseif isempty(path_ASL4D) && (nargin>=3 && isempty(PWI4D)) && (nargin>=4 && isempty(PWI3D))
@@ -101,12 +102,10 @@ elseif (numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
         % if this is a path, we will try to get the JSON sidecar
         [pDir, pFile] = xASL_fileparts(path_ASL4D);
         path_ASL4Djson = fullfile(pDir, [pFile '.json']);
-
         if xASL_exist(path_ASL4Djson, 'file')
             % we try to load this json and extract quantification parameters
             json = xASL_io_ReadJson(path_ASL4Djson);
             json = xASL_bids_parms2BIDS([], json, 0); % Convert it from BIDS to Legacy
-
             % if it has the two required quantification fields PLD & LD, we will use this
             if isfield(json, 'Q')
 				if isfield(json.Q, 'LabelingDuration')
@@ -117,7 +116,6 @@ elseif (numel(path_ASL4D)~=1 && ~isnumeric(path_ASL4D) && numel(path_ASL4D)<1000
 						warning(['LD missing in: '  path_ASL4Djson]);
 					end
 				end
-
 				if isfield(json.Q, 'Initial_PLD')
 					x.Q.Initial_PLD = json.Q.Initial_PLD;
 				else
@@ -139,19 +137,15 @@ else
 	ASL4D = path_ASL4D;
 	path_ASL4D = [];
 end
-
 % By default, we create 4D stuff, unless they are provided as input
 bCreatePWI4D = true;
 bCreateControl4D = true;
-
 % The 3D stuff is not created by default, because we need PWI4D OR Control4D for this
 bCreatePWI3D = false;
 bCreateControl3D = false;
-
 % The PWI/Control are not created by default, because we need PWI3D OR Control3D for this
 bCreatePWI = false;
 bCreateControl = false;
-
 % We skip the computation of PWI4D if it is provided
 if nargin>=3 && ~isempty(PWI4D)
     if ~isnumeric(PWI4D)
@@ -165,7 +159,6 @@ if nargin>=3 && ~isempty(PWI4D)
 else
     PWI4D = []; % dummy output
 end
-
 % We skip the computation of PWI3D if it is provided
 if nargin>=4 && ~isempty(PWI3D)
     if ~isnumeric(PWI3D)
@@ -179,7 +172,6 @@ if nargin>=4 && ~isempty(PWI3D)
 else
     PWI3D = []; % dummy output
 end
-
 % We skip the computation of Control4D if it is provided
 if nargin>=5 && ~isempty(Control4D) % same as above
     if ~isnumeric(Control4D)
@@ -193,7 +185,6 @@ if nargin>=5 && ~isempty(Control4D) % same as above
 else
     Control4D = []; % dummy output  
 end
-
 % We skip the computation of Control3D if it is provided
 if nargin>=6 && ~isempty(Control3D)
     if ~isnumeric(Control3D)
@@ -207,7 +198,6 @@ if nargin>=6 && ~isempty(Control3D)
 else
     Control3D = []; % dummy output
 end
-
 % If PWI4D is provided but Control4D is not, we only want to compute PWI3D and PWI
 if bCreatePWI3D && ~bCreateControl3D
     bCreateControl4D = false; % If only PWI4D is provided, we only want to compute PWI3D and PWI
@@ -216,18 +206,13 @@ end
 if bCreateControl3D && ~bCreatePWI3D
     bCreatePWI4D = false; % If only Control4D is provided, we only want to compute Control3D and Control
 end
-
 PWI = []; % dummy output
 Control = []; % dummy output
-
 % Define quantification parameters
 x = xASL_quant_DefineQuantificationParameters(x);
-
-
 %% ========================================================================================
 %% 2. PWI4D
 if bCreatePWI4D || bCreateControl4D
-
     % Load ASL4D.nii
 	if ~isempty(path_ASL4D)
 		ASL4Dnii = xASL_io_ReadNifti(path_ASL4D);
@@ -248,7 +233,6 @@ if bCreatePWI4D || bCreateControl4D
         % unsubtracted control-label pairs should result in an even number of volumes
         return;
     end
-
     % Verify that image matrix & parameter vectors are compatible
     if nVolumes ~= length(x.Q.EchoTime)
         warning('Defined x.Q.EchoTime should have equal length as ASL4D image volumes');
@@ -259,8 +243,6 @@ if bCreatePWI4D || bCreateControl4D
     if ~isempty(x.Q.LabelingDuration) && (nVolumes ~= length(x.Q.LabelingDuration))
         warning('Defined x.Q.LabelingDuration should have equal length as ASL4D image volumes');
     end    
-
-
     %% 2A. Apply motion correction if needed
     % At the beginning of the ASL module we estimate motion, and optionally remove outliers/spikes
     % This can already be applied, but in some cases this is not yet applied and by just loading ASL4D.nii
@@ -270,28 +252,21 @@ if bCreatePWI4D || bCreateControl4D
 	if ~isempty(path_ASL4D)
 		[Fpath, Ffile] = xASL_fileparts(path_ASL4D);
 		sideCarMat = fullfile(Fpath, [Ffile '.mat']);
-
 		if exist(sideCarMat, 'file') && nVolumes>1
 			% we check if the mat-sidecar exists, with the motion estimation parameters
 			% If this file exists, we assume that the original ASL4D input file has not been
 			% interpolated yet (and the motion estimation has not been applied yet)
-
 			% Apply motion correction & resample
-
 			for iS=1:nVolumes
 				matlabbatch{1}.spm.spatial.realign.write.data{iS,1} = [path_ASL4D ',' num2str(iS)];
 			end
-
 			matlabbatch{1}.spm.spatial.realign.write.roptions.which     = [2 0];
 			matlabbatch{1}.spm.spatial.realign.write.roptions.interp    = 4;
 			matlabbatch{1}.spm.spatial.realign.write.roptions.wrap      = [0 0 0];
 			matlabbatch{1}.spm.spatial.realign.write.roptions.mask      = 1;
 			matlabbatch{1}.spm.spatial.realign.write.roptions.prefix    = 'r';
-
 			spm_jobman('run',matlabbatch); % this applies the motion correction in native space
-
 			path_rASL4D = fullfile(Fpath, ['r' Ffile '.nii']);
-
 			% RELOAD ASL4D.nii
 			% Note that we only reload ASL4D.nii here if we have motion corrected timeseries.
 			% If path_ASL4D was not a path, or if sideCarMat didn't exist (motion estimation was not performed)
@@ -303,33 +278,25 @@ if bCreatePWI4D || bCreateControl4D
 			ASL4D = xASL_io_Nifti2Im(path_ASL4D);
 		end
 	end
-
-
     %% 2B. Apply time decoding if needed
     if x.modules.asl.bTimeEncoded
         % Decoding of TimeEncoded data - it outputs the decoded image as well as the parameters
         [PWI4D, Control4D, x.Q] = xASL_quant_HadamardDecoding(ASL4D, x.Q);
-
 		nVolumes = size(PWI4D, 4);
-
         bCreatePWI3D = true; % because we can do this now
         bCreateControl3D = true; % because we can do this now        
-
-
     %% 2C. Non-time encoded subtraction
     else
         if nVolumes>1 && ~x.modules.asl.bContainsSubtracted
             % Paired subtraction
             [Control4D, Label4D, ~, x.Q] = xASL_quant_GetControlLabelOrder(ASL4D, x.Q);
             PWI4D = Control4D - Label4D;
-
             bCreatePWI3D = true; % because we can do this now
             bCreateControl3D = true; % because we can do this now
         elseif ~x.modules.asl.bContainsSubtracted
             warning('Single volume detected that was not subtracted, cannot create PWI images');
             PWI4D = [];
             Control4D = ASL4D;
-
 			x.Q.EchoTime_PWI4D = [];
             x.Q.InitialPLD_PWI4D = [];
             x.Q.LabelingDuration_PWI4D = [];
@@ -340,17 +307,14 @@ if bCreatePWI4D || bCreateControl4D
 			else
 				x.Q.LabelingDuration_Control4D = [];
 			end
-
             bCreateControl3D = true; % because we can do this now
             % but we cannot create PWI4D, PWI3D, PWI
-
         else % the same but then without subtraction
             % either if we have only a single volume
             % or if we have multiple volumes that are already subtracted (bContainsSubtracted)
             % in both cases we can create PWI4D, PWI3D, PWI, but not Control4D, etc
             PWI4D = ASL4D;
             Control4D = [];
-
             % Now the vectors stay the same as for ASL4D (there is no subtraction)
             x.Q.EchoTime_PWI4D = x.Q.EchoTime;
             x.Q.InitialPLD_PWI4D = x.Q.Initial_PLD;
@@ -362,12 +326,10 @@ if bCreatePWI4D || bCreateControl4D
             x.Q.EchoTime_Control4D = [];
             x.Q.InitialPLD_Control4D = [];
             x.Q.LabelingDuration_Control4D = [];
-
             bCreatePWI3D = true; % because we can do this now
         end
     end
 end
-
 %% ========================================================================================
 %% 5. Create PWI3D AND/OR Control3D
 if bCreatePWI3D
@@ -382,7 +344,6 @@ if bCreatePWI3D
     if ~isempty(x.Q.LabelingDuration_PWI4D) && (size(PWI4D, 4) ~= length(x.Q.LabelingDuration_PWI4D))
         warning('Defined x.Q.LabelingDuration_PWI4D should have equal length as PWI4D image volumes');
     end
-
     % After averaging across PLDs, we'll obtain these unique PLDs+LD combinations
     % indexAverage_PLD_LabDur lists for each original position to where it should be averaged
 	if isempty(x.Q.LabelingDuration)
@@ -395,7 +356,6 @@ if bCreatePWI3D
     for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur_PWI4D)
         indicesAre = iUnique_TE_PLD_LabDur_PWI4D == iTE_PLD_LabDur;
         PWI3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(PWI4D(:, :, :, indicesAre), 4); % Averaged PWI4D
-
         x.Q.EchoTime_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.EchoTime_PWI4D(indicesAre));
         x.Q.InitialPLD_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.InitialPLD_PWI4D(indicesAre));
 		if isempty(x.Q.LabelingDuration)
@@ -404,10 +364,8 @@ if bCreatePWI3D
 			x.Q.LabelingDuration_PWI3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_PWI4D(indicesAre));
 		end
     end
-
     bCreatePWI = true; % because we can do this now
 end
-
 if bCreateControl3D
     % Verify that image matrix & parameter vectors are compatible
     if size(Control4D, 4) ~= length(x.Q.EchoTime_Control4D)
@@ -431,7 +389,6 @@ if bCreateControl3D
     for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur_Control4D)
         indicesAre = iUnique_TE_PLD_LabDur_Control4D == iTE_PLD_LabDur;
         Control3D(:, :, :, iTE_PLD_LabDur) = xASL_stat_MeanNan(Control4D(:, :, :, indicesAre), 4); % Averaged control4D
-
         x.Q.EchoTime_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.EchoTime_Control4D(indicesAre));
         x.Q.InitialPLD_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.InitialPLD_Control4D(indicesAre));
 		if isempty(x.Q.LabelingDuration_Control4D)
@@ -440,11 +397,8 @@ if bCreateControl3D
 			x.Q.LabelingDuration_Control3D(iTE_PLD_LabDur) = xASL_stat_MeanNan(x.Q.LabelingDuration_Control4D(indicesAre));
 		end
     end
-
     bCreateControl = true; % because we can do this now
 end
-
-
 %% 6. Create PWI AND/OR Control
 %% For Look-Locker, choosing the PLD closest to 2000 ms
     % 
@@ -467,7 +421,6 @@ end
     % 
 	% % Find all dynamics with that PLD
 	% imMeanControl = imMeanControl(:,:,:,Initial_PLD==idealPLD);
-
 if bCreatePWI
     % Verify that image matrix & parameter vectors are compatible
     if size(PWI3D, 4) ~= length(x.Q.EchoTime_PWI3D)
@@ -479,22 +432,17 @@ if bCreatePWI
     if ~isempty(x.Q.LabelingDuration_PWI3D) && (size(PWI3D, 4) ~= length(x.Q.LabelingDuration_PWI3D))
         warning('Defined x.Q.LabelingDuration_PWI3D should have equal length as PWI3D image volumes');
     end
-
-
     % EchoTime weighting
     % We default to T2*, for 3D GRASE and 2D EPI.
     % If we detect 3D spiral, we go for T2 instead.
     % For most 3D spiral sequences (==GE), we do not have individual control-label pairs anyway.
-
     if isfield(x.Q, 'PulseSequenceType') && ~isempty(regexpi(x.Q.PulseSequenceType, 'spiral', 'once')) &&  strcmpi(x.Q.MRAcquisitionType, '3D')
         T2_factor = x.Q.T2;
     else
         T2_factor = x.Q.T2star;
     end
-
     nsrTE = exp(x.Q.EchoTime_PWI3D ./T2_factor); % for each volume, get the EchoTime weighting
     % e.g., exp(17/47.3) = 1.4325
-
     % PLD & LD weighting
 	if isempty(x.Q.LabelingDuration_PWI3D)
 		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.BloodT1);
@@ -502,25 +450,20 @@ if bCreatePWI
 		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.BloodT1) ./ (1-exp(-x.Q.LabelingDuration_PWI3D ./x.Q.BloodT1));
 	end
     % e.g., exp(1525/1650) / (1-exp(-1650/1650) = 3.9865
-
     % Perfusion-weighting (PW) vs vascular weighting (range 1%-100%)
     pwPLD = max((min(x.Q.InitialPLD_PWI3D, 2500) - 1000) ./ 15, 1) ./100;
     % e.g., max((min(1525, 2500) - 1000) / 15, 1) / 100 = 0.35 for 35%
-
     % Joint estimated signal contribution per volume
     contributionVolume = pwPLD ./ (nsrTE .* nsrPLD);
     % e.g., 0.35 / (1.4325 * 3.9865) = 0.0613
-
     % Make the sum contribution 1
     contributionVolume = contributionVolume ./ sum(contributionVolume);
-
     % Create the joined image & parameters
     PWI = zeros(size(PWI3D(:,:,:,1)));
     
     for iVolume=1:size(PWI3D, 4)
         PWI = PWI + contributionVolume(iVolume) .* PWI3D(:,:,:,iVolume);
     end
-
     x.Q.EchoTime_PWI = sum(contributionVolume .* x.Q.EchoTime_PWI3D);
     x.Q.InitialPLD_PWI = sum(contributionVolume .* x.Q.InitialPLD_PWI3D);
 	if ~isempty(x.Q.LabelingDuration_PWI3D)
@@ -529,7 +472,6 @@ if bCreatePWI
 		x.Q.LabelingDuration_PWI = [];
 	end
 end
-
 if bCreateControl
     % Verify that image matrix & parameter vectors are compatible
     if size(Control3D, 4) ~= length(x.Q.EchoTime_Control3D)
@@ -553,5 +495,4 @@ if bCreateControl
 		x.Q.LabelingDuration_Control = mean(x.Q.LabelingDuration_Control3D(:));
 	end
 end
-
 end

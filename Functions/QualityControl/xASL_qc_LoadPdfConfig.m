@@ -24,21 +24,19 @@ function [config] = xASL_qc_LoadPdfConfig(x, configPath)
 % EXAMPLE: [config] = xASL_qc_LoadPdfConfig(x);
 % __________________________________
 % Copyright 2015-2023 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ------------------------------------------------------------------------
 % 1. Argument check
-
 if nargin<1 || isempty(x)
     error('No x structure provided');
 end
-
 if nargin<2 || isempty(configPath)
     configPath = fullfile(x.dir.xASLDerivatives, 'configReportPDF.json');
 end
-
-
 %% ------------------------------------------------------------------------
 %% 2. Load JSON file 
 if exist(configPath, 'file')
@@ -48,11 +46,9 @@ else
     xASL_qc_GeneratePdfConfig(x, x.SUBJECT, false);
     config = xASL_io_ReadJson(configPath);
 end
-
 %% ------------------------------------------------------------------------
 %% 3. Deal with warnings
 if isempty(fields(config))
     warning('Check if configuration JSON for the PDF report is correct, no parameters were loaded.');
 end
-
 end

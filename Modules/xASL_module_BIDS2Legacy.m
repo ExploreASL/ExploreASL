@@ -31,6 +31,10 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
 %
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 0. Initialization
     if nargin<3 || isempty(bVerbose)
@@ -39,33 +43,26 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
     if nargin<2 || isempty(bOverwrite)
         bOverwrite = 1; % Default is to overwrite existing files
     end
-
     % Make sure that logging is still active
     if isfield(x.dir,'diaryFile')
         diary(x.dir.diaryFile); % Start diary
     end
     
     [x] = xASL_init_InitializeMutex(x, 'BIDS2Legacy'); % Start Mutex
-
     result = true; % Default for result
-
     if x.mutex.bAnyModuleLocked
         % If any module is locked for this subject, we skip this module for
         % this subject
         return;
     end
-
     if x.mutex.HasState('999_ready')
         bO = false; % no Output, as everything has been done already
     else
         bO = true; % yes Output, not completely done, so we want to know what has or has not been done
     end    
     
-
     if ~x.mutex.HasState('010_BIDS2LEGACY')
-
         %% 1. Get subjectID & sessionID from x.modules.bids2legacy.BIDS
-
         %   !!!!! NOTE THAT SESSION (BIDS) IS A VISIT (LEGACY) HERE, NOT A RUN (BIDS) !!!!!
         iSubjSess = find(strcmp(x.SUBJECTS, x.SUBJECT));
         
@@ -83,7 +80,6 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         % x.modules.bids2legacy.BIDS.subjects(1).perf(4) -> filename: 'sub-10015124_ses-1_run-2_m0scan.nii.gz'  
 		%
 		% Also note that sessions can now be any name, number, data, or a string and are always treated as a string
-
         % Subject ID
         SubjectID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).name;
         SessionID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).session;
@@ -92,18 +88,14 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         else
             SessionID = SessionID(5:end);
         end
-
         SubjectSession = [SubjectID '_' SessionID]; % this is the legacy name
-
         if ~strcmp(SubjectSession, x.SUBJECT)
             error(['xASL_init_BIDS2Legacy ' x.SUBJECT ' should match with xASL_module_BIDS2Legacy ' SubjectSession]);
         else
-
             %% 2. Parse modality
             
             pathLegacy_SubjectSession = fullfile(x.dir.xASLDerivatives, SubjectSession);
             bFolderExisted = exist(pathLegacy_SubjectSession, 'dir')==7;
-
             % Backwards compatibility: rename sub-*** to sub-***_1
             if strcmp(SessionID, '1')
                 pathLegacy_SubjectSession_OLD = fullfile(x.dir.xASLDerivatives, SubjectID); % it should be [SubjectID '_' SessionID] now
@@ -133,11 +125,9 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
                             end
                         end
                     end
-
                     bFolderExisted = true;
                 end
             end
-
             % Provide warning that we are going to overwrite the folder
             if bFolderExisted
                 warning(['Any rawdata copies will be overwritten in the /derivatives folder: ' pathLegacy_SubjectSession]);
@@ -146,17 +136,13 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
                     'but we merge previously processed results with fresh copies of original files from /rawdata']);
                 fprintf('\n%s\n\n', 'Nevertheless, it is always cleanest to remove all derivatives before rerunning ExploreASL');
             end
-
             % Create subject/session directory (to enable reruns for pre-imported or crashed datasets, we need a subject level here/above!)
             xASL_adm_CreateDir(pathLegacy_SubjectSession);
-
             % Modalities - the BIDS scantypes
             ModalitiesUnique = unique(x.modules.bids2legacy.bidsPar.BIDS2LegacyFolderConfiguration(2:end, 2));
             nModalities = length(ModalitiesUnique);
             xASL_bids_BIDS2Legacy_ParseModality(x.modules.bids2legacy.BIDS, x.modules.bids2legacy.bidsPar, SubjectSession, iSubjSess, ModalitiesUnique, nModalities, bOverwrite, pathLegacy_SubjectSession);
         end
-
-
         %% 3. Parse M0s
         ListASL4D = xASL_adm_GetFileList(pathLegacy_SubjectSession, '^ASL4D\.nii$', 'FPListRec');
         if bVerbose && isempty(ListASL4D)
@@ -166,19 +152,14 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         % Parse M0s
         for iList=1:numel(ListASL4D)
             xASL_bids_parseM0(ListASL4D{iList});
-
             if bVerbose
                 fprintf('%s\n', ['M0 parsed for subject ' SubjectID ' session ' SessionID]);
             end
         end
-
-
-
         x.mutex.AddState('010_BIDS2LEGACY'); % Add mutex state
     elseif x.mutex.HasState('010_BIDS2LEGACY')
         if bO; fprintf('%s\n', ['BIDS2Legacy already done, skipping ' x.SUBJECT '.    ']); end
     end
-
     
     %% Finalize and unlock mutex for this module
     x.mutex.AddState('999_ready'); % Add ready state

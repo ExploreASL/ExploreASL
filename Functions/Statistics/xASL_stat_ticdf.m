@@ -22,20 +22,21 @@ function T = xASL_stat_ticdf(P,nu)
 %             http://people.math.sfu.ca/~cbm/aands/abramowitz_and_stegun.pdf
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Admin
 if isscalar(P) && (~isequal(size(P),size(nu)))
     P = P*ones(size(nu));
 end
-
 T = zeros(size(P));
-
 % Set the trivial values
 T(P<0) = NaN;
 T(P>1) = NaN;
 T(P==0) = -Inf;
 T(P==1) = Inf;
-
 % Use inversion of beta function for small nu
 ii = find(nu < 1000);
 if any(ii)
@@ -54,7 +55,6 @@ if any(ii)
     end
     T(ii) = sign(Ploc).*sqrt(nuloc.*(1-X)./X);
 end
-
 % Abramowitz & Stegun formula 26.7.5 for large nu
 ii = find(nu >= 1000);
 if any(ii)

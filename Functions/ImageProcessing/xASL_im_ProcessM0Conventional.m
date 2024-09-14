@@ -22,13 +22,14 @@ function [Corr_M0] = xASL_im_ProcessM0Conventional(ImIn, x)
 % EXAMPLE:      ...
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Mask data below threshold
     LowCutOff                       = 0.2;
     HiCutOff                        = 0.6;
-
     Data_array                      = sort(ImIn(:));
     % 
     Data_array(Data_array<(LowCutOff.*max(Data_array)))    = [];
@@ -36,17 +37,12 @@ function [Corr_M0] = xASL_im_ProcessM0Conventional(ImIn, x)
     % 
     % [N X]=hist(MaskM0)
     % figure(2);plot(X,N)
-
     Diff_array                      = Data_array(2:end) - Data_array(1:end-1);
     placemax                        = find(Diff_array == max(Diff_array));
     Threshold                       = (Data_array(placemax)+Data_array(placemax+1))./2;
-
     MaskM0                          = ImIn;
     MaskM0(MaskM0<Threshold(1))     = NaN;
-
-
     %% Mask-constrained smoothing
-
     if ~isfield(x,'SmoothingFactor')
         x.SmoothingFactor        = 8; % 8 mm = consensus paper default, 6.5 mm = Philips default
     end
@@ -55,6 +51,5 @@ function [Corr_M0] = xASL_im_ProcessM0Conventional(ImIn, x)
 	if numel(N)==1
 		N = repmat(N,[1 3]);
 	end
-
     Corr_M0                         = xASL_im_ndnanfilter(MaskM0,'gauss',double(N),0);
 end

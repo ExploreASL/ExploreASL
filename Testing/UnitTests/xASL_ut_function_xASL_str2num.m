@@ -15,25 +15,23 @@ function UnitTest = xASL_ut_function_xASL_str2num(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_str2num(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Test run 1
-
 % Give your individual subtest a name
 UnitTest.tests(1).testname = 'Number types: integer, double, positive and negative';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 numOutA = xASL_str2num('123');
 numOutB = xASL_str2num('-123');
 numOutC = xASL_str2num('123.456');
 numOutD = xASL_str2num('-123.456');
-
 % Define one or multiple test conditions here
 testCondition = true;
-
 % Define one or multiple test conditions here
 if ~isnumeric(numOutA) || ~isnumeric(numOutB) || ~isnumeric(numOutC) || ~isnumeric(numOutD)
     testCondition = false;
@@ -43,31 +41,21 @@ if isnumeric(numOutA) && isnumeric(numOutB) && isnumeric(numOutC) && isnumeric(n
         testCondition = false;
     end
 end
-
 % Clean up
 clear numOutA numOutB numOutC numOutD
-
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
-
-
 %% Test run 2
-
 % Give your individual subtest a name
 UnitTest.tests(2).testname = 'List of numbers';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 testArr = xASL_str2num({'1','2','3'},0);
-
 % Define one or multiple test conditions here
 testCondition = true;
-
 % Define one or multiple test conditions here
 if ~isnumeric(testArr)
     testCondition = false;
@@ -77,35 +65,25 @@ if isnumeric(testArr) && numel(testArr)==3
         testCondition = false;
     end
 end
-
 % Clean up
 clear testArr
-
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(2).passed = testCondition;
-
-
 %% Test run 3
-
 % Give your individual subtest a name
 UnitTest.tests(3).testname = 'Number types: integer, double, positive and negative';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 numOutA = xASL_str2num('1.1e6');
 numOutB = xASL_str2num('1.2e-6');
 numOutC = xASL_str2num('1.3e12');
 numOutD = xASL_str2num('1.4e-12');
 numOutE = xASL_str2num('I_AM_NOT_A_NUMBER');
-
 % Define one or multiple test conditions here
 testCondition = true;
-
 % Define one or multiple test conditions here
 if ~isnumeric(numOutA) || ~isnumeric(numOutB) || ~isnumeric(numOutC) || ~isnumeric(numOutD)
     testCondition = false;
@@ -118,20 +96,12 @@ end
 if ~isnan(numOutE)
     testCondition = false;
 end
-
 % Clean up
 clear numOutA numOutB numOutC numOutD
-
 % Get test duration
 UnitTest.tests(3).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(3).passed = testCondition;
-
-
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
-
 end
-
-

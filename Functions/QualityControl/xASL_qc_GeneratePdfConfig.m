@@ -19,13 +19,15 @@ function [config] = xASL_qc_GeneratePdfConfig(x, subject, bOverwrite)
 % EXAMPLE: xASL_qc_GeneratePdfConfig(x, 'sub-001');
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % check input
 if nargin < 1 || isempty(x)
     error('No x structure provided');
 end
-
 if nargin < 2 || isempty(subject)
     if isfield(x, 'SUBJECT')
         subject = x.SUBJECT;
@@ -35,11 +37,9 @@ if nargin < 2 || isempty(subject)
 else
     x.SUBJECT = subject;
 end
-
 if nargin < 3 || isempty(bOverwrite)
    bOverwrite = true;
 end
-
 % Fix <SESSION> not existing
 if ~isfield(x, 'SESSION')
     if isfield(x, 'SESSIONS') && ~isempty(x.SESSIONS)
@@ -48,7 +48,6 @@ if ~isfield(x, 'SESSION')
         warning('x.SESSIONS was missing, this might go wrong');
     end
 end
-
 % Fix x.P not existing
 if ~isfield(x, 'P') || isempty(x.P) || isempty(fields(x.P))
     if ~isfield(x, 'dir')
@@ -60,37 +59,27 @@ if ~isfield(x, 'P') || isempty(x.P) || isempty(fields(x.P))
     if ~isfield(x.dir, 'SESSIONDIR')
         x.dir.SESSIONDIR = fullfile(x.dir.SUBJECTDIR, x.SESSION);
     end
-
     x = xASL_init_FileSystem(x);
 end
-
 % Determine x.mat file
 PathX = fullfile(x.dir.xASLDerivatives, subject, 'x.mat');
-
 % Check if x.mat file exists already
 if ~exist(PathX, 'file')
     warning([PathX ' didnt exist, skipping xASL_qc_CreateOutputPDF']);
     return;
 end
-
 x = xASL_adm_LoadX(x, PathX, true); % Assume memory x is newer than x.mat
-
 % Make sure that the directory exists
 PrintDir = fullfile(x.dir.xASLDerivatives);
 xASL_adm_CreateDir(PrintDir);
-
 % Print the title
 fprintf('Creating Default Json in:   \n');
 fprintf([PrintDir '\n']);
-
 % Parse the entire Json Stack automatically making all the pages.
 config = xASL_sub_createDefaultJson(x);
-
 % Write Pdf configuration
 xASL_io_WriteJson(fullfile(PrintDir, 'configReportPDF.json'), config, bOverwrite);
-
 end
-
 function [config] = xASL_sub_createDefaultJson(x)
     config = struct();
     if ~isfield(x, 'Output') || isempty(x.Output) || isempty(fields(x.Output))
@@ -101,7 +90,6 @@ function [config] = xASL_sub_createDefaultJson(x)
         warning('x.Output_im didnt exist, skipping xASL_qc_GenerateJsonTemplate');
         return;
     end
-
     config.pages = struct();
     modules = fieldnames(x.Output);
     for module = 1:size(modules)
@@ -110,13 +98,10 @@ function [config] = xASL_sub_createDefaultJson(x)
         config.pages(module).pageIdentifier = modules{module};
         config.pages(module).content = xASL_sub_createModuleContent(x, modules{module});
     end
-
 end
-
 function content = xASL_sub_createModuleContent(x, module)
     qc_parameters = fieldnames(x.Output.(module));
     content = cell(size(qc_parameters,1),1);
-
     for field = 1:size(qc_parameters)
         qc_content = struct();
         qc_content.category = 'content';
@@ -125,7 +110,6 @@ function content = xASL_sub_createModuleContent(x, module)
         qc_content.module = module;
         content{field} = qc_content;
     end
-
     % Add the qc_images
     qc_content = struct();
     qc_content.category = 'content';
@@ -135,7 +119,4 @@ function content = xASL_sub_createModuleContent(x, module)
     qc_content.size = '[0.6 0.6]';
     qc_content.module = module;
     content{end+1} = qc_content;
-
-
-
 end

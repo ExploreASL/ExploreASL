@@ -42,6 +42,10 @@ function [x] = xASL_wrp_SegmentT1w(x, bSegmentSPM12)
 % Mendrik AM, Vincken KL, Kuijf HJ, et al. MRBrainS Challenge: Online Evaluation Framework for Brain Image Segmentation in 3T MRI Scans. Comput.Intell.Neurosci. 2015. p. 813696-mrbrains13.isi.uu.nl/results.php.
 % __________________________________
 % Copyright 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if nargin<2 || isempty(bSegmentSPM12)
     bSegmentSPM12 = false; % by default use CAT12, not SPM12 to segment
@@ -49,39 +53,30 @@ end
 if ~isfield(x.modules.structural,'bFixResolution') || isempty(x.modules.structural.bFixResolution)
     x.modules.structural.bFixResolution = false;
 end
-
-
 %% --------------------------------------------------------------------------------
 %% 1. Administration
 if x.settings.Quality~=0 && x.settings.Quality~=1
     error('Wrong quality definition');
 end
-
 if ~isfield(x,'Seg')
 	x.Seg = {};
 end
 if ~isfield(x.modules.structural, 'bHammersCAT12')
     x.modules.structural.bHammersCAT12 = false;
 end
-
 % Check whether we should do normal or strong biasfield correction
 x.modules.structural.T1BiasFieldRegularization = true; % default
 if isfield(x,'Q') && isfield(x.Q,'Vendor') && ~isempty(regexpi(x.Q.Vendor,'GE'))
     x.modules.structural.T1BiasFieldRegularization = false; % SPM12
     % GE has wider bore scanners, resulting in a wide biasfield
 end
-
-
-
 % Study file management
 xASL_io_ReadNifti(x.P.Path_T1); % unzip if necessary
 xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, ['^c[1-3]' x.P.STRUCT '\.nii$']); % make sure no old files are left when job fails
 xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, ['^' x.P.STRUCT '_seg8\.mat$']);
 xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, ['^y_' x.P.STRUCT '\.nii$']);
 xASL_adm_DeleteFileList(x.dir.SUBJECTDIR, '^catreport.*\.pdf$');
-
 xASL_adm_RemoveTempFilesCAT12(x, true); % remove previous temporary CAT12 files
-
 %% --------------------------------------------------------------------------------
 %% 1.5. Fix resolution for CAT12 % if we would activate this, we should also
 %     fix the FLAIR resolution, otherwise this crashes when cleaning up the
@@ -92,35 +87,27 @@ if x.modules.structural.bFixResolution % if we use CAT12 to segment
     CurrentVoxelSize = tNii.hdr.pixdim(2:4);
     if max(CurrentVoxelSize./[1.5 1.5 1.5]>[1.1 1.1 1.1]) % if any dimension is smaller than 1.5 mm resolution:
         NewVoxelSize = min(CurrentVoxelSize,[1.5 1.5 1.5]);
-
         % first backup T1, if backup doest exist yet
         if ~xASL_exist(x.P.Path_T1_ORI)
             xASL_Copy(x.P.Path_T1, x.P.Path_T1_ORI);
         end
-
         xASL_im_Upsample(x.P.Path_T1, x.P.Path_T1, NewVoxelSize, [], [], 'spline');
     end
 end
-
-
 %% --------------------------------------------------------------------------------
 %% 2. Extra segmentation options by Jan Petr (NEED MERGING WITH ABOVE)
 % NOVICE study
 % x.Seg.DisableDARTEL = 1;
-
 % PICTURE study
 % x.Seg.Method = 'GS'; % Or 'DARTEL'
 % x.Seg.SaveSPMFlowField = 1;
 % x.Seg.SaveOriginalFlowField = 1;
 % x.Seg.SaveMixedFlowField = 1;
 % x.Seg.SaveIntermedFlowField = 1;
-
-
 % Disable the DARTEL/CAT12 registration completely and run only DCT+Affine registration (if TRUE)
 if ~isfield(x.Seg,'DisableDARTEL')
 	x.Seg.DisableDARTEL = false;
 end
-
 % Sets the basic method for the MNI space registration after CAT12 segmentation
 % 'default' = Automatic choosing between GS and DARTEL.
 % 'GS' = does only Geodesic shooting
@@ -131,33 +118,28 @@ elseif ~strcmpi(x.Seg.Method, 'default') && ~strcmpi(x.Seg.Method, 'DARTEL') && 
     warning(['Wrong x.Seg.Method: ' xASL_num2str(x.Seg.Method) ', using default setting instead']);
     x.Seg.Method = 'default';
 end
-
 % If TRUE, then additionally saves the flow field of the affine+DCT normalization (low degree of freedom non-linear)
 % that is executed before DARTEL or GS for pre-registration
 % Filename y_T1_SPM.nii
 if ~isfield(x.Seg,'SaveSPMFlowField')
 	x.Seg.SaveSPMFlowField = false;
 end
-
 % In the case of lesion masking and mixing of the AFFINE+DARTEL flow field, this option saves additionally the
 % non-modified DARTEL/GS flow-field
 % Filename y_T1_orig.nii
 if ~isfield(x.Seg,'SaveOriginalFlowField')
 	x.Seg.SaveOriginalFlowField = false; % Additionally save the original flowfield
 end
-
 % In the case of lesion masking it saves additionally the  mix of the AFFINE+DARTEL flow field and the
 % DARTEL/GS flow-field
 % Filename y_T1_mixed.nii
 if ~isfield(x.Seg,'SaveMixedFlowField')
 	x.Seg.SaveMixedFlowField = false; % Additionally saves an improved mixing that takes care to be invertible
 end
-
 % Saves the intermediate steps for DARTEL and GS y_T1_1.nii, y_T1_2.nii,... y_T1_6.nii
 if ~isfield(x.Seg,'SaveIntermedFlowField')
 	x.Seg.SaveIntermedFlowField = false;
 end
-
 % If the DARTEL/GS is disabled, then it does not make sense to activate any of these extra options
 if x.Seg.DisableDARTEL
 	x.Seg.Method = 'default';
@@ -166,8 +148,6 @@ if x.Seg.DisableDARTEL
 	x.Seg.SaveMixedFlowField = false;
 	x.Seg.SaveIntermedFlowField = false;
 end
-
-
 %% -------------------------------------------------------------------------------------------
 %% 3. Segmentation using CAT12
 %  This runs by default (default = x.modules.structural.bSegmentSPM12 == 0)
@@ -175,25 +155,18 @@ end
 if ~bSegmentSPM12
     bSegmentSPM12 = xASL_wrp_CAT12Segmentation(x);
 end
-
-
 %% -------------------------------------------------------------------------------------------
 %% 4. Segmentation using SPM12
 %  This usually gives poorer results than CAT12, but can be chosen if CAT12 doesnt work
 if bSegmentSPM12
     xASL_wrp_SPM12Segmentation(x);
-
     if ~x.settings.Quality % With low quality, registration was performed on lower resolution,
         % & transformation needs to be upsampled to correct resolution
         xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.settings.Quality, x.P.Path_y_T1, 1);
     end
     return; % rest of the function is housekeeping for CAT12
-
     close all;
 end
-
-
-
 %% ----------------------------------------------------------------------------------------
 %% 5. File management CAT12 names
 InFile{1} = fullfile(x.dir.SUBJECTDIR,'mri',['p1' x.P.STRUCT '.nii']);
@@ -204,7 +177,6 @@ InFile{5} = fullfile(x.dir.SUBJECTDIR,'label',['catROI_' x.P.STRUCT '.tsv']);
 InFile{6} = fullfile(x.dir.SUBJECTDIR,'report',['catreport_' x.P.STRUCT '.pdf']);
 InFile{7} = fullfile(x.dir.SUBJECTDIR,'report',['cat_' x.P.STRUCT '.mat']);
 InFile{8} = fullfile(x.dir.SUBJECTDIR,'mri',['n' x.P.STRUCT '.nii']);
-
 OutFile{1} = x.P.Path_c1T1; % GM segmentation
 OutFile{2} = x.P.Path_c2T1; % WM segmentation
 OutFile{3} = x.P.Path_c3T1; % CSF segmentation
@@ -213,7 +185,6 @@ OutFile{5} = fullfile(x.D.TissueVolumeDir,['catROI_' x.P.STRUCT '_' x.P.SubjectI
 OutFile{6} = fullfile(x.dir.SUBJECTDIR,['catreport_' x.P.STRUCT '.pdf']);
 OutFile{7} = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' x.P.SubjectID '.mat']);
 OutFile{8} = fullfile(x.dir.SUBJECTDIR,[x.P.STRUCT '_BiasFieldCorrected.nii.gz']); % GM segmentation
-
 % If saving separate files - copy the intermediate steps
 if x.Seg.SaveIntermedFlowField
     switch x.Seg.Method
@@ -229,14 +200,11 @@ if x.Seg.SaveIntermedFlowField
         end
     end
 end
-
 for iFile=1:length(InFile)
     if xASL_exist(InFile{iFile},'file')
         xASL_Move(InFile{iFile}, OutFile{iFile}, true, false); % move file, overwrite old file, no verbose
     end
 end
-
-
 %% ----------------------------------------------------------------------------------------
 %% 6. File management lesion segmentations
 %  Obtain paths of lesion files if they exist, to correct flowfields for
@@ -245,25 +213,18 @@ Lesion_FLAIR_list  = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['(?i)^Lesion_' x.P.F
 Path_Transf_SPM      = fullfile(x.dir.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_withoutDARTEL.nii']);
 %         Path_Transf_SPM_subj = fullfile(x.dir.SUBJECTDIR,['y_' x.P.STRUCT '_withoutDARTEL.nii']);
 Path_Transf_DARTEL   = fullfile(x.dir.SUBJECTDIR,'mri',['y_' x.P.STRUCT '_withDARTEL.nii']);
-
 % 1) Resample all lesion masks to standard space (avoids differences T1 & FLAIR spaces)
 % 2) Combine all lesions into single Total_Lesion.nii, save this, remove the others
 % 3) correct flow fields with the Total_Lesion.nii
-
 % Replace flow fields, to use the SPM flow field for resampling of lesions to standard space
-
 if xASL_exist(x.P.Path_y_T1,'file')
     xASL_Move(x.P.Path_y_T1, Path_Transf_DARTEL, true);
 end
 if xASL_exist(Path_Transf_SPM,'file')
     xASL_Move(Path_Transf_SPM, x.P.Path_y_T1, true);
 end
-
 % Delete existing zipped lesion masks
 xASL_adm_DeleteFileList(x.D.PopDir, ['^rLesion.*' x.P.SubjectID '\.nii'], 0, [0 Inf]);
-
-
-
 %% ----------------------------------------------------------------------------------------
 %% 7. Combine lesion masks in standard space
 % This is only to avoid differences between input spaces of the lesion masks
@@ -277,7 +238,6 @@ for iL=1:length(Lesion_T1_list)
     xASL_spm_deformations(x, Lesion_T1_list{iL}, rLesion_T1_list{iL}, 2);
 end
 xASL_Move(x.P.Path_y_T1, Path_Transf_SPM, true); % move the flow field back
-
 % Combine all lesions
 rLesionList = xASL_adm_GetFileList(x.D.PopDir, ['(?i)^rLesion.*' x.P.SubjectID '\.nii'], 'FPList', [0 Inf]);
 LesionIM = zeros([121 145 121]); % assuming 1.5 mm MNI
@@ -285,8 +245,6 @@ for iL=1:length(rLesionList)
     LesionIM(xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(rLesionList{iL}))) = 1;
     xASL_delete(rLesionList{iL});
 end
-
-
 %% ----------------------------------------------------------------------------------------
 %% 8. Manage flowfields
 if xASL_stat_SumNan(LesionIM(:))>0
@@ -301,45 +259,22 @@ else % if no lesion existed, keep the non-linear flowfield (if it exists, otherw
            xASL_Move(Path_Transf_SPM, x.P.Path_y_T1, true);
     end
 end
-
-
 %% ----------------------------------------------------------------------------------------
 %% 9. Manage FoV & flowfield edges
 xASL_im_FillNaNs(x.P.Path_y_T1, 3, [], [], true);
-
 if ~x.settings.Quality
     % With low quality, DARTEL/GS registration was performed on lower resolution,
     % & transformation needs to be upsampled to correct resolution
     xASL_spm_reslice(x.D.ResliceRef, x.P.Path_y_T1, [], [], x.settings.Quality, x.P.Path_y_T1, 1);
 end
-
-
 %% ----------------------------------------------------------------------------------------
 %% 10. File management
 xASL_adm_RemoveTempFilesCAT12(x);
-
-
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 %% ===================================================================================================================
 %% ===================================================================================================================
 function xASL_adm_RemoveTempFilesCAT12(x, bForce)
 %xASL_adm_RemoveTempFilesCAT12 Removes residual/temporal files in mri directory
-
 if nargin<2 || isempty(bForce)
     if ~x.settings.DELETETEMP
         bForce = false;
@@ -347,7 +282,6 @@ if nargin<2 || isempty(bForce)
         bForce = true; % default
     end
 end
-
 % delete previous error files
 % Remove residual files in mri directory
 if bForce
@@ -362,7 +296,6 @@ if bForce
         end
         DirList{end+1} = ErrDir;
     end
-
     for iL=1:length(DirList)
         DelList = xASL_adm_GetFileList(DirList{iL},'(?i)^.*\.(pdf|nii|xml|mat|ini|db|DS_Store)$','FPlist',[0 Inf]);
         for iD=1:length(DelList)
@@ -377,29 +310,19 @@ if bForce
         end
     end
 end
-
-
 end
-
-
-
 %% ===================================================================================================================
 %% ===================================================================================================================
 function xASL_wrp_SPM12Segmentation(x)
 %xASL_wrp_SPM12Segmentation Run the SPM12 segmentation
-
-
     fprintf('%s\n','Segmenting structural image using SPM12');
     warning('off', 'MATLAB:nearlySingularMatrix');
-
     matlabbatch{1}.spm.spatial.preproc.channel.vols = {x.P.Path_T1};
-
     if x.modules.structural.T1BiasFieldRegularization
         matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0;
     else
         matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.01;
     end
-
     %% Fill the templates used for segmentation
 	if x.settings.Pediatric_Template
 		for iDim=1:6
@@ -410,8 +333,6 @@ function xASL_wrp_SPM12Segmentation(x)
 			matlabbatch{1}.spm.spatial.preproc.tissue(iDim).tpm = {fullfile(x.D.SPMDIR, 'tpm', ['TPM.nii,' num2str(iDim)])};
 		end
 	end
-
-
     %% Tissue-class specific options
     matlabbatch{1}.spm.spatial.preproc.tissue(1).ngaus      = 1;
     matlabbatch{1}.spm.spatial.preproc.tissue(1).native     = [1 0]; % store this
@@ -431,7 +352,6 @@ function xASL_wrp_SPM12Segmentation(x)
     matlabbatch{1}.spm.spatial.preproc.tissue(6).ngaus      = 2;
     matlabbatch{1}.spm.spatial.preproc.tissue(6).native     = [0 0];
     matlabbatch{1}.spm.spatial.preproc.tissue(6).warped     = [0 0];
-
     %% General options
     matlabbatch{1}.spm.spatial.preproc.channel.biasfwhm     = 60;
     matlabbatch{1}.spm.spatial.preproc.channel.write        = [0 0];
@@ -441,33 +361,21 @@ function xASL_wrp_SPM12Segmentation(x)
     matlabbatch{1}.spm.spatial.preproc.warp.affreg          = 'mni';
     matlabbatch{1}.spm.spatial.preproc.warp.fwhm            = 0;
     matlabbatch{1}.spm.spatial.preproc.warp.write           = [0 1];
-
     if x.settings.Quality
         matlabbatch{1}.spm.spatial.preproc.warp.samp        = 3;
     else
         matlabbatch{1}.spm.spatial.preproc.warp.samp        = 9;
     end
-
     %% Run the segmentation
     spm_jobman('run', matlabbatch);
     close all;
     warning('on', 'MATLAB:nearlySingularMatrix');
-
 end
-
-
-
-
-
-
 %% ===================================================================================================================
 %% ===================================================================================================================
 function [bSegmentSPM12] = xASL_wrp_CAT12Segmentation(x)
 %xASL_wrp_CAT12Segmentation Run the CAT12 segmentation
-
 bSegmentSPM12 = true; % by default, run SPM12 when CAT12 crashes
-
-
 %% --------------------------------------------------------------------
 %% CAT12 template & registration settings
 SPMTemplateNII    = fullfile(x.D.SPMDIR, 'tpm', 'TPM.nii');
@@ -479,19 +387,16 @@ else
 end
 DartelTemplateNII = fullfile(x.D.SPMDIR, 'toolbox', 'cat12', catTempDir, 'Template_1_IXI555_MNI152.nii');
 GSTemplateNII     = fullfile(x.D.SPMDIR, 'toolbox', 'cat12', catTempDir, 'Template_0_IXI555_MNI152_GS.nii');
-
 if x.settings.Pediatric_Template
 	DartelTemplateNII = fullfile(x.D.SPMDIR, 'MapsAdded', 'templates_pediatric', ['Template_1_' x.Pediatric_Type '_DARTEL.nii']);
 	GSTemplateNII     = fullfile(x.D.SPMDIR, 'MapsAdded', 'templates_pediatric', ['Template_0_' x.Pediatric_Type '_CAT.nii']);
 	x.Seg.Method = 'DARTEL';
 end
-
 if ~xASL_exist(SPMTemplateNII, 'file')
     error('SPM tissue priors missing, is SPM12 installed in the correct folder?');
 elseif ~xASL_exist(DartelTemplateNII,'file') || ~xASL_exist(GSTemplateNII,'file')
     error('CAT12 DARTEL/GS template missing, is CAT12 installed in the correct folder? It should be installed in SPM12/toolbox/cat12');
 end
-
 matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm                         = {SPMTemplateNII};
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_savesteps           = x.Seg.SaveIntermedFlowField;
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_quality             = x.settings.Quality;
@@ -517,31 +422,24 @@ else
 			matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.regstr = 0;
 	end
 end
-
-
-
 % matlabbatch{1}.spm.tools.cat.estwrite.extopts.cleanupstr = 0.5; % default line in cat12 segmentation batch script
 % Here we don't define CleanUpStr, which gives an error. For some reason it doesn"t want to be loaded through
 % the SPM conf initialization script. Nevertheless, cleanupstr = 0.5 by default in cat_defaults.m
 % so we can remove it here and ignore it
 %% --------------------------------------------------------------------
 %% CAT12 segmentation quality settings
-
 %matlabbatch{1}.spm.tools.cat.estwrite.extopts.SLC = 0;
 %matlabbatch{1}.spm.tools.cat.estwrite.extopts.WMHC = 0;
-
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 1070; % full cleanup. 1070 light cleanup
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.5; % 0.5; % strength local adaptive segmentation
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 2; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
 matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
 matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = 0.5; % SPM bias-correction strength
 matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
-
 if x.modules.structural.T1BiasFieldRegularization
     % decrease biasfield regularization for large biasfields (e.g. GE wide bore scanner)
     matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % CAT12
 end
-
 if ~x.settings.Quality
 	matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 0; % light cleanup
 	matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0; % strength local adaptive segmentation
@@ -550,13 +448,11 @@ if ~x.settings.Quality
 	matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = eps;
 	matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 9;   % spm sampling distance
 end
-
 %% --------------------------------------------------------------------
 %% Residual CAT12 segmentation settings
 matlabbatch{1}.spm.tools.cat.estwrite.data                  = {x.P.Path_T1}; % T1.nii
 matlabbatch{1}.spm.tools.cat.estwrite.nproc                 = 0; % don't split the segmentation in multiple processes.
 % This will run multi-threaded, but not start up other Matlab instances
-
 matlabbatch{1}.spm.tools.cat.estwrite.opts.affreg           = 'mni'; % regularize affine registration for MNI European brains
 matlabbatch{1}.spm.tools.cat.estwrite.output.surface        = 0;   % don't do surface modeling
 matlabbatch{1}.spm.tools.cat.estwrite.output.GM.native      = 1;   % save c1T1 in native space
@@ -567,31 +463,25 @@ matlabbatch{1}.spm.tools.cat.estwrite.output.WM.mod         = 0;   % don't save 
 matlabbatch{1}.spm.tools.cat.estwrite.output.WM.dartel      = 0;   % don't save DARTEL space c2T1, this happens below in the reslice part
 matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
 matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
-
 if x.modules.structural.bHammersCAT12
     matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {fullfile(x.opts.MyPath, 'External', 'Atlases', 'HammersCAT12.nii')};
 else
     matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
 end
-
 matlabbatch{1}.spm.tools.cat.estwrite.output.jacobianwarped = 0;
 %matlabbatch{1}.spm.tools.cat.estwrite.output.labelnative = 1;
-
 if ~x.modules.structural.bFixResolution
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.fixed= [1 0.1]; % process everything on 1 mm fixed resolution (default)
 else
     matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.best = [0.5 0.1]; % process everything on best resolution (is probably lower as we forced this to be 1.5 mm)
 end
-
  % PM: we can use this image, which is skull-stripped and in common space, to use as common space mask
  % to subtract c1 & c2 from to obtain c3 (CSF)
-
 %% --------------------------------------------------------------------
 %% Run CAT12 segmentation
 % 1) We try the above settings
 % 2) If this fails, we try to improve the contrast & repeat CAT12
 % 3) If this fails, we exit this functions and pass an argument to run the SPM12 segmentation instead
-
 try % 1) First attempt CAT12
     spm_jobman('run',matlabbatch); % Run CAT12
     close all;
@@ -604,13 +494,11 @@ catch
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
         matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
     end
-
     try % 2) Second attempt CAT12
         %    Increase strength affine preprocessing (APP)
         %    improve contrast
         %    increase biasfield correction
         %    (This emperically outperformed repetition with SPM12)
-
         if ~xASL_exist(x.P.Path_T1_ORI, 'file') && xASL_exist(x.P.Path_T1, 'file')
             xASL_Copy(x.P.Path_T1, x.P.Path_T1_ORI);
         end
@@ -623,7 +511,6 @@ catch
         
         matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr = 0.75; % increase biasfield correction
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP = 1; % Increase strenght affine preprocessing
-
         xASL_adm_RemoveTempFilesCAT12(x); % Delete previous CAT12 derivatives
         spm_jobman('run', matlabbatch); % Run CAT12
         close all;
@@ -633,31 +520,16 @@ catch
         bSegmentSPM12 = true;
     end
 end
-
-
 end
-
-
-
-
-
-
-
-
-
-
 %% ===================================================================================================================
 %% ===================================================================================================================
 function [FlowfieldImage] = xASL_wrp_CombineFlowFields(x, Path_Transf_SPM, Path_Transf_DARTEL, LesionIM)
 %xASL_wrp_CombineFlowFields Create Euclidian distance matrix, to mix the DARTEL (non-linear) and SPM (uniform) flow
-
-
 %% Admin
 IM_spm = xASL_io_Nifti2Im(Path_Transf_SPM);
 IM_dartel = xASL_io_Nifti2Im(Path_Transf_DARTEL);
 distFromLesion = xASL_im_DistanceTransform(logical(LesionIM));
 distInLesion = xASL_im_DistanceTransform(logical(1-LesionIM));
-
 %% Simple mixing by Henk
 dist          = distFromLesion;
 dist(dist==1) = 0;
@@ -665,17 +537,14 @@ dist(dist<0)  = 0;
 dist          = 1-(dist./max(dist(:)));
 dist          = dist.^8;
 dist          = repmat(dist,[1 1 1 1 3]);
-
 %% Save the SPM8 flow-field
 if x.Seg.SaveSPMFlowField
     xASL_io_SaveNifti(Path_Transf_DARTEL, [x.P.Path_y_T1(1:(end-4)) '_SPM.nii'], IM_spm, [], false);
 end
-
 %% Save the original unaltered GS or DARTEL flow-field
 if x.Seg.SaveOriginalFlowField
     xASL_io_SaveNifti(Path_Transf_DARTEL, [x.P.Path_y_T1(1:(end-4)) '_orig.nii'], IM_dartel, [], false);
 end
-
 %% Save the improved mixing
 if x.Seg.SaveMixedFlowField && x.settings.Quality
     % Looks at border points of the lesion
@@ -684,14 +553,11 @@ if x.Seg.SaveMixedFlowField && x.settings.Quality
     borderLineTrans = IM_dartel(repmat(pointsWithin,[1 1 1 1 3])) - IM_spm(repmat(pointsWithin,[1 1 1 1 3]));
     borderLineTrans = reshape(borderLineTrans,[],3);
     borderLineTrans = sqrt(sum(borderLineTrans.^2,2));
-
     % Finds the maximum discrepancy = MAXdist
     distMax = round(max(borderLineTrans)/1.5);
-
     % Finds the maximum thickness of the lesion = MAXlesion
     distMaxLesion = max(distInLesion(:));
     distMaxLesion = floor(distMaxLesion/4);
-
     % Sets the fixed borders as the MAX and 25% of MAXlesion within the lesion
     distMap = distFromLesion;
     distMap(distMap > distMax) = distMax;
@@ -699,7 +565,6 @@ if x.Seg.SaveMixedFlowField && x.settings.Quality
     distMap(distInLesion>distMaxLesion) = 0;
     indx = (distInLesion<=distMaxLesion) .* (distInLesion>0);
     distMap(indx > 0) = distMaxLesion-distInLesion(indx > 0)+1;
-
     % Sets this as 0 and 1 and interpolate the registration transformations quadratically within
     distMap = distMap/(distMax+distMaxLesion);
     distMap(distMap>1) = 1;
@@ -709,7 +574,6 @@ if x.Seg.SaveMixedFlowField && x.settings.Quality
     IM_mixed = (1-distMap).*IM_spm + distMap.*IM_dartel;
     xASL_io_SaveNifti(Path_Transf_DARTEL,[x.P.Path_y_T1(1:(end-4)) '_mixed.nii'], IM_mixed, [], false);
 end
-
 %% mix the two flow fields, in non-linear proportions
 % Deprecated function. In case of a large deformation - the IM_spm field will be completely off, pointing to
 % a wrong location, because it will not manage to find the tumor. It might be more nicely regularized, but
@@ -719,14 +583,10 @@ if x.settings.Quality
 end
 %IM_dartel_old       = dist.*IM_spm + (1-dist).*IM_dartel;
 %xASL_io_SaveNifti(Path_Transf_DARTEL,[x.P.Path_y_T1(1:(end-4)) '_old.nii'],IM_dartel_old,[],0);
-
 % Instead, we might assume linear interpolation of the border shift - linear deformation of the tumor according to the
 % position of the border of it
 %xASL_io_SaveNifti(Path_Transf_DARTEL,[x.P.Path_y_T1(1:(end-4)) '_orig.nii'],IM_dartel,[],0);
 %IM_dartel(repmat(logical(LesionIM),[1 1 1 1 3])) = NaN;
-
 %% Fix the edges of the flowfields, extrapolate over the NaNs
 FlowfieldImage = IM_dartel;
-
-
 end

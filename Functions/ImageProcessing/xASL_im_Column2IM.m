@@ -24,19 +24,19 @@ function [ImageOut] = xASL_im_Column2IM(ColumnIn, BrainMask)
 % EXAMPLE: ImageOut = xASL_im_Column2IM(ColumnIn, BrainMask);
 % __________________________________
 % Copyright (C) 2015-2020 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 BrainMask = logical(BrainMask);
 ClassIM = class(ColumnIn);
-
 if islogical(ColumnIn) % this is required for early versions of Matlab
     ClassIM = 'uint8';
     Convert2Logical = true;
 else
     Convert2Logical = false;
 end
-
-
 %%  ------------------------------------------------------------
 %% Shift dims, if multiple subjects
 if size(ColumnIn,2)/size(ColumnIn,1)>50
@@ -45,8 +45,6 @@ if size(ColumnIn,2)/size(ColumnIn,1)>50
 else
     ApplyShiftDim = false;
 end
-
-
 %%  ------------------------------------------------------------
 %%  Apply the dimension change (i.e. decompression)
 if size(ColumnIn,1)==sum(BrainMask(:)) % otherwise, we could have the incorrect mask
@@ -62,14 +60,10 @@ if size(ColumnIn,1)==sum(BrainMask(:)) % otherwise, we could have the incorrect 
 else
     ImageOut = ColumnIn;
 end
-
 if ApplyShiftDim && length(size(ImageOut))~=3
     ImageOut = shiftdim(ImageOut,3); % this is always 3, because of the image size 3
 end
-
 if Convert2Logical % this is required for early versions of Matlab
     ImageOut = logical(ImageOut);
 end
-
 end
-

@@ -17,7 +17,10 @@ function imOutput = xASL_im_ResampleLinear(imInput, newSize)
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Input check
     if nargin<1 || isempty(imInput)
@@ -42,9 +45,7 @@ function imOutput = xASL_im_ResampleLinear(imInput, newSize)
         error('Mismatch of new size and image dimension...');
     end
     
-
     %% Calculation
-
     % Check for dimension == 1
     [dimEqual1,numDim,multi1] = xASL_Resample_Check1D(newSize);
     
@@ -87,13 +88,9 @@ function imOutput = xASL_im_ResampleLinear(imInput, newSize)
         
     end
     
-
 end
-
-
 %% Check if one dimension is equal to 1 (does not work if multiple dimensions are set to 1)
 function [dimEqual1,numDim,multi1] = xASL_Resample_Check1D(newSize)
-
     dimEqual1 = false;
     numDim = 0;
     multi1 = false;
@@ -107,13 +104,9 @@ function [dimEqual1,numDim,multi1] = xASL_Resample_Check1D(newSize)
             numDim = iDim;
         end
     end
-
 end
-
-
 %% Remove "empty" dimension
 function [newSize,imInput] = xASL_Resample_Fix1D(dimEqual1,numDim,newSize,imInput,multi1)
-
     % Are multiple dimensions 1?
     if multi1
         if numel(newSize)==2
@@ -142,7 +135,6 @@ function [newSize,imInput] = xASL_Resample_Fix1D(dimEqual1,numDim,newSize,imInpu
             return
         end
     end
-
     if dimEqual1
         if numel(newSize)==1
             % Convert a 1D image/signal to a single value -> just return the mean
@@ -169,12 +161,4 @@ function [newSize,imInput] = xASL_Resample_Fix1D(dimEqual1,numDim,newSize,imInpu
             end
         end
     end
-
 end
-
-
-
-
-
-
-

@@ -29,33 +29,31 @@ function jsonOut = xASL_bids_BIDSifyM0(jsonIn, jsonInASL, studyPar, pathM0In, pa
 %
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Check if required fields exist in studyPar but not in jsonIn
 jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,'m0');
-
 % Create default output
 jsonOut = jsonIn;
-
 %% 1. Check the scaling in DICOMs
 headerM0 = xASL_io_ReadNifti([pathM0In '.nii']);
-
 if ~isempty(regexpi(jsonInASL.Manufacturer, 'Philips'))
     jsonOut.scaleFactor = xASL_adm_GetPhilipsScaling(jsonOut, headerM0);
 else
     jsonOut.scaleFactor = 1;
 end
-
 %% 2. Check the JSON parameters
 % Check echo time, for vectors
 if isfield(jsonOut, 'EchoTime') && length(jsonOut.EchoTime)>1
     % Remove zero entries
     jsonOut.EchoTime = jsonOut.EchoTime(jsonOut.EchoTime ~= 0);
 end
-
 if isfield(studyPar, 'TotalReadoutTime')
     jsonOut.TotalReadoutTime = studyPar.TotalReadoutTime;
 end
-
 if isfield(jsonInASL, 'SliceTiming')
     % Issue a warning if the SliceTiming was already existing for M0, but still overwrite with ASL one
     if isfield(jsonOut, 'SliceTiming')
@@ -75,16 +73,13 @@ else
         warning('Removing pre-existing SliceTiming from M0, as there was no SliceTiming for ASL');
     end
 end
-
 jsonOut.RepetitionTimePreparation = jsonOut.RepetitionTime;
 if isfield(studyPar, 'RepetitionTimePreparationM0') && (~isempty(studyPar.RepetitionTimePreparationM0))
 	jsonOut.RepetitionTimePreparation = studyPar.RepetitionTimePreparationM0;
 end
-
 % Check for Philips Look-Locker
 % Look-Locker acquisition for Philips has often TR given as the length of a single readout of single volume, not as the entire cycle of all PLDs within a single labeling cycle
 % The correct TR thus has to be correctly recalculated
-
 % Verify that we are dealing with Philips Look-Locker sequence with flip angle below 90
 if isfield(studyPar, 'LookLocker') && studyPar.LookLocker
 	if isfield(jsonOut, 'Manufacturer') && strcmpi(jsonOut.Manufacturer, 'Philips')
@@ -117,16 +112,12 @@ if isfield(studyPar, 'LookLocker') && studyPar.LookLocker
 		end
 	end
 end
-
 %% 3. Save or move the NII to the correct location
 xASL_adm_CreateDir(fileparts(pathM0Out));
-
 % Validate the M0 output filename
-
 [~,outputFileM0,outputExtensionM0] = xASL_fileparts([pathM0Out '.nii.gz']);
 outputFilenameM0 = [outputFileM0 outputExtensionM0];
 xASL_bids_ValidateNiftiName(outputFilenameM0,'m0scan');
-
 % The NIfTI needs to be read and saved again
 if (jsonOut.scaleFactor && jsonOut.scaleFactor~=1) || length(headerM0.dat.dim) < 4 || headerM0.dat.dim(4) == 1
     % Read NIfTI image
@@ -148,8 +139,5 @@ else
     % Move the M0
     xASL_Move([pathM0In '.nii'], [pathM0Out '.nii.gz'],1);
 end
-
 jsonOut = rmfield(jsonOut,'scaleFactor');
-
-
 end

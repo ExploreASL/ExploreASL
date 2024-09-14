@@ -24,15 +24,17 @@ function y = xASL_stat_VarNan(x,w,dim)
 %
 % __________________________________
 % Copyright © 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2017-00-00 JP
-
-
 % Admin
 if nargin < 2 || isempty(w)
 	w = 0; 
 end
-
 if (nargin < 3 || isempty(dim)) && w>1 %% UGLY QUICK FIX
                                         % allows to input dimension along
                                         % which we operate, as second
@@ -55,9 +57,7 @@ elseif (nargin < 3 || isempty(dim))
 		dim = 1;
 	end
 end
-
 x = double(x); % Single failed in large arrays according to CAT12
-
 % Unweighted variance
 if isequal(w,0) || isequal(w,1)
     n = sum(~isnan(x),dim);
@@ -71,12 +71,9 @@ if isequal(w,0) || isequal(w,1)
         denom = n; % n==0 => return NaNs, n==1 => return zeros
     end
     denom(n==0) = NaN;
-
     xmean = xASL_stat_MeanNan(x, dim);
     x = bsxfun(@minus, x, xmean);
-
     y = xASL_stat_SumNan(abs(x).^2, dim) ./ denom; % abs guarantees a real result
-
     % Weighted variance
 elseif isvector(w) && all(w >= 0)
     siz = size(x);
@@ -87,7 +84,6 @@ elseif isvector(w) && all(w >= 0)
             error(message('xASL_stat_VarNan:Invalid size weights'));
         end
     end
-
     % Normalize W, and embed it in the right number of dims.  Then
     % replicate it out along the non-working dims to match X's size.
     wresize = ones(1,max(ndims(x),dim)); wresize(dim) = siz(dim);
@@ -100,9 +96,7 @@ elseif isvector(w) && all(w >= 0)
     x0 = xASL_stat_SumNan(x.*w,dim)./n;
     x = bsxfun(@minus, x, x0);
     y = xASL_stat_SumNan(bsxfun(@times, w, abs(x).^2), dim)./n; % abs guarantees a real result
-
 else
     error(message('xASL_stat_VarNan:Invalid weights'));
 end
 end
-

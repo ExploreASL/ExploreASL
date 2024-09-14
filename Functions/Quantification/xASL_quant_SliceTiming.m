@@ -42,17 +42,19 @@ function SliceTiming = xASL_quant_SliceTiming(x, inputIm)
 %            SliceTiming = xASL_quant_SliceTiming(x, 'ASL4D.nii')
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 0.Admin
 if nargin < 1 || isempty(x)
 	error('The x-structure needs to be provided');
 end
-
 if nargin < 2 || isempty(inputIm) 
 	error('The inputIm parameter needs to be provided');
 end
-
 % If a path is provided, then it needs to load the image to obtain its number of dimensions and it can also check the file JSON sidecar
 % to see if a different SliceReadoutTime is no provided in the JSON than in the x-struct
 if ischar(inputIm)
@@ -89,41 +91,34 @@ else
 	% If an image matrix is given, the directly check the number of slices
 	nSlices = size(inputIm, 3);
 end
-
 % The MRAcquisitionType needs to be provided
 if ~isfield(x.Q, 'MRAcquisitionType')
 	error('x.Q.MRAcquisitionType field is missing');
 end
-
 if strcmpi(x.Q.MRAcquisitionType, '3D')
 	% For 3D sequences, zero is returned
 	SliceTiming = 0;
 	return;
 end
-
 if ~strcmpi(x.Q.MRAcquisitionType, '2D') 
 	% It only works with 2D and 3D
 	error(['Unknown x.Q.MRAcquisitionType value:' x.Q.MRAcquisitionType]);
 end
-
 % The SliceReadoutTime needs to be provided
 if ~isfield(x, 'Q')
 	error('x.Q field missing');
 elseif ~isfield(x.Q, 'SliceReadoutTime') || isempty(x.Q.SliceReadoutTime)
 	error('x.Q.SliceReadoutTime missing or invalid ');
 end
-
 %% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 1. ShortestTR
 % If SliceReadoutTiem is specified as "shortestTR", it calculates it with the knowledge of TR and PLD
 % If a scalar or vector is given for SliceReadoutTime, then this function doesn't do anything
 x = xASL_quant_SliceTiming_ShortestTR(x);
-
 %% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 2. Assign the vector value
 % For 2D it either uses the vector or it replicates the scalar to the correct length
 % Non-2D cases were solved in the admin
-
 if length(x.Q.SliceReadoutTime) == 1
 	SliceTiming = (0:1:(nSlices-1)) * x.Q.SliceReadoutTime;
 elseif length(x.Q.SliceReadoutTime) == nSlices
@@ -174,5 +169,4 @@ elseif length(x.Q.SliceReadoutTime) == nSlices
 else
 	error('x.Q.SliceReadoutTime has to be a scalar or match the number of slices');
 end
-
 end

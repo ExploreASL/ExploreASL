@@ -16,10 +16,12 @@ function x = xASL_init_Import(x)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Initialization
-
     % Initialize x struct
     x = xASL_init_SubStructs(x);
     
@@ -40,7 +42,6 @@ function x = xASL_init_Import(x)
     
     % Basic parameter checks
     x = xASL_imp_BasicParameterChecks(x);
-
     % Initialize the import setup
 	x.modules.import.imPar = xASL_imp_Initialize(x.dir.DatasetRoot, x.dir.sourceStructure);
         
@@ -59,5 +60,4 @@ function x = xASL_init_Import(x)
     
     % Create logging directory if it does not exist already
     xASL_adm_CreateDir(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','log'));
-
 end

@@ -24,6 +24,10 @@ function [resultText] = xASL_adm_BreakString(textToPrint, SymbolToFill, bColor, 
 % EXAMPLE:        [resultText] = xASL_adm_BreakString('DCM2NII','=');
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Define defaults
     if nargin<1 || isempty(textToPrint)
@@ -41,7 +45,6 @@ function [resultText] = xASL_adm_BreakString(textToPrint, SymbolToFill, bColor, 
     if nargin<5
         bPrintImmediately = true;
     end
-
     % Define string width
     textWidth = 94;
     
@@ -52,14 +55,9 @@ function [resultText] = xASL_adm_BreakString(textToPrint, SymbolToFill, bColor, 
     if bPrintImmediately
         fprintf(resultText);
     end
-
-
 end
-
-
 % Create the padded string
 function resultText = xASL_adm_PaddedString(textToPrint, SymbolToFill, bColor, bNewLines, textWidth)
-
     %% Create default string
     resultText = repmat(SymbolToFill, 1, textWidth);
     
@@ -67,7 +65,6 @@ function resultText = xASL_adm_PaddedString(textToPrint, SymbolToFill, bColor, b
     if ~isempty(textToPrint)
         textToPrint = [' ' textToPrint ' '];
     end
-
     % Check length
     if length(textToPrint)<100
         % Determine half of the length
@@ -90,5 +87,4 @@ function resultText = xASL_adm_PaddedString(textToPrint, SymbolToFill, bColor, b
 	elseif bNewLines==1
         resultText = sprintf([resultText '\n']);
     end
-
 end

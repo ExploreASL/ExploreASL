@@ -46,7 +46,11 @@ function  RES = xASL_adm_GetFsList(strDirectory, strRegEx, bGetDirNames, bExclud
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright � 2015-2020 ExploreASL
+% Copyright © 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Check input arguments
     if nargin<1 || isempty(strDirectory)
@@ -65,7 +69,6 @@ function  RES = xASL_adm_GetFsList(strDirectory, strRegEx, bGetDirNames, bExclud
         % ignore hidden folders by default
         bExcludeHidden = true;
 	end
-
     if nargin<5 || isempty(bIgnoreCase)
 		% By default ignore case on Windows, and case sensitive on Linux and Mac
 		bIgnoreCase = ispc();
@@ -148,7 +151,7 @@ function  RES = xASL_adm_GetFsList(strDirectory, strRegEx, bGetDirNames, bExclud
     % get only those that match the regular expression
     RES = regexp(RES, strRegEx, 'match', 'once', casearg);  
     
-    %% remove (non matching) empty cell�s from result
+    %% remove (non matching) empty cellï¿œs from result
     RES(strcmp(RES, ''))= []; 
     
     %% sort the result

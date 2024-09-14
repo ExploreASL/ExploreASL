@@ -35,19 +35,19 @@ function xASL_dev_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright (c) 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 1) Manage ExploreASL and compiler code folders
 if nargin<1 || isempty(outputPath);     error('OutputPath missing...');     end
 if nargin<2 || isempty(bCompileSPM);    bCompileSPM = true;                 end
 if nargin<3 || isempty(markAsLatest);   markAsLatest = true;                end
-
 % Mana file handle issues
 close all
-
 % Initialize Explore ASL
 x = ExploreASL_Initialize;
-
 %% 2) Define Versioning
 VersionPath = xASL_adm_GetFileList(x.opts.MyPath, '^VERSION_.*', 'List', [0 Inf]);
 if ~isempty(VersionPath)
@@ -55,14 +55,11 @@ if ~isempty(VersionPath)
 else
     xASLVersion = '';
 end
-
 if markAsLatest
     xASLVersion = 'latest';
 end
-
 % Define file name (add version)
 Version = xASL_adm_CorrectName(['xASL_' xASLVersion]);
-
 %% 3) File management output folder & starting diary
 pathLogFile = fullfile(outputPath,'compilationLog.txt');
 outputPath = fullfile(outputPath,Version);
@@ -77,14 +74,11 @@ else
 end
 diary(pathLogFile);
 diary on
-
 %% 4) Handle SPM Specific Options
 % Static listing of batch application initialisation files
 cfg_util('dumpcfg');
-
 % Duplicate Contents.m in Contents.txt for use in spm('Ver')
 xASL_Copy(fullfile(spm('Dir'),'Contents.m'), fullfile(spm('Dir'),'Contents.txt'));
-
 %% 5) Manage compilation paths
 % It is important that there aren't any syntax errors in the scripts of the
 % folders below (Development, Functions, etc.). To include all files of the
@@ -92,10 +86,8 @@ xASL_Copy(fullfile(spm('Dir'),'Contents.m'), fullfile(spm('Dir'),'Contents.txt')
 % in the standalone version. Functions which are executed by using eval for
 % example can be missed by the automatic matlab mcc search trees, which is
 % why I chose this method.
-
 % Add all SPM folders
 addpath(genpath(fullfile(spm('Dir'))));
-
 % First remove folders that we want to exclude
 warning('off','MATLAB:rmpath:DirNotFound');
 FoldersNot2Deploy = {'Design','WorkInProgress','GitHub',fullfile('External','TestDataSet'),fullfile('External','DIP'),...
@@ -104,10 +96,8 @@ for iFolder=1:length(FoldersNot2Deploy)
     rmpath(genpath(fullfile(x.opts.MyPath, FoldersNot2Deploy{iFolder})));
 end
 warning('on','MATLAB:rmpath:DirNotFound');
-
 opts = {'-p',fullfile(matlabroot,'toolbox','signal')};
 if ~exist(opts{2},'dir'); opts = {}; end
-
 %% 6) Run SPM compilation
 if bCompileSPM
     fprintf('First compiling SPM as test\n');
@@ -118,16 +108,13 @@ if bCompileSPM
     zip([fullfile(DummyDir) '.zip'],fullfile(DummyDir));
     xASL_delete(DummyDir, true);
 end
-
 %% 7) Run ExploreASL compilation
 fprintf('Compiling ExploreASL\n');
-
 if ~isempty(VersionPath)
     AddExploreASLversion = fullfile(x.opts.MyPath,VersionPath{1});
 else
     AddExploreASLversion = '';
 end
-
 % Compilation
 mcc('-m', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathworks.com/matlabcentral/answers/315477-how-can-i-compile-a-standalone-matlab-application-with-startup-options-e-g-nojvm
     fullfile(x.opts.MyPath,'ExploreASL.m'),...
@@ -175,19 +162,13 @@ mcc('-m', '-v',... % '-R -nodisplay -R -softwareopengl',... % https://nl.mathwor
     
 % Copy version file to compilation folder
 xASL_Copy(AddExploreASLversion, fullfile(outputPath, VersionPath{1}), 1);
-
 % Zip the compilation
 zip([fullfile(outputPath) '.zip'],fullfile(outputPath));
-
 % Close diary
 diary(pathLogFile);
 diary off
-
 % Delete unzipped folder
 xASL_delete(outputPath, true);
-
 %% 8) Print done
 fprintf('Done\n');
-
-
 end

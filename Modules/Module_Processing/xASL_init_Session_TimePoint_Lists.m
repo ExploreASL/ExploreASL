@@ -30,17 +30,19 @@ function [x] = xASL_init_Session_TimePoint_Lists(x)
 % EXAMPLE:        [x] = xASL_init_Session_TimePoint_Lists(x);
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % ------------------------------------------------------------------------------------------------
 %% 1. Manage sessions
 fprintf('Automatically defining sessions...\n');
-
 if isfield(x,'SESSIONS') && isstruct(x.SESSIONS)
     warning('Invalid x.SESSIONS structure, replacing this now');
     fprintf('%s\n', 'Check that the correct number of sessions were processed');
     x = rmfield(x,'SESSIONS');
 end
-
 if isfield(x,'SESSIONS') && ~isempty(x.SESSIONS)
     warning('Using predefined x.SESSIONS');
 else
@@ -49,7 +51,6 @@ else
     for iSess=1:length(SessionPathList)
         [~, x.SESSIONS{end+1}]  = fileparts(SessionPathList{iSess});
     end
-
     if isempty(x.SESSIONS)
         fprintf('%s\n', 'No sessions found, defaulting to a single ASL_1 session');
         x.SESSIONS{1} = 'ASL_1'; % default session
@@ -57,37 +58,28 @@ else
         x.SESSIONS = xASL_adm_SortStringNumbers(unique(x.SESSIONS));
     end
 end
-
 x.dataset.nSessions = length(x.SESSIONS);
-
 % ------------------------------------------------------------------------------------------------
 %% 2. Manage TimePoint lists
 [~, TimePoint] = xASL_init_LongitudinalRegistration(x);
-
 % TimePointTotalSubjects sorts subjects in different time point cells, for reporting purposes
 % Note: 
 % *TotalSubjects == all subjects found by the BIDS-matlab or subjectRegexp
 % *Subjects      == all subjects after removing those defined in x.dataset.exclusion
-
 for iT=unique(TimePoint)'
     x.dataset.TimePointTotalSubjects{iT} = cell(0);
 end
-
 for iSubj=1:x.dataset.nTotalSubjects
     iSess=1;
     iSubjSess = (iSubj-1)*x.dataset.nSessions + iSess;
     x.dataset.TimePointTotalSubjects{TimePoint(iSubjSess)}{end+1} = x.dataset.TotalSubjects{iSubj};
 end
-
 x.dataset.nTimePointsTotal = length(x.dataset.TimePointTotalSubjects);
 for iT=1:x.dataset.nTimePointsTotal
     x.dataset.nTimePointTotalSubjects(iT) = length(x.dataset.TimePointTotalSubjects{iT});
 end
-
-
 % ------------------------------------------------------------------------------------------------
 %% 3. Create list of baseline & follow-up subjects (i.e. after exclusion)
-
 % Now we here create the same cells list of subjects per time point, but then after exclusion
 % Note: 
 % *TotalSubjects == all subjects found by the BIDS-matlab or subjectRegexp
@@ -117,13 +109,11 @@ for iT=1:x.dataset.nTimePoints
         x.dataset.nTimePointSubjects(iT) = length(x.dataset.TimePointSubjects{iT});
     end
 end
-
 % ------------------------------------------------------------------------------------------------
 %% 4. Check what excluded from which TimePoints
 for iT=1:x.dataset.nTimePoints
     x.dataset.TimePointExcluded{iT} = cell(0);
 end
-
 if x.dataset.nExcluded>0
     for iExcluded=1:x.dataset.nExcluded
         FoundE = false;
@@ -138,15 +128,11 @@ if x.dataset.nExcluded>0
             end
         end
     end
-
     if ~FoundE
         warning('Did not find excluded subjects in any of the time points');
     end
 end
-
 for iT=1:x.dataset.nTimePoints
     x.dataset.nTimePointExcluded(iT) = length(x.dataset.TimePointExcluded{iT});
 end
-
-
 end

@@ -1,4 +1,9 @@
 % Copyright 2015-2024 ExploreASL (Works In Progress code)
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 function output_data_xyz = X_Y_Z_smoothing(input_data,X_FWHM,Y_FWHM,Z_FWHM)
 %XY_Z_smoothing This function enables a different kernel in XY compared to
 %Z-direction. May be useful to simulate e.g. GE 3D spiral acquisition.

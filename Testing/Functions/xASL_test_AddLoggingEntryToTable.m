@@ -16,6 +16,10 @@ function logTable = xASL_test_AddLoggingEntryToTable(nameFlavor,logTable,logStru
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Get number of log entries
     numLogEntries = size(logStruct,2);
@@ -30,5 +34,4 @@ function logTable = xASL_test_AddLoggingEntryToTable(nameFlavor,logTable,logStru
         thisRow = struct2table(thisStruct);
         logTable = [logTable;thisRow];
     end
-
 end

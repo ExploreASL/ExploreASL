@@ -39,21 +39,20 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 % EXAMPLE: xASL_bids_Add2ParticipantsTSV(MeanMotion, 'MeanMotion', x);
 % __________________________________
 % Copyright 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Get path to participants.tsv
 PathTSV = fullfile(x.dir.xASLDerivatives, 'participants.tsv');
-
-
 %% 1) Admin - Validate that there are not too many columns
 if nargin<4 || isempty(bOverwrite)
     bOverwrite = true;
 end
-
 if size(DataIn, 2)>3
     warning('Too many or few columns, skipping');
 end
-
 %% 2) Admin - Detect nSubjects * nSessions
 % This part checks if the DataIn has an invalid size.
 % After this part, the columns should be 1) subject, 2) session/run, 3)
@@ -65,7 +64,6 @@ if size(DataIn, 1) == (x.dataset.nSubjects * x.dataset.nSessions) && size(DataIn
         return;
     else % check if the sessions are the same in DataIn and x.SESSIONS
         tempSessionNames = xASL_adm_SortStringNumbers(unique(DataIn(:,2)))';
-
         if length(tempSessionNames)~=length(x.SESSIONS)
             % check if the number of defined sessions differ between DataIn
             % and x.SESSIONS
@@ -80,11 +78,9 @@ elseif size(DataIn, 1)==x.dataset.nSubjects
     % No sessions found
     % Add session column
     if size(DataIn, 2)==2
-
         % We now copy the non-session data to be equal for each session of the
         % same subject
         DataIn = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(DataIn, x.SESSIONS);
-
     elseif size(DataIn, 2)~=3
         warning('Too many or few columns, something went wrong, skipping');
         return;
@@ -93,7 +89,6 @@ else
     warning('Incorrect nDatapoints, needs to be either nSubjects or nSubjects * nSessions, skipping');
     return;
 end
-
 %% 3) Admin - Load pre-existing participants.tsv or create one
 % This part ensures that a subject & session column exists.
 % If a session column doesn't exist, it will be created.
@@ -128,24 +123,18 @@ if exist(PathTSV, 'file')
 	if ~isempty(ParticipantIndexNumeric)
 		CellArray(ParticipantIndexNumeric,1) = cellfun(@(y) num2str(y),CellArray(ParticipantIndexNumeric,1),'UniformOutput',false);
 	end
-
 else
     % 3C) Create required columns subjects & sessions from x.SUBJECTS & x.SESSIONS
-
     for iSession=1:x.dataset.nSessions
         CellArray(1+iSession:x.dataset.nSessions:x.dataset.nSubjects * x.dataset.nSessions+1, 1) = x.SUBJECTS;
     end
     CellArray(2:x.dataset.nSubjects * x.dataset.nSessions+1, 2) = repmat(x.SESSIONS(:),[x.dataset.nSubjects, 1]);
 end
-
 % 3D) Force these names
 CellArray{1,1} = 'participant_id';
 CellArray{1,2} = 'session';
-
 SubjectIndex = 1;
 SessionIndex = 2;
-
-
 %% -------------------------------------------------------------------------------------------
 %% 4) Admin - Get column number of data
 % Find columns with the same header
@@ -159,9 +148,6 @@ elseif length(DataColumn)>1
     warning('Too many columns, skipping');
     return;
 end
-
-
-
 %% -------------------------------------------------------------------------------------------
 %% 5) Add data to CellArray
 % Note that CellArray has headers (index +1) but DataIn has not
@@ -187,40 +173,25 @@ for iIndex=1:size(DataIn,1)
         fprintf('Data already existing, skipping\n');
     end
 end
-
-
 %% 6) Fill empty cells & convert NaN to 'n/a'
 IsEmpty = cellfun(@(y) isempty(y), CellArray);
 CellArray(IsEmpty) = {'n/a'};
-
 IsNumeric = cellfun(@(y) isnumeric(y), CellArray);
 NumericArray = CellArray(IsNumeric);
 IsNaN = cellfun(@(y) isnan(y), NumericArray);
 NumericArray(IsNaN) = {'n/a'};
 CellArray(IsNumeric) = NumericArray;
-
-
 %% -------------------------------------------------------------------------------------------
 %% 7) Sort rows on subjects & sessions
 CellArray(2:end,:) = sortrows(CellArray(2:end,:), [1 2]);
-
         
-
 %% -------------------------------------------------------------------------------------------
 %% 8) Write data to participants.tsv
 xASL_tsvWrite(CellArray, PathTSV, 1);
-
-
 end
-
-
-
-
-
 %% -------------------------------------------------------------------------------------------
 %% -------------------------------------------------------------------------------------------
 %% -------------------------------------------------------------------------------------------
-
 function [MatrixOut] = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(MatrixIn, SESSIONS, bHasHeader)
 %xASL_bids_Add2ParticipantsTSV_AddSessionColumn Add session column to data matrixdata to participants.tsv
 %
@@ -233,30 +204,23 @@ function [MatrixOut] = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(MatrixIn, 
 %
 % OUTPUT:
 %   MatrixOut   - same as MatrixIn but with added second session column 
-
-
     %% Admin
     if nargin<3 || isempty(bHasHeader)
         bHasHeader = false;
     end
-
     numberColumns = size(MatrixIn,2); % Obtain the size of the matrix (number of data points)
-
     %% Create the header (if needed)
     if bHasHeader
         MatrixOut(1, 1) = MatrixIn(1, 1); % subject header
         MatrixOut{1, 2} = 'session'; % session header
         MatrixOut(1, 3:numberColumns+1) = MatrixIn(1, 2:numberColumns); % data headers
-
         addRow = 1; % we reserve a row to the new matrix below, for the header
     else
         addRow = 0; % we don't reserve a row, the new matrix below starts at the first row
     end
-
     %% Create the new matrix
     SubjectNumbers = 1:size(MatrixIn(addRow+1:end,:),1); % Obtain subject numbers 1 2 3 ... n
     nSessions = length(SESSIONS);
-
     for iSession=1:nSessions % repeat this for each session
         SessionRows = (SubjectNumbers-1).*nSessions+iSession; % for each session, we create the respective rows
         
@@ -265,6 +229,4 @@ function [MatrixOut] = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(MatrixIn, 
         MatrixOut(addRow+SessionRows, 2) = SESSIONS(iSession); % Repeat the sessions in a new session column
         MatrixOut(addRow+SessionRows, 3:numberColumns+1) = MatrixIn(addRow+1:end,2:numberColumns); % Repeat the data
     end
-
-
 end

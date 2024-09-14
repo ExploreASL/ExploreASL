@@ -27,6 +27,11 @@ function [resTest, P] = xASL_stat_EqualVariancesTest(X, alpha, type)
 %             Zar, J. H. (1999), Biostatistical Analysis (2nd ed.). NJ: Prentice-Hall, Englewood Cliffs. p. 180. 
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2019-04-24 JP, HM
 

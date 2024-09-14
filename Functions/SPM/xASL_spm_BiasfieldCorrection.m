@@ -26,15 +26,16 @@ function xASL_spm_BiasfieldCorrection(PathIn, SPMdir, Quality, PathMask, PathOut
 % EXAMPLE: xASL_spm_BiasfieldCorrection('/MyStudy/sub-001/T1.nii', x.D.SPMDIR);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ------------------------------------------------------------------------------------------------------
 %% Admin
 [Fpath, Ffile, Fext] = xASL_fileparts(PathIn);
 PathIn = xASL_spm_admin(PathIn);
 PathTemp = fullfile(Fpath, ['m' Ffile Fext]);
-
 if nargin<5 || isempty(PathOut)
     PathOut = PathTemp;
 end
@@ -55,30 +56,22 @@ if nargin<2 || isempty(SPMdir)
         error('Cannot find SPM, path needed for tissue priors');
     end
 end
-
 % Delete any existing transformations
 snMat{1} = fullfile(Fpath,[Ffile '_seg_sn.mat']);
 snMat{2} = fullfile(Fpath,[Ffile '_seg_inv_sn.mat']);
-
 for ii=1:2
     xASL_delete(snMat{ii});
 end
-
 %% 1) Create implicit mask 
 if NoMaskInput
     % create an implicit mask from NaNs or zeros, to speed up this
     % biasfield correction, and to avoid NaNs crashing SPM
-
     PathMask = fullfile(Fpath, ['ImplicitMask_' Ffile Fext]);
     tempIM = xASL_io_Nifti2Im(PathIn{1}(1:end-2));
     MaskIM = ones(size(tempIM));
     MaskIM(tempIM==0 | isfinite(tempIM)) = 0;
     xASL_io_SaveNifti(PathIn{1}(1:end-2), PathMask, logical(MaskIM), [], 0);
 end
-
-
-
-
 %% ------------------------------------------------------------------------------------------------------
 %% 2) Define SPM 'old segmentation' settings
 matlabbatch{1}.spm.tools.oldseg.data            = PathIn;
@@ -99,11 +92,8 @@ matlabbatch{1}.spm.tools.oldseg.opts.warpco     = Inf; % 25; % disables the regi
 matlabbatch{1}.spm.tools.oldseg.opts.biasreg    = 0.0001;
 matlabbatch{1}.spm.tools.oldseg.opts.biasfwhm   = 60;
 matlabbatch{1}.spm.tools.oldseg.opts.msk        = {PathMask};
-
-
 %% ------------------------------------------------------------------------------------------------------
 %% 3) Run SPM 'old segmentation'
-
 if Quality
     matlabbatch{1}.spm.tools.oldseg.opts.samp = 9;
     spm_jobman('run',matlabbatch);
@@ -118,8 +108,6 @@ else
         spm_jobman('run',matlabbatch);
     end
 end
-
-
 %% ------------------------------------------------------------------------------------------------------
 %% 4) Delete temporary files
 for ii=1:2
@@ -128,13 +116,9 @@ end
 if NoMaskInput
     xASL_delete(PathMask); % this is the created mask only
 end
-
-
 %% ------------------------------------------------------------------------------------------------------
 %% 5) Rename temporary SPM file into output file
 if ~strcmp(PathTemp, PathOut)
     xASL_Move(PathTemp, PathOut, true);
 end
-
-
 end

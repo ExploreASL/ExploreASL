@@ -1,4 +1,9 @@
 % Copyright 2015-2024 ExploreASL (Works In Progress code)
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 function xASL_stat_Plot2Dsurface( IM2D, FilePath )
 % Plot2Dsurface Visualizes input 2D image in 3D surface plot
 

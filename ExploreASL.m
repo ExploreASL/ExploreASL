@@ -77,7 +77,10 @@ function [x] = ExploreASL(varargin)
 %
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% ExploreASL Workflow
     
@@ -90,16 +93,13 @@ function [x] = ExploreASL(varargin)
     if x.opts.bImportData
         ExploreASL_Import(x);
     end
-
     % -----------------------------------------------------------------------------
     % III. Processing Master
     if x.opts.bLoadData || x.opts.bProcessData
         x = ExploreASL_Process(x);
     end
-
     % -----------------------------------------------------------------------------    
     % IV. Print user feedback (after pipeline)
     xASL_init_PrintUserFeedback(x, nargout, 1);
     
-
 end

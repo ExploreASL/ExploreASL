@@ -18,12 +18,15 @@ function xASL_io_MergeTextFiles(pathA,pathB,pathOut,headerText)
 % EXAMPLE:        xASL_io_MergeTextFiles(pathA,pathB,pathOut,headerText);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Input check
     if nargin < 4 || isempty(headerText)
         headerText = '';
     end
-
     % Read text files
     textA = xASL_io_ReadTextFileLineByLine(pathA);
     textB = xASL_io_ReadTextFileLineByLine(pathB);
@@ -40,9 +43,4 @@ function xASL_io_MergeTextFiles(pathA,pathB,pathOut,headerText)
         fprintf(fid, '%s\n', textB{iLine,1});
     end
     fclose(fid);
-
-
 end
-
-
-

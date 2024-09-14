@@ -49,20 +49,21 @@ function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D_Path, M0_im, im
 % EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseBasilQuantification);
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 fprintf('%s\n', 'Performing quantification');
-
 ATT = [];
 Tex = [];
 ABV = [];
-
 if nargin < 4
 	error('Four input parameters required');
 elseif isempty(x) || ~isstruct(x)
     error('Illegal x structure');
 end
-
 if nargin<5 || isempty(bUseBasilQuantification)
 	if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
 		bUseBasilQuantification = true;
@@ -70,11 +71,9 @@ if nargin<5 || isempty(bUseBasilQuantification)
 		bUseBasilQuantification = false;
 	end
 end
-
 if nargin<6 || isempty(bSaveCBF4D)
 	bSaveCBF4D = false;
 end
-
 if  xASL_stat_SumNan(M0_im(:))==0 
 	if x.modules.asl.ApplyQuantification(5)
 		error('Empty M0 image, something went wrong in M0 processing');
@@ -82,27 +81,21 @@ if  xASL_stat_SumNan(M0_im(:))==0
 		fprintf('%s\n', 'Absent or empty M0 image'); % no warning as M0 quantification was disabled
 	end
 end
-
 if x.modules.asl.bQuantifyMultiPLD && ~bUseBasilQuantification
 	error('Multi-PLD quantification currently works only with BASIL');
 end
-
 ScaleImage = 1; % initializing (double data format by default in Matlab)
 ScaleImageABV = 1;
-
 % Load ASL single PWI
 PWI4D = xASL_io_Nifti2Im(PWI4D_Path); % Load CBF nifti
-
 if xASL_stat_SumNan(PWI4D(:))==0
     warning(['Empty PWI4D image:' PWI4D_Path]);
 end
-
 % Convert to double precision to increase quantification precision
 % This is especially useful with the large factors that we can multiply and
 % divide with in ASL quantification
 PWI4D = double(PWI4D);
 M0_im = double(M0_im);
-
 % Create path to PWI3D based on the PWI4D path (Because PWI4D_Path can be a path to a merged NII)
 [fPath, fFile, fExt] = xASL_fileparts(PWI4D_Path);
 if ~strcmp(fFile(1:5), 'PWI4D')
@@ -110,7 +103,6 @@ if ~strcmp(fFile(1:5), 'PWI4D')
 else
 	PWI3D_Path = fullfile(fPath, ['PWI3D' fFile(6:end) fExt]);
 end
-
 if ~x.modules.asl.ApplyQuantification(3)
     fprintf('%s\n','We skip the scaling of a.u. to label intensity');
 	% In case we don't run quantification, we still need to average the PWI image
@@ -142,17 +134,14 @@ else
             else
                 ScaleImage = ScaleImage.*x.Q.uniqueInitial_PLD;
             end
-
         case '2d' % Load slice gradient
             fprintf('%s\n','2D sequence, accounting for SliceReadoutTime');
-
             imSliceNumber = double(imSliceNumber);
             % Correct NaNs
             % Fix reslicing errors:
             if sum(isnan(imSliceNumber(:)))>0
                 imSliceNumber = xASL_im_ndnanfilter(imSliceNumber,'gauss',[16 16 16],2); % code doesn't smooth, only extrapolates
             end
-
             imSliceNumber(~isfinite(imSliceNumber)) = 1;
             imSliceNumber(imSliceNumber<1) = 1;
 			
@@ -174,12 +163,9 @@ else
         otherwise
             error('Wrong x.Q.MRAcquisitionType value!');
     end
-
     if xASL_stat_SumNan(ScaleImage(:))==0
         error('Wrong PLD definition!');
     end
-
-
     %% 2. Run BASIL quantification
     if bUseBasilQuantification
         % Here we perform FSL quantification
@@ -195,12 +181,10 @@ else
         % First, we average PWI4D into PWI, for single-PLD only
         % (later, when we have multi-PLD, multi-echo, or multi-labeling quantification here as well,
         % then we could use PWI3D here)
-
 		if x.Q.nUniqueEchoTime>1 && ~x.modules.asl.bQuantifyMultiTE
             warning('Multiple TE detected, but multi-TE quantification is turned off.');
             fprintf('%s\n', 'We will use the volumes with the shortest echo time');
 		end
-
 		if bSaveCBF4D
             PWI = PWI4D;
             fprintf('%s\n', 'Quantifying CBF in 4D');
@@ -210,7 +194,6 @@ else
             xASL_io_ASLSubtractionAveraging(x, {2, PWI3D_Path}, 0, [], PWI4D_Path);
 			PWI = xASL_io_Nifti2Im(PWI3D_Path);
 		end
-
         %% 3    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'uniqueLabelingDuration')
 			% Note that this function uses PLD and other parameters from x.Q, but this is fine, because this is only executed for single-PLD.
@@ -223,22 +206,18 @@ else
 				warning('Please define Labeling duration of this dataset...');
 			end
         end
-
         %% 4    Scaling to physiological units
         % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
         % (& old Siemens sequence also didn't need the 1 gr->100 gr conversion)
         ScaleImage = ScaleImage.*60000.*100.*x.Q.Lambda;
     end
 end
-
-
 %% 4    Manufacturer-specific scalefactor
 if ~x.modules.asl.ApplyQuantification(1)
     fprintf('%s\n','We skip the Manufacturer-specific scalefactors');
 else
     % Load the stored parameters
 	ASL_parms = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x);
-
 	% Throw warning if no Philips scans, but some of the scale slopes are not 1:
 	if isempty(regexpi(x.Q.Vendor, 'Philips', 'once'))
 		if isfield(ASL_parms,'RescaleSlopeOriginal') && ASL_parms.RescaleSlopeOriginal~=1
@@ -251,7 +230,6 @@ else
 			warning('We detected a RWVSlope~=1, verify that this is not a Philips scan!!!');
 		end
 	end
-
 	% Set GE specific scalings
 	if ~isempty(regexpi(x.Q.Vendor, 'GE', 'once'))
 		if ~isfield(x.Q,'NumberOfAverages')
@@ -260,7 +238,6 @@ else
 		else
 			x.Q.NumberOfAverages = max(x.Q.NumberOfAverages); % fix for combination of M0 & PWI in same nifti, for GE quantification
 		end
-
 		% For some reason the older GE Alsop Work in Progress (WIP) version
 		% has a different scale factor than the current GE product sequence
 		if isfield(x.Q, 'SoftwareVersions')
@@ -278,24 +255,19 @@ else
         
         qnt_GEscaleFactor = qnt_ReceiverGain*x.Q.NumberOfAverages;
         % division by x.Q.NumberOfAverages as GE sums difference image instead of averaging
-
 		ScaleImage = ScaleImage./qnt_GEscaleFactor;
 		ScaleImageABV = ScaleImageABV./qnt_GEscaleFactor;
 		fprintf('%s\n',['Quantification corrected for GE scale factor ' xASL_num2str(qnt_GEscaleFactor) ' for NSA=' xASL_num2str(x.Q.NumberOfAverages)]);
-
 		% Set Philips specific scaling
 	elseif ~isempty(regexpi(x.Q.Vendor,'Philips', 'once'))
 		% Philips has specific scale & rescale slopes
 		% If these are not corrected for, only relative CBF quantification can be performed,
 		% i.e. scaled to wholebrain, the wholebrain perfusion cannot be calculated.
-
 		scaleFactor = xASL_adm_GetPhilipsScaling(xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat,x),xASL_io_ReadNifti(x.P.Path_ASL4D));
-
 		if scaleFactor
 			ScaleImage = ScaleImage .* scaleFactor;
 			ScaleImageABV = ScaleImageABV .* scaleFactor;
 		end
-
 		% Siemens specific scalings
 	elseif strcmpi(x.Q.Vendor,'Siemens')
 		if ~strcmpi(x.Q.Vendor,'Siemens_JJ_Wang') && strcmpi(x.Q.M0,'separate_scan')
@@ -306,37 +278,29 @@ else
 		end
 	end
 end
-
-
 %% 5    Divide PWI/M0
 % Match sizes
 MatchSizeM0 = round([size(PWI,1)./size(M0_im,1) size(PWI,2)./size(M0_im,2) size(PWI,3)./size(M0_im,3) size(PWI,4)./size(M0_im,4) size(PWI,5)./size(M0_im,5) size(PWI,6)./size(M0_im,6) size(PWI,7)./size(M0_im,7)]);
 MatchSizeSI = round([size(PWI,1)./size(ScaleImage,1) size(PWI,2)./size(ScaleImage,2) size(PWI,3)./size(ScaleImage,3) size(PWI,4)./size(ScaleImage,4) size(PWI,5)./size(ScaleImage,5) size(PWI,6)./size(ScaleImage,6) size(PWI,7)./size(ScaleImage,7)]);
 MatchSizeSIABV = round([size(PWI,1)./size(ScaleImageABV,1) size(PWI,2)./size(ScaleImageABV,2) size(PWI,3)./size(ScaleImageABV,3) size(PWI,4)./size(ScaleImageABV,4) size(PWI,5)./size(ScaleImageABV,5) size(PWI,6)./size(ScaleImageABV,6) size(PWI,7)./size(ScaleImageABV,7)]);
-
 if sum(MatchSizeM0==0) || sum(MatchSizeSI==0)
     error('PWI dimensions too small compared to M0 and/or ScaleImage dimensions');
 end
-
 if ~x.modules.asl.ApplyQuantification(3)
 	% Convert to double precision if not done previously
 	M0_im = double(M0_im);
 	PWI = double(PWI);
     ABV = double(ABV);
 end
-
 M0_im = repmat(M0_im, MatchSizeM0);
 ScaleImage = repmat(ScaleImage, MatchSizeSI);
 ScaleImageABV = repmat(ScaleImageABV, MatchSizeSIABV);
-
 if ~x.modules.asl.ApplyQuantification(5)
     fprintf('%s\n','We skip the PWI/M0 division');
 else
     ScaleImage = ScaleImage./M0_im;
 	ScaleImageABV = ScaleImageABV./M0_im;
 end
-
-
 %% 6    Apply scaling/quantification
 if x.modules.asl.ApplyQuantification(6)
     CBF = PWI.*ScaleImage;
@@ -346,10 +310,8 @@ if x.modules.asl.ApplyQuantification(6)
 else
     CBF = PWI;
 end
-
 %% 6    Print parameters used
 fprintf('%s\n','with parameters:');
-
 if x.modules.asl.ApplyQuantification(3)
 	% Print the prepared parameters
 	switch lower(x.Q.LabelingType)
@@ -362,38 +324,29 @@ if x.modules.asl.ApplyQuantification(3)
 		otherwise
 			fprintf('Labeling duration and/or PLD undefined...');
 	end
-
 	if max(SliceReadoutTime)>0 && strcmpi(x.Q.MRAcquisitionType, '2D')
 		fprintf('%s\n',[' + ' xASL_num2str(SliceReadoutTime(2)-SliceReadoutTime(1)) ' ms*(slice-1).']);
     else
         fprintf('.\n');
 	end
-
     fprintf('\n%s',['labeling efficiency (neck*Bsup) = ' xASL_num2str(x.Q.LabEff_Orig) ' * ' xASL_num2str(x.Q.LabEff_Bsup) ', ']);
     fprintf('\n%s','assuming ');
     fprintf('%s',['labda = ' xASL_num2str(x.Q.Lambda) ', ']);
     fprintf('%s\n',['T1 arterial blood = ' xASL_num2str(x.Q.BloodT1) ' ms']);
-
     if x.Q.nCompartments==2
         fprintf('%s',['ATT = ' xASL_num2str(x.Q.ATT) ' ms, ']);
         fprintf('%s\n',['T1tissue = ' xASL_num2str(x.Q.TissueT1) ' ms']);
     end
 end
-
-
 end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %% Determine Label Decay Scale Factor
 function ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage)
-
     if numel(x.Q.uniqueLabelingDuration)>1
         warning('Quantification with multiple Labeling Durations not implemented yet, taking the first');
         x.Q.uniqueLabelingDuration = x.Q.uniqueLabelingDuration(1);
     end
-
     switch x.Q.nCompartments
         case 1 % single-compartment model
             switch lower(x.Q.LabelingType)
@@ -404,9 +357,7 @@ function ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage)
                     DivisionFactor = x.Q.BloodT1 .* (1 - exp(-x.Q.uniqueLabelingDuration./x.Q.BloodT1));
                     fprintf('%s\n','Using a single-compartment CASL model');
             end
-
             ScaleImage = exp((ScaleImage./x.Q.BloodT1)) ./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
-
         case 2 % dual-compartment model
             switch lower(x.Q.LabelingType)
                 case 'pasl'
@@ -418,9 +369,7 @@ function ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage)
                     ScaleImage = exp((x.Q.ATT./x.Q.BloodT1))./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
                     fprintf('%s\n','Using a dual-compartment CASL model');
             end
-
         otherwise
             error('Unknown x.Q.nCompartments');
     end
-
 end

@@ -28,9 +28,13 @@ function [ImOut] = xASL_vis_Imwrite(ImIn, PathOut, ColorMap, bRescale)
 %
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 % 
 % 2015-01-01 HJ
-
 % Admin
 	if nargin < 2
         error('Needs at least two input parameters');
@@ -59,7 +63,6 @@ function [ImOut] = xASL_vis_Imwrite(ImIn, PathOut, ColorMap, bRescale)
     % manage extension, force jpg
     [Fpath, Ffile] = xASL_fileparts(PathOut);
     PathOut = fullfile(Fpath, [Ffile '.jpg']);
-
 	if nargin<4 || isempty(bRescale)
 		bRescale = true;
 	end
@@ -68,7 +71,6 @@ function [ImOut] = xASL_vis_Imwrite(ImIn, PathOut, ColorMap, bRescale)
     dimHD = [1080 1920];
     % Rescale to Full HD size screen (1920x1080)
     ScaleF = max(dimLow(1:2)./dimHD);
-
 	iNewX = 0:ScaleF:(dimLow(2)-1);
 	iNewY = 0:ScaleF:(dimLow(1)-1);
 	% Allocate the matrix
@@ -96,5 +98,4 @@ function [ImOut] = xASL_vis_Imwrite(ImIn, PathOut, ColorMap, bRescale)
     else
         imwrite(ImOut, ColorMap, PathOut); % overwrite is implied, JPEG is implied
     end
-
 end

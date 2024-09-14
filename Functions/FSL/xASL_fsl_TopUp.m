@@ -38,14 +38,14 @@ function [bSuccess] = xASL_fsl_TopUp(InDir, ScanType, x, OutputPath)
 %              https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/topup
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin: set ScanType
-
 % Default = insuccesfull run:
 bSuccess = false;
-
 if nargin<3 || isempty(x)
     x = struct;
 end
@@ -62,7 +62,6 @@ if nargin<2 || isempty(ScanType)
         return;
     end
 end
-
 switch lower(ScanType)
     case 'asl'
         RegExpStr{1} = '^M0\.nii$'; % normal phase encoding direction
@@ -80,12 +79,10 @@ switch lower(ScanType)
         warning('Unknown ScanType for TopUp, skipping');
         return;
 end
-
 %% Admin: set paths
 if ~isfield(x.external,'bAutomaticallyDetectFSL')
     x.external.bAutomaticallyDetectFSL = 0;
 end
-
 [FSLdir, x] = xASL_fsl_SetFSLdir(x, x.external.bAutomaticallyDetectFSL); % Find the FSL directory
 Pathb0cfg = fullfile(x.opts.MyPath, 'External', 'fsl', 'b02b0.cnf'); % use our own one for reproducibility
 PathB0 = fullfile(InDir, 'B0.nii');
@@ -95,9 +92,6 @@ PathResults1 = fullfile(InDir, 'TopUp_fieldcoef.nii');
 PathResults2 = fullfile(InDir, 'TopUp_movpar.txt');
 PathField = fullfile(InDir, 'Field.nii');
 PathUnwarped = fullfile(InDir, 'Unwarped.nii');
-
-
-
 %% Define NIfTI paths
 for iRegExp=1:length(RegExpStr)
     FileList = xASL_adm_GetFileList(InDir, RegExpStr{iRegExp}, 'FPList', [0 Inf]);
@@ -108,7 +102,6 @@ for iRegExp=1:length(RegExpStr)
         warning('Too many TopUp NIfTIs, using the first');
     end
     PathNII{iRegExp} = FileList{1}; % defining the NIfTI
-
     [Fpath, Ffile] = xASL_fileparts(PathNII{iRegExp});
     MATfile = fullfile(Fpath,[Ffile '.mat']);
     if xASL_exist(MATfile)
@@ -116,7 +109,6 @@ for iRegExp=1:length(RegExpStr)
         xASL_delete(MATfile);
     end
 end
-
 %% Create Parms file for NifTI on which to apply TopUp
 fclose all;
 PathParms2 = fullfile(InDir, ['TopUpAcqParms_' ScanType '.txt']);
@@ -125,8 +117,6 @@ FID = fopen(PathParms2, 'wt');
 ParmsOutput = ObtainTopUpParms(PathNII{end}, x);
 fprintf(FID, ParmsOutput); % obtain TopUp acquisition parms
 fclose(FID);
-
-
 %% Delete files from a previous run
 xASL_delete(PathB0);
 xASL_delete(PathResults1);
@@ -134,7 +124,6 @@ xASL_delete(PathResults2);
 xASL_delete(PathField);
 xASL_delete(PathUnwarped);
 xASL_delete(PathLog);
-
 %% Revert previous ORI storage
 if strcmp(ScanType, 'asl')
     PathsORI{1} = fullfile(InDir, 'ASL4D.nii');
@@ -142,7 +131,6 @@ if strcmp(ScanType, 'asl')
 else
     PathsORI{1} = PathNII{end};
 end
-
 for iORI=1:length(PathsORI)
     [Fpath, Ffile] = xASL_fileparts(PathsORI{iORI});
     PathOrig = fullfile(Fpath, [Ffile '_ORI.nii']);
@@ -150,32 +138,25 @@ for iORI=1:length(PathsORI)
         xASL_Move(PathOrig, PathNII{end}, true);
     end
 end
-
 %% Create Parms file for TopUp
 PathParms = fullfile(InDir, 'TopUpAcqParms.txt');
 xASL_delete(PathParms);
 FID = fopen(PathParms, 'wt');
-
-
 for iRegExp=1:length(RegExpStr)-1 % assuming the last one is the output file
     % Here we print the acquisition parameters line by line
     AcqParms = ObtainTopUpParms(PathNII{iRegExp}, x); % obtain TopUp acquisition parms
     CompareParms{iRegExp} = AcqParms;
-
     fprintf(FID, AcqParms);
     if iRegExp<length(RegExpStr)-1
         fprintf(FID, '\n');
     end
-
     %% Copy the NIfTIs & make sure they have a single volume
     TopUpNIIPath{iRegExp} = fullfile(InDir,['TopUp' num2str(iRegExp) '.nii']);
     xASL_Copy(PathNII{iRegExp}, TopUpNIIPath{iRegExp}, true);
     tempIM = xASL_io_Nifti2Im(TopUpNIIPath{iRegExp});
     xASL_io_SaveNifti(TopUpNIIPath{iRegExp}, TopUpNIIPath{iRegExp}, tempIM(:,:,:,1,1,1,1,1,1,1), [], false);
 end
-
 fclose(FID);
-
 %% Check if there is a TopUp image that has the same acquisition parms as output image
 SameParmsInd = 0;
 for iC=1:length(CompareParms)
@@ -197,54 +178,43 @@ if SameParmsInd==0
     warning('No TopUp found with same acquisition parameters as output image, skipping TopUp');
     return;
 end
-
 %% ========================================================================
 % =========================================================================
 %% Run TopUp Estimate
-
 %% 1) Register blip up/down images to TopUp output image, if we find a TopUp image which similar
 %  acquisition parameters as the output image
 if SameParmsInd~=0
     RegisterTopUptoOutput(PathNII, InDir, TopUpNIIPath, SameParmsInd, x);
 end
-
-
 %% 2) Run TopUp Estimate
 % Concatenate the AP and PA NIfTIs to a B0 NIfTI:
 % THIS COMMAND ASSUMES 2 TOPUP FILES ONLY
 % xASL_fsl_RunFSL(['/bin/fslmerge -t ' xASL_adm_UnixPath(PathB0, 1)...
 %     ' ' xASL_adm_UnixPath(TopUpNIIPath{1}, 1) ' ' xASL_adm_UnixPath(TopUpNIIPath{2}, 1)], x); % direction to concatenate over, t = time, a = auto
-
 % If this NIfTI has multiple volumes, we assume that the first is the B0/M0
 tempImage = xASL_io_Nifti2Im(TopUpNIIPath{1});
 tIM = tempImage(:,:,:,1);
 % If this NIfTI has multiple volumes, we assume that the first is the B0/M0
 tempImage = xASL_io_Nifti2Im(TopUpNIIPath{2});
 tIM(:,:,:,2) = tempImage(:,:,:,1);
-
 tIM(isnan(tIM)) = 0; % Remove NaNs, TopUp cannot deal with NaNs
-
 % NB we use the orientation of the first image (avoiding image registration
 % between NormPE & RevPE
-
 if xASL_stat_SumNan(tIM(:))==0
     warning('Empty TopUp images, skipping TopUp');
     result1 = -1;
     bSuccess = false;
 else
     xASL_io_SaveNifti(TopUpNIIPath{1}, PathB0, tIM, 32, false); % we also put the images in single precision    
-
     fprintf('\n\n=========================================================================\n')
     fprintf('Running FSL TopUp\n');
     fprintf('=========================================================================\n')
-
     % Run TopUp (i.e. estimate the geometric distortion field from B0 NIfTI &
     % parameters file), this takes quite long:
     TopUpCommand = ['/bin/topup --imain=' xASL_adm_UnixPath(PathB0, 1)...
         ' --datain=' xASL_adm_UnixPath(PathParms, 1) ' --out=' xASL_adm_UnixPath(PathResults, 1)...
         ' --fout=' xASL_adm_UnixPath(PathField, 1) ' --iout=' xASL_adm_UnixPath(PathUnwarped, 1)...
         ' --config=' xASL_adm_UnixPath(Pathb0cfg, 1) ' --verbose=true'];
-
     if x.settings.Quality
         ActualCommand = TopUpCommand;
         % keep default settings (which are pretty extensive, many iterations)
@@ -271,7 +241,6 @@ else
         % HERE WE DISABLE SUBSAMPLING, IT 
         % ActualCommand = [TopUpCommand ' --subsamp=4 --fwhm=8 --miter=1 --splineorder=2 --interp=linear'];
         % [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
-
         % if result1~=0 % try again without subsampling
             ActualCommand = [TopUpCommand ' --miter=1 --splineorder=3 --interp=linear'];
             % splineorder needs to be cubical (3), if set to square (2) this
@@ -279,18 +248,14 @@ else
             % default on normal quality is '--miter=5 --splineorder=3 --interp=spline
         % end
     end
-
     [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
 end
-
 if result1==0 % successfull run
     bSuccess = true;
 end
     
 fprintf('\n');
      % --regrid=0 -> don resample into another space for estimation
-
-
 %% ========================================================================
 % =========================================================================
 %% 3) Apply TopUp
@@ -305,15 +270,12 @@ else
     if xASL_stat_SumNan(tempImFieldCoef(:))==0
         error('TopUp failed, output files are empty (zeroes only)');
     end
-
     if strcmp(ScanType, 'asl')
         PathApplyTopUp{1} = fullfile(InDir, 'ASL4D.nii');
         PathApplyTopUp{2} = fullfile(InDir, 'M0.nii');
-
         PathOutput = PathApplyTopUp;
     else
         PathApplyTopUp{1} = PathNII{end};
-
         PathOutput{1} = OutputPath;
     end
     
@@ -325,25 +287,20 @@ else
         if strcmp(fullfile(Fpath, Ffile), fullfile(Fpath2, Ffile2))
             % backup input file when output file has same name
             % but don't overwrite previous backup
-
             xASL_Move(PathApplyTopUp{iTopUp}, PathOrig);
             PathApplyTopUp{iTopUp} = PathOrig; % avoid .nii/.nii.gz issues
             % NB: HERE WE APPLY TOPUP TO THE RENAMED _ORI FILE, but THIS IS THE
             % SAME AS THE file without _ORI
         end
-
         % Now we convert the images in single precision before running TopUp
         xASL_io_SaveNifti(PathApplyTopUp{iTopUp}, PathApplyTopUp{iTopUp}, single(xASL_io_Nifti2Im(PathApplyTopUp{iTopUp})), 32, false);
-
         fprintf('\n\n=========================================================================\n')
         fprintf('%s\n',['Applying FSL TopUp to ' PathApplyTopUp{iTopUp}]);
         fprintf('=========================================================================\n')
-
         % Apply TopUp (method: Use jacobian modulation (jac) or least-squares resampling (lsr, default)
         [~, result1] = xASL_fsl_RunFSL(['/bin/applytopup --imain=' xASL_adm_UnixPath(PathApplyTopUp{iTopUp}, 1) ' --inindex=1'...
                  ' --datain=' xASL_adm_UnixPath(PathParms2, 1) ' --topup=' xASL_adm_UnixPath(PathResults, 1)...
                  ' --out=' xASL_adm_UnixPath(PathOutput{iTopUp}, 1) ' --method=jac'], x); %  --verbose=true
-
         if result1~=0
             warning('Apply TopUp failed, skipping negative signal detection');
             bSuccess = false;
@@ -364,21 +321,13 @@ else
         end
     end
 end
-
 %% Householding
 if x.settings.DELETETEMP
     for iP=1:length(TopUpNIIPath)
         xASL_delete(TopUpNIIPath{iP});
     end
 end
-
-
 end
-
-
-
-
-
 %% ========================================================================
 % =========================================================================
 function RegisterTopUptoOutput(PathNII, InDir, TopUpNIIPath, SameParmsInd, x)
@@ -411,16 +360,12 @@ function RegisterTopUptoOutput(PathNII, InDir, TopUpNIIPath, SameParmsInd, x)
 %
 % EXAMPLE: RegisterTopUptoOutput({'../dwi_NormPE.nii' '../dwi_RevPE.nii' '../dwi_dwi.nii'}, '/analysis/Sub-001/dwi', {'../TopUp1.nii' '../TopUp2.nii'}, 1, x);
 % __________________________________
-
-
 [~, PrintFile, PrintExt] = xASL_fileparts(PathNII{SameParmsInd});
 [~, PrintFile2, PrintExt2] = xASL_fileparts(PathNII{end});
-
 fprintf('\n\n=========================================================================\n')
 fprintf([PrintFile PrintExt ' has similar acquisition parms as the output image\n']);
 fprintf([PrintFile2 PrintExt2 ', so we register them now & resample them to the output image space\n']);
 fprintf('=========================================================================\n')
-
 %% A) Create temporary average image of the output image
 tIM = xASL_io_Nifti2Im(PathNII{end});
 TempRegPath = fullfile(InDir, 'TempRegIm.nii');
@@ -431,7 +376,6 @@ if size(tIM,4)>1
 else
     refPath = PathNII{end};
 end
-
 %% B) Register
 srcPath = {TopUpNIIPath{SameParmsInd}};
 OtherList = {};
@@ -444,9 +388,7 @@ end
 for iAdd=1:length(PathNII)-1
     OtherList{end+1} = PathNII{iAdd};
 end
-
 xASL_spm_coreg(refPath, srcPath, OtherList, x);
-
 %% C) Resample
 %% PM: should we resample here only the temporary TopUp images, or also the images we apply TopUp to?
 % Currently, we resample all images
@@ -456,17 +398,10 @@ end
 for iS=1:length(srcPath)
     xASL_spm_reslice(refPath, srcPath{iS}, [],[],[], srcPath{iS});
 end
-
 xASL_delete(TempRegPath);
 [Fpath, Ffile] = xASL_fileparts(TempRegPath);
 xASL_delete(fullfile(Fpath, [Ffile '.mat']));
-
-
 end
-
-
-
-
 %% ========================================================================
 % =========================================================================
 function [AcqParms] = ObtainTopUpParms(PathIn, x)
@@ -500,8 +435,6 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
 %
 % EXAMPLE: AcqParms = ObtainTopUpParms('analysis/Sub-001/dwi/dwi_NormPe.nii');
 % __________________________________
-
-
     %% A) Load the JSON
     AcqParms = '';
     [Fpath, Ffile] = xASL_fileparts(PathIn);
@@ -511,7 +444,6 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
         return;
     end
     json = xASL_adm_LoadParms(JSONin, x);
-
  	if ~isfield(json,'PhaseEncodingDirection')
         warning(['PhaseEncodingDirection JSON field missing: ' PathIn]);
         json.PhaseEncodingDirection = NaN;
@@ -519,7 +451,6 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
         warning(['TotalReadoutTime JSON field missing: ' PathIn]);
         json.TotalReadoutTime = NaN;
     end
-
     %% B) Read the JSON
     switch json.PhaseEncodingDirection
         case 'i'
@@ -538,9 +469,6 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
             warning(['Unknown PhaseEncodingDirection: ' PathIn]);
             AcqParms = 'n/a n/a n/a';
     end
-
     %% C) Print the parameters in TopUp format
     AcqParms = [AcqParms ' ' xASL_num2str(json.TotalReadoutTime)];
-
-
 end

@@ -15,27 +15,24 @@ function UnitTest = xASL_ut_function_xASL_io_Nifti2Im(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_io_Nifti2Im(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Test run 1
-
 % Give your individual subtest a name
 UnitTest.tests(1).testname = 'Load DRO image matrix (default options)';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 aslFile = fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0','rawdata','sub-001','perf','sub-001_acq-001_asl.nii.gz');
 testFile = fullfile(TestRepository,'UnitTesting','working_directory','001_asl.nii.gz');
 unzippedTestFile = fullfile(TestRepository,'UnitTesting','working_directory','001_asl.nii');
-
 % Copy test NIFTI
 copyfile(aslFile,testFile);
-
 % Run function
 imTest = xASL_io_Nifti2Im(testFile);
-
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
 if ~exist(unzippedTestFile,'file')
@@ -47,20 +44,12 @@ end
 if numel(imTest)~=(64*64*40*61) % Matrix size: [64, 64, 40, 61]
     testCondition = false; % Test failed
 end
-
 % Remove file after test
 delete(unzippedTestFile);
-
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
-
-
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
-
 end
-
-

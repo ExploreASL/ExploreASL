@@ -21,6 +21,10 @@ function xASL_test_SPM(TestDirDest, bTestDataUsed)
 %           xASL_test_SPM('<dir>/TestDataSets/');
 %           xASL_test_SPM('<dir>/ExploreASL/External', 1);
 % Copyright (c) 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Reset path
     path(pathdef);

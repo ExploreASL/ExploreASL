@@ -25,6 +25,10 @@ function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
 % EXAMPLE:     xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x);
 % __________________________________
 % Copyright 2015-2022 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     
     %% 1. Create summary file
@@ -44,14 +48,12 @@ function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
     
     % Check if the converted_scans, skipped_scans, and missing_scans tables
     % have equal sizes, otherwise try to fix it
-
 	% We are expecting a 4D matrix. So we have to ask for 4 dimensions as this is required on the lines below
 	% For example size(ones(5,1,1,1)      = [5 1]
 	% but         size(ones(5,1,1,1),1:4) = [5 1 1 1]
     sizeConvertedScans = size(thisSubject.globalCounts.converted_scans, 1:4);
     sizeSkippedScans = size(thisSubject.globalCounts.skipped_scans, 1:4);
     sizeMissingScans = size(thisSubject.globalCounts.missing_scans, 1:4);
-
     if ~isequal(sizeConvertedScans, sizeSkippedScans)
         warning('Skipped scans had a different size than converted scans, fixing this but summary file could be incorrect');
         skippedScans = uint8(zeros(size(thisSubject.globalCounts.converted_scans))); % by default assume that scans are not skipped (zeros), unless this was set
@@ -64,7 +66,6 @@ function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
         missingScans(~logical(thisSubject.globalCounts.missing_scans)) = 0;
         thisSubject.globalCounts.missing_scans = missingScans;
     end
-
     for iSubject=1:x.modules.import.nSubjects
         for iVisit=1:thisSubject.nVisits
             % Get fieldname
@@ -73,7 +74,6 @@ function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
             thisVisit = thisSubject.(visitFieldName);
             for iScan=1:thisVisit.nScans
                 for iSession=1:thisVisit.nSessions
-
                     % Here we try to skip this table if something went wrong in dicom2nii
                     bSkipIt = false;
                     if x.modules.import.nSubjects>sizeConvertedScans(1)
@@ -89,8 +89,6 @@ function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
                         warning('Something went wrong with number of scans');
                         bSkipIt = true;
                     end
-
-
                     if ~bSkipIt && ( thisSubject.globalCounts.converted_scans(iSubject, iVisit, iSession, iScan) || ...
                             thisSubject.globalCounts.skipped_scans(iSubject, iVisit, iSession, iScan) || ...
                             thisSubject.globalCounts.missing_scans(iSubject, iVisit, iSession, iScan) )
@@ -156,4 +154,3 @@ function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
     
     
 end
-

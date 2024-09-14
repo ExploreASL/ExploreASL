@@ -26,6 +26,10 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
 % EXAMPLE:     x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSession);
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 1. Initialize
     bidsLabel = xASL_imp_CheckForAliasInSession(x.modules.import.imPar,nameSubjectSession);
@@ -58,12 +62,10 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
         x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyParSpecificSubjSessionRun, listRuns, nameSubjectSession, bidsLabel, iRun);
     end
 end
-
 %% -------------------------------------------------------------
 %% Check if there is a session alias within the subject/session name
 %% -------------------------------------------------------------
 function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
-
     % Get sessionAliases from imPar
     if isfield(imPar,'tokenVisitAliases') && ~isempty(imPar.tokenVisitAliases) && size(imPar.tokenVisitAliases,2)>1
         sessionAliases = imPar.tokenVisitAliases;
@@ -73,11 +75,9 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
     
     % Separator subject/session
     separator = '_';
-
     % Default
     subjectName = nameSubjectSession;
     sessionName = ''; % By default, we assume an empty session name
-
     % Iterate over aliases
     if ~isempty(sessionAliases)
 		% Session aliases are defined, so we are set to find the session name
@@ -97,7 +97,6 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
 	if bCorrected
 		warning(['Subject ' subjectName ' was renamed to ' bidsLabel.subject]);
 	end
-
 	if isempty(sessionName) && ~isempty(sessionAliases)
 		% In case the session name is empty, but there is a list of session aliases to check, we need to find out 
 		% if session name is truly empty or if session name was not detected at all

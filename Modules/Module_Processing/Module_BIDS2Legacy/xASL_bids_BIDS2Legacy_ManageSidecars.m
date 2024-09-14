@@ -20,24 +20,24 @@ function [bidsPar, pathOrig, pathDest, TypeIs] = xASL_bids_BIDS2Legacy_ManageSid
 % EXAMPLE:     [bidsPar, pathOrig, pathDest, TypeIs] = xASL_bids_BIDS2Legacy_ManageSidecars(bidsPar, pathOrig, pathDest, TypeIs);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     iCount = 1;
     for iCar=1:length(bidsPar.sidecarName)
         [Fpath, Ffile] = xASL_fileparts(pathOrig{1});
-
         if ~bidsPar.sidecarSuffixType(iCar)
             Ffile = Ffile(1:end-length(TypeIs)-1);
         end
         TempSidecar = fullfile(Fpath, [Ffile bidsPar.sidecarName{iCar}]);
-
         if ~strcmp(bidsPar.sidecarTypeSpecific{iCar}, 'no') && ~strcmp(bidsPar.sidecarTypeSpecific{iCar}, TypeIs)
             % skip this sidecar (e.g. some asl-specific sidecars for non-asl NIfTIs)
         elseif ~exist(TempSidecar, 'file') && bidsPar.sidecarRequired(iCar)
             warning([TempSidecar ' missing']);
         elseif exist(TempSidecar, 'file')
             pathOrig{iCount+1} = TempSidecar;
-
             [Fpath, Ffile] = xASL_fileparts(pathDest{1});
 			switch (bidsPar.sidecarName{iCar})
 				case '.json' % Copy side-car name unchanged
@@ -52,8 +52,4 @@ function [bidsPar, pathOrig, pathDest, TypeIs] = xASL_bids_BIDS2Legacy_ManageSid
             iCount = iCount+1;
         end
     end
-
 end
-
-
-

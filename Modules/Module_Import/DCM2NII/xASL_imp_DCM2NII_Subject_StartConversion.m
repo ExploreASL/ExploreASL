@@ -26,6 +26,10 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
 %
 % __________________________________
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Start the conversion if this scan should not be skipped
     first_match = [];
@@ -35,7 +39,6 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
     else
         nii_files = {};
         xASL_adm_CreateDir(destdir);
-
         %% Check if we have a nii(gz) file, or something that needs to be converted (parrec/dicom)
         if ~exist(scanpath, 'dir') && ~isempty(regexpi(scanpath,'(\.nii|\.nii\.gz)$'))
             %% We found a NIfTI file, check if output exists
@@ -58,17 +61,14 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
             %% Start the conversion. Note that the dicom filter is only in effect when a directory is specified as input.
             try
                 [nii_files, scan_name, first_match, MsgDcm2nii] = xASL_io_dcm2nii(scanpath, destdir, scan_name, x.modules.import.imPar, x.opts.MyPath);
-
                 % If dcm2nii produced a warning or error, catch this & store it
                 if ~isempty(MsgDcm2nii) && ~isempty(regexpi(MsgDcm2nii,'.*(error).*')) % if it contains a warning/error
                     dcm2niiCatchedErrors = xASL_imp_CatchErrors('xASL_io_dcm2nii', MsgDcm2nii, dbstack, ...
                         ['dcm2nii_' x.modules.import.imPar.dcm2nii_version], pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, x.modules.import.imPar);
                 end
-
             catch ME
                 dcm2niiCatchedErrors = xASL_imp_CatchErrors(ME.identifier, ME.message, [], ...
                     [], [], scan_name, scanpath, destdir, dcm2niiCatchedErrors, x.modules.import.imPar, ME.stack);
-
                 % Print warnings in verbose mode
                 if x.modules.import.imPar.bVerbose
                     warning(['dcm2nii ' scanpath ' crashed, skipping...']);
@@ -81,7 +81,4 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
             end
         end
     end
-
 end
-
-

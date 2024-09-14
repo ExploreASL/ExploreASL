@@ -41,46 +41,40 @@ function [result, x] = xASL_module_ASL(x)
 % EXAMPLE: [~, x] = xASL_module_ASL(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 [x] = xASL_init_SubStructs(x);
 x = xASL_init_InitializeMutex(x, 'ASL'); % starts mutex locking process to ensure that everything will run only once
-
 if x.mutex.bAnyModuleLocked
     % If any module is locked for this subject, we skip this module for
     % this subject    
     result = true;
     return;
 end
-
-
 %% A. Check existence and validity of ASL
 [x, bSkip] = xASL_module_ASL_CheckASL(x);
 if bSkip; result = true; return; end
 x = xASL_init_FileSystem(x); % Do this only here, to save time when skipping this module
 oldFolder = cd(x.dir.SESSIONDIR); % Change working directory to make sure that unspecified output will go there...
-
 tempASL = xASL_io_Nifti2Im(x.P.Path_ASL4D);
 if isempty(tempASL) || max(tempASL(:))==0 || numel(unique(tempASL(:)))==1
     error('Invalid ASL image');
 else
     nVolumes = size(tempASL, 4);
 end
-
-
 %% A2. Check if T1w structural reference exists
 StructuralDerivativesExist = xASL_exist(x.P.Path_y_T1, 'file') && xASL_exist(x.P.Path_c1T1, 'file') && xASL_exist(x.P.Path_c2T1, 'file');
 StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_ORI, 'file');
-
 if ~isfield(x.modules.asl, 'bUseMNIasDummyStructural')
     x.modules.asl.bUseMNIasDummyStructural = false;
 end
-
 % In case that we don't have the structural derived images, we need to check the reason
 if ~StructuralDerivativesExist
 	fprintf('\n\n%s\n', ['Processed structural data are missing: ' x.dir.SUBJECTDIR]);
-
 	if StructuralRawExist && ~x.modules.asl.bUseMNIasDummyStructural
 		% Either the Structural data are there, but the population module wasn't run
 		fprintf('though raw structural scans are present\n');
@@ -93,8 +87,6 @@ if ~StructuralDerivativesExist
         error('Skipping ASL module');
 	end
 end
-
-
 %% B. Manage mutex state processing step
 StateName{ 1} = '010_TopUp';
 StateName{ 2} = '020_RealignASL';
@@ -105,14 +97,11 @@ StateName{ 6} = '060_ProcessM0';
 StateName{ 7} = '070_CreateAnalysisMask';
 StateName{ 8} = '080_Quantification';
 StateName{ 9} = '090_VisualQC_ASL';
-
 if ~x.mutex.HasState('999_ready')
     bOutput = true; % generate output, some processing has and some has not been yet done
 else
     bOutput = false; % skip output, as all processing has been performed
 end
-
-
 %% C. Cleanup before rerunning
 bCompleteRerun = false;
 if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
@@ -123,12 +112,9 @@ if ~x.mutex.HasState(StateName{3}) || ~x.mutex.HasState(StateName{4})
 	% If we rerun completely, then we do not the reload QC for that session, otherwise we load it from QC.json if present.
 	bCompleteRerun = true;
 end
-
 x = xASL_adm_LoadX(x, [], true); % assume x.mat is newer than x
-
 % Check and remove all outdated QC fields that are not used anymore
 x = xASL_qc_CleanOldQC(x, bCompleteRerun);
-
 %% D. Backward and forward compatibility of filenames
 if ~xASL_exist(x.P.Path_M0, 'file')
     % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
@@ -146,17 +132,13 @@ FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*M0.*run.*|.*run.*M0.*)\.js
 if ~isempty(FileList)
     xASL_Move(FileList{1}, fullfile(x.dir.SESSIONDIR, 'M0.json'));
 end
-
 % Backward compatibility
 if xASL_exist(x.P.Pop_Path_qCBF_untreated,'file')
     xASL_Move(x.P.Pop_Path_qCBF_untreated, x.P.Pop_Path_qCBF, true);
 end
-
-
 %% E. Split ASL and M0 within the ASL time series
 % Run this when the images hasn't been touched yet
 % The first three states are here, because the first two are run only conditionally
-
 % NOTE THAT THIS PART IS BEING PHASED OUT, AND NOW PROCESSED IN
 % `xASL_bids_parseM0` (BIDS->Legacy conversion). We keep this here only for
 % backward compatibility, for images imported a long time ago
@@ -181,7 +163,6 @@ if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mute
 		xASL_Move(FileList{1}, fullfile(x.dir.SESSIONDIR, 'ASL4D.json'));
 	end
 end
-
 %% F. DeltaM and CBF parsing - check if all/some volumes are deltams or CBFs
 % If TSV file exist
 % We don't have a subtraction image by default
@@ -195,7 +176,6 @@ if xASL_exist(x.P.Path_ASL4Dcontext, 'file')
 	if ~isempty(regexpi(strjoin(aslContext(2:end)),bidsPar.stringDeltaM, 'once'))
 		x.modules.asl.bContainsSubtracted = true;
 	end
-
 	% Check for presence of CBF volumes
 	if ~isempty(regexpi(strjoin(aslContext(2:end)),bidsPar.stringCbf, 'once'))
 		x.modules.asl.bContainsSubtracted = true;
@@ -211,16 +191,13 @@ else
 		end
 	end
 end
-
 %% G. ASL processing & quantification parameters
 x = xASL_module_ASL_ParseParameters(x, bOutput);
-
 %% H. For GE 3D spiral ASL and M0, check for parts outside of the FoV
 % With a non-Cartesian FoV, there can be voxels in the image matrix that are outside the FoV.
 % If these are not explicitly to NaNs, the original FoV can be wrongly interpreted.
 % This led to a misalignment in the case of registering an ASL where the brain was too close to the edge of the FoV.
 % By setting these voxels to NaNs, the registration algorithms know to skip these voxels outside the FoV.
-
 if ~isempty(regexpi(x.Q.Vendor, 'ge')) && ~isempty(regexpi(x.Q.MRAcquisitionType, '3d')) && ~isempty(regexpi(x.Q.PulseSequenceType, 'spiral'))
     % Once we have a GE 3D spiral sequence
     
@@ -233,22 +210,15 @@ if ~isempty(regexpi(x.Q.Vendor, 'ge')) && ~isempty(regexpi(x.Q.MRAcquisitionType
             xASL_io_SaveNifti(niftiList{iNifti}, niftiList{iNifti}, IM, [], 0);
         end
     end
-
 end
-
-
-
 %% ========================================================================================================================
 %% 1 TopUp (WIP, only supported if FSL installed)
 Path_RevPE = xASL_adm_GetFileList(x.dir.SESSIONDIR, '^(ASL4D|M0).*RevPE\.nii$', 'FPList', [0 Inf]);
-
 iState = 1;
 if xASL_exist(x.P.Path_M0,'file') && ~isempty(Path_RevPE)
     if ~x.mutex.HasState(StateName{iState}) || ~xASL_exist(fullfile(x.dir.SESSIONDIR, 'TopUp_fieldcoef.nii'),'file')
-
         xASL_adm_DeleteFileList(x.dir.SESSIONDIR,'^(B0|Field|TopUp|Unwarped).*$',[],[0 Inf]); % delete previous TopUp stuff first
         bSuccess = xASL_fsl_TopUp(x.dir.SESSIONDIR, 'asl', x, x.P.Path_ASL4D);
-
         if bSuccess
             x.mutex.AddState(StateName{iState});
             x.mutex.DelState(StateName{iState+1});
@@ -259,8 +229,6 @@ if xASL_exist(x.P.Path_M0,'file') && ~isempty(Path_RevPE)
     end
 elseif bOutput; fprintf('%s\n','No TopUp scans available, skipping...');
 end
-
-
 %% ========================================================================================================================
 %% 2    Motion correction ASL (& center of mass registration)
 iState = 2;
@@ -268,22 +236,18 @@ if ~x.modules.asl.motionCorrection
     if bOutput; fprintf('%s\n','Motion correction was disabled, skipping'); end
     x.mutex.AddState(StateName{iState});
 elseif ~x.mutex.HasState(StateName{iState})
-
         % Remove previous files
         DelList = {x.P.Path_mean_PWI_Clipped_sn_mat, x.P.File_ASL4D_mat, x.P.File_despiked_ASL4D, x.P.File_despiked_ASL4D_mat, 'rp_ASL4D.txt'};
         for iD=1:length(DelList)
             FileName = fullfile(x.dir.SESSIONDIR, DelList{iD});
             xASL_delete(FileName);
         end
-
 %         % First, solve dimensionality (in case there are empty dims, that need restructuring)
         
         % Then, check matrix size: throw error if 2D images with 3 dimensions only
-
         if nVolumes>1 && ~x.modules.asl.bContainsSubtracted && mod(nVolumes, 2) ~= 0
             error('Uneven number of control-label frames, either incomplete pairs or M0 image in time-series!');
         end
-
         % Before motion correction, we align the images with ACPC
         PathB0 = fullfile(x.dir.SESSIONDIR, 'B0.nii');
         PathRevPE = fullfile(x.dir.SESSIONDIR, 'ASL4D_RevPE.nii');
@@ -299,7 +263,6 @@ elseif ~x.mutex.HasState(StateName{iState})
         if nVolumes>1 % skip realignment if there are too few volumes
             xASL_wrp_RealignASL(x);
         end
-
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing
         x.mutex.DelState(StateName{iState+1});
@@ -307,18 +270,13 @@ else
     xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
     if bOutput; fprintf('%s\n',[StateName{iState} ' session has already been performed, skipping...']); end
 end
-
-
 %% ========================================================================================================================
 %% 3    Registration ASL sessions to T1w
 iState = 3;
 if ~x.mutex.HasState(StateName{iState})
-
     x = xASL_wrp_RegisterASL(x);
-
 	% And saved the cleaned up version
 	xASL_adm_SaveX(x);
-
     x.mutex.AddState(StateName{iState});
     xASL_adm_CompareDataSets([], [], x); % unit testing
     x.mutex.DelState(StateName{iState+1});
@@ -329,15 +287,11 @@ else
 		fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);
 	end
 end
-
-
 %% ========================================================================================================================
 %% 4    Resample ASL images
 iState = 4;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-1})
-
     xASL_wrp_ResampleASL(x);
-
     x.mutex.AddState(StateName{iState});
     xASL_adm_CompareDataSets([], [], x); % unit testing
     x.mutex.DelState(StateName{iState+1});
@@ -351,8 +305,6 @@ else
 		fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);
 	end
 end
-
-
 %% ========================================================================================================================
 %% 5    Resolution estimation & prepare partial volume maps
 iState = 5;
@@ -361,15 +313,12 @@ iState = 5;
 if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
     % Or if this is the first session, redo this (if ExploreASL is rerun)
     if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-1})
-
         bStandardSpace = strcmp(x.P.SessionID,x.SESSIONS{1});
         % in standard space we only have 1 set of PV maps in ASL resolution
         % per T1w, therefore only create these for the first ASL session
         x = xASL_wrp_PreparePV(x, bStandardSpace);
-
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing
-
 	else
 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
 		if  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
@@ -377,8 +326,6 @@ if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
 elseif  bOutput; fprintf('%s\n',['there were no pGM/pWM, skipping ' StateName{iState} '...']);
     x = xASL_adm_DefineASLResolution(x);
 end
-
-
 %% ========================================================================================================================
 %% 6    Process M0
 iState = 6;
@@ -390,9 +337,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
 				fprintf('%s\n', 'x.Q.M0="Absent", skipping M0 processing');
 			end
         elseif xASL_exist(x.P.Path_M0,'file')
-
             xASL_wrp_ProcessM0(x);
-
             x.mutex.AddState(StateName{iState});
             xASL_adm_CompareDataSets([], [], x); % unit testing
             x.mutex.DelState(StateName{iState+1});
@@ -403,8 +348,6 @@ elseif  xASL_exist(x.P.Path_M0,'file')
 		xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
 elseif  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);
 end
-
-
 %% ========================================================================================================================
 %% 7    Create analysis mask
 iState = 7;
@@ -414,7 +357,6 @@ if ~x.mutex.HasState(StateName{iState})
             warning('Skipped vascular masking because we had too many images');
 		else
             xASL_wrp_CreateIndividualMask(x);
-
             x.mutex.AddState(StateName{iState});
             xASL_adm_CompareDataSets([], [], x); % unit testing
         end
@@ -425,20 +367,15 @@ else
     xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
     if  bOutput;fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']);end
 end
-
-
 %% ========================================================================================================================
 %% 8    Quantification
 iState = 8;
-
 % Before we continue, we define the variable x.Path_PWI4D_used
 % We need this variable for any part after here, i.e. quantification, visualization & QC
 x.P.Path_PWI4D_used = x.P.Path_PWI4D;
 x.P.Pop_Path_PWI4D_used = x.P.Pop_Path_PWI4D;
-
 if ~x.mutex.HasState(StateName{iState}) || ~x.mutex.HasState(StateName{iState+1})
     % To reduce overhead for ASL sessions that were already ran, we do this check
-
 	if x.modules.asl.bMergingSessions
 		% only if we merge sessions, we use custom paths
 		[x.P.Path_PWI4D_used, x.P.Pop_Path_PWI4D_used] = xASL_im_MergePWI4D(x);
@@ -447,13 +384,10 @@ if ~x.mutex.HasState(StateName{iState}) || ~x.mutex.HasState(StateName{iState+1}
 		% that the correct NIfTI will be used later in the pipeline (e.g., in xASL_wrp_VisualQC)
 	end
 end
-
 % Check again if we have multiple values for certain ASL parameters (PLD, LD, TE) directly on the PWI file used for processing
 x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_PWI4D_used);
-
 % Check multi-parametric quantification options
 x = xASL_module_ASL_MultiParameterQuantificationOptions(x);
-
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
 % Including PVC
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
@@ -476,7 +410,6 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 		else
 			fprintf('%s\n','Quantifying CBF4D in native space');
 			xASL_wrp_Quantify(x, x.P.Path_PWI4D_used, x.P.Path_CBF4D, x.P.Path_rM0, x.P.Path_SliceGradient, true);
-
 			fprintf('%s\n','Quantifying CBF4D in standard space');
 			xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D_used, x.P.Pop_Path_qCBF4D, [], [], true);
 		end
@@ -490,7 +423,6 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 			warning(['Skipped PV: ' x.P.Path_PVgm ', ' x.P.PathPVwm ', or ' x.P.Path_CBF ' missing']);
 		end
 	end
-
     x.mutex.AddState(StateName{iState});
     xASL_adm_CompareDataSets([], [], x); % unit testing
     x.mutex.DelState(StateName{iState+1});
@@ -498,8 +430,6 @@ else
 	xASL_adm_CompareDataSets([], [], x,2,StateName{iState}); % unit testing - only evaluation
 	if  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
 end
-
-
 %% ========================================================================================================================
 %% 9    Visual QC
 iState = 9;
@@ -509,36 +439,26 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-2})
 else
 	if  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
 end
-
-
-
 %% ========================================================================================================================
 %% 999 Ready
 x.mutex.AddState('999_ready');
 cd(oldFolder);
-
 x.mutex.Unlock();
 x.result = true;
 result = true;
 close all;
-
 end
-
-
 %% ========================================================================================================================
 %% ========================================================================================================================
 function [x, bSkip] = xASL_module_ASL_CheckASL(x)
 %% xASL_module_ASL_CheckASL Check if ASL exists, otherwise skip this module
-
     bSkip = false;
     x.P.Path_ASL4D = fullfile(x.dir.SESSIONDIR, 'ASL4D.nii');
     x.P.Path_ASL4D_json = fullfile(x.dir.SESSIONDIR, 'ASL4D.json');
     x.P.Path_ASL4D_parms_mat = fullfile(x.dir.SESSIONDIR, 'ASL4D_parms.mat');
-
     if ~xASL_exist(x.P.Path_ASL4D, 'file')
         % First try to find one with a more BIDS-compatible name & rename it (QUICK & DIRTY FIX)
         FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(?i)ASL4D.*\.nii$');
-
         if ~isempty(FileList)
             xASL_Move(FileList{1}, x.P.Path_ASL4D);
             [Fpath, Ffile] = xASL_fileparts(x.P.Path_ASL4D);
@@ -555,9 +475,7 @@ function [x, bSkip] = xASL_module_ASL_CheckASL(x)
             bSkip = true;
         end
     end
-
 end
-
 %% ========================================================================================================================
 %% =============================================================================================
 function [x] = xASL_module_ASL_ParseParameters(x, bOutput)
@@ -569,28 +487,20 @@ function [x] = xASL_module_ASL_ParseParameters(x, bOutput)
 % 5. Session merging
 % 6. Default quantification parameters in the Q field
 % 7. Define sequence (educated guess based on the Q field)
-
-
 %% 1. Load ASL parameters (inheritance principle)
 [~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bOutput);
-
-
 %% 2. Default ASL processing settings in the x.modules.asl field
 if ~isfield(x.modules.asl,'bPVCNativeSpace') || isempty(x.modules.asl.bPVCNativeSpace)
 	x.modules.asl.bPVCNativeSpace = 0;
 end
-
 if ~isfield(x.modules.asl,'motionCorrection')
     x.modules.asl.motionCorrection = 1;
 end
 if ~isfield(x,'DoWADQCDC')
     x.DoWADQCDC = false; % default skip WAD-QC stuff
 end
-
-
 %% 3. Multi-parameter parsing
 x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_ASL4D);
-
 %% 4. TimeEncoded parsing
 % Check if TimeEncoded is defined
 if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize') || isfield(x.Q, 'TimeEncodedMatrix')
@@ -601,15 +511,12 @@ if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize'
 	if ~isfield(x.Q, 'TimeEncodedMatrixType')
 		x.Q.TimeEncodedMatrixType = [];
 	end
-
 	if ~isfield(x.Q, 'TimeEncodedMatrixSize')
 		x.Q.TimeEncodedMatrixSize = [];
 	end
-
 	if ~isfield(x.Q, 'TimeEncodedMatrix')
 		x.Q.TimeEncodedMatrix = [];
 	end
-
 	% Check for duplicate definitions
 	if isempty(x.Q.TimeEncodedMatrixType) && isempty(x.Q.TimeEncodedMatrix)
 		error('Neither TimeEncodedMatrixType nor TimeEncodedMatrix were provided for a TimeEncoded acquisition.')
@@ -632,14 +539,11 @@ if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize'
 else
 	x.modules.asl.bTimeEncoded = false;
 end
-
 % Check if there is Decoding Matrix as input
 %(some datasets will have a decoding matrix that we can use directly in the decoding part)
-
 %% 5. Session merging
 % Initialization
 nLists = 0;
-
 % SessionMergingList == total list of sessions that need concatenating (can be multiple lists for multiple concatenations)
 % Read the list of sessions to merge, defaulting to empty
 if ~isfield(x.modules.asl, 'SessionMergingList')
@@ -652,7 +556,6 @@ else
     nLists = numel(x.modules.asl.SessionMergingList);
     fprintf('\n%s', ['-> Detected ' xASL_num2str(nLists) ' list(s) for concatenating sessions']);
 end
-
 % Read and check a corresponding list with merging scalings - it is also a list of lists like SessionMergingList and it should have the same structure
 if ~isfield(x.modules.asl, 'SessionMergingScaling')
 	% By default set as empty
@@ -668,16 +571,13 @@ else
 		end
 	end
 	% This captures all possibilities when an array is provided instead of a list of lists. In case this is not true (a cell array is given with lists of uneven sizes), the parameter is already a cell
-
 end
-
 if ~isempty(x.modules.asl.SessionMergingList) && isempty(x.modules.asl.SessionMergingScaling)
 	% If the merging list is not empty, but scaling list is, then fill with all 1s in a field of the same length
 	for iMergingList = 1:length(x.modules.asl.SessionMergingList)
 		x.modules.asl.SessionMergingScaling{iMergingList} = ones(1, length(x.modules.asl.SessionMergingList{iMergingList}));
 	end
 end
-
 % Compare the two lists and report an error if the lengths do not correspond
 if ~isempty(x.modules.asl.SessionMergingList) 
 	if numel(x.modules.asl.SessionMergingList) ~= numel(x.modules.asl.SessionMergingScaling)
@@ -689,22 +589,18 @@ if ~isempty(x.modules.asl.SessionMergingList)
 		end
 	end
 end
-
 x.modules.asl.bMergingSessions = 0; % By default, we do not merge any sessions
 % sessionsToMerge = session list that we will concatenate for this specific session & run of xASL_module_ASL
 % e.g., if we want to concatenate ASL_1 & ASL_2, this will only contain both sessions for the xASL_module_ASL iteration of ASL_2
 x.modules.asl.sessionsToMerge = {};
 x.modules.asl.sessionsToMergeScaling = [];
-
 % Find the lists containing the current session and identify if we are 
 % Note that these can be multiple lists
 for iList=1:nLists
 	if ~isempty(x.modules.asl.SessionMergingList{iList}) && sum(ismember(x.SESSION, x.modules.asl.SessionMergingList{iList}))
 		[currentSortedList, indexSorted] = sort(x.modules.asl.SessionMergingList{iList});
-
         if length(currentSortedList) > 1 && strcmp(x.SESSION, currentSortedList{end})
             % If the current session is the last of the list then we set the merging to TRUE. Otherwise, we keep merging to later
-
 			% If merging is already set to true, it means that there was a previous list to be merged. We report this as a warning and we keep the first fitting list to be merged
 			if x.modules.asl.bMergingSessions
 				warning(['Session ' x.SESSION ' is at the end of more than one list of sessions to merge. We ignore all such lists but the first.']);
@@ -718,7 +614,6 @@ for iList=1:nLists
         end
 	end
 end
-
 if x.modules.asl.bMergingSessions
     if ~isempty(x.modules.asl.sessionsToMerge)
         fprintf('%s', ' and will now concatenate the following sessions:')
@@ -730,8 +625,6 @@ if x.modules.asl.bMergingSessions
         fprintf('%s\n\n', [' but will not concatenate them here (xASL_module_ASL: ' x.SESSION ')']);
     end
 end
-
-
 %% 6. Default quantification parameters in the Q field
 if ~isfield(x.modules.asl,'ApplyQuantification') || isempty(x.modules.asl.ApplyQuantification)
 	if 	x.modules.asl.bContainsCBF
@@ -751,18 +644,15 @@ elseif length(x.modules.asl.ApplyQuantification)<6
 		x.modules.asl.ApplyQuantification(length(x.modules.asl.ApplyQuantification)+1:6) = 1;
 	end
 end
-
 if ~isfield(x.Q,'BackgroundSuppressionNumberPulses') && isfield(x,'BackgroundSuppressionNumberPulses')
     % Temporary backwards compatibility that needs to go
     x.Q.BackgroundSuppressionNumberPulses = x.BackgroundSuppressionNumberPulses;
 end
-
 % Manage absent M0
 if ~x.modules.asl.ApplyQuantification(5) && ~xASL_exist(x.P.Path_M0) && ~strcmp(x.Q.M0, 'Absent')
     warning('M0 division was disabled & M0 missing, setting M0 to "absent"');
     x.Q.M0 = 'Absent';
 end
-
 if strcmp(x.Q.M0, 'Absent')
     fprintf('%s\n', 'x.Q.M0="Absent" so disabling M0 processing');
     x.modules.asl.ApplyQuantification([2, 4, 5]) = 0;
@@ -771,10 +661,7 @@ if strcmp(x.Q.M0, 'Absent')
         warning('Ignoring existing M0 file because of x.Q.M0="Absent"');
     end
 end
-
-
 end
-
 %% ========================================================================================================================
 function x = xASL_module_ASL_MultiParameterParsing(x, pathASL)
 % Read the ASL parameters (PLD, LD, TE) from JSON and calculate the number of unique values
@@ -784,20 +671,16 @@ function x = xASL_module_ASL_MultiParameterParsing(x, pathASL)
 % 1. Check the number of unique values for LD, PLD, TE
 % 2. Check if parameter vector and number of volumes match
 % 3. Save the updated JSON
-
 parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
 parAbbreviation = {'TE' 'PLD' 'LD'};
 parTolerance = {0.001 0 0};
 parLowestValue = {0 0 0};
-
 %% 0.1 Read the JSON sidecar
 % Read the image and the JSON converted to Legacy while reading
 [tempASL, jsonFields] = xASL_io_Nifti2Im(pathASL);
-
 %% 0.2 Obtain the number of image volumes 
 % Get the number of image volumes
 nVolumes = size(tempASL, 4);
-
 %% 0.3 Check if JSON contains the ASL parameters
 if ~isempty(jsonFields) && isfield(jsonFields, 'Q')
 	xQfields = fieldnames(jsonFields.Q);
@@ -807,10 +690,8 @@ if ~isempty(jsonFields) && isfield(jsonFields, 'Q')
 else
     warning(['Reverting to x.Q memory, JSON file missing for the ASL file: ' pathASL]);
 end
-
 %% 1. Check the number of unique values for LD, PLD, TE
 for iPar=1:length(parNames)
-
     if ~isfield(x.Q, parNames{iPar})
         % if the field is completely missing
         warning(['Missing field x.Q.' parNames{iPar} ', this may be needed for quantification']);
@@ -831,7 +712,6 @@ for iPar=1:length(parNames)
         % Check, with allowed tolerance (0 is without tolerance) what the unique parameters are
         x.Q.(['unique' parNames{iPar}]) = uniquetol(x.Q.(parNames{iPar}), parTolerance{iPar});
         x.Q.(['nUnique' parNames{iPar}]) = length(x.Q.(['unique' parNames{iPar}]));
-
 		% Obtain the number of unique parameters
 		if sum(x.Q.(parNames{iPar})<=parLowestValue{iPar})>0
             warning(['x.Q.' parNames{iPar} ' should be larger than ' num2str(parLowestValue{iPar})]);
@@ -871,11 +751,9 @@ for iPar=1:length(parNames)
 			error(['Number of ' parNames{iPar} 's (n=' xASL_num2str(nPar) ') does not fit in nVolumes (n=' xASL_num2str(nVolumes) ')']);
 			% If we don't issue an error here, repmat will crash
 		end
-
 		factorPar = nVolumes/nPar;
 		x.Q.(parNames{iPar}) = repmat(x.Q.(parNames{iPar})(:), [factorPar 1]);
 		nPar = length(x.Q.(parNames{iPar}));
-
 		% Number of echoes should now be equal to the number of ASL volumes
 		if nPar~=nVolumes
 			warning(['Number of ' parNames{iPar} ' (n=' xASL_num2str(nPar) ') should be equal to number of ASL volumes (n=' xASL_num2str(nVolumes) ')']);
@@ -884,7 +762,6 @@ for iPar=1:length(parNames)
     % Save the updated quantification parameters in the JSON sidecar
     jsonFields.Q.(parNames{iPar}) = x.Q.(parNames{iPar});
 end
-
 %% 3. Save the updated JSON
 % Get the path to the JSON file and save the output
 if ~isempty(jsonFields)
@@ -892,7 +769,6 @@ if ~isempty(jsonFields)
 	xASL_io_WriteJson(fullfile(tempPath, [tempFile '.json']), xASL_bids_parms2BIDS(jsonFields, [], 1), 1);
 end
 end
-
 %% ========================================================================================================================
 function x = xASL_module_ASL_MultiParameterQuantificationOptions(x)
 % Check the ASL parameters (PLD, LD, TE) previously parsed and set the specific Multi-parameter quantification options
@@ -901,10 +777,8 @@ function x = xASL_module_ASL_MultiParameterQuantificationOptions(x)
 % 1. Set the bQuantifyMulti option for TE, PLD, and LD
 % 2. Manage bUseBasilQuantification parameter
 % 3. Manage parameter SaveCBF4D
-
 parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
 parAbbreviation = {'TE' 'PLD' 'LD'};
-
 %% 1. Set the bQuantifyMulti option for TE, PLD, and LD
 for iPar=1:length(parNames)
 	if ~isfield(x.Q, parNames{iPar})
@@ -932,7 +806,6 @@ for iPar=1:length(parNames)
 			 end
 		 end
 	end
-
 	 % If multi-parameter data is detected, we switch on multi-parameter quantification by default. Unless this has been deactived in dataPar.json
     if x.Q.(['nUnique' parNames{iPar}])>1
 	    if ~isfield(x.modules.asl, ['bQuantifyMulti' parAbbreviation{iPar}]) || isempty(x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]))
@@ -943,7 +816,6 @@ for iPar=1:length(parNames)
 	    x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;
     end
 end
-
 %% 2. Manage bUseBasilQuantification parameter that activates BASIL quantification
 if ~isfield(x.modules.asl, 'bUseBasilQuantification') || isempty(x.modules.asl.bUseBasilQuantification)
 	x.modules.asl.bUseBasilQuantification = false;
@@ -952,7 +824,6 @@ if ~isfield(x.modules.asl, 'bUseBasilQuantification') || isempty(x.modules.asl.b
         x.modules.asl.bUseBasilQuantification = true;
     end
 end
-
 %% 3. Manage parameter SaveCBF4D that saves the entire 4D volume
 % Saving of CBF4D is only possible for single TE, single PLD sequences
 if ~isfield(x.modules.asl, 'SaveCBF4D') || isempty(x.modules.asl.SaveCBF4D)
@@ -961,6 +832,4 @@ elseif x.modules.asl.SaveCBF4D && (x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQu
 	warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, setting SaveCBF4D = false');
 	x.modules.asl.SaveCBF4D = false;
 end
-
-
 end

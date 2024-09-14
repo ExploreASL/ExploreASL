@@ -17,23 +17,23 @@ function [listStructDone, listASLDone] = xASL_adm_GetListCompletedModules(x)
 % EXAMPLE:      [listStructDone, listASLDone] = xASL_adm_GetListCompletedModules(x);
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% First, we create a list of subjects and sessions of which the structural and ASL modules, respectively, are completed
-
 dirLockRoot = fullfile(x.dir.xASLDerivatives, 'lock');
 dirLockStruct = fullfile(dirLockRoot, 'xASL_module_Structural');
 dirLockASL = fullfile(dirLockRoot, 'xASL_module_ASL');
-
 listStructSubjects = xASL_adm_GetFileList(dirLockStruct, '.*', 'List', [], 1);
 listStructDone = {};
-
 for iList = 1:length(listStructSubjects)
     lockFile999 = fullfile(dirLockStruct, listStructSubjects{iList}, 'xASL_module_Structural', '999_ready.status');
     if exist(lockFile999, 'file')
         listStructDone{end+1} = listStructSubjects{iList};
     end
 end
-
 listASLSubjects = xASL_adm_GetFileList(dirLockASL, '.*', 'List', [], 1);
 listASLDone = {};
 for iList = 1:length(listASLSubjects)
@@ -45,6 +45,4 @@ for iList = 1:length(listASLSubjects)
         end
     end
 end
-
-
 end

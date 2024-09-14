@@ -17,11 +17,13 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Read sourcedata
     x = xASL_imp_ReadSourceData(x);
-
 	% Report missing tokenOrdering field
 	if ~isfield(x.modules.import.imPar, 'tokenOrdering') || isempty(x.modules.import.imPar.tokenOrdering)
 		error('tokenOrdering parameter not specified or empty');
@@ -87,14 +89,11 @@ function [x] = xASL_imp_DetermineStructureFromSourcedata(x)
     
     % Print overview
     xASL_imp_PrintOverview(x);
-
 end
-
 % -----------------------------------------------------------------
 %% Print overview
 % -----------------------------------------------------------------
 function xASL_imp_PrintOverview(x)
-
     if isfield(x,'importOverview')
         % Get all main fields
         overviewFields = fieldnames(x.importOverview);
@@ -107,14 +106,11 @@ function xASL_imp_PrintOverview(x)
     end
     
     fprintf('\n');
-
 end
-
 % -----------------------------------------------------------------
 %% Print subject
 % -----------------------------------------------------------------
 function xASL_imp_PrintSubject(x,thisSubject)
-
     % Print each individual subject
     if isfield(x.importOverview.(thisSubject),'name')
         subject = x.importOverview.(thisSubject).name;
@@ -130,14 +126,11 @@ function xASL_imp_PrintSubject(x,thisSubject)
             xASL_imp_PrintSession(x, thisSubject, thisSession);
         end
     end
-
 end
-
 % -----------------------------------------------------------------
 %% Print Session
 % -----------------------------------------------------------------
 function xASL_imp_PrintSession(x, thisSubject, thisSession)
-
     % Print each individual session (=visits in legacy terminology)
     if isfield(x.importOverview.(thisSubject).(thisSession),'name')
         session = x.importOverview.(thisSubject).(thisSession).name;
@@ -154,14 +147,11 @@ function xASL_imp_PrintSession(x, thisSubject, thisSession)
             xASL_imp_PrintRun(x,thisSubject, thisSession, thisRun);
         end
     end
-
 end
-
 % -----------------------------------------------------------------
 %% Print run
 % -----------------------------------------------------------------
 function xASL_imp_PrintRun(x,thisSubject,thisVisit,thisRun)
-
     % Print each individual run (= session in legacy terminology)
     if isfield(x.importOverview.(thisSubject).(thisVisit).(thisRun),'name')
         run = x.importOverview.(thisSubject).(thisVisit).(thisRun).name;
@@ -169,9 +159,7 @@ function xASL_imp_PrintRun(x,thisSubject,thisVisit,thisRun)
         run = '';
     end
     fprintf('Run:     %s\n', run);
-
 end
-
 % -----------------------------------------------------------------
 %% Add subjects to overview
 % -----------------------------------------------------------------
@@ -182,16 +170,13 @@ function x = xASL_imp_AddSubjectOverview(x)
         x = xASL_imp_AddSubject(x, thisSubject, iSubject);
     end
 end
-
 % -----------------------------------------------------------------
 %% Add single subject to overview
 % -----------------------------------------------------------------
 function x = xASL_imp_AddSubject(x,thisSubject,iSubject)
-
     % Add subject name
     subjectFieldName = ['subject_' num2str(iSubject,'%03.f')];
     x.importOverview.(subjectFieldName).name = thisSubject;
-
     % Get vSubjectIDs
     vSubjectIDs = strcmp(x.modules.import.listsIDs.vSubjectIDs,thisSubject);
     
@@ -205,16 +190,12 @@ function x = xASL_imp_AddSubject(x,thisSubject,iSubject)
         thisVisit = currentVisitList{iVisit};
         x = xASL_imp_AddVisit(x,subjectFieldName,vSubjectIDs,thisVisit,iVisit);
     end
-
 end
-
 % -----------------------------------------------------------------
 %% Add single visit to overview
 % -----------------------------------------------------------------
 function x = xASL_imp_AddVisit(x, sFieldName, vSubjectIDs, thisVisit, iVisit)
-
     %% Add basic visit fields
-
     % Determine visit field name
     vFieldName = ['visit_' num2str(iVisit, '%03.f')];
     
@@ -239,32 +220,25 @@ function x = xASL_imp_AddVisit(x, sFieldName, vSubjectIDs, thisVisit, iVisit)
     %% Preallocate space for (global) counts
     [x.importOverview.(sFieldName),x.importOverview.(sFieldName).(vFieldName)] = ...
         xASL_imp_PreallocateGlobalCounts(x.modules.import.nSubjects,x.importOverview.(sFieldName),x.importOverview.(sFieldName).(vFieldName));
-
 end
-
 % -----------------------------------------------------------------
 %% Add fields of this subject/visit
 % -----------------------------------------------------------------
 function x = xASL_imp_thisSubjectVisit(x,sFieldName,vVisitIDs,vFieldName)
-
     % Sessions (= run in BIDS)
     x = xASL_imp_AddSessionNames(x,sFieldName,vFieldName,vVisitIDs);
     
     % Scans (= actual DICOM data)
     x = xASL_imp_AddScanNames(x,sFieldName,vFieldName,vVisitIDs);
-
     % Sessions (= runs in BIDS)
     x = xASL_imp_AddSessions(x,sFieldName,vFieldName);
 end
-
 % -----------------------------------------------------------------
 %% Add session names
 % -----------------------------------------------------------------
 function x = xASL_imp_AddSessionNames(x,sFieldName,vFieldName,vVisitIDs)
-
     % Get number of session IDs, number of sessions, scan IDs, number of scans
     x.importOverview.(sFieldName).(vFieldName).sessionIDs  = sort(unique(x.modules.import.listsIDs.vSessionIDs(vVisitIDs)));
-
     if isempty(x.modules.import.imPar.sessionNames)
         % We can have human readble session names, but by default they are the same as the original tokens in the path
         if isempty(x.importOverview.(sFieldName).(vFieldName).sessionIDs)
@@ -278,27 +252,21 @@ function x = xASL_imp_AddSessionNames(x,sFieldName,vFieldName,vVisitIDs)
             end
         end
     end
-
 end
-
 % -----------------------------------------------------------------
 %% Add scan names
 % -----------------------------------------------------------------
 function x = xASL_imp_AddScanNames(x,sFieldName,vFieldName,vVisitIDs)
-
     % Add scan IDs and number of scans
     x.importOverview.(sFieldName).(vFieldName).scanIDs = sort(unique(lower(x.modules.import.listsIDs.vScanIDs(vVisitIDs))));
     x.importOverview.(sFieldName).(vFieldName).nScans = length(x.importOverview.(sFieldName).(vFieldName).scanIDs);
     x.importOverview.(sFieldName).(vFieldName).scanNames = x.importOverview.(sFieldName).(vFieldName).scanIDs;
     x.importOverview.(sFieldName).(vFieldName).scanSessionTable = horzcat(x.modules.import.listsIDs.vSessionIDs(vVisitIDs),lower(x.modules.import.listsIDs.vScanIDs(vVisitIDs)));
-
 end
-
 % -----------------------------------------------------------------
 %% Add sessions
 % -----------------------------------------------------------------
 function x = xASL_imp_AddSessions(x,sFieldName,vFieldName)
-
     % Add runs fields
     if ~isfield(x.importOverview.(sFieldName).(vFieldName),'runs')
         x.importOverview.(sFieldName).(vFieldName).runs = {};
@@ -361,19 +329,15 @@ function x = xASL_imp_AddSessions(x,sFieldName,vFieldName)
         % Assign x field
         x.importOverview.(sFieldName).(vFieldName).nSessions = numOfSessions;
     end
-
 end
-
 % -----------------------------------------------------------------
 %% Add runs to overview
 % -----------------------------------------------------------------
 function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession,thisRegExp)
-
     % Check if there was a regexp and token
     if nargin<6
         thisRegExp = '';
     end
-
     % Add field to overview
     vSessionName = ['run_' num2str(iSession,'%03.f')];
     % Make sure that the name starts with ASL_
@@ -392,7 +356,6 @@ function x = xASL_imp_AddRun(x,sFieldName,vFieldName,thisSession,iSession,thisRe
 		x = xASL_imp_AddSessionIDListAndScansOfRun(x, sFieldName, vFieldName, vSessionName, thisSession);
     end
 end
-
 % -----------------------------------------------------------------
 %% Add session ID List and scans of run
 % -----------------------------------------------------------------

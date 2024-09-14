@@ -117,7 +117,10 @@ function [result, x] = xASL_module_Import(x)
 % EXAMPLE: [~, x] = xASL_init_Iteration(x,'xASL_module_Import');
 % __________________________________
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Import Module
     
@@ -155,7 +158,6 @@ function [result, x] = xASL_module_Import(x)
     elseif x.opts.bImport(1) && x.mutex.HasState(StateName{1})
         fprintf('DCM2NIIX was run before...   \n');
     end
-
     %% 2. Run NIfTI to ASL-BIDS
     iState = 2;
 	if x.opts.bImport(2) && ~x.mutex.HasState(StateName{2})
@@ -186,4 +188,3 @@ function [result, x] = xASL_module_Import(x)
     % Return the results
     result = x.result;
 end
-

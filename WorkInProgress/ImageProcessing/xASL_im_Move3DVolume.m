@@ -18,25 +18,25 @@ function xASL_im_Move3DVolume(pathNifti, pathResult, dim, volNum, numVoxel)
 % EXAMPLE:      n/a
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Checks
     if nargin<5
         error('Missing input arguments...');
     end
-
     %% Load image
     imageNifti = xASL_io_Nifti2Im(pathNifti);
     originalVolume = imageNifti(:,:,:,volNum);
-
     %% Create new volume
     newVolume = zeros(size(originalVolume));
-
     % Get image dimensions
     dimensions = size(originalVolume);
     dimX = dimensions(1);
     dimY = dimensions(2);
     dimZ = dimensions(3);
-
     %% Move 3D volume
     switch dim
         case 'x'
@@ -48,11 +48,8 @@ function xASL_im_Move3DVolume(pathNifti, pathResult, dim, volNum, numVoxel)
         otherwise
             error('Unknown dimension...');
     end
-
     %% Store volume
     imageNifti(:,:,:,volNum) = newVolume;
     xASL_io_SaveNifti(pathNifti, pathResult, imageNifti);
     
-
 end
-

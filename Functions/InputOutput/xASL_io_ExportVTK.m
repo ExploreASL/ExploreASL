@@ -23,6 +23,10 @@ function xASL_io_ExportVTK(nifti,mask,exportPath)
 %                   xASL_io_ExportVTK(nifti);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Load image
     if nargin < 1
@@ -45,7 +49,6 @@ function xASL_io_ExportVTK(nifti,mask,exportPath)
     if numel(size(image))==4
         fprintf('4D image will be exported as a VTK time series...\n');
     end
-
     % Apply mask (Only supported for 3D images right now)
     if numel(size(image))==3
         if nargin > 1 && exist('mask','var')
@@ -99,8 +102,4 @@ function xASL_io_ExportVTK(nifti,mask,exportPath)
             vtkwrite(exportPath3D, 'structured_points', 'image', image3D);
         end
     end
-
 end
-
-
-

@@ -41,6 +41,10 @@ function [H,P,CI,stats] = xASL_stat_ttest(X,M,alpha,tail,dim)
 %             http://inspirehep.net/record/1389910/files/suf9601.pdf
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Admin
 if nargin < 2 || isempty(M)
@@ -54,14 +58,12 @@ else
         error('M has to be a scalar or equally sized as X');
     end
 end
-
 % Alpha is a scalar with values between 0 and 1
 if nargin < 3 || isempty(alpha)
     alpha = 0.05;
 elseif ~isscalar(alpha) || alpha <= 0 || alpha >= 1 || isnan(alpha)
     error('Significance level alpha needs to be a scalar between 0 and 1');
 end
-
 % By default, two-tailed test is performed
 if nargin < 4 || isempty(tail)
     tail = 0;
@@ -90,7 +92,6 @@ else
 		error('Tail must be either -1, 0, or 1 or ''both'', ''right'', or ''left''');
 	end
 end
-
 if nargin < 5 || isempty(dim)
     % Figure out which dimension mean will work along
 	% By default the first non-singleton dimension
@@ -99,7 +100,6 @@ if nargin < 5 || isempty(dim)
 		dim = 1;
 	end
 end
-
 % Identify the NaNs and calculate the sample size excluding NaNs
 nans = isnan(X);
 if any(nans(:))
@@ -107,15 +107,12 @@ if any(nans(:))
 else
     N = size(X,dim);
 end
-
 df = max(N-1,0);
-
 % Calculate the population mean, standard deviation, and standard error of the mean
 meanX = xASL_stat_MeanNan(X,dim);
 stdX  = xASL_stat_StdNan(X,[],dim);
 semX = stdX./sqrt(N);
 tval = (meanX)./semX;
-
 % Calculate the P-values
 switch (tail)
 	case  0
@@ -128,7 +125,6 @@ switch (tail)
 		% Left-tailed test
 		P = xASL_stat_tcdf(-tval,df);
 end
-
 % Calculate the confidence intervals
 if nargout > 2
 	switch (tail)
@@ -146,26 +142,21 @@ if nargout > 2
 			CI = cat(dim,-Inf(size(P)),meanX+CIspread);
 	end
 end
-
 % Create the outputs
 % The rejection of the null hypothesis
 H = double(P <= alpha);
 H(isnan(P)) = nan;
-
 % Add the mean to the confidence interval
 if nargout > 2 && isscalar(M)
 	CI = CI+M;
 end
-
 % Output the additional statisticas
 if nargout > 3
 	stats.tstat = tval;
 	stats.sd    = stdX;
 	stats.df    = df;
-
     if ~isequal(size(df),size(tval))
         stats.df = repmat(stats.df,size(tval));
     end
 end
-
 return

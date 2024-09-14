@@ -20,36 +20,33 @@ function F = xASL_stat_tcdf(T,nu)
 %             http://inspirehep.net/record/1389910/files/suf9601.pdf
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 Tsq = T.^2;
-
 % If degrees of freedom are given as a scalar value
 if isscalar(nu)
 	nu = nu*ones(size(T));
 end
-
 F = NaN(size(T));
 % Calculate the CDF
 ii = (nu < Tsq) & (nu>0) & (nu~=1) & (~isnan(T));
 if any(ii(:))
 	F(ii) = 0.5*betainc(nu(ii)./(nu(ii) + Tsq(ii)), nu(ii)/2, 0.5, 'lower');
 end
-
 ii = (nu>Tsq) & (nu>0) & (nu~=1) & (~isnan(T));
 if any(ii(:))
 	F(ii) = 0.5*betainc(Tsq(ii)./(nu(ii) + Tsq(ii)), 0.5, nu(ii)/2, 'upper');
 end
-
 F(T<0) = 1 - F(T<0);
-
 ii = (nu==1) & (~isnan(T));
 if any(ii(:))
 	F(ii) = (T(ii)>0)+acot(-T(ii))/pi;
 end
-
 ii = (T==0) & (nu>0);
 if any(ii(:))
 	F(ii) = 0.5;
 end
-
 return

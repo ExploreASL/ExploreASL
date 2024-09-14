@@ -21,10 +21,13 @@ function mergedStruct = xASL_adm_MergeStructs(mainStruct, secondaryStruct)
 % REFERENCES:  n/a
 %
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Take the mainStruct as the basis
 mergedStruct = mainStruct;
-
 fieldsList = fields(secondaryStruct);
 for iField=1:length(fieldsList)
 	if ~isfield(mainStruct,(fieldsList{iField}))

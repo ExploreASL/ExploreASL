@@ -47,12 +47,15 @@ function xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, bCopyOrigJson, varar
 %     Inside xASL_wrp_RegisterASL: xASL_io_ASLSubtractionAveraging(x, {1, x.P.Path_mean_PWI_Clipped;4, x.P.Path_mean_control}, 0, x.P.Path_despiked_ASL4D);
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ========================================================================================
 %% 1. Admin & checks
 % Input image volumes should be correct
 % Creation of the PWI3D or PWI4D image volumes can be skipped if they are provided as input
-
 if nargin<1 || isempty(x)
     error('x input missing');
 end
@@ -62,16 +65,12 @@ end
 if nargin<3 || isempty(bCopyOrigJson)
     bCopyOrigJson = true;
 end
-
-
 %% ========================================================================================
 %% 2. Load NIfTIs & JSONs
 % ASL4D, PWI4D, PWI3D, Control4D, Control3D
-
 fieldNamesPLD = {'Initial_PLD'      'InitialPLD_PWI4D'       'InitialPLD_PWI3D'       'InitialPLD_Control4D'       'InitialPLD_Control3D'};
 fieldNamesLD  = {'LabelingDuration' 'LabelingDuration_PWI4D' 'LabelingDuration_PWI3D' 'LabelingDuration_Control4D' 'LabelingDuration_Control3D'};
 fieldNamesTE  = {'EchoTime'         'EchoTime_PWI4D'         'EchoTime_PWI3D'         'EchoTime_Control4D'         'EchoTime_Control3D'};
-
 for iNifti=1:5
     if nargin<(iNifti+3) % if the path is not defined, we will skip loading
         path2load{iNifti} = []; % empty path
@@ -80,27 +79,21 @@ for iNifti=1:5
     end
     [x, imageInput{iNifti}] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, path2load{iNifti}, fieldNamesPLD{iNifti}, fieldNamesLD{iNifti}, fieldNamesTE{iNifti});
 end
-
-
 %% ========================================================================================
 %% 3. Run the subtraction/averaging (==ASL volume manipulation)
 % imageInput = {ASL4D PWI4D PWI3D Control4D Control3D}
 % imageOutput = {PWI PWI3D PWI4D Control Control3D Control4D}
-
 % [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubtractionAveraging(x, ASL4D [, PWI4D, PWI3D, Control4D, Control3D]);
 % While the images 2-5 can be passed is images, the first has to be passed as a path as ASL4D might need to have motion correction applied
 [imageOutput{1}, imageOutput{2}, imageOutput{3}, x, imageOutput{4}, imageOutput{5}, imageOutput{6}] = xASL_im_ASLSubtractionAveraging(x, path2load{1}, imageInput{2}, imageInput{3}, imageInput{4}, imageInput{5});
  
-
 %% 3. =====================================================================================
 %% 4. Save the NIfTI & JSON files
 fieldNamesPLD = {'InitialPLD_PWI'       'InitialPLD_PWI3D'       'InitialPLD_PWI4D'         'InitialPLD_Control'        'InitialPLD_Control3D'          'InitialPLD_Control4D'};
 fieldNamesLD  = {'LabelingDuration_PWI' 'LabelingDuration_PWI3D' 'LabelingDuration_PWI4D'   'LabelingDuration_Control'  'LabelingDuration_Control3D'    'LabelingDuration_Control4D'};
 fieldNamesTE  = {'EchoTime_PWI'         'EchoTime_PWI3D'         'EchoTime_PWI4D'           'EchoTime_Control'          'EchoTime_Control3D'            'EchoTime_Control4D'};
-
 for iNifti=1:size(saveWhichNifti, 1)
     n2save = saveWhichNifti{iNifti,1}; % which NIfTI to save
-
 	% For saving, we have to use the path of the closest reference image
 	switch n2save
 		case 1
@@ -116,7 +109,6 @@ for iNifti=1:size(saveWhichNifti, 1)
 		case 6
 			pathReferenceList = 1; % Saving 6 = Control4D, check path 1
 	end
-
 	% By default use Path_ASL4D as the reference
 	pathReference = x.P.Path_ASL4D;
 	for iReference = 1:length(pathReferenceList)
@@ -126,13 +118,7 @@ for iNifti=1:size(saveWhichNifti, 1)
 	end
     xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, saveWhichNifti{iNifti,2}, imageOutput{n2save}, fieldNamesPLD{n2save}, fieldNamesLD{n2save}, fieldNamesTE{n2save}, bCopyOrigJson, pathReference);
 end
-
-
 end
-
-
-
-
 %% ========================================================================================
 %% ========================================================================================
 function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, path_Nifti, fieldNamePLD, fieldNameLD, fieldNameTE)
@@ -144,9 +130,7 @@ function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, pat
 % fieldNameLD     - field name for LabelingDuration (NUMERIC, REQUIRED)
 % fieldNameTE     - field name for EchoTime (NUMERIC, REQUIRED)
 % imageOut        - NIfTI image matrix
-
     imageOut = []; % default
-
     %% Avoiding loading if NIfTI path is not defined
     if isempty(path_Nifti)
         return;
@@ -157,10 +141,8 @@ function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, pat
         warning(['Missing file: ' path_Nifti]);
         return;
     end
-
     %% Load NIfTI
     imageOut = xASL_io_Nifti2Im(path_Nifti);
-
     %% Load JSON
     [fPath, fFile] = xASL_fileparts(path_Nifti);
     pathJson = fullfile(fPath, [fFile '.json']);
@@ -169,7 +151,6 @@ function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, pat
     else
         json = xASL_io_ReadJson(pathJson); % load the json-file
         json = xASL_bids_parms2BIDS([], json, 0); % Convert it from BIDS to Legacy
-
         % if it has the two required quantification fields PLD & LD, we will use this
         if isfield(json, 'Q')
 			if isfield(json.Q, 'LabelingDuration')
@@ -180,13 +161,11 @@ function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, pat
 					warning(['LD missing in: '  pathJson]);
 				end
 			end
-
 			if isfield(json.Q, 'Initial_PLD')
 				x.Q.(fieldNamePLD) = json.Q.Initial_PLD;
 			else
 				warning(['PLD missing in: '  pathJson]);
 			end
-
 			if isfield(json.Q, 'EchoTime')
 				x.Q.(fieldNameTE) = json.Q.EchoTime;
 			else
@@ -194,9 +173,7 @@ function [x, imageOut] = xASL_io_ASLSubtractionAveraging_sub_LoadPWI_JSON(x, pat
 			end
         end
 	end
-
 end
-
 %% ========================================================================================
 %% ========================================================================================
 function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2save, fieldNamePLD, fieldNameLD, fieldNameTE, bCopyOrigJson, pathReference)
@@ -209,7 +186,6 @@ function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2sa
 % fieldNameLD     - field name for LabelingDuration (NUMERIC, REQUIRED)
 % fieldNameTE     - field name for EchoTime (NUMERIC, REQUIRED)
 % bCopyOrigJson   - boolean stating if the original JSON contents are copied as well
-
     if ~isempty(image2save)
         % Also save parameter vectors
         jsonFields.Initial_PLD = x.Q.(fieldNamePLD);
@@ -218,16 +194,13 @@ function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2sa
         if isfield(x.Q, fieldNameTE)
             jsonFields.EchoTime = x.Q.(fieldNameTE);
 		end
-
 		% Even if we don't copy all orig-json, we save certain basic parameters
 		listFields2Save = {'Vendor' 'MagneticFieldStrength' 'PulseSequenceType' 'MRAcquisitionType' 'LabelingType'};
-
 		% We check the existence of all these fields in both x or x.Q
 		for iField = 1:length(listFields2Save)
 			if isfield(x.Q, listFields2Save{iField})
 				jsonFields.(listFields2Save{iField}) = x.Q.(listFields2Save{iField});
 			end
-
 			if isfield(x, listFields2Save{iField})
 				jsonFields.(listFields2Save{iField}) = x.(listFields2Save{iField});
 			end
@@ -235,5 +208,4 @@ function xASL_io_ASLSubtractionAveraging_sub_SavePWI_JSON(x, path2save, image2sa
     
         xASL_io_SaveNifti(pathReference, path2save, image2save, 32, 0, [], bCopyOrigJson, jsonFields, true);
     end
-
 end

@@ -31,15 +31,16 @@ function xASL_adm_ImportBaMoS(AnalysisDir, BaMoSDir, bPullPush, RegExp)
 % EXAMPLE for server: xASL_adm_ImportBaMoS('/radshare/SABRE/analysis', '/radshare/SABRE/Carole', false, '\d{5}\d*');
 % __________________________________
 % Copyright 2015-2019 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if nargin<3 || isempty(bPullPush)
     bPullPush = 0;
 end
-
 FLAIRdir = fullfile(BaMoSDir,'FLAIR_T1Space');
 LesionDir = fullfile(BaMoSDir,'Lesions');
-
 % Adjust the regular expression
 if strcmp(RegExp(1),'^')
     RegExp = RegExp(2:end);
@@ -47,7 +48,6 @@ end
 if strcmp(RegExp(end),'$')
     RegExp = RegExp(1:end-1);
 end
-
 if bPullPush==0 % pull
     % use list from AnalysisDir, assuming that this contains the correct
     % subject names described by RegExp
@@ -64,12 +64,10 @@ end
 if isempty(SubjList)
     error('No subjects found');
 end
-
 NoFLAIRList = struct;
 TooManyFLAIRList = struct;
 NoWMHList = struct;
 TooManyWMHList = struct;
-
 fprintf('Importing FLAIR & WMH segmentations BaMoS:   ');
 for iSubj=1:length(SubjList)
     xASL_TrackProgress(iSubj, length(SubjList));
@@ -107,9 +105,7 @@ for iSubj=1:length(SubjList)
         xASL_Copy(WMHold{end}, WMHnew, true);
     end
 end
-
 fprintf('\n');
-
 %% SAVE THE MISSING LIST HERE IN JSON FILES
 ListsAre = {'NoFLAIRList' 'TooManyFLAIRList' 'NoWMHList' 'TooManyWMHList'};
 for iList=1:length(ListsAre)
@@ -118,8 +114,5 @@ for iList=1:length(ListsAre)
         xASL_delete(SavePath);
         xASL_io_WriteJson(SavePath, eval(ListsAre{iList}));
     end
-
 end
-
-
 end

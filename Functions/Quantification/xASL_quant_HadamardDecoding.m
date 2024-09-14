@@ -52,24 +52,23 @@ function [decodedPWI4D, decodedControl4D, xQ] = xASL_quant_HadamardDecoding(imPa
 % EXAMPLE:      n/a
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 0. Admin
 % Check if all inputs are present
-
 if nargin<1 || isempty(imPath)
     error('imPath input is empty');
 else
     imEncoded = xASL_io_Nifti2Im(imPath);
     nEncodedVolumes = size(imEncoded, 4); % Number of volumes of the raw data
 end
-
 if nargin<2 || isempty(xQ)
     error('xQ input is empty');
 end
-
-
 %% 1. Specify the decoding matrix
-
 % Specify the TimeEncodedMatrix
 if ~isempty(xQ.TimeEncodedMatrix)
 	if size(xQ.TimeEncodedMatrix,1) ~= size(xQ.TimeEncodedMatrix,2)
@@ -85,7 +84,6 @@ if ~isempty(xQ.TimeEncodedMatrix)
 		end
 	end
 end
-
 if ~isempty(xQ.TimeEncodedMatrixType)
 	% See an example of decoding/encoding matrices in 
 	% Samson-Himmelstjerna, MRM 2015 https://doi.org/10.1002/mrm.26078
@@ -104,7 +102,6 @@ if ~isempty(xQ.TimeEncodedMatrixType)
  				 1 -1  1 -1; 
 				 1 -1 -1  1;
 				 1  1 -1 -1];
-
 		elseif xQ.TimeEncodedMatrixSize == 8
             tempTimeEncodedMatrix = [1  1  1  1  1  1  1  1;% control-label
 				                     1 -1  1 -1  1 -1  1 -1;
@@ -154,7 +151,6 @@ if ~isempty(xQ.TimeEncodedMatrixType)
 	if isempty(tempTimeEncodedMatrix)
 		warning(['Cannot create a ' xQ.TimeEncodedMatrixType ' matrix of size ' xASL_num2str(xQ.TimeEncodedMatrixSize)]);
 	end
-
 	if isempty(xQ.TimeEncodedMatrix)
 		% If the matrix is not yet initialize, then save it
 		xQ.TimeEncodedMatrix = tempTimeEncodedMatrix;
@@ -178,9 +174,7 @@ switch xQ.Vendor
 	otherwise
 		error(['Time encoded ASL data not implemented yet for vendor ' xQ.vendor]);
 end
-
 %% 2. Verify that quantification parameters are equally long as the number of volumes
-
 if length(xQ.LabelingDuration) ~= nEncodedVolumes
 	if length(xQ.LabelingDuration) == 1
         % If a single LD is specified, we assume that all volumes have the same LD
@@ -189,7 +183,6 @@ if length(xQ.LabelingDuration) ~= nEncodedVolumes
 		error('Length of LabelingDuration vector does not match the number of volumes');
 	end
 end
-
 if length(xQ.Initial_PLD) ~= nEncodedVolumes
 	if length(xQ.Initial_PLD) == 1
         % If a single PLD is specified, we assume that all volumes have the same PLD
@@ -198,7 +191,6 @@ if length(xQ.Initial_PLD) ~= nEncodedVolumes
 		error('Length of Initial_PLD vector does not match the number of volumes');
 	end
 end
-
 if length(xQ.EchoTime) ~= nEncodedVolumes
 	if length(xQ.EchoTime) == 1
         % If a single TE is specified, we assume that all volumes have the same TE
@@ -209,7 +201,6 @@ if length(xQ.EchoTime) ~= nEncodedVolumes
 		error('Length of EchoTime vector does not match the number of volumes');
 	end
 end
-
 % Currently, for multi-TE, we only implement the option that TE times are in the first dimension
 % So in case that there's multi-TE but not as the inner most dimension, we report an error
 if isfield(xQ, 'nUniqueEchoTime') && (xQ.nUniqueEchoTime > 1)
@@ -218,7 +209,6 @@ if isfield(xQ, 'nUniqueEchoTime') && (xQ.nUniqueEchoTime > 1)
 		warning('Multi-TE processing is only implemented TEs being the inner-most dimension only in PWI4D repetitions, hence the current implementation may not work correctly for the current data');
 	end
 end
-
 %% 3. Calculate the number of repetitions
 % Here we define the terminology on repetitions and blocks
 % nEncodedVolumes = total original volumes
@@ -231,9 +221,7 @@ end
 % we decode 1 control volume and 3 PLD volumes.
 %
 % The number of blocks is usually referred to as TimeEncodedMatrixSize in the literature, here we refer to it as nBlocks for readability.
-
 nBlocks = xQ.TimeEncodedMatrixSize;
-
 % INNER REPETITIONS
 % Normally, for a 4-block Hadamard, we acquire 4 volumes. But there may be reasons to repeat the readout, resulting in more volumes.
 % E.g., with a multi-TE readout, each Hadamard-encoded volume is acquired for each echo. For example, a 4-block Hadamard with 8-TEs
@@ -241,31 +229,25 @@ nBlocks = xQ.TimeEncodedMatrixSize;
 % Here, we define these here as "inner repetitions".
 %
 % innerRepetition: single-volume repetitions for each PLD
-
 % Calculate the number of inner repetitions.
 % Let's take an example in which our volumes are stored according to the following PLDs
 % 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, ...
 % 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
 % That is nInnerRepetitions == 8, e.g., 8 echoes in the case of multi-TE.
-
 [~, ~, indexUniquePLD] = unique(xQ.Initial_PLD, 'stable'); % Create a vector that gives for each unique PLD its order of occurrence
 % e.g, in the above example, with (ignoring innerRepetitions for this example) [3000, 1000, 1500, 2000, 3000 1000 1500 2000] :
 % 3000 occurs first, 1000 occurs second, etc. This gives                       [1     2     3     4     1    2    3    4   ]
-
 indexPLD2 = find(indexUniquePLD==2); % Find the volume indices of the second-occurring PLD (1000).
 % PLDs 1000 are on the position 9-16. And it means that all PLDs before the 1000 are equivalent (== PLD 3000 ms), because PLDs==1000 has been labeled as the second occurring unique value
-
 if isempty(indexPLD2)
 	error('Hadamard encoding must have more than a single unique PLD')
 else
 	nInnerRepetitions = indexPLD2(1) - 1; % The number of first-PLDs (3000 in our example), i.e. the count of all PLDs before the second PLD is the number of inner repetitions. 
     % 8 in our example (for 8 echoes)
 end
-
 if nInnerRepetitions ~= xQ.nUniqueEchoTime % Check for TE number differ from the number of inner repeats as this is a special option needing a special reordering
 	warning('Number of inner repetitions and echo-times does not match what is expected with a Hadamard sequence, either something is wrong with the sequence or quantification of such a sequence is not yet implemented');
 end
-
 % OUTER REPETITIONS
 % Any ASL sequence can be repeated for averaging to increase SNR. 
 % In the case of Hadamard, this is the number of Hadamard blocks * the inner repetitions, e.g., 32 volumes in the current example of 8 echoes and Hadamard-4.
@@ -274,23 +256,18 @@ end
 % increasing the acquisition of a single control or label volume with a factor of 2, 4, 8 (depending on the number of segments).
 % Hence, for 3D GRASE Hadamard-4, there's typically only clinically scanning time to scan 1-3 repetitions, which we here define as "outer repetitions".
 % nVolumesPerOuterRepetition = number of volumes within a single sequence = number of Hadamard blocks * inner repetitions
-
 nVolumesPerOuterRepetition = nBlocks * nInnerRepetitions;
 nOuterRepetitions = nEncodedVolumes / nVolumesPerOuterRepetition;
-
 %% 4. Decode control4D
 % Here we select all control volumes
 % If there are multiple TEs or other readout-related repetitions, it takes all of them.
 % For example for 64 volumes and 2 outer-repetitions with 4 PLDs and 8 TEs, it takes volume 1-8 and 33-40 to get all control volumes
 indexControl = ((1:nInnerRepetitions)'*ones(1,nOuterRepetitions) + ones(nInnerRepetitions,1)*(0:nOuterRepetitions-1)*nVolumesPerOuterRepetition);
 indexControl = indexControl(:)';
-
 decodedControl4D = imEncoded(:,:,:, indexControl);
 xQ.EchoTime_Control4D = xQ.EchoTime(indexControl);
 xQ.InitialPLD_Control4D = xQ.Initial_PLD(indexControl);
 xQ.LabelingDuration_Control4D = xQ.LabelingDuration(indexControl);
-
-
 %% 5. Switch Hadamard block dimension and innerRepetition dimension
 % Prepares the ASL volumes for Hadamard decoding, by 
 % reordering volumes such that Hadamard volumes (corresponding to blocks) are the most inner dimension/repetition, and any innerRepetitions (such as multi-TE) 
@@ -303,41 +280,30 @@ xQ.LabelingDuration_Control4D = xQ.LabelingDuration(indexControl);
 % And for decoding we want to swap the dimensions such that the Hadamard volumes corresponding to its blocks are the innermost dimension:
 % PLD1 TE1 | PLD2 TE1 | PLD3 TE1 | PLD4 TE1 | PLD1 TE2 | PLD2 TE2 | PLD3 TE2 | PLD4 TE2 | ... | PLD1 TE8 | PLD2-TE8 | PLD3 TE8 | PLD4-TE8
 % (PLDs in the first dimension, TEs after)
-
 imEncodedReordered = imEncoded;
-
 if nInnerRepetitions > 1 % Reordering is only needed when having inner repetitions
 	% This is the original order
 	vectorReorderEncoded = 1:nEncodedVolumes;
-
 	% Shape to a matrix with TEs first and all the rest later
 	vectorReorderEncoded = reshape(vectorReorderEncoded, nInnerRepetitions, nEncodedVolumes/nInnerRepetitions);
-
 	% Switch the two dimensions and create a row vector again
 	vectorReorderEncoded = reshape(vectorReorderEncoded', 1, nEncodedVolumes);
-
 	% Reorder the data
 	imEncodedReordered = imEncodedReordered(:,:,:,vectorReorderEncoded);
 end
 % Sometimes an acquisition (e.g., Hadamard-8) is: outerRepetition PLD -> PLD1 rep1 | PLD1 rep2 | ... PLD2 rep1 | PLD2 rep2
 % We want here                                    PLD outerRepetition -> PLD1 rep1 | PLD2 rep1 | ... PLD1 rep2 | PLD2 rep2
-
-
 %% 6. Decode the image volumes
 % We assume that the all encoded volumes are ordered as repetitions of Hadamard blocks
-
 nPLDs = nBlocks-1;
 % We only decode the PLD blocks here, we ignore the control volumes
 % Hence the number of PLDs is the total number of Hadamard blocks (TimeEncodedMatrixSize - 1)
-
 decodedPWI4D = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), nOuterRepetitions * nPLDs);
-
 % Go through all repetitions of the full Hadamard blocks
 for iRepetition = 1:(nOuterRepetitions*nInnerRepetitions)
 	offsetEncoded = nBlocks * (iRepetition-1); % Index offset for the given repetition to search in the encoded data
 	encodedBlocks = imEncodedReordered(:,:,:,(1:nBlocks) + offsetEncoded); % Obtain the single encoded block
 	decodedBlocks = zeros(size(imEncodedReordered,1), size(imEncodedReordered,2), size(imEncodedReordered,3), nPLDs); % Temporary single decoded Hadamard block
-
 	for iBlock = 1:nPLDs
 		indexPositive = find(xQ.TimeEncodedMatrix(iBlock+1,:)==1);
 		indexNegative = find(xQ.TimeEncodedMatrix(iBlock+1,:)==-1);
@@ -346,34 +312,24 @@ for iRepetition = 1:(nOuterRepetitions*nInnerRepetitions)
 	offsetDecoded = (iRepetition-1)*nPLDs; % Volume index offset for the current outer repetition
 	decodedPWI4D(:,:,:,offsetDecoded + (1:nPLDs)) = decodedBlocks; % Save the decoded block
 end
-
 % Normalization of the decoded data
 % NormalizationFactor = 1/(m_INumSets/2);
 % where m_INumSets is the number of volumes (e.g. 8 for Hadamard 8x8)
-
 decodedPWI4D = decodedPWI4D / (nBlocks/2);
-
 %% 7. Switch Hadamard block dimension and innerRepetition dimension back
 % For model fitting, we want the PLDs-first-TEs-second order (just like at the beginning) so we need to reorder it again
-
 if nInnerRepetitions > 1
 	% This is the order after decoding the reordered matrix: PLDs & outer repetitions first, inner repetitions (TEs) second, e.g.,
     % PLD1 rep1 TE1 | PLD2 rep1 TE1 | PLD3 rep1 TE1 | PLD1 rep2 TE1 | PLD2 rep2 TE1 | PLD3 rep2 TE1 | .... | PLD1 rep1 TE8 | PLD2 rep1 TE8
-
 	vectorReorderDecoded = 1:size(decodedPWI4D, 4);
-
 	% First reshape to a matrix with innerRepetitions (e.g., TEs) second and all the rest (e.g. PLDs, outerRepetitions) first
 	vectorReorderDecoded = reshape(vectorReorderDecoded, size(decodedPWI4D, 4)/nInnerRepetitions, nInnerRepetitions);
-
 	% Flip the two dimensions (outerRepetition->second and innerRepetition->first) and make a row vector again
 	vectorReorderDecoded = reshape(vectorReorderDecoded', 1, size(decodedPWI4D, 4));
-
 	% Reorder the data using the prepared reordering vector.
 	% Inner repetitions are now first and outerRepetitions second
 	decodedPWI4D = decodedPWI4D(:,:,:,vectorReorderDecoded);
 end
-
-
 %% 9. Calculate the correct parameters of the decoded volumes
 % Calculate the correct parameters
 indexDecoding = ((nInnerRepetitions+1):nVolumesPerOuterRepetition)'*ones(1,nOuterRepetitions) + ones(nVolumesPerOuterRepetition-nInnerRepetitions,1)*(0:nOuterRepetitions-1)*nVolumesPerOuterRepetition;
@@ -382,5 +338,4 @@ xQ.EchoTime_PWI4D = xQ.EchoTime(indexDecoding);
 xQ.InitialPLD_PWI4D = xQ.Initial_PLD(indexDecoding);
 xQ.LabelingDuration_PWI4D = xQ.LabelingDuration(indexDecoding);
     
-
 end

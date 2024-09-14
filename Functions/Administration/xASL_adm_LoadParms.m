@@ -30,34 +30,31 @@ function [Parms, x] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
 % EXAMPLE: [~, x] = xASL_adm_LoadParms('/MyStudy/sub-001/ASL_1/ASL4D.json', x, bO);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ------------------------------------------------------------------------
 % 0. Admin
 Parms = struct; % default
-
 if nargin<1 || isempty(ParmsPath)
     warning('ParmsPath was not specified');
     ParmsPath = '';
     Parms = struct;
 end
-
 if nargin<2 || isempty(x)
 	x = struct;
 	x.Q = [];
 end
-
 if nargin<3 || isempty(bVerbose)
     bVerbose = true;
 end
-
 [Fpath, Ffile, Fext] = fileparts(ParmsPath);
 	   
 % Names of files for data sets and older names for backwards compatibility
 namesFieldsOld = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'        'LabelingEfficiency' 'Hematocrit' 'BackGrSupprPulses'};
 namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency' 'LabelingEfficiency' 'Hematocrit' 'BackgroundSuppressionNumberPulses'};
-
 %% ------------------------------------------------------------------------
 %% 1. Load .mat parameter file (if exists)
 if exist(ParmsPath, 'file') && strcmp(Fext,'.mat')
@@ -68,7 +65,6 @@ if exist(ParmsPath, 'file') && strcmp(Fext,'.mat')
 		warning(['Could not read parameter files from ' ParmsPath]);
     end
 end
-
 %% ------------------------------------------------------------------------
 %% 2. Load JSON file (if exists)
 % Define JSON path
@@ -98,40 +94,29 @@ else
         warning('Could not define JSON path');
     end
 end
-
 % Load JSON file
 if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSON values overwrite the existing values
-
 	JSONParms = xASL_io_ReadJson(JSONPath);
-
     % Convert parameters to BIDS
 	Parms = xASL_bids_parms2BIDS(Parms, JSONParms, 0, 1);
-
 end
-
-
 %% ------------------------------------------------------------------------
 %% 3. Deal with warnings
 if isempty(fields(Parms))
     warning(['JSON sidecar missing: ' JSONPath]);
 end
-
-
 %% ------------------------------------------------------------------------
 %% 4. Find fields with scan-specific data in x.S.Sets, and use this if possible (per BIDS inheritance)
 % Note that x.S.Sets is filled with data from participants.tsv or e.g. qnt_T1a.mat in the analysis root folder
-
 if isfield(x, 'SUBJECTS')
     % Find current index
     iSubject = find(strcmp(x.SUBJECTS, x.P.SubjectID));
     iSession = find(strcmp(x.SESSIONS, x.P.SessionID));
     iSubjSess = (iSubject-1)*x.dataset.nSessions + iSession;
-
     if size(x.S.SetsID,1) ~= x.dataset.nSubjects * x.dataset.nSessions
         warning('Inheritance x.S.SetsID data was not equal to numbers of Subjects/Sessions, skipping');
         return;
     end
-
     for iSet=1:length(namesFieldsOld)
         TempIndex = find(cellfun(@(x) strcmp(x, namesFieldsOld{iSet}), x.S.SetsName));
         if ~isempty(TempIndex)
@@ -139,7 +124,6 @@ if isfield(x, 'SUBJECTS')
         else
             SetIndex(iSet) = NaN;
         end
-
         if ~isnan(SetIndex(iSet))
             % Use the data out SetsID
             Parms.(namesFieldsNew{iSet}) = x.S.SetsID(iSubjSess, SetIndex(iSet));
@@ -163,19 +147,13 @@ else
 		warning('x.SUBJECTS field missing, skipping parsing x.S.Sets*');
 	end
 end
-
-
 %% ------------------------------------------------------------------------
 %% 5. Sync Parms.* with x.(Q.)* (overwrite x/x.Q)
 % Input all fields from the Parms into the x structure, backup those that were already existing (inheritance principle)
 % & backward compatibility
-
 [x] = xASL_adm_SyncParmsX(Parms, x);
-
 % Fix x structure fields
 x = xASL_io_CheckDeprecatedFieldsX(x);
-
-
 %% ------------------------------------------------------------------------
 %% 6. Fix M0 parameter
 if ~isfield(x,'Q')
@@ -185,7 +163,6 @@ if isfield(x.Q, 'M0') && strcmpi(x.Q.M0, 'no_background_suppression')
     warning('Legacy option x.Q.M0=no_background_suppression detected, replacing this by UseControlAsM0');
     x.Q.M0 = 'UseControlAsM0';
 end
-
 if ~isfield(x.Q,'M0')
     if xASL_exist(fullfile(Fpath, 'M0.nii'),'file') && (exist(fullfile(Fpath, 'M0.json'),'file') || exist(fullfile(Fpath, 'M0_parms.mat'),'file') )
         x.Q.M0 = 'separate_scan';
@@ -201,30 +178,22 @@ if ~isfield(x.Q,'M0')
         if bVerbose; fprintf('%s\n','M0 parameter was missing, OR did not find M0 scan, OR background suppression was enabled but its timings were not defined...'); end
     end
 end
-
 if ~exist('Parms','var')
     Parms = struct;
     if bVerbose; warning('parms seem missing, something wrong with parmsfile?'); end
 end
-
 end
-
-
 %% =======================================================================================================
 %% =======================================================================================================
-
 function [x] = xASL_adm_SyncParmsX(Parms, x, bVerbose)
 %xASL_adm_SyncParmsX Sync Parms.* with x.(Q.)* (overwrite x/x.Q)
 % Input all fields from this single subject/session/run Parms into the x structure (inheritance principle)
-
 %% Admin
 if nargin<3 || isempty(bVerbose)
     bVerbose = false;
 end
-
 %% Define fields to fill or dive in
 ParmsNames = fieldnames(Parms);
-
 %% Do it
 for iPar=1:length(ParmsNames)
     if isstruct(Parms.(ParmsNames{iPar}))
@@ -233,7 +202,6 @@ for iPar=1:length(ParmsNames)
             % first we create empty X field
             x.(ParmsNames{iPar}) = struct;
         end
-
         x.(ParmsNames{iPar}) = xASL_adm_SyncParmsX(Parms.(ParmsNames{iPar}), x.(ParmsNames{iPar}));
     else % overwrite X by Parms
         x.(ParmsNames{iPar}) = Parms.(ParmsNames{iPar});
@@ -248,6 +216,4 @@ for iPar=1:length(ParmsNames)
         end
     end
 end
-
 end
-

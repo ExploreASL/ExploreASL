@@ -47,13 +47,13 @@ function [MaskIM, TreatedCBF] = xASL_im_MaskPeakVascularSignal(PathPWI, Path_M0,
 % EXAMPLE: MaskIM = xASL_im_MaskPeakVascularSignal('/analysis/Sub-001/ASL_1/CBF.nii','/analysis/Sub-001/ASL_1/rM0.nii');
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ===================================================================
 % Admin
-
 if nargin<1 || isempty(PathPWI)
     warning('No CBF image found, skipping...');
     return;
@@ -66,7 +66,6 @@ else
         return;
     end
 end
-
 if nargin<2 || isempty(Path_M0)
 	M0_im = 1;
 	Path_M0 = [];
@@ -85,7 +84,6 @@ else
 		end
 	end
 end
-
 if nargin<3 || isempty(bClip)
     bClip = false; % default is set to NaN
 end
@@ -95,21 +93,15 @@ end
 if nargin<5 || isempty(CompressionRate)
     CompressionRate = 0.675; % emperically this seems a good value
 end
-
-
-
 %% 1. Segment GM on ASL image at 80th percentile of PWI image distribution
 DataSort = sort(PWI(isfinite(PWI)));
 IndexN = round(0.8*length(DataSort));
 GMmask = PWI>DataSort(IndexN) & isfinite(PWI);
-
-
 %% 2. For PWI & CBF images, select voxels higher than median + ClipThresholdValue MAD
 % Create CBF image et al
 TreatedCBF = PWI./M0_im;
 TempCBF{1} = PWI; % PWI
 TempCBF{2} = TreatedCBF; % CBF (PWI/M0)
-
 % Get masks for both PWI & CBF images (i.e. with & without M0 division
 for ii=1:2
     Mask2Use = GMmask & isfinite(TempCBF{ii});
@@ -118,21 +110,16 @@ for ii=1:2
     ClipThr(ii) = medianValue(ii) + (ClipThresholdValue*madValue(ii));
     MaskIM{ii} = TempCBF{ii}>ClipThr(ii);
 end
-
 %% 3. Combine the two created masks
 MaskIM = MaskIM{1} & MaskIM{2};
-
 %% 4. Obtain average clipping value from selected voxels from the combined masks
 % We compress after M0 correction, otherwise we could still have very high values
 ClipThr = xASL_stat_MedianNan(TreatedCBF(MaskIM));
 MaskIM = TreatedCBF>ClipThr; % create new Mask
 % This will also reduce extracranial M0 division artifacts
-
 if numel(M0_im)>1 && min(size(M0_im)==size(MaskIM)) % if they have the same image size
     MaskIM(M0_im==0 | isnan(M0_im)) = 1;
 end
-
-
 %% 5) Apply compression if requested
 if bClip
     % Compress all values above ClipThr
@@ -143,6 +130,4 @@ if bClip
 else
     TreatedCBF(MaskIM) = NaN;
 end
-
-
 end

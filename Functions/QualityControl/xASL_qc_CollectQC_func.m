@@ -44,22 +44,21 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject, iSession)
 % EXAMPLE: x = xASL_qc_CollectQC_func(x, 10, 1);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Admin
     SubjectID = x.SUBJECTS{iSubject};
     SessionID = x.SESSIONS{iSession};
     func.ID = [SubjectID '_' SessionID];
-
-
     %% -----------------------------------------------------------------------------------------------
     %% func determinant
     % The determinant of the current matrix and old matrix should be the same,
     % otherwise this is suspicious of a left-right flip.
-
     PathOrientationResults = fullfile(x.dir.SESSIONDIR,'xASL_qc_PrintOrientation_RigidRegfunc.tsv');
     func = xASL_im_DetermineFlip(x, iSubject, PathOrientationResults, func);
-
     %% func motion
     PathMoCo = fullfile(x.D.MotionDir,['motion_correction_NDV_' func.ID '.mat']);
     if  exist(PathMoCo,'file')
@@ -74,14 +73,11 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject, iSession)
         func.MotionMax_mm = NaN;
         func.MotionSD_mm = NaN;        
     end
-
-
     %% -----------------------------------------------------------------------------------------------
     %% func acquisition
     
     KnownUnits = {'EchoTime' 'RepetitionTime' 'TotalReadoutTime' 'AcquisitionTime'};
     HaveUnits = {'ms'       'ms'             's'                'hhmmss'};
-
     for iField=1:length(KnownUnits)
         if isfield(x, KnownUnits{iField}) && ~isfield(x.Q, KnownUnits{iField})
             x.Q.(KnownUnits{iField}) = x.(KnownUnits{iField});
@@ -99,7 +95,6 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject, iSession)
             func.(FieldName) = x.Q.(QuantFields{iField}); % add the field to ASL struct
         end
     end    
-
     % Orientation check
     func = xASL_qc_ComputeNiftiOrientation(x.P.Path_func_bold, func);
     
@@ -111,7 +106,6 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject, iSession)
             func.(FieldNames{iN}) = xASL_round(V, 4);
         end
     end
-
     % First check if we have some data to add
     Field2Check     = fields(func);
     nFields         = length(Field2Check);
@@ -129,14 +123,11 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject, iSession)
     if  FieldsFilled>0.2 % threshold to avoid listing empty values
 		x.Output.func.(SessionID) = xASL_qc_FillFields(x.Output.func.(SessionID), func);
     end
-
 end
-
 function [OutputFields] = xASL_qc_FillFields(OutputFields, InputFields)
 %xASL_qc_FillFields
         
 FieldsI = fields(InputFields);
-
 for iO=1:length(FieldsI)
     CurrentField = InputFields.(FieldsI{iO});
     if isnumeric(CurrentField) && length(CurrentField)>1
@@ -144,5 +135,4 @@ for iO=1:length(FieldsI)
     end
     OutputFields.(FieldsI{iO}) = CurrentField;
 end    
-
 end

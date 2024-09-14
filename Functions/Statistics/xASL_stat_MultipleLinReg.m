@@ -33,79 +33,65 @@ function [b,CI,pval,stats] = xASL_stat_MultipleLinReg(X,Y,bIntercept)
 %             https://www.wessa.net/rwasp_multipleregression.wasp
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
-% 
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
+% 
 % Admin
 if nargin < 2 || isempty(X) || isempty(Y)
 	error('Needs at least two input arguments.');
 end
-
 % Gets the number of samples
 N = size(Y,1);
-
 if size(Y,2) > 1
 	error('Y needs to be Nx1');
 end
-
 if size(X,1) ~= N
 	error('Y and X need to have the same number of samples.');
 end
-
 if nargin < 3 || isempty(bIntercept)
 	bIntercept = true;
 end
-
 % Converts to double precision
 X = double(X);
 Y = double(Y);
-
 % Reformulating the problem as Y = b*Xloc+a
 if bIntercept
 	Xloc = [X ones(N,1)];
 else
 	Xloc = X;
 end
-
 % And number of independent variables
 K = size(Xloc,2);
-
 if N-K < 2
 	error('Too few samples for too much independent variables.');
 end
-
 % Solving in the ordinary least squares sense
 %b = ((Xloc'*Xloc)^(-1))*(Xloc')*Y;
 b = pinv(Xloc)*Y;
-
 % The estimated values of y
 Yest = Xloc*b;
-
 % The residuals
 epsilon = Y-Yest;
-
 % Square of the residuals
 epsilonSQ = epsilon'*epsilon;
-
 % Set alpha for the confidence interval
 alphaCI = 0.05;
 sbSQ = epsilonSQ/(N-K)* ((Xloc'*Xloc)^(-1));
-
 % Calculate the standard error
 se = sqrt(diag(sbSQ));
-
 % Confidence interval is
 % bj - t(a/2,n-k)(sqrt(std^2Cjj))
 t = xASL_stat_ticdf((1-alphaCI/2),(N-K));
 CI = [b-t*se, b+t*se];
-
-
 % Calculate the 2-tail p-values
 % t = bi/se(i) ~ t(a/2,n-k-1)\
 % b is k+1 because the intercept is added
 v = N-K;
 t = b./se;
 pval = 2*xASL_stat_tcdf(t,v);
-
 % Calculate the overall goodness of the fit
 % R^2 = 1-e'e/(sum(yi-meany)^2)
 stats.rSQ    = 1-epsilonSQ/sum((Y-mean(Y)).^2);
@@ -113,5 +99,4 @@ stats.rSQadj = 1-(1-stats.rSQ)*(N-1)/(N-K);
 stats.F = ((sum((Y-mean(Y)).^2)-epsilonSQ)/(K-1)) / (epsilonSQ/(N-K));
 stats.pval = xASL_stat_fcdf(1/stats.F,N-K,K-1); % Significance probability for regression
 stats.se = se; % standard error
-
 return

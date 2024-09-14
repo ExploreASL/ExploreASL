@@ -34,7 +34,10 @@ function [x, Result1] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, NicenessVa
 % EXAMPLE: xASL_fsl_RunFSL(FSLCommand, x);
 % __________________________________
 % Copyright (C) 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 if nargin<2 || isempty(x)
@@ -50,24 +53,19 @@ end
 if nargin<5 || isempty(bVerbose)
     bVerbose = true;
 end
-
 % Defaults
 Result1 = NaN;
-
 %% Find FSL directory
 if ~isfield(x.external,'bAutomaticallyDetectFSL')
     x.external.bAutomaticallyDetectFSL = 0;
 end
-
 [FSLdir, x, RootFSLdir] = xASL_fsl_SetFSLdir(x);
-
 if min(isnan(FSLdir))
     % Script will return Result1=NaN to show that there is no FSL
     % installation found
     warning('No FSL installation found, skipping FSL function');
     return;
 end
-
 %% Determine CUDA or openMP (CUDA = multi-core GP, openMP = multi-core CPU)
 % if ispc
 %     [status, result] = system('wsl ls /usr/local/*cuda*');
@@ -79,8 +77,6 @@ end
 % else
 %     ExistCUDA = false;
 % end
-
-
 %% Define FSL environment script (only declares variables, OK to repeat)
 FSLinit0 = ['FSLDIR=' FSLdir ';'];
 if exist(fullfile(RootFSLdir,'etc','fslconf','fsl.sh'),'file')
@@ -93,9 +89,7 @@ else
 end
 FSLinit2 = 'PATH=${FSLDIR}/bin:${PATH};';
 FSLinit3 = 'export FSLDIR PATH;';
-
 FSLinit = [FSLinit0 FSLinit1 FSLinit2 FSLinit3];
-
 if OutputZipping
     FSLoutput = 'FSLOUTPUTTYPE=NIFTI_GZ; export FSLOUTPUTTYPE; ';
     OutputString = '.nii.gz';
@@ -103,8 +97,6 @@ else
     FSLoutput = 'FSLOUTPUTTYPE=NIFTI; export FSLOUTPUTTYPE; ';
     OutputString = '.nii';
 end
-
-
 %% Check FSL version
 pathVersion = fullfile(RootFSLdir, 'etc', 'fslversion');
 if ~exist(pathVersion, 'file')
@@ -116,8 +108,6 @@ else
         fprintf('Consider updating your FSL version\n');
     end
 end
-
-
 %% Prepend the correct FSL directory if missing
 if length(FSLCommand)>5 && strcmp(FSLCommand(1:5),'/bin/')
 	if exist(fullfile(RootFSLdir, 'bin'),'dir')
@@ -129,11 +119,9 @@ if length(FSLCommand)>5 && strcmp(FSLCommand(1:5),'/bin/')
         return;
 	end
 end
-
 %% Be nice
 NiceString = ['nice -' num2str(NicenessValue) ' '];
 fprintf('%s\n', ['FSL: NiceNess=' num2str(NicenessValue) ', output=' OutputString]);
-
 %% Run FSL
 if ispc
     wslString = 'wsl '; % windows subsystem for linux
@@ -148,8 +136,5 @@ end
 if Result1~=0
     warning('FSL command didnt work nicely:');
 end
-
 fprintf('\n');
-
-
 end

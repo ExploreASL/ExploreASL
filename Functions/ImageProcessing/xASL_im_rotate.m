@@ -16,16 +16,18 @@ function rotated = xASL_im_rotate(im, angle)
 % EXAMPLE:      ...
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % In case the angle is higher than 360 or smaller than 0
 angle = mod(angle,360);
-
 % Skip empty images
 if (isempty(im)) 
     rotated = im;
     return;
 end
-
 % If the number of dimension is higher than 3, then reshape to 3D
 orig_size = size(im);
 new_size = orig_size;
@@ -34,7 +36,6 @@ if ndims(im) > 3
 	im = reshape(im,orig_size(1),orig_size(2),[]);
 	is4D = 1;
 end
-
 switch (angle)
 	% Do nothing for 0 degrees
     case 0
@@ -43,7 +44,6 @@ switch (angle)
 		% Calculate the size of the new image
 		new_size(1) = orig_size(2);
 		new_size(2) = orig_size(1);
-
 		% Perform the 90 degree rotation
         rotated = zeros([size(im,2),size(im,1),size(im,3)]);
 		for k = 1:size(im,3)
@@ -61,7 +61,6 @@ switch (angle)
 		% Calculate the size of the new image
 		new_size(1) = orig_size(2);
 		new_size(2) = orig_size(1);
-
        % Perform the 270 degree rotation
         rotated = zeros([size(im,2),size(im,1),size(im,3)]);
 		for k = 1:size(im,3)
@@ -76,6 +75,4 @@ switch (angle)
     otherwise
         error('xASL_im_rotate: Invalid input, only does rotation by 0, 90, 180 or 270 degrees.');
 end
-
 return;
-

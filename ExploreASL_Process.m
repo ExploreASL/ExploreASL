@@ -67,7 +67,10 @@ function [x] = ExploreASL_Process(x)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 0. Workflow for initialization of data loading and processing
     
@@ -75,16 +78,13 @@ function [x] = ExploreASL_Process(x)
 	x = xASL_init_LoadDataPar(x); % Load/create dataPar.json & its settings
     x = xASL_init_SubjectList(x); % create subject list for loading data from rawdata (BIDS2Legacy) or from derivatives (legacy)
     x = xASL_init_Parallelization(x); % choose which subjects this worker processes
-
     if x.opts.nWorkers==1
         % Remove lock dirs from previous runs that might still exist if the pipeline crashed.
         % This is only performed if ExploreASL is not running in parallel
         % Note that any lock dirs for individual modules/su
         x = xASL_init_RemoveLockDirs(x);
     end
-
     xASL_init_PrintUserFeedback(x, 1, 0);
-
     if x.opts.bReadRawdata
         % 0 Run BIDS to Legacy conversion.
         % The rawdata (datasetRoot/rawdata/*) is in BIDS, where the ExploreASL derivatives 
@@ -95,7 +95,6 @@ function [x] = ExploreASL_Process(x)
         [~, x] = xASL_init_Iteration(x, 'xASL_module_BIDS2Legacy');
         x = xASL_init_CreateParticipantsTSV(x);
     end
-
     % Here, we load all the ExploreASL derivatives data into the Matlab x structure, 
     % such that we can use it for processing.
     % i.e., datasetRoot/derivatives/ExploreASL/*
@@ -104,7 +103,6 @@ function [x] = ExploreASL_Process(x)
     % generate session & visit/time point lists
     % this is based on the legacy structure
     x = xASL_init_Process(x); % this initializes all generic processing settings
-
     
     % -----------------------------------------------------------------------------
     %% 1  xASL_module_Structural
@@ -119,7 +117,6 @@ function [x] = ExploreASL_Process(x)
         % Now only check the availability of files when not running parallel
         if x.opts.nWorkers==1; xASL_adm_CreateFileReport(x); end        
     end
-
     %% Optional modules
     % The following are optional extensions of the structural module and not required to run, normally they can be ignored:
     if isfield(x.modules, 'bRunLongReg') && x.modules.bRunLongReg
@@ -138,8 +135,6 @@ function [x] = ExploreASL_Process(x)
         % Now only check the availability of files when not running parallel
         if x.opts.nWorkers==1; xASL_adm_CreateFileReport(x); end    
     end
-
-
     % -----------------------------------------------------------------------------
     %% 3    xASL_module_Population
     % Performs all group-level processing & QC
@@ -152,7 +147,6 @@ function [x] = ExploreASL_Process(x)
     %%      Zip derivatives
     % xASL_module_Population also zips all, so in that case the zipping
     % here would be skipped
-
     % Input check
     if x.opts.nWorkers>1 % don't run population module when ExploreASL is parallelized
         fprintf('%s\n', 'Not zipping NIfTIs because running ExploreASL in parallel mode');
@@ -161,10 +155,7 @@ function [x] = ExploreASL_Process(x)
 			xASL_adm_GzipAllFiles(x.dir.xASLDerivatives, [], [], fullfile(x.opts.MyPath, 'External'));
 		end
     end
-
 end
-
-
 %% =======================================================================================================================
 %% =======================================================================================================================
 function [x] = xASL_init_RemoveLockDirs(x)
@@ -188,9 +179,7 @@ function [x] = xASL_init_RemoveLockDirs(x)
     
     %% LockDir within 2 directories (e.g. T1, FLAIR or ASL)
     LockDir = fullfile(x.dir.xASLDerivatives, 'lock');
-
     if exist(LockDir, 'dir')
-
         listLockedDirs = xASL_adm_FindByRegExp(fullfile(x.dir.xASLDerivatives, 'lock'), {'(ASL|Structural|LongReg_T1|BIDS2Legacy)', x.dataset.subjectRegexp, '.*module.*','^(locked)$'}, 'Match', 'Directories');
         if ~isempty(listLockedDirs)
             fprintf('\n');
@@ -200,7 +189,6 @@ function [x] = xASL_init_RemoveLockDirs(x)
             end
             fprintf('\n');
         end
-
         % LockDir within 2 directories (e.g. DARTEL)
         listLockedDirs = xASL_adm_FindByRegExp(fullfile(x.dir.xASLDerivatives, 'lock'), {'(Population|DARTEL_T1)', '.*module.*','^(locked)$'}, 'Match','Directories');
         if ~isempty(listLockedDirs)

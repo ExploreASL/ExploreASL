@@ -19,6 +19,10 @@ function nameConversionTable = xASL_adm_GetDeprecatedFields()
 %
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 nameConversionTable = ...
     {'nSessions'                    'dataset'   'nSessions'                          '';...
@@ -128,9 +132,4 @@ nameConversionTable = ...
 	'SaveCBF4D'                     'modules'   'asl'                                'SaveCBF4D';...
 	'bNativeSpaceAnalysis'          'modules'   'population'                         'bNativeSpaceAnalysis'
     };
-
 end
-
-
-
-

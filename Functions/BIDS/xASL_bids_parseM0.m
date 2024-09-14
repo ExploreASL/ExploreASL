@@ -24,22 +24,21 @@ function xASL_bids_parseM0(pathASLNifti)
 %
 % __________________________________
 % Copyright 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Check input
 if nargin < 1 || isempty(pathASLNifti)
     warning('Empty ASL path...');
     return
 end
-
 % Verify that pathASLNifti leads to ASL Nifti
 [Fpath, Ffile] = xASL_fileparts(pathASLNifti);
 PathJSON = fullfile(Fpath, [Ffile '.json']);
-
 %% Parse & process M0 options
-
 PathM0 = fullfile(Fpath, 'M0.nii');
-
 JSON = xASL_io_ReadJson(PathJSON);
 if isfield(JSON, 'M0Type')
     switch JSON.M0Type

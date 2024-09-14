@@ -22,7 +22,10 @@ function x = xASL_wrp_NII2BIDS(x)
 %
 % __________________________________
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Run the NII2BIDS conversion
     
@@ -41,7 +44,6 @@ function x = xASL_wrp_NII2BIDS(x)
     if ~existTempRoot
         error('The temp directory does not exist. Please run DICOM to NIfTI on your sourcedata first...');
     end
-
     % Loads the general configuration necessary for the conversion and BIDS saving
 	bidsPar = xASL_bids_Config();
 	
@@ -118,5 +120,4 @@ function x = xASL_wrp_NII2BIDS(x)
     if isempty(dirsInTemp) && isempty(filesInTemp)
         xASL_delete(x.modules.import.imPar.TempRoot, true);
     end
-
 end

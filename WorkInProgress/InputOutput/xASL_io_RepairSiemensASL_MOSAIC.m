@@ -15,15 +15,16 @@ function xASL_io_RepairSiemensASL_MOSAIC(InputPath)
 % EXAMPLE: xASL_io_RepairSiemensASL_MOSAIC(AnalysisDir);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% -------------------------------------------------------------------------------------
 %% Admin
 [Fdir, Ffile, Fext] = xASL_fileparts(InputPath);
 % Get resolution from parms file, containing DICOM header AcquisitionMatrix
 ParmsPath = xASL_adm_GetFileList(Fdir,'ASL4D.*_parms.mat', 'FPList', [0 Inf]); % do it this way, as sometimes the parms file had a different name, & AcquisitionMatrix should be same for all ASL files
-
 if  isempty(ParmsPath)
     warning('Couldnt find parms file with AcquisitionMatrix for repairing Siemens MOSAIC:');
     fprintf('%s\n',InputPath);
@@ -38,33 +39,25 @@ else
         Resolution = 2*parms.parms.AcquisitionMatrix(1);
     end
 end
-
 % Backup file
 BackupPath = fullfile(Fdir, [Ffile '_Backup' Fext]);
 xASL_Copy(InputPath,BackupPath);
-
-
 %% -------------------------------------------------------------------------------------
 %% Run image repair
 OldIM = xASL_io_Nifti2Im(InputPath);
-
 nSlices = size(OldIM,1)^2/Resolution^2;
 nRows = nSlices^0.5;
 nColumns = nRows;
-
 IsSquare2 = nRows/2 == round(nRows/2);
 IsSquare = size(OldIM,1)==size(OldIM,2); % is each slice square?
 Is1Slice = size(OldIM,3)==1; % are all slices contained in a single MOSAIC slice
 IsEven = size(OldIM,1)/2==round(size(OldIM,1)/2); % are there an even number of voxels
-
 if ~IsSquare2 || ~IsSquare || ~Is1Slice || ~IsEven % some basic checks
     warning('Couldnt repair this Siemens MOSAIC NifTI:');
     fprintf('%s\n',InputPath);
     return;
 end
-
 OldIM = xASL_im_rotate(OldIM, 90);
-
 for iVolume=1:size(OldIM,4)
     iSlice=1;
     for iRow=1:nRows
@@ -78,11 +71,7 @@ for iVolume=1:size(OldIM,4)
         end
     end
 end
-
-
 %% -------------------------------------------------------------------------------------
 %% Save
 xASL_io_SaveNifti(InputPath, InputPath, NewIM, [], false);
-
-
 end

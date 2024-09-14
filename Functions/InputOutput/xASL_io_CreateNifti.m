@@ -34,18 +34,19 @@ function xASL_io_CreateNifti(pathNewNifti, imNew, resMat, nBits, bGZip)
 %          xASL_io_CreateNifti('c:\User\path\new.nii', im, [], 32, 0)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ---------------------------------------------------------------
 %% Admin
 if nargin < 2
 	error('Specify at least two input arguments');
 end
-
 if nargin < 3 || isempty(resMat)
 	resMat = [1 1 1];
 end
-
 if nargin < 4 || isempty(nBits)
 	nBits = 32;
 end
@@ -53,17 +54,13 @@ end
 if nargin < 5 || isempty(bGZip) 
     bGZip = 1; % zip by default
 end
-
 if min(size(imNew))<=0 
     error('Empty image');
 end
-
 %% ---------------------------------------------------------------
 %% 1) Initialize NIfTI
 newNifti = nifti();
 newNifti.dat = file_array(pathNewNifti);%,dim,dtype,offset,scl_slope,scl_inter,permission)
-
-
 %% ---------------------------------------------------------------
 %% 2) Choose datatype (bit resolution)
 switch nBits
@@ -73,7 +70,6 @@ switch nBits
         % image wasn't 16 bit
         newNifti.dat.dtype = 'UINT8-LE';
         bImInt8 = uint8(imNew)==imNew;
-
         if min(bImInt8(:))==1
             % this image is UINT8 already, doesn't need scale slope
             imNew = uint8(imNew);
@@ -86,7 +82,6 @@ switch nBits
             end                
             imNew = imNew-InterceptN;                
             imNew = round(imNew ./ ScaleSlope16);
-
             % Because a nifti viewer will do (RawValue+Intercept)*ScaleSlope
         end
         
@@ -96,7 +91,6 @@ switch nBits
         % image wasn't 16 bit
         newNifti.dat.dtype = 'INT16-LE';
         bImInt16 = int16(imNew)==imNew;
-
         if min(bImInt16(:))==1
             % this image is integer16 already, doesn't need scale slope
             imNew = int16(imNew);
@@ -112,18 +106,13 @@ switch nBits
         % processing but virtually no rounding errors 
         newNifti.dat.dtype = 'FLOAT32-LE';
         imNew = single(imNew);
-
     otherwise
         error('Unknown bit-choice');
 end
-
-
 %% ---------------------------------------------------------------
 %% 3) Create scale slopes
 newNifti.dat.scl_slope = 1;
 newNifti.dat.scl_inter = 0;
-
-
 %% ---------------------------------------------------------------
 %% 4) Create orientation matrix
 if length(resMat) == 3
@@ -135,15 +124,11 @@ else
 end
 newNifti.mat0 = newNifti.mat;
 newNifti.dat.dim = [size(imNew,1) size(imNew,2) size(imNew,3) size(imNew,4) size(imNew,5) size(imNew,6) size(imNew,7)];
-
-
 %% ---------------------------------------------------------------
 %% 5) Write the new NIfTI, image matrix & scale slopes
 xASL_adm_CreateDir(fileparts(newNifti.dat.fname)); % create folder if not existing
 create(newNifti);
-
 newNifti.dat(:,:,:,:,:) = imNew;
-
 if exist('ScaleSlope16','var')
     newNifti.dat.scl_slope = ScaleSlope16;
     create(newNifti);
@@ -152,8 +137,6 @@ if  exist('InterceptN','var')
     newNifti.dat.scl_inter = InterceptN;
     create(newNifti);
 end
-
-
 %% ---------------------------------------------------------------
 %% 6) Zip and deal with zipping (.nii vs. .nii.gz)
 % Always avoid having two of the same files, of which one copy is zipped
@@ -162,14 +145,10 @@ end
 if exist([pathNewNifti '.gz'], 'file')
     delete([pathNewNifti '.gz']);
 end
-
 if bGZip
     xASL_adm_GzipNifti(pathNewNifti);
 end
-
 if strcmp(pathNewNifti(end-3:end),'.nii') && exist(pathNewNifti,'file') && exist([pathNewNifti '.gz'],'file')
     delete([pathNewNifti '.gz']);
 end
-
-
 end

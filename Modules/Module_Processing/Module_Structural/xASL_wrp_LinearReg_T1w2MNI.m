@@ -27,20 +27,21 @@ function xASL_wrp_LinearReg_T1w2MNI(x, bAutoACPC)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Input check
 if nargin<2 || isempty(bAutoACPC)
     bAutoACPC = true;
 end
-
 % Check paths
 necessaryPaths = isfield(x.D,'SPMDIR') && isfield(x.P,'Path_FLAIR') && isfield(x.P,'Path_WMH_SEGM') && ...
                  isfield(x.P,'Path_ASL4D') && isfield(x.P,'Path_M0') && isfield(x.P,'Path_ASL4D_RevPE');
 if ~necessaryPaths
     warning('Seemingly you are using xASL_wrp_LinearReg_T1w2MNI without defining all necessary paths...');
 end
-
-
 %% ---------------------------------------------------------------------------------------------------
 %% 1. Obtain path lists
 refPath = fullfile(x.D.SPMDIR, 'toolbox', 'OldNorm', 'T1.nii'); % = SPM8 T1 template, to make sure it is always the same
@@ -50,7 +51,6 @@ OtherList{1,1} = x.P.Path_FLAIR;
 OtherList{end+1,1} = x.P.Path_WMH_SEGM;
 OtherList{end+1,1} = x.P.Path_T1c;
 OtherList{end+1,1} = x.P.Path_T2;
-
 % Add lesion masks to the registration list
 Lesion_ROI_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['(?i)^(Lesion|ROI)_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.nii$'], 'FPList', [0 Inf]);
 for iS=1:length(Lesion_ROI_list)
@@ -70,17 +70,13 @@ for iOther=1:length(otherFolders)
         end
     end
 end
-
-
 %% ---------------------------------------------------------------------------------------------------
 %% 2. Issue warnings if any of the orientation matrices were changed (e.g. in an earlier processing run)
 % A potential error can occur if for whatever reason, in a previous rerun some where realigned (e.g., to MNI) and others were not.
 % So we will now issue a warning if any of the orientation matrices were changed (e.g. in an earlier processing run).
-
 % Note that this can be normal for FLAIR and its derivative WMH_SEGM, as these are first resampled to T1w.nii
 % For T1w.nii, this can also be normal if the T1w was already realigned to MNI in a previous run.
 % So we check this for ASL only, by comparing the nii.mat to nii.mat0. Either all were realigned, or none. If only some were realigned, we issue a warning.
-
 % Get all ASL NIfTIs
 checkList = [];
 for iOther=1:length(OtherList)
@@ -91,7 +87,6 @@ for iOther=1:length(OtherList)
         end
     end
 end
-
 % Check orientation differences for all ASL NIfTIs
 % between nii.mat0 (original orientation from the scanner)
 % and nii.mat (potential new orientation after registration)
@@ -100,25 +95,19 @@ for iCheck=1:length(checkList)
     nii = xASL_io_ReadNifti(checkList{iCheck});
     matEqual(iCheck) = isequal(nii.mat, nii.mat0);
 end
-
 % Now we issue a warning if some NIfTIs had unequal orientation matrices
 % — i.e., they were previously realigned —
 % and others did not. In this case, matEqual has both 1s and 0s.
 if length(unique(matEqual))>1
     warning('Some ASL NIfTIs were previously realigned whereas others were not!!!');
 end
-
-
 %% ---------------------------------------------------------------------------------------------------
 %% 3. Perform the registration
 %  this will be estimated on the T1w & applied to all NIfTIs
 xASL_im_ClipExtremes(x.P.Path_T1, 0.999, 0, [], 1); % First we clip high vascular intensities & normalize to 4096, for more stable image contrast
-
 if bAutoACPC % Then start with center of mass detection & realign with this
     xASL_im_CenterOfMass(x.P.Path_T1, OtherList, 15); % 15 mm minimal offset == always apply realignment if slightly off
 end
 % Finally, run the SPM coregistration
 xASL_spm_coreg(refPath, x.P.Path_T1, OtherList, x);
-
-
 end

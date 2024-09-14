@@ -39,13 +39,16 @@ function xASL_wrp_PVC(x)
 % EXAMPLE: xASL_wrp_PVC(x);
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 0. Admin and checking values and files
 if ~isfield(x.modules.asl,'bPVCGaussianMM') || isempty(x.modules.asl.bPVCGaussianMM)
 	x.modules.asl.bPVCGaussianMM = 0;
 end
-
 % If the kernel is non-existent or empty then initialize it
 if ~isfield(x.modules.asl,'PVCNativeSpaceKernel') || isempty(x.modules.asl.PVCNativeSpaceKernel)
 	if x.modules.asl.bPVCGaussianMM
@@ -54,13 +57,10 @@ if ~isfield(x.modules.asl,'PVCNativeSpaceKernel') || isempty(x.modules.asl.PVCNa
 		x.modules.asl.PVCNativeSpaceKernel = [5 5 1];
 	end
 end
-
 % Make sure that the kernel is provided as a row vector
 dimKernel = length(x.modules.asl.PVCNativeSpaceKernel);
 x.modules.asl.PVCNativeSpaceKernel = reshape(x.modules.asl.PVCNativeSpaceKernel, [1 dimKernel]);
-
 % If the size of the kernel was under 3, then add the remaining dimensions from the default
-
 if dimKernel < 3
 	if x.modules.asl.bPVCGaussianMM
 		defaultKernel = [10 10 4];
@@ -69,16 +69,13 @@ if dimKernel < 3
 	end
 	x.modules.asl.PVCNativeSpaceKernel(dimKernel:3) = defaultKernel(dimKernel:3);
 end
-
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 1. Getting the resolution and preparing parameters
 % Load the CBF image
 if ~xASL_exist(x.P.Path_CBF,'file')
 	error(['CBF file ' x.P.Path_CBF ' does not exist. Skipping PVC']);
 end
-
 imCBF = xASL_io_Nifti2Im(x.P.Path_CBF);
-
 % Load and concatenate the PV maps
 if ~xASL_exist(x.P.Path_PVwm,'file')
 	error(['PV-WM file ' x.P.Path_PVwm ' does not exist. Skipping PVC']);
@@ -86,18 +83,14 @@ end
 if ~xASL_exist(x.P.Path_PVgm,'file')
 	error(['PV-GM file ' x.P.Path_PVgm ' does not exist. Skipping PVC']);
 end
-
 imGM = xASL_io_Nifti2Im(x.P.Path_PVgm);
 imWM = xASL_io_Nifti2Im(x.P.Path_PVwm);
-
 % Check if size is compatible
 if ~isequal(size(imGM),size(imWM)) || ~isequal(size(imGM),size(imCBF))
 	error('Size of the GM, WM, and CBF files have to match.');
 end
-
 imPV = imGM;
 imPV(:,:,:,2) = imWM;
-
 if x.modules.asl.bPVCGaussianMM
 	% Prepare the kernel size. Convert the FWHM from voxels to MM
 	voxelSize = xASL_io_ReadNifti(x.P.Path_CBF);
@@ -107,16 +100,13 @@ if x.modules.asl.bPVCGaussianMM
 else
 	kernelPVC = x.modules.asl.PVCNativeSpaceKernel;
 end
-
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 2. Running PV-correction
-
 if x.modules.asl.bPVCGaussianMM
 	[imPVC,~,~] = xASL_im_PVCkernel(imCBF, imPV, kernelPVC, 'gauss');
 else
 	[imPVC,~,~] = xASL_im_PVCkernel(imCBF, imPV, kernelPVC, 'flat');
 end
-
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 3. Saving files and cleaning
 % Remove areas of GM-CBF and WM-CBF with respective GM-PV and WM-PV under 3 percent
@@ -124,11 +114,9 @@ imPVC(:,:,:,1) = imPVC(:,:,:,1).*(imGM>0.1);
 imPVC(:,:,:,2) = imPVC(:,:,:,2).*(imWM>0.1);
 imPVC(:,:,:,1) = imPVC(:,:,:,1).*((imGM+imWM)>0.3);
 imPVC(:,:,:,2) = imPVC(:,:,:,2).*((imGM+imWM)>0.3);
-
 % Save the GM-CBF and WM-CBF files to the individual ASL directory
 xASL_io_SaveNifti(x.P.Path_CBF,x.P.Path_CBFgm,imPVC(:,:,:,1));
 xASL_io_SaveNifti(x.P.Path_CBF,x.P.Path_CBFwm,imPVC(:,:,:,2));
-
 % Also transform both maps to standard space
 InList  = {x.P.Path_CBFgm;x.P.Path_CBFwm};
 OutList = {x.P.Pop_Path_CBFgm;x.P.Pop_Path_CBFwm};
@@ -138,7 +126,5 @@ if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, an
 else
 	AffineTransfPath = [];
 end
-
 xASL_spm_deformations(x, InList, OutList, 1, [], AffineTransfPath, x.P.Path_y_ASL);
-
 end

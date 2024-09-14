@@ -17,17 +17,17 @@ function [IsValid] = xASL_qc_CheckValidityJSON(PathJSON)
 % EXAMPLE:      [IsValid] = xASL_qc_CheckValidityJSON(PathJSON);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 IsValid = true;
-
 CellData = importdata(PathJSON);
-
 % we loop across all cells, trying to recreate the JSON in a struct
-
 % First we search for the first layer
 % IndicesFirst = cellfun(@(y) strcmp(y,'{'), CellData));
 % IndicesFirst2 = cellfun(@(y) strcmp(y,'}'), CellData);
-
 for iCell=1:size(CellData,1)
     
     CurrentCell = CellData{iCell,1};
@@ -58,11 +58,8 @@ for iCell=1:size(CellData,1)
             IsValid = false;
 %             Value = NaN;
             
-
 %         else
 %             Value = Value(1:end-1);
         end
     end
-
 end
-

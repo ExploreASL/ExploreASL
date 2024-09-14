@@ -24,13 +24,16 @@ function [spm_path, spm_version] = xASL_adm_CheckSPM(modality, proposed_spm_path
 %          [spm_path, spm_version] = xASL_adm_CheckSPM('FMRI','/usr/local/spm12','full');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright © 2015-2020 ExploreASL
+% Copyright Â© 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Check the input parameters
 	if nargin<1 || isempty(modality)
 		modality = 'FMRI';
 	end
-
 	if nargin<3 || isempty(check_mode)
 		check_mode = 'basic';
 	end
@@ -56,7 +59,6 @@ function [spm_path, spm_version] = xASL_adm_CheckSPM(modality, proposed_spm_path
 	
     % Check SPM installation
     spm_check_installation(check_mode);
-
     % Check SPM version
     v = spm('ver');
 	if ~strcmp(v,'SPM8') && ~strcmp(v,'SPM12')
@@ -75,4 +77,3 @@ function [spm_path, spm_version] = xASL_adm_CheckSPM(modality, proposed_spm_path
         spm_version = v;
     end
 end
-

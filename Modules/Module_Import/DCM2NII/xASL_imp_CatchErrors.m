@@ -26,20 +26,21 @@ function [dcm2niiCatchedErrors] = xASL_imp_CatchErrors(WarningID, WarningMessage
 % EXAMPLE:     [dcm2niiCatchedErrors] = xASL_imp_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Catch Errors
-
     if imPar.bVerbose % print warning if we want verbose
         warning(WarningMessage);
     end
-
     % Find index of the warning to store
     if isempty(fields(dcm2niiCatchedErrors))
         IndexN = 1;
     else
         IndexN = length(dcm2niiCatchedErrors)+1;
     end
-
     % store the warning/error
     dcm2niiCatchedErrors(IndexN).scan_name = scan_name;
     dcm2niiCatchedErrors(IndexN).scanpath = scanpath;
@@ -47,7 +48,6 @@ function [dcm2niiCatchedErrors] = xASL_imp_CatchErrors(WarningID, WarningMessage
     dcm2niiCatchedErrors(IndexN).identifier = WarningID;
     dcm2niiCatchedErrors(IndexN).message = WarningMessage;
     dcm2niiCatchedErrors(IndexN).cause = 'n/a';
-
     if exist('StackIn', 'var')
         dcm2niiCatchedErrors(IndexN).stack = StackIn;
     else
@@ -55,8 +55,4 @@ function [dcm2niiCatchedErrors] = xASL_imp_CatchErrors(WarningID, WarningMessage
         dcm2niiCatchedErrors(IndexN).stack.name = WarningFileName;
         dcm2niiCatchedErrors(IndexN).stack.line = WarningLine(end).line;
     end
-
 end
-
-
-
