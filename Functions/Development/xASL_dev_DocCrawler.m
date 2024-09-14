@@ -26,6 +26,10 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
 % EXAMPLE:      xASL_dev_DocCrawler('M:\...\Functions', 'M:\...\Output.md','Functions');
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 1. Defaults and admin
     SeparatorLine = repmat('-',1,149);
@@ -34,7 +38,6 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
     % Sections for "Functions" folder
     SECTION = {'adm', 'bids', 'dev', 'fsl', 'im', 'imp', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
     SECTION_NAMES = {'Administration', 'BIDS', 'Development', 'FSL', 'Image Processing', 'Import', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
-
     % Input Check
     if nargin < 1 || isempty(inputPath)
         error('Input path not defined...')
@@ -47,16 +50,13 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
     if nargin < 3 || isempty(contentType)
         error('Content not defined...')
     end
-
     % Check directory
     if ~iscell(inputPath)
         listing = dir(inputPath);
     else
         listing = [];
     end
-
     %% 2. Iterate over files
-
     % Check if input is folder or file
     if ~isempty(listing)
         % Remove folders from list
@@ -69,7 +69,6 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
             listing(individualPath).name = inputPath{individualPath};
         end
     end
-
     % Current section and iterator
     cS = 0;
     it = 1;
@@ -95,7 +94,6 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
             listing = vertcat(listing,thisListing);
         end
     end
-
     %% 3. Extract header information from each file
     for i = 1:numel(listing)
         % Get filename
@@ -103,10 +101,8 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
         if isFileList
             [~, fileName, ~] = fileparts(fileName);
         end
-
         % Get information from header if it's not an .md or .mat file
         [extractHeaderInfo,formatText,descriptionText] = analyzeHeader(fileName);
-
         % Extract and save information
         if extractHeaderInfo
             % Write data to markdown
@@ -173,13 +169,11 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
                     end
                 end
             end
-
             % Filenames
             TEXT{it,1} = '----'; it = it+1;
             escapedName = strrep(fileName,'_','\_');
             TEXT{it,1} = char(['### ' escapedName]); it = it+1;
             TEXT{it,1} = ''; it = it+1;
-
             % Create format description
             TEXT{it,1} = '**Format:**'; it = it+1; 
             TEXT{it,1} = ''; it = it+1;
@@ -193,7 +187,6 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
             end
             TEXT{it,1} = '```'; it = it+1;
             TEXT{it,1} = ''; it = it+1;
-
             % Create description
             TEXT{it,1} = '**Description:**';it = it+1;
             TEXT{it,1} = ''; it = it+1;
@@ -208,14 +201,12 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
                     % Escape stars in the description
                     TEXT{it,:} = strrep(TEXT{it,:},'*','\*'); 
                 end
-
                 if contains(TEXT{it,1},'_')
                     % Escape underscores in the description
                     TEXT{it,:} = strrep(TEXT{it,:},'_','\_'); 
                 end
                 it = it+1;
             end
-
             % Empty lines
             TEXT{it,1} = ''; it = it+1;
         else
@@ -235,16 +226,13 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
                 fprintf('File %s does not fulfill the documentation requirements...\n', fileName);
             end
         end
-
 	end
-
 	%% 4. Final formatting
     % Remove spaces and separator lines
     if size(TEXT,1)>1
         for i=1:numel(TEXT)
             % Trim char arrays
             TEXT{i,:} = strtrim(TEXT{i,:});
-
             % Remove line separators
             if strcmp(TEXT(i,:),SeparatorLine)
                 TEXT{i,:} = strrep(TEXT{i,:},SeparatorLine,'');
@@ -253,22 +241,17 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
     else
         warning('No text information found, seems like something went wrong...');
     end
-
     % Print information to markdown file
     fileID = fopen(outputFile,'w');
     for i=1:numel(TEXT)
         fprintf(fileID,'%s\n',char(TEXT{i,:}));
     end
     fclose(fileID);
-
     % Final output
     fprintf('Markdown file generated...\n');
-
 end
-
 % Helper function
 function [extractHeaderInfo,formatText,descriptionText] = analyzeHeader(fileName)
-
     % Fallback
     extractHeaderInfo = false;
     formatText = NaN;
@@ -281,29 +264,22 @@ function [extractHeaderInfo,formatText,descriptionText] = analyzeHeader(fileName
             try
                 % Get header from help function
                 header = help(fileName);
-
                 % Convert header to cell array
                 headerList = strsplit(header,'\n');
                 headerList = headerList';
-
                 % Get line with FORMAT description
                 [stringsFORMAT, ~, ~]= regexpi(headerList, 'FORMAT:', 'match');
-
                 % Get line with FORMAT description
                 [stringsINPUT, ~, ~]= regexpi(headerList, 'INPUT:', 'match');
-
                 % Get line with DESCRIPTION
                 [stringsDESCRIPTION, ~, ~]= regexpi(headerList, 'DESCRIPTION:', 'match');
-
                 % Get line with EXAMPLE
                 [stringsEXAMPLE, ~, ~]= regexpi(headerList, 'EXAMPLE:', 'match');
-
                 % Find indices
                 indexFORMAT = find(~cellfun(@isempty,stringsFORMAT));
                 indexINPUT = find(~cellfun(@isempty,stringsINPUT));
                 indexDESCRIPTION = find(~cellfun(@isempty,stringsDESCRIPTION));
                 indexEXAMPLE = find(~cellfun(@isempty,stringsEXAMPLE));
-
                 % Check if all descriptions are there
                 if isempty(indexFORMAT) || isempty(indexINPUT) || isempty(indexDESCRIPTION) || isempty(indexEXAMPLE)
                     extractHeaderInfo = false;
@@ -312,20 +288,16 @@ function [extractHeaderInfo,formatText,descriptionText] = analyzeHeader(fileName
                     formatText = headerList(indexFORMAT:indexINPUT-1);
                     formatText = strrep(formatText,'FORMAT:','');
                     formatText = char(strtrim(formatText));
-
                     % DESCRIPTION text
                     descriptionText = headerList(indexDESCRIPTION:indexEXAMPLE-1);
                     descriptionText = strrep(descriptionText,'DESCRIPTION:','');
                     descriptionText = char(strtrim(descriptionText));
-
                     % Give the okay to extract the information of the current file
                     extractHeaderInfo = true;
                 end
-
             catch
                 extractHeaderInfo = false;
             end 
         end
     end
-
 end

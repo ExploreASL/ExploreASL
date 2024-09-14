@@ -25,10 +25,14 @@ function [List] = xASL_adm_CopyMoveFileList(OriDir, DstDir, StrRegExp, bMove, bD
 %
 % __________________________________
 % Copyright (C) 2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2019-04-01 Henk Mutsaerts. This file was created as a part of ExploreASL
 % See LICENSE for details.
-
 %% Manage input arguments
 if nargin<4
     error('Not enough input arguments');
@@ -45,13 +49,11 @@ end
 if nargin<8 || isempty(bVerbose)
     bVerbose = false;
 end
-
 if bRecursive
     FPList = 'FPListRec';
 else
     FPList = 'FPList';
 end
-
 %% Get the list
 if bVerbose; fprintf('\n%s\n', 'Creating list to copy/move'); end
 if bDir>0
@@ -68,10 +70,8 @@ end
 if TotalLength==0 && bVerbose
     fprintf('%s\n', 'No files/folders found, skipping...');
 end
-
 %% Create the new folder, if needed
 xASL_adm_CreateDir(DstDir);
-
 %% Start the copying/moving
 for iList=1:length(List)
     for iL=1:length(List{iList})
@@ -90,7 +90,6 @@ for iList=1:length(List)
         else
             fprintf('%s\n',['Copy ' SrcPath ' -> ' DstPath]);
         end
-
         if bMove
             xASL_Move(SrcPath, DstPath, bOverwrite, false);
         else
@@ -98,5 +97,4 @@ for iList=1:length(List)
         end
     end
 end
-
 end

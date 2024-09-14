@@ -39,6 +39,10 @@ function LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
 % EXAMPLE: xASL_im_Lesion2Mask('/MyStudy/sub-001/Lesion_T1_1.nii.gz', x);
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% --------------------------------------------------------
 %% Admin
@@ -48,7 +52,6 @@ elseif ~xASL_exist(LesionPath,'file')
     fprintf('%s\n',['Skipped because mask didnt exist: ' LesionPath]);
 	return;
 end
-
 % Distinguish between lesion & ROI masks
 [Fpath, Ffile] = xASL_fileparts(LesionPath);
 if ~isempty(regexp(Ffile,'ROI')) && nargin>1 && isfield(x.D, 'ROICheckDir')
@@ -61,26 +64,21 @@ else
 	warning('Wrong lesion/ROI mask name');
 	ImageSaveDir = Fpath;
 end
-
 %% --------------------------------------------------------
 %% 1. If lesion is empty, skip this & delete the file
 LesionIM = xASL_io_Nifti2Im(LesionPath);
-
 if sum(LesionIM(:))<0.00001
     clear LesionIM
     xASL_delete(LesionPath);
     warning([LesionPath ' removed because it was empty']);
     return;
 end
-
 fprintf('%s\n','Printing lesion QC image');
 LesionIM = xASL_im_ConvertMap2Mask(LesionIM(:,:,:,1));
-
 DistanceMap = xASL_im_DistanceTransform(LesionIM);
 DistanceMap = 1.5 .* DistanceMap; % convert voxels to 1.5 mm
 PeriMask = DistanceMap>0 & DistanceMap<=16.6; % 25 mm
 PeriMask(LesionIM) = 0; % make mutually exclusive
-
 %% 2. BrainMasking
 pGM         = xASL_io_Nifti2Im(x.P.Pop_Path_rc1T1);
 pWM         = xASL_io_Nifti2Im(x.P.Pop_Path_rc2T1);
@@ -90,62 +88,47 @@ PeriMask    = PeriMask.*BrainMask;
 AddMask     = LesionIM+PeriMask;
 ContraMask  = xASL_im_Flip(LesionIM,1).*BrainMask;
 ContraPeri  = xASL_im_Flip(PeriMask,1).*BrainMask;
-
 %% 3. Create hemispheres
 LeftHemisphere  = ones(size(BrainMask));
 RightHemisphere = ones(size(BrainMask));
 LeftHemisphere(1:round(size(LeftHemisphere,1)/2),:,:)     = 0;
 RightHemisphere(round(size(RightHemisphere,1)/2):end,:,:) = 0;
-
 if      sum(sum(sum(LeftHemisphere(logical(AddMask)))))>sum(sum(sum(RightHemisphere(logical(AddMask)))))
         Hemisphere      = (LeftHemisphere .* BrainMask) & ~AddMask;
         ContraLateral   = RightHemisphere .* BrainMask;
 else    Hemisphere      = (RightHemisphere .* BrainMask) & ~AddMask;
         ContraLateral   = LeftHemisphere .* BrainMask;
 end
-
-
 %% 4. Save mutually exclusive masks
 %% 4a First create separate masks
 for iMask=1:6
     LesionImage{iMask} = uint8(zeros(size(LesionIM)));
 end
-
 % 1) Intralesional
 LesionImage{1} = uint8(LesionIM);
-
 % 2) Peri, pGM+pWM
 LesionImage{2}(logical(PeriMask)) = 1;
-
 % 3) Hemisphere
 LesionImage{3}(logical(Hemisphere) & ~logical(LesionIM)) = 1;
-
 % 4) Contralateral intralesional
 LesionImage{4}(logical(ContraMask)) = 1;
-
 % 5) Contralateral perilesional
 LesionImage{5}(logical(ContraPeri)) = 1;
-
 % 6) Contralateral hemisphere
 LesionImage{6}(logical(ContraLateral) & ~logical(ContraMask) & ~logical(ContraPeri)) = 1;
-
 %% 4b Check if they are mutually exclusive
 AnyMaskLesion = LesionImage{1} | LesionImage{4};
 SumMaskLesion = LesionImage{1} + LesionImage{4};
 bMutualExclusiveLesion = sum(AnyMaskLesion(:))==sum(SumMaskLesion(:));
-
 AnyMaskPeri = LesionImage{2} | LesionImage{5};
 SumMaskPeri = LesionImage{2} + LesionImage{5};
 bMutualExclusivePeri = sum(AnyMaskPeri(:))==sum(SumMaskPeri(:));
-
 AnyMaskHemisphere = LesionImage{3} | LesionImage{6};
 SumMaskHemisphere = LesionImage{3} + LesionImage{6};
 bMutualExclusiveHemisphere = sum(AnyMaskHemisphere(:))==sum(SumMaskHemisphere(:));
-
 AnyMaskAll = LesionImage{1} | LesionImage{2} | LesionImage{3} | LesionImage{4} | LesionImage{5} | LesionImage{6};
 SumMaskAll = LesionImage{1} + LesionImage{2} + LesionImage{3} + LesionImage{4} + LesionImage{5} + LesionImage{6};
 bMutualExclusive = sum(AnyMaskAll(:))==sum(SumMaskAll(:));
-
 if bMutualExclusive
     fprintf('%s\n', 'Masks were mutually exclusive, so joined in 3D NIfTI');
 else
@@ -169,7 +152,6 @@ end
 %% 4c Save NIfTI file
 LesionIM = uint8(zeros(size(LesionIM)));
 VisualizeImage = uint8(zeros(size(LesionIM)));
-
 for iMask=1:6
     if bMutualExclusive
         LesionIM(logical(LesionImage{iMask})) = iMask;
@@ -181,22 +163,18 @@ for iMask=1:6
 end
     
 xASL_io_SaveNifti(LesionPath, LesionPath, LesionIM);
-
 %% 5. Create tsv-sidecar containing the names of the ROIs
 ROInames = {'Intralesional' 'Perilesional' 'Ipsilateral_Hemisphere' 'Contralateral_Intralesional' 'Contralateral_Perilesional' 'Contralateral_Hemisphere'};
 PathTSV = fullfile(x.D.PopDir, [Ffile '.tsv']);
 xASL_tsvWrite(ROInames, PathTSV, 1);
-
 %% 6. Visual QC
 % First create the individual mask overlays with different colors
 for iIm=1:6
     OutIm{iIm} = xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rT1 VisualizeImage==iIm}, [], [0.75 0.35], [], {x.S.gray x.S.colors_ROI{iIm}});
 end
-
 % Initialize final image
 OutImFinal = zeros(size(OutIm{1}));
 OutImFinal(OutIm{1}==OutIm{2}) = OutImFinal(OutIm{1}==OutIm{2});
-
 for iIm=1:length(OutIm)
     % Create masks with non-grey voxels (i.e. the overlay)
     OutImMask{iIm} = OutIm{iIm}(:,:,1)~=OutIm{iIm}(:,:,2) | OutIm{iIm}(:,:,2)~=OutIm{iIm}(:,:,3)  | OutIm{iIm}(:,:,1)~=OutIm{iIm}(:,:,3);
@@ -205,7 +183,6 @@ for iIm=1:length(OutIm)
     % Add the overlay from each mask
     OutImFinal(OutImMask{iIm}) = OutIm{iIm}(OutImMask{iIm});
 end
-
 PathJPG = fullfile(ImageSaveDir, ['Regions_' Ffile '.jpg']);
 xASL_vis_Imwrite(OutImFinal, PathJPG);
     

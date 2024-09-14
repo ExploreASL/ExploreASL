@@ -33,6 +33,10 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
 % REFERENCES:       ...
 % __________________________________
 % Copyright @ 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% -----------------------------------------------------------------------------------------------------------------------------------------------------
     %% 0. Input Check
@@ -127,7 +131,6 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
                 end
             end
         end
-
         %% Add current errors
         if exist('errorsInFile','var')
             if ~isempty(errorsInFile{1,1})
@@ -175,14 +178,12 @@ function [logContent] = xASL_test_GetLogContent(rootDir, printContent, storeRela
     end
    
 end
-
 %% Export files
 % INPUT:    rootDir (directory where the resulting files will be stored, CHAR, REQUIRED)
 %           logContent (table containing warnings & errors, TABLE, REQUIRED)
 %           exportTable (0 = no export, 1 = export TSV, 2 = export XLSX, REQUIRED)
 % OUTPUT:   n/a (only stores files)
 function exportLogContent(rootDir,logContent,exportTable)
-
     % Convert warnings & errors from cell to char array
     logContent = logContentCellToChar(logContent);
     if exportTable==1 && ~isempty(logContent)
@@ -247,14 +248,11 @@ function exportLogContent(rootDir,logContent,exportTable)
         end
     end
 end
-
-
 %% Get last file of warning or error message (first file in content)
 % INPUT:    content (cell array containing a warning or error message, CELL, REQUIRED)
 %           identifier (char array containing the identifier of the warning or error, CHAR, REQUIRED)
 % OUTPUT:   content (same as input, but re-styled and with additional fields describing the main message etc., CELL)
 function content = getLastFileWarning(content,identifier)
-
     % Iterate over warnings/error messages
     for thisContent=1:numel(content)
         % Get current content
@@ -313,14 +311,12 @@ function content = getLastFileWarning(content,identifier)
         end
     end
 end
-
 %% Get last file of warning or error message (first file in content)
 % INPUT:    content (cell array containing a warning or error message, CELL, REQUIRED)
 %           identifierA (char array containing the identifier of the warning or error, CHAR, REQUIRED)
 %           identifierA (char array containing the identifier of the warning or error, CHAR, REQUIRED)
 % OUTPUT:   content (same as input, but re-styled and with additional fields describing the main message etc., CELL)
 function content = getLastFileError(content,identifierA,identifierB)
-
     % Iterate over warnings/error messages
     for thisContent=1:numel(content)
         % Get current content
@@ -390,8 +386,6 @@ function content = getLastFileError(content,identifierA,identifierB)
         end
     end
 end
-
-
 %% Convert warnings & errors from cell to char array
 % INPUT:    logContent (table containing warnings & errors, TABLE, REQUIRED)
 % OUTPUT:   logContent (same as input, but the messages are converted from cell arrays to char arrays, TABLE)
@@ -413,7 +407,6 @@ function logContent = logContentCellToChar(logContent)
         logContent.Content{row,1} = thisContentField;
     end
 end
-
 %% Extract warnigns or errors (the alternativeStartIdentifier was necessary for warnings starting without 'Warning:')
 % INPUT:    filePath (path of the corresponding log file, CHAR, REQUIRED)
 %           startIdentifier (identifier which is supposed to help to find the start of the warning or error message, CHAR, REQUIRED)
@@ -421,13 +414,11 @@ end
 %           alternativeStartIdentifier (alternative identifier which is supposed to help to find the start of the warning or error message, CHAR, REQUIRED)
 % OUTPUT:   contentInFile (cell array containing the found warning or error messages, CELL)
 function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,altStartIdentifier1,altStartIdentifier2)
-
     % Check input arguments
     if nargin<4
         altStartIdentifier1 = [];
         altStartIdentifier2 = [];
     end 
-
     % Read file
     fileLines = readFileIntoCellArray(filePath);
     
@@ -456,7 +447,6 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
         if isempty(altStartIdentifier1) && isempty(altStartIdentifier2)
             if ~isempty(strfind(curLine, startIdentifier))
                 startC = line;
-
                 % Search for end of content
                 for subline=startC+1:numel(fileLines)
                     curSubLine = char(fileLines(subline,1));
@@ -480,7 +470,6 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
            
                 % Start line
                 startC = line;
-
                 % Search for end of content
                 for subline=startC+1:numel(fileLines)
                     % If the last line was reached, this has to be the endC
@@ -536,17 +525,12 @@ function contentInFile = extractWarnings(filePath,startIdentifier,endIdentifier,
         line = line+1;
     end
 end
-
 %% Read text file into cell array
 % INPUT:    filePath (path of the corresponding log file, CHAR, REQUIRED)
 % OUTPUT:   fileLines (cell array containing the file text, CELL)
 function fileLines = readFileIntoCellArray(filePath)
-
     % Read file
     fileStr = fileread(filePath);
     fileLines = regexp(fileStr, '\r\n|\r|\n', 'split');
     fileLines = fileLines';
-
 end
-
-

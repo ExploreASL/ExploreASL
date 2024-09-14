@@ -37,19 +37,20 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 %
 % __________________________________
 % Copyright 2015-2024 ExploreASL 
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 0. Admin
     fprintf('%s\n','Quantification CBF using FSL BASIL/FABBER:');   
-
     if nargin<1 || isempty(path_PWI4D)
         path_PWI4D = x.P.Path_PWI4D;
     end
-
     % Define defaults
 	Tex_map = [];
 	ATT_map = [];
 	ABV_map = [];
-
 	if ~isfield(x.modules.asl, 'bCleanUpBASIL') || isempty(x.modules.asl.bCleanUpBASIL)
 		x.modules.asl.bCleanUpBASIL = true;
 	end
@@ -62,7 +63,6 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     % For input, output, and options
     pathFSLInput = fullfile(x.dir.SESSIONDIR, 'PWI4D_FSLInput.nii');
     pathFSLOptions = fullfile(x.dir.SESSIONDIR, 'FSL_ModelOptions.txt');
-
     %% 2. Delete previous output
     xASL_adm_DeleteFileList(x.dir.SESSIONDIR, ['(?i)^' dirFSLOutput '.*$'], 1, [0 Inf]);
     FolderList = xASL_adm_GetFileList(x.dir.SESSIONDIR, ['(?i)^' dirFSLOutput '.*$'], 'FPList', [0 Inf], 1);
@@ -87,18 +87,14 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	for i4D = 1:size(PWI4D,4)
         PWI4D(:,:,:,i4D) = xASL_im_ndnanfilter(PWI4D(:,:,:,i4D), 'gauss', double(kernelSize), 2);
 	end
-
 	% Then, we extrapolate all outside the brain mask to ensure that there are no NaNs left
 	PWI4D = xASL_im_FillNaNs(PWI4D, 1, 1, voxelSize);
-
     xASL_io_SaveNifti(path_PWI4D, pathFSLInput, PWI4D);
-
 	if length(unique(PWI4D_json.Q.EchoTime)) > 1
 		bQuantifyMultiTE = true;
 	else
 		bQuantifyMultiTE = false;
 	end
-
     %% 4. Create option_file that contains options which are passed to the FSL command
     % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
 	% Define if BASIL or FABBER is used - multiTE needs FABBER 
@@ -109,9 +105,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 		bUseFabber = 0;
         FSLfunctionName = 'basil';
 	end
-
 	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI4D_json, pathFSLInput, pathFSLOutput);
-
     %% 5. Run BASIL and retrieve CBF output
     [~, resultFSL] = xASL_fsl_RunFSL([FSLfunctionName ' ' FSLOptions], x);
     
@@ -124,7 +118,6 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     
     fprintf('%s\n', 'The following warning (if mentioned above) can be ignored:');
     fprintf('%s\n', '/.../fsl/bin/basil: line 124: imcp: command not found');
-
     % CBF/nocalib, mean fit (->> is this what "ftiss" means?)
     pathBasilCBF = xASL_adm_GetFileList(pathFSLOutput, '^mean_ftiss\.nii$', 'FPListRec');
     
@@ -160,7 +153,6 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
     CBF_nocalib = CBF_nocalib .* 6000 .* x.Q.Lambda ./ x.Q.LabelingEfficiency;
     % (For some reason, GE sometimes doesn't need the 1 gr->100 gr conversion)
     % & old Siemens sequence also didn't need the 1 gr->100 gr conversion
-
 	ABV_map = ABV_map ./ x.Q.LabelingEfficiency;
     
     %% 7. Householding
@@ -174,7 +166,6 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	end
     
 end
-
 function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, jsonPWI4D, pathFSLInput, pathFSLOutput)
 %xASL_sub_FSLOptions generates the options and saves them in a file and returns some commandline options as well
 %
@@ -205,19 +196,15 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, jsonP
 % EXAMPLE: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, jsonPWI4D, pathFSLInput, pathFSLOutput)
 %
 % __________________________________
-
-
 %% 0. Admin
 if nargin<6 
 	error('Require 6 input parameters.');
 end
-
 % Set BASIL dataPar options and their defaults
 if ~isfield(x.modules.asl,'bMaskingBASIL') || isempty(x.modules.asl.bMaskingBASIL)
 		fprintf('BASIL: Setting default option bMasking = true\n');
 		x.modules.asl.bMaskingBASIL = true;
 end
-
 % Set basic parameters newly as they might differ in case of a merged sequence
 %bQuantifyMultiPLD = x.modules.asl.bQuantifyMultiPLD;
 if length(unique(jsonPWI4D.Q.Initial_PLD))>1 || length(unique(jsonPWI4D.Q.LabelingDuration))>1
@@ -225,11 +212,9 @@ if length(unique(jsonPWI4D.Q.Initial_PLD))>1 || length(unique(jsonPWI4D.Q.Labeli
 else
 	bQuantifyMultiPLD = false;
 end
-
 if length(unique(jsonPWI4D.Q.EchoTime)) > 1
 	bUseFabber = 1;
 end
-
 if ~bUseFabber
 	% On Low quality settings, turn off all extra processing options
 	if isfield(x, 'settings') && isfield(x.settings, 'Quality') && ~x.settings.Quality
@@ -239,38 +224,31 @@ if ~bUseFabber
 		x.modules.asl.ExchBASIL = 'simple';
 		x.modules.asl.DispBASIL = 'none';
 	end
-
 	% Setting defaults for BASIL specific options
 	if ~isfield(x.modules.asl,'bSpatialBASIL') || isempty(x.modules.asl.bSpatialBASIL)
 		fprintf('BASIL: Setting default option bSpatial = false\n');
 		x.modules.asl.bSpatialBASIL = false;
 	end
-
 	if ~isfield(x.modules.asl,'bInferT1BASIL') || isempty(x.modules.asl.bInferT1BASIL)
 		fprintf('BASIL: Setting default option bInferT1 = false\n');
 		x.modules.asl.bInferT1BASIL = false;
 	end
-
 	if ~isfield(x.modules.asl,'bInferArtBASIL') || isempty(x.modules.asl.bInferArtBASIL)
 		fprintf('BASIL: Setting default option bInferArt = true\n');
 		x.modules.asl.bInferArtBASIL = true;
 	end
-
 	if ~isfield(x.modules.asl,'ExchBASIL') || isempty(x.modules.asl.ExchBASIL)
 		fprintf('BASIL: Setting default option Exch = simple\n');
 		x.modules.asl.ExchBASIL = 'simple';
 	end
-
 	if ~isfield(x.modules.asl,'DispBASIL') || isempty(x.modules.asl.DispBASIL)
 		fprintf('BASIL: Setting default option Disp = none\n');
 		x.modules.asl.DispBASIL = 'none';
 	end
-
 	if ~isfield(x.modules.asl, 'ATTSDBASIL') || isempty(x.modules.asl.ATTSDBASIL)
 		x.modules.asl.ATTSDBASIL = 1.0;
 	end
 end
-
 %% 1. Create the options file
 % FSLOptions is a character array containing CLI args for the Basil command
 % Path to the options file
@@ -279,25 +257,21 @@ if bUseFabber
 else
 	FSLOptions = ['--optfile ' xASL_adm_UnixPath(pathFSLOptions, ispc)];
 end
-
 FIDoptionFile = fopen(pathFSLOptions, 'w+');
 if bUseFabber
 	fprintf(FIDoptionFile, '# FABBER options written by ExploreASL\n');
 else
 	fprintf(FIDoptionFile, '# BASIL options written by ExploreASL\n');
 end
-
 % Define basic paths
 if bUseFabber
 	fprintf(FIDoptionFile, '--output=%s\n', xASL_adm_UnixPath(pathFSLOutput, ispc));
     fprintf(FIDoptionFile, '--data=%s\n', xASL_adm_UnixPath(pathFSLInput, ispc));
-
 else
 	% Path to input and output
 	FSLOptions = [FSLOptions ' -o ' xASL_adm_UnixPath(pathFSLOutput, ispc)];
 	FSLOptions = [FSLOptions ' -i ' xASL_adm_UnixPath(pathFSLInput, ispc)];
 end
-
 % Define masking
 if x.modules.asl.bMaskingBASIL
 	% Check for uninitialized Mask variable or file
@@ -314,7 +288,6 @@ if x.modules.asl.bMaskingBASIL
 		end
 	end
 end
-
 %% 2. Basic model and tissue parameters
 % Basic model options
 if bUseFabber
@@ -323,7 +296,6 @@ if bUseFabber
 	fprintf(FIDoptionFile, '--infertexch\n'); % Fit Tex
 	fprintf(FIDoptionFile, '--inferitt\n');   % Fit ATT
 end
-
 % Basic fitting and output options
 if bUseFabber
 	fprintf(FIDoptionFile, '--save-var\n');
@@ -332,27 +304,22 @@ if bUseFabber
 	fprintf(FIDoptionFile, '--save-model-fit\n');
 	fprintf(FIDoptionFile, '--noise=white\n');
 end
-
 % Basic tissue parameters
 fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
 fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
-
 if bUseFabber
 	% T2-times needed for multi-TE quantification
 	fprintf(FIDoptionFile, '--t2b=%f\n', x.Q.T2art/1000);
 	fprintf(FIDoptionFile, '--t2=%f\n', x.Q.T2/1000);
 end
-
 %% 3. Basic acquisition parameters
 switch lower(x.Q.LabelingType)
 	% PASL quantification
 	case 'pasl'
 		% PASL model is assumed by default and does not need to be specified in the config file
 		fprintf('BASIL: PASL model\n');
-
 		% For PASL, there can be only a single LabelingDuration, so unique PLD+LabDur combinations are uniquely based on PLDs
 		TIs = jsonPWI4D.Q.Initial_PLD'/1000;
-
 		% Print all the TIs
 		if bQuantifyMultiPLD	
 			for iTI = 1:length(TIs)
@@ -361,7 +328,6 @@ switch lower(x.Q.LabelingType)
 		else
 			fprintf(FIDoptionFile, '--ti=%.2f\n', TIs);
 		end
-
 		% Either print bolus duration or unspecify it
 		if isfield(jsonPWI4D.Q, 'LabelingDuration') && ~isempty(jsonPWI4D.Q.LabelingDuration) 
 			if length(unique(jsonPWI4D.Q.LabelingDuration))>1
@@ -375,7 +341,6 @@ switch lower(x.Q.LabelingType)
 				fprintf('BASIL: Infer bolus duration component\n')
 			end
 		end
-
 	% CASL and PCASL quantification
 	case {'casl','pcasl'}
 		% Prepare unique PLDs+LabDur combinations
@@ -386,13 +351,11 @@ switch lower(x.Q.LabelingType)
 		% Normal multi-timepoint without multi-TE
 		TEs = [];
 		nTE = [];
-
 		% For FABBER and multi-TE, we have to group TEs
 		if bUseFabber
 			% Convert Echo Times to seconds and keep 4 decimal digits
 			% TEs are kept fully with the same number as volumes
 			TEs = round(jsonPWI4D.Q.EchoTime'/1000,3); 
-
 			% We go through the LabDurs, PLDs, and TEs and keep grouping similar LD+PLD with increasing TE into groups
 			LabDursGrouped = [];
 			PLDsGrouped = [];
@@ -403,7 +366,6 @@ switch lower(x.Q.LabelingType)
 				% We define a block
 				iTEstart = iTE;
 				iTEend   = iTE;
-
 				% We enlarge the block if PLD and LD are similar, but TE increasing
 				while (iTEend+1 <= length(TEs)) &&... % There are more values
 						(LabDurs(iTEend+1)==LabDurs(iTEstart)) && (PLDs(iTEend+1)==PLDs(iTEstart)) &&... % The further PLDs and LD are matching the block
@@ -417,12 +379,10 @@ switch lower(x.Q.LabelingType)
 				nTEGrouped = [nTEGrouped, iTEend-iTEstart+1];
 				iTE = iTEend+1;
 			end
-
 			LabDurs = LabDursGrouped;
 			PLDs = PLDsGrouped;
 			nTE = nTEGrouped;
 		end
-
 		if bUseFabber
 			% Printing the values in the FSL option file (PLD=ti, LD=tau)
 			% If we have for a give PLD more TEs, then we print once the PLD, once nTE for each collection of multi-TE volumes
@@ -432,7 +392,6 @@ switch lower(x.Q.LabelingType)
 			for iNTE = 1:length(nTE)
 				fprintf(FIDoptionFile, '--nte%d=%d\n', iNTE, nTE(iNTE)); % --nte1=8 --nte2=8 --nte3=8 (if nTE=8)
 			end
-
 			if length(nTE) == 1 && nTE == 1
 				% For a single-TE, we have to repeat it for each volume
 				for iTE = 1:length(TEs) %So for each volume, we print a TE value
@@ -444,7 +403,6 @@ switch lower(x.Q.LabelingType)
 					fprintf(FIDoptionFile, '--te%d=%.3f\n', iTE, TEs(iTE));
 				end
 			end
-
 			% Future extension - specify the repetitions explicitly
 			%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
 			%fprintf(FIDoptionFile, '--repeats=1\n');
@@ -452,7 +410,6 @@ switch lower(x.Q.LabelingType)
 			% Specify that we run the PCASL/CASL model
 			fprintf(FIDoptionFile, '--casl\n');
 			fprintf('BASIL: (P)CASL model\n');
-
 			% For BASIL, PLDs are specified
 			if bQuantifyMultiPLD
 				for iPLD = 1:length(PLDs)
@@ -462,7 +419,6 @@ switch lower(x.Q.LabelingType)
 				fprintf(FIDoptionFile, '--pld=%.2f\n', PLDs(1));
 			end
 		end
-
 		% Print labeling durations
 		if bQuantifyMultiPLD
 			for iLabDurs = 1:length(LabDurs)
@@ -472,15 +428,12 @@ switch lower(x.Q.LabelingType)
 			fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs(1));
 		end
 end
-
 if ~bUseFabber
 	% Act as if we do not have repeats
 	%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
 	fprintf(FIDoptionFile, '--repeats=1\n');
-
 	% Slice-timing
 	fprintf(FIDoptionFile, '--slicedt=%f\n', x.Q.BasilSliceReadoutTime/1000);
-
 	if isfield(x.Q,'LookLocker') && x.Q.LookLocker
 		if isfield(x.Q,'FlipAngle')
 			if length(unique(x.Q.FlipAngle))>1
@@ -493,7 +446,6 @@ if ~bUseFabber
 		end
 	end
 end
-
 %% 4. Model fiting parameters
 if ~bUseFabber
 	switch lower(x.Q.LabelingType)
@@ -504,34 +456,29 @@ if ~bUseFabber
 			% Default initial ATT for PCASL is 1.3
 			fprintf(FIDoptionFile, '--bat=1.3\n');
 	end
-
 	if bQuantifyMultiPLD
 		% Multi-PLD or Time Encoded data allows to fit arrival times
 		fprintf(FIDoptionFile, '--batsd=%f\n', x.modules.asl.ATTSDBASIL);
 	end
 end
-
 %% 5. Extra BASIL fitting options
 if ~bUseFabber
 	if x.modules.asl.bSpatialBASIL
 		fprintf('BASIL: Use automated spatial smoothing\n');
 		FSLOptions = [FSLOptions ' --spatial'];
 	end
-
 	if x.modules.asl.bInferT1BASIL
 		if bQuantifyMultiPLD
 			fprintf('BASIL: Infer variable T1 values\n');
 			FSLOptions = [FSLOptions ' --infert1'];
 		end
 	end
-
 	if x.modules.asl.bInferArtBASIL
 		if bQuantifyMultiPLD
 			fprintf('BASIL: Infer arterial BV and arrival time\n');
 			FSLOptions = [FSLOptions ' --inferart'];
 		end
 	end
-
 	switch (x.modules.asl.ExchBASIL)
 		case 'simple'
 			fprintf('BASIL Exchange model: Simple single compartment with T1 of blood, per white paper\n');
@@ -548,7 +495,6 @@ if ~bUseFabber
 		otherwise
 			warning(['BASIL Exchange model: ' x.modules.asl.ExchBASIL ' not recognized.'])
 	end
-
 	if bQuantifyMultiPLD
 		switch (x.modules.asl.DispBASIL)
 			case 'none'
@@ -570,8 +516,6 @@ if ~bUseFabber
 		fprintf('BASIL Dispersion model: none\n');
 		FSLOptions = [FSLOptions ' --disp=none'];
 	end
-
-
 	% 	%% Aquisition options we might be able to use in the future
 	%   fprintf(option_file, '--sliceband=%i\n', sliceband);
 	%   fprintf('BASIL: Multi-band setup with number of slices per band: %i\n', slicedband);
@@ -580,8 +524,6 @@ if ~bUseFabber
 	%   fprintf('BASIL: Using supplied T1 (tissue) image in BASIL: %s\n', $t1im)
 	%
 end
-
 %% 6. Close options file
 fclose(FIDoptionFile);
-
 end

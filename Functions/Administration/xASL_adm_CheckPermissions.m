@@ -31,6 +31,10 @@ function [FilesList, FilesExeList, FoldersList] = xASL_adm_CheckPermissions(Inpu
 % EXAMPLE: xASL_adm_CheckPermissions('/data/RAD/share/EPAD500_new/raw)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Check permissions
     fprintf('%s\n', 'Checking permissions:   ');
@@ -51,7 +55,6 @@ function [FilesList, FilesExeList, FoldersList] = xASL_adm_CheckPermissions(Inpu
 	% Calculate number
     nFiles = length(FileList);
 	nDirs  = length(DirList);
-
 	% Reads the attributes for all files
     for iD=1:nFiles
         xASL_TrackProgress(iD, (nDirs + nFiles) * 2) % the *2 is to note that there may be some time needed to change permissions
@@ -67,7 +70,6 @@ function [FilesList, FilesExeList, FoldersList] = xASL_adm_CheckPermissions(Inpu
     % how do we call the permissions
     DataPermissions = {'UserRead' 'UserWrite' 'GroupRead' 'GroupWrite'};
     ExePermissions = {'UserExecute' 'GroupExecute'};
-
     FilesOK = true;
     FilesExeOK = true;
     FoldersOK = true;
@@ -97,7 +99,6 @@ function [FilesList, FilesExeList, FoldersList] = xASL_adm_CheckPermissions(Inpu
         end
     end
     
-
     % here we go through the attributes we found, & see if they comply with
     % what we wanted
     for iD=1:length(attrib)
@@ -114,7 +115,6 @@ function [FilesList, FilesExeList, FoldersList] = xASL_adm_CheckPermissions(Inpu
                 end
             end
         end
-
         % here we do the same for the executable permissions
 		for iP=1:length(ExePermissions)
 			if ~isnan(attrib(iD).(ExePermissions{iP})) % skip NaNs (e.g. on Windows filesystems)
@@ -185,4 +185,3 @@ function [FilesList, FilesExeList, FoldersList] = xASL_adm_CheckPermissions(Inpu
     xASL_TrackProgress(2, 2);    
     fprintf('\n');
 end
-

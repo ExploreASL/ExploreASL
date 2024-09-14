@@ -20,14 +20,15 @@ function [Info] = xASL_io_ReadTheDicom(bUseDCMTK, DicomPath)
 % EXAMPLE: [Info] = xASL_io_ReadTheDicom(bUseDCMTK, DicomPath)
 % __________________________________
 % Copyright 2015-2019 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 warning('off','images:dicominfo:fileVRDoesNotMatchDictionary');
-
 try
     if bUseDCMTK
         Info = xASL_io_DcmtkRead(DicomPath);
-
         if isempty(Info.EchoTime) || isempty(Info.RepetitionTime) || isempty(Info.ImageType)
             Info = dicominfo(DicomPath);
             if ~isfield(Info,'EchoTime') || ~isfield(Info,'RepetitionTime') || ~isfield(Info,'ImageType')
@@ -42,5 +43,4 @@ try
 catch ME
     warning(ME.message);
 end
-
 end

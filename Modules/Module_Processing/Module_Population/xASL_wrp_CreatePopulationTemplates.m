@@ -84,15 +84,16 @@ function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, Spe
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % ----------------------------------------------------------------------------------------------------
 %%  0. Admin
-
 if nargin<2 || isempty(bSaveUnmasked)
     bSaveUnmasked = true;
 end
-
 if nargin<3 || isempty(bCompute4Sets)
     bCompute4Sets = 0;
 elseif iscell(bCompute4Sets)
@@ -106,15 +107,12 @@ elseif bCompute4Sets==0
 else
     error('Invalid bComputeSets option, skipping');
 end
-
 if nargin<5 || isempty(bSkipWhenMissingScans)
 	bSkipWhenMissingScans = false;
 end
-
 if nargin<6 || isempty(bRemoveOutliers)
     bRemoveOutliers = false;
 end
-
 if nargin<7 || isempty(FunctionsAre)
     FunctionsAre{1} = {@xASL_stat_MeanNan,@xASL_stat_StdNan};
     FunctionsAre{2} = {'mean' 'sd'};
@@ -126,11 +124,9 @@ else
         FunctionsAre{2}{1} = FunctionsAre{2};
     end    
 end 
-
 if nargin<8 || isempty(bUpdateMetadata)
     bUpdateMetadata = false;
 end
-
 if nargin<9 || isempty(SmoothingFWHM)
     SmoothingFWHM = [0 0 0];
 elseif length(SmoothingFWHM)~=3 || ~isnumeric(SmoothingFWHM)
@@ -140,7 +136,6 @@ elseif any(SmoothingFWHM<0)
 else
     SmoothingFWHM = double(SmoothingFWHM);
 end
-
 if nargin<10 || isempty(bSaveMasks4QC)
     x.S.bSaveMasks4QC = 0;
 elseif bSaveMasks4QC==1
@@ -150,27 +145,21 @@ elseif bSaveMasks4QC==0
 else
     error('Illegal value for bSaveMasks4QC');
 end
-
 if ~isfield(x,'GradualSkull')
     x.GradualSkull = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rbrainmask.nii'));
 end
-
 if ~isfield(x, 'bForceTemplates') || isempty(x.bForceTemplates)
     x.bForceTemplates = false;
 elseif x.bForceTemplates==1
     bSkipWhenMissingScans = false;
 end
-
 if ~x.bForceTemplates && (x.dataset.nSubjects * x.dataset.nSessions < 6)
     % With too small datasets, created templated won't be reliable
     fprintf('\n\n%s\n\n', ['Only n=' xASL_num2str(x.dataset.nSubjects * x.dataset.nSessions) ' subject*runs, group templates may not be useful']);
 end
-
 Size1 = sum(x.S.masks.WBmask(:));
-
 x.D.TemplatesStudyDir = fullfile(x.D.PopDir, 'Templates');
 xASL_adm_CreateDir(x.D.TemplatesStudyDir);
-
 if bCompute4Sets
     % Reload set parameters to be sure
     if bUpdateMetadata
@@ -204,8 +193,6 @@ if bCompute4Sets
         end
     end
 end
-
-
 % ----------------------------------------------------------------------------------------------------
 %%  1. Define images/scantypes (if they are not defined by input argument SpecificScantype)
 UsePredefined = true;
@@ -250,27 +237,23 @@ if UsePredefined
     % ASL images
     % SessionsExist should be 0 for structural scans, since we only use 1
     % per patient, irrespective of number of functional scans
-
     PreFixList{end+1}   = ['q' x.P.CBF];                        TemplateNameList{end+1}  = 'CBF';                           SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'MaskVascular';                       TemplateNameList{end+1}  = 'MaskVascular';                  SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'rMaskSusceptibility';                TemplateNameList{end+1}  = 'MaskSusceptibility';            SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'SliceGradient';                      TemplateNameList{end+1}  = 'SliceGradient';                 SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = ['q' x.P.CBF '_masked'];              TemplateNameList{end+1}  = 'CBF_masked';                    SessionsExist(end+1)    = 1;
-
     % PreFixList{end+1}   = 'mean_control_beforeMoCo';            TemplateNameList{end+1}  = 'mean_control_beforeMoCo';       SessionsExist(end+1)    = 1;
     % PreFixList{end+1}   = 'SD_control_beforeMoCo';              TemplateNameList{end+1}  = 'SD_control_beforeMoCo';         SessionsExist(end+1)    = 1;
     % PreFixList{end+1}   = 'SNR_control_beforeMoCo';             TemplateNameList{end+1}  = 'SNR_control_beforeMoCo';        SessionsExist(end+1)    = 1;
     % PreFixList{end+1}   = 'mean_PWI_beforeMoCo';                TemplateNameList{end+1}  = 'mean_PWI_beforeMoCo';           SessionsExist(end+1)    = 1;
     % PreFixList{end+1}   = 'SD_PWI_beforeMoCo';                  TemplateNameList{end+1}  = 'SD_PWI_beforeMoCo';             SessionsExist(end+1)    = 1;
     % PreFixList{end+1}   = 'SNR_PWI_beforeMoCo';                 TemplateNameList{end+1}  = 'SNR_PWI_beforeMoCo';            SessionsExist(end+1)    = 1;
-
     PreFixList{end+1}   = 'PWI';                                TemplateNameList{end+1}  = 'PWI';              SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'M0';                                 TemplateNameList{end+1}  = 'M0';               SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'noSmooth_M0';                        TemplateNameList{end+1}  = 'noSmooth_M0';      SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'mean_control';                       TemplateNameList{end+1}  = 'mean_control';     SessionsExist(end+1)    = 1;
     % PreFixList{end+1}   = 'SD_control';                         TemplateNameList{end+1}  = 'SD_control';       SessionsExist(end+1)    = 1;
     % PreFixList{end+1}   = 'SNR_control';                        TemplateNameList{end+1}  = 'SNR_control';      SessionsExist(end+1)    = 1;
-
     PreFixList{end+1}   = 'SD';                                 TemplateNameList{end+1}  = 'SD';               SessionsExist(end+1)    = 1;
     % PreFixList{end+1}   = 'SNR';                                TemplateNameList{end+1}  = 'SNR';              SessionsExist(end+1)    = 1;
     PreFixList{end+1}   = 'TT';                                 TemplateNameList{end+1}  = 'TT';               SessionsExist(end+1)    = 0;
@@ -286,13 +269,10 @@ if UsePredefined
 	PreFixList{end+1}   = 'ABV';                                TemplateNameList{end+1}  = 'ABV';              SessionsExist(end+1)    = 1;
     % % PM: Let this search for different scantypes in /PopDir NIfTIs, & run within those
 end
-
-
 % ----------------------------------------------------------------------------------------------------
 %% 2. Iterate over scan types & sessions
 for iScanType=1:length(PreFixList)
     UnAvailable = 0;
-
 	% Define sessions if relevant for the datatype
 	if SessionsExist(iScanType)
 		% We are looking for all ASL_X sessions
@@ -306,7 +286,6 @@ for iScanType=1:length(PreFixList)
     
     fprintf('%s\n', ['Searching ' TemplateNameList{iScanType} ' images:']);
     for iSession=1:nSessions % iterate over sessions
-
         if iSession==1 && ~SessionsExist(iScanType)
                 % For structural scans, there is no session appendix
                 SessionAppendix = '';
@@ -319,9 +298,7 @@ for iScanType=1:length(PreFixList)
                 SessionAppendix = ['_' listSessions{iSession}];
                 bProceedThisSession = 1;
         end
-
         if bProceedThisSession
-
             % ----------------------------------------------------------------------------------------------------
             % Predefine & clear memory
             IM = {0};
@@ -349,7 +326,6 @@ for iScanType=1:length(PreFixList)
                 PathNII = fullfile(x.D.PopDir,[PreFixList{iScanType} '_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
                 PathNII_Left = fullfile(x.D.PopDir,[PreFixList{iScanType} '-L_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
                 PathNII_Right = fullfile(x.D.PopDir,[PreFixList{iScanType} '-R_' x.SUBJECTS{iSubject} SessionAppendix '.nii']);
-
                 % Track if bilateral maps exist
                 if xASL_exist(PathNII, 'file')
                     AnyBilateralFound = true; % use this across all subjects/sessions
@@ -393,7 +369,6 @@ for iScanType=1:length(PreFixList)
                 else
                     LoadString = {'bilateral'};
                 end
-
                 % determine whether we load one image per subject or one
                 % image per session (== multiple per subject)
                 if SessionsExist(iScanType)
@@ -401,11 +376,9 @@ for iScanType=1:length(PreFixList)
                 else
                     nSize = x.dataset.nSubjects;
                 end
-
                 if bSkipWhenMissingScans && UnAvailable>0.10*nSize % we can allow for 10% unavailable scans
                     fprintf('\n%s',['More than 10% missing ' PreFixList{iScanType} ' files, skipping...']);
                 else
-
                     % If we load both left & right (unilateral) images, IM & IM2noMask
                     % becomes 2 cells, if we load only bilateral images, IM
                     % & IM2noMask have 1 cell
@@ -419,12 +392,10 @@ for iScanType=1:length(PreFixList)
                             nLoad = size(LoadFiles{iCell}, 1);
                             IM{iCell} = zeros(Size1, nLoad, 'single'); % pre-allocating for speed
                             if bSaveUnmasked; IM2noMask{iCell} = zeros(121,145,121,nLoad, 'single'); end
-
                             for iLoad=1:nLoad % add images
                                 xASL_TrackProgress(iLoad, nLoad);
                                 tempIM = xASL_io_Nifti2Im(LoadFiles{iCell}{iLoad, 1});
                                 tempImColumn = xASL_im_IM2Column(tempIM, x.S.masks.WBmask);
-
                                 if iLoad>1 && ~(size(tempImColumn, 1)==size(IM{iCell},1))
                                     warning(['Wrong size:' LoadFiles{iCell}{iLoad,1}]);
                                     bProceedComputationMaps = 0; % proceed with next ScanType
@@ -467,14 +438,12 @@ for iScanType=1:length(PreFixList)
                         end
                         TempOutliers = 1:size(IM{1}, 2);
                         NotOutliers = TempOutliers(NotOutliers);
-
                         NameIM = [TemplateNameList{iScanType} x.S.TemplateNumberName];
                         
                         % ----------------------------------------------------------------------------------------------------
                         %% 6. Compute templates for all subjects together (only for bilateral images)
                         if length(IM)==1
                             xASL_wrp_CreatePopulationTemplates_Computation(IM{1}(:, NotOutliers), NameIM, x, FunctionsAre, true, SmoothingFWHM);
-
                             if bSaveUnmasked
                                 xASL_wrp_CreatePopulationTemplates_Computation(IM2noMask{1}(:,:,:, NotOutliers), NameIM, x, FunctionsAre, false, SmoothingFWHM);
                             end
@@ -508,15 +477,7 @@ for iScanType=1:length(PreFixList)
         fprintf('%s\n',[num2str(UnAvailable) ' ' PreFixList{iScanType} ' files missing']);
     end
 end % for iScanType=1:length(PreFixList)
-
-
 end
-
-
-
-
-
-
 %% ===================================================================================
 %% ===================================================================================
 function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Set2Check, IM, IM2noMask, iScanType, listSessions, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM)
@@ -585,14 +546,10 @@ function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutlie
 % 3. Reset SetOptions to inclusion/NaN instead of left/right/NaN
 % 4. iterate over the options/categories of this set, to create parametric maps
 % __________________________________
-
-
 % Get CurrentSet
 CurrentSet = CurrentSetsID(:,Set2Check);
-
 % ----------------------------------------------------------------------------------------------------
 %% 0. Admin (define sets and input validations)
-
 % Obtain unique options for this set
 TempUnique = unique(CurrentSet);
 UniqueSet = TempUnique(~isnan(TempUnique));
@@ -604,13 +561,10 @@ IndexZero = find(UniqueSet==0);
 if ~isempty(IndexZero) && sum(UniqueSet==1)==0
     UniqueSet(IndexZero) = 1;
 end
-
 SetOptions = x.S.SetsOptions{Set2Check};
-
 % if the only options are left & right (and n/a for missing), assume that this is
 % a request to flip hemispheres for the 'right' ones
 bFlipHemisphere = min(cellfun(@(y) ~isempty(regexpi(y, '^(.|)(left|right|l|r|n/a|nan|both|bothleftright)(.|)$')), SetOptions));
-
 if length(IM)==1
     bUnilateralImages = false;
 elseif length(IM)==2 && bFlipHemisphere
@@ -626,7 +580,6 @@ elseif length(IM)==2 && ~bFlipHemisphere
 else
     error('Incorrect IM matrix size, skipping');
 end
-
 if bFlipHemisphere
     fprintf('%s\n', 'Hemisphere encoding (left-right designations) detected, flipping images with designation right');
     
@@ -685,7 +638,6 @@ if bFlipHemisphere
             end
             tIM = flip(xASL_im_Column2IM(tIM, x.S.masks.WBmask), 1);
             IM{1}(:,iImage) = xASL_im_IM2Column(tIM, x.S.masks.WBmask);
-
             if bSaveUnmasked && bUnilateralImages
                 IM2noMask{1}(:,:,:,iImage) = flip(IM2noMask{2}(:,:,:,iImage), 1); % flip right image (to left)
             elseif bSaveUnmasked && ~bUnilateralImages
@@ -699,7 +651,6 @@ if bFlipHemisphere
     %% 3. Reset SetOptions to inclusion/NaN instead of left/right/NaN
     % Now all images are flipped to IM{1} & IM2noMask{1}, for both
     % bUnilateralImages (IM has 2 cells) & ~bUnilateralImages (IM has 1 cell)
-
     % now we change the set options & ID to inclusion instead of left/right
     % to fool the subsequent processing that should split groups
     % instead of splitting left/right, the subsequent processing will
@@ -713,34 +664,28 @@ else
     SetOptions = lower(x.S.SetsOptions{Set2Check});
     SetID = CurrentSet;
 end
-
 % ----------------------------------------------------------------------------------------------------
 %% 4. iterate over the options/categories of this set, to create parametric maps
 for iU=1:length(UniqueSet)
     HasNaN = ~isempty(regexpi(SetOptions{UniqueSet(iU)}, '(n/a|nan)')); % skipping NaNs, consider them as outside of a group
     CannotHaveSessions = ~SessionsExist(iScanType) && ~isempty(regexpi(x.S.SetsName{Set2Check}, 'session')); % This SET is for sessions, but there are no sessions for this scantype, so skip this
-
     if ~HasNaN && ~CannotHaveSessions
         try
             WithinGroup = SetID==UniqueSet(iU);
-
             if ~SessionsExist(iScanType) && length(WithinGroup) == x.dataset.nSubjects * x.dataset.nSessions
                 % if no sessions exist, but "WithinGroup" definition was
                 % based on all subject/sessions, then correct this
                 CurrSess = (1:length(listSessions):x.dataset.nSubjects * x.dataset.nSessions)' + (iSession-1);
                 WithinGroup = WithinGroup(CurrSess);
             end
-
             % select those within the set/group only
             CurrentIM = IM{1}(:,WithinGroup);
-
             if bRemoveOutliers
                 % Exclude outliers
                 NotOutliers = find(xASL_stat_RobustMean(CurrentIM))';
             else
                 NotOutliers = 1:size(CurrentIM,2);
             end
-
             % compute maps
             NameIM = [TemplateNameList{iScanType} '_' x.S.SetsName{Set2Check} '_' SetOptions{UniqueSet(iU)} '_n' num2str(length(NotOutliers))];
             xASL_wrp_CreatePopulationTemplates_Computation(CurrentIM(:,NotOutliers), NameIM, x, FunctionsAre, true, SmoothingFWHM);
@@ -754,16 +699,7 @@ for iU=1:length(UniqueSet)
         end % try
     end % ~HasNaN && ~CannotHaveSessions
 end % iU=1:length(UniqueSet)
-
-
 end
-
-
-
-
-
-
-
 %% ===================================================================================
 %% ===================================================================================
 function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, FunctionsAre, bMask, SmoothingFWHM)
@@ -795,21 +731,17 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
 % 4. Smooth the map (if requested)
 % 5. Save the map as NIfTI
 % __________________________________
-
-
     % ----------------------------------------------------------------------------------------------------
     %% 0. Admin
     if isempty(IM)
         warning(['No valid images ' NameIM ' found, skipping']);
         return;
     end
-
     if bMask
         iDim = 2; % image data as column
     else
         iDim = 4; % image data as image
     end
-
     % ----------------------------------------------------------------------------------------------------
     %% 1. Remove empty images (those for which sum(isfinite())==0)
     UseIM = ones(size(IM,iDim),1);
@@ -823,15 +755,12 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
             UseIM(iM) = 0;
         end
     end
-
     if bMask
         IM = IM(:,logical(UseIM));
     else
         IM = IM(:,:,:,logical(UseIM));
     end
-
     fprintf(['Computing ' NameIM ' parametric map(s)...\n']);
-
     for iFunction=1:length(FunctionsAre{1})
         
         % ----------------------------------------------------------------------------------------------------
@@ -869,6 +798,5 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
             xASL_io_SaveNifti(x.D.ResliceRef, PathSave, Masks4D);
         end
     end
-
     
 end

@@ -16,6 +16,10 @@ function xASL_im_RestoreOrientation(PathNIfTI)
 % EXAMPLE:      ...
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if xASL_exist(PathNIfTI, 'file')
     nii = xASL_io_ReadNifti(PathNIfTI);
@@ -25,5 +29,4 @@ end
 [Fpath, Ffile] = xASL_fileparts(PathNIfTI);
 PathMat = fullfile(Fpath, [Ffile '.mat']);
 xASL_delete(PathMat); % remove the orientation of other volumes when 4D as well
-
 end

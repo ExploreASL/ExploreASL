@@ -35,7 +35,10 @@ function xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, P
 %               xASL_im_CreateASLDeformationField(x, 1, [3 3 7]);
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 if nargin<4 || isempty(PathLowResNIfTI)
@@ -44,48 +47,38 @@ end
 if nargin<2 || isempty(bOverwrite)
     bOverwrite = false; % By default, this function will be skipped if the ASL deformation field already exists
 end
-
 if xASL_exist(x.P.Path_y_ASL,'file') && ~bOverwrite
     return; % skip this function
 elseif ~xASL_exist(x.P.Path_y_T1,'file')
     warning([x.P.Path_y_T1 ' didnt exist, skipping...']);
     return;
 end
-
 %% 1) Obtain resolutions
 if nargin<3 || isempty(EstimatedResolution)
 	EstimatedResolution = xASL_init_DefaultEffectiveResolution(PathLowResNIfTI, x);
 end
-
 TemplateResolution = [1.5 1.5 1.5];
 sKernel = (EstimatedResolution.^2 - TemplateResolution.^2).^0.5; % assuming the flow fields are in 1.5x1.5x1.5 mm
 sKernel(EstimatedResolution<TemplateResolution) = 0;
-
 %% 2) Fill NaNs at edges y_T1.nii flowfield to prevent interpolation artifact
 xASL_im_FillNaNs(x.P.Path_y_T1, 3, [], [], true); % First fill NaNs, to prevent interpolation artifacts
-
-
 %% 3) Smooth flowfield
 % Note that we provide the T1w resolution, not the resolution of y_T1,
 % which is the standard space resolution (as it pulls not pushes).
 niiT1w = xASL_io_ReadNifti(x.P.Path_T1);
 resSrc = niiT1w.hdr.pixdim(2:4);
-
 xASL_im_PreSmooth(PathLowResNIfTI, x.P.Path_y_T1, x.P.Path_y_ASL, [], resSrc); % we need to add the effective resolution here still!
 % sKernel, as calculated above, can be used for this. But the major
 % rotations need to be taken into account, between the effective
 % resolution as specified, and the one in the different NIfTIs
 % (e.g. the ASL & T1w are usually acquired transversal & sagittally,
 % respectively
-
 %% 4) Fill NaNs at edges y_ASL.nii
 % Convn function is presmoothing is messing up the edges, so we need to remove the single voxel boundary and fill it 
 imYASL = xASL_io_Nifti2Im(x.P.Path_y_ASL);
 imYASL(1,:,:,:,:) = NaN;imYASL(:,1,:,:,:) = NaN;imYASL(:,:,1,:,:) = NaN;
 imYASL(end,:,:,:,:) = NaN;imYASL(:,end,:,:,:) = NaN;imYASL(:,:,end,:,:) = NaN;
-
 imYASL = xASL_im_FillNaNs(imYASL, 3, [], [], true); % Again fill NaNs, if needed
-
 % Save the image to the original location
 xASL_io_SaveNifti(x.P.Path_y_ASL, x.P.Path_y_ASL, imYASL, [], 0);
 end

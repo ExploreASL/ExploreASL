@@ -19,6 +19,10 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
 % EXAMPLE:      [UnitTests,UnitTestsTable] = xASL_test_UnitTesting;
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Admin
 	if nargin < 1 || isempty(bPull)
@@ -26,7 +30,6 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
 	end
 	
     %% Initialize Paths
-
     % Add testing directory
     TestingPath = mfilename('fullpath');    % Path of the current script
     filepath = fileparts(TestingPath);      % Testing directory
@@ -34,11 +37,9 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
     warning('off','all')                    % Turn of warnings (only add path related)
     addpath(genpath(xASL_dir))              % Add all scripts to path (including testing directory)
     warning('on','all')
-
     %% Clean Up
     clc
     clearvars -except xASL_dir bPull
-
     %% Get Test Repository
     
     % Try to find the ExploreASL/Testing repository on the same folder level
@@ -77,7 +78,6 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
             error('Test repository path required...');
         end
     end
-
     %% Test Workflow
     
     % Get working directory for unit tests
@@ -128,17 +128,14 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
         UnitTestsCells{iTest + 1,2} = UnitTests(iTest).unit;
         UnitTestsCells{iTest + 1,3} = num2str(UnitTests(iTest).passed);
     end
-
     % Save path
     TimeString = datestr(now,'yyyy-mm-dd_HH_MM');
     TimeString(end-2) = 'h';
     savePathMat = fullfile(TestRepository, [TimeString, '_unit_results.mat']);
     savePathTSV = fullfile(TestRepository, [TimeString, '_unit_comparison.tsv']);
-
     % Save files
     xASL_tsvWrite(UnitTestsCells,savePathTSV,1);
     save(savePathMat,'UnitTests');
-
     %% Export table as well
     UnitTestsTable = struct2table(UnitTests);
     
@@ -147,23 +144,13 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
     fprintf('====================================== TEST RESULTS ======================================\n\n')
     disp(UnitTestsTable);
     fprintf('==========================================================================================\n')
-
 end
-
-
 %% Initialize unit test
 function UnitTest = xASL_ut_InitUnitTest(UnitTest,testHandle)
-
     % Get name of script
     testObject = functions(testHandle);
-
     % Insert test name here
     UnitTest.name = testObject.function(regexp(testObject.function,'_xASL_')+1:end);
-
     % Define whether you are testing a module, submodule or function
     UnitTest.unit = testObject.function(regexp(testObject.function,'xASL_ut_')+8:regexp(testObject.function,'_xASL_')-1);
-
 end
-
-
-

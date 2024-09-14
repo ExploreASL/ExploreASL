@@ -26,32 +26,26 @@ function [H, P, W] = xASL_stat_ShapiroWilk(x, alpha)
 %   AS R94
 % __________________________________
 % Copyright © 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2019-06-16 JP
-
-
 %
 %   The Shapiro-Wilk hypotheses are: 
 %   Null Hypothesis:        X is normal with unspecified mean and variance.
-
-
-
-
-
-
 % Admin
 if nargin < 1 || isempty(x)
 	error('xASL_stat_ShapiroWilk: Needs at least one input argument.');
 end
-
 % Remove NaNs
 x = x(~isnan(x));
 x = x(:);
-
 if length(x) < 4
    error('xASL_stat_ShapiroWilk: At least four non-NaN samples are needed.');
 end
-
 % Checks alpha
 if nargin < 2 || isempty(alpha)
 	alpha = 0.05;
@@ -63,16 +57,13 @@ else
 		error('xASL_stat_ShapiroWilk: Alpha needs to be between 0 and 1.');
 	end
 end
-
 x    = sort(x);
 n    = length(x);
 mi   = -sqrt(2) .* erfcinv(2*((1:n)'-0.375)/(n+0.25));
 miSq = sum(mi.^2);
-
 if xASL_stat_kurtosis(x) > 3
     % Kurtosis is higher than 3 -> Leptokurtic distribution
     % Perform Shapiro-Francia test
-
 	weights = mi./sqrt(miSq);
 	W       = (sum(weights.*x)^2) / sum((x-mean(x)).^2);
 	
@@ -111,7 +102,6 @@ else
 	weights(count:(n-count+1)) = mi(count:(n-count+1))/sqrt(eps);
 	
 	W = (sum(weights.*x)^2) / sum((x - mean(x)).^2);
-
 	if (n <= 11)
 		mu    = -0.0006714*(n^3) + 0.0250540*(n^2) - 0.39978*n + 0.54400;
 		sigma = exp(-0.0020322*(n^3) + 0.0627670*(n^2) - 0.77857*n + 1.38220);
@@ -125,25 +115,18 @@ else
 		
 		SW    = log(1 - W);
 	end
-
 	% Normalize the Shapiro-Wilk statistic
     SW = (SW-mu)/sigma;
 	
     % P-value
 	P  = 1 - (0.5*erfc(-SW./sqrt(2)));
 end
-
 % Test the null hypothesis
 H  = (alpha >= P);
-
 end
-
 function k = xASL_stat_kurtosis(x)
 % Calculates kurtosis = E[(X-mu(X))^4] / (E[(X-mu(X))^2])^2
-
 % Subtract mean from the 
 xmu = x - xASL_stat_MeanNan(x);
-
 k = xASL_stat_MeanNan(xmu.^4)./((xASL_stat_MeanNan(xmu.^2)).^2);
-
 end

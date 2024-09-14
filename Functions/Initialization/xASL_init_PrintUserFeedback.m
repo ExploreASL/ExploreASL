@@ -17,11 +17,13 @@ function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
 % EXAMPLE:        xASL_init_PrintUserFeedback(x);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Print user feedback
     if currentState==0 % Start of the pipeline
-
         % If this is true, we break here
         if x.opts.bProcessData && ~isdeployed && x.opts.bPause
             fprintf('%s\n','Press any key to start processing & analyzing');
@@ -36,7 +38,6 @@ function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
             fprintf('%s\n', 'Try adding "x = " to the command to load data into the x structure');
         end
     else % End of the pipeline
-
         % If the population module was performed, print atlas notes
         if x.opts.bProcessData && x.opts.bProcess(3)
             fprintf('\n====================================================================================\n');
@@ -53,6 +54,4 @@ function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
             fprintf('====================================================================================\n');
         end
     end
-
-
 end

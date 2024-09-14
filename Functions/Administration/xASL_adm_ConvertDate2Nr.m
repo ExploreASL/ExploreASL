@@ -17,29 +17,28 @@ function [Nr DayInYear] = xASL_adm_ConvertDate2Nr(TempDate)
 % EXAMPLE:      ...
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 DaysInMonth     = [31 28.25 31 30 31 30 31 31 30 31 30 31];
-
 for iI=1:size(TempDate,1)
     for iJ=1:size(TempDate,2)
         for iK=1:size(TempDate,3)
             clear Date MonthN DayN
             
             Date    = TempDate(iI,iJ,iK);
-
             if ~isnumeric( Date )
                 Date    = str2num( Date );
             end
-
             if  length(num2str(Date))==8 % remove the year
                 Date    = num2str(Date);
                 Date    = Date(5:8);
                 Date    = str2num( Date );
             end
-
             MonthN      = floor(Date/100);
             DayN        = Date - (MonthN*100);
-
             DaysMonthCount  = sum(DaysInMonth(1:MonthN));
             DayInYear(iI,iJ,iK)       = DaysMonthCount + DayN;
             
@@ -47,8 +46,5 @@ for iI=1:size(TempDate,1)
         end
     end
 end
-
             
-
 end
-

@@ -36,7 +36,10 @@ function xASL_qc_SortBySpatialCoV(x, Threshold1, Threshold2)
 % EXAMPLE: xASL_qc_SortBySpatialCoV(x);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 if nargin<2 || isempty(Threshold1)
@@ -45,21 +48,16 @@ end
 if nargin<3 || isempty(Threshold2)
     Threshold2 = 1;
 end
-
 %% Find spatial CoV stats
 FileList = xASL_adm_GetFileList(x.S.StatsDir, ['(?i).*CoV_qCBF.*TotalGM_n=' num2str(x.dataset.nSubjects) '_.*PVC0\.tsv$'], 'List',[0 Inf]);
-
 if isempty(FileList)
     warning('Couldnt find spatial CoV information! File missing, skipping...');
     return;
 end
-
 % Now we take the most recent version
 PathTSV = fullfile(x.S.StatsDir, FileList{end});
-
 [~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathTSV);
 subjectList = CellTSV(3:end,1);
-
 % If the subjectlist doesn't have sessions mentioned, we include them
 if isempty(regexpi(subjectList{1}, 'ASL_\d+'))
     indexSession = find(strcmpi(CellTSV(1,:),'session'));
@@ -73,27 +71,21 @@ if isempty(regexpi(subjectList{1}, 'ASL_\d+'))
 else
     subjectSessionList = subjectList;
 end
-
 sCoVList = CellTSV(3:end,end-2);
-
 DirCBF = fullfile(x.D.ASLCheckDir, '1_CBFContrast');
 DirVasc = fullfile(x.D.ASLCheckDir, '2_VascularContrast');
 DirArti = fullfile(x.D.ASLCheckDir, '3_ArtifactContrast');
 DirUnknown_sCoV = fullfile(x.D.ASLCheckDir, '4_Unknown_sCoV');
-
 xASL_delete(DirCBF, true);
 xASL_delete(DirVasc, true);
 xASL_delete(DirArti, true);
 xASL_delete(DirUnknown_sCoV, true);
-
 %% Move the images
 fprintf('Sorting ASLCheck QC images for spatial CoV:   ');
-
 % we want these warnings issued only once
 % printing multiple lines is fine, but a series of warnings is annoying/too verbose)
 bWarningIsEmptyJPG = true;
 bWarningIsEmptyIndex = true;
-
 for iSubject=1:x.dataset.nSubjects
     for iSession=1:x.dataset.nSessions
         iSubjSess = (iSubject-1)*x.dataset.nSessions+iSession;
@@ -112,7 +104,6 @@ for iSubject=1:x.dataset.nSubjects
                 warning(['Missing transversal ASL jpg image in ' x.D.ASLCheckDir ' and possibly others']);
                 bWarningIsEmptyJPG = false;
             end
-
             fprintf('%s\n\n', ['Did something go wrong in the ASL module for ' NameSubjSess '?']);
         else
             if isempty(Index) % if we cannot determine the sCoV, copy this subject-session to 4_Unknown_sCoV
@@ -122,12 +113,10 @@ for iSubject=1:x.dataset.nSubjects
                     warning(['Missing sCoV value in ' PathTSV ' and possibly others']);
                     bWarningIsEmptyIndex = false;
                 end
-
                 fprintf('%s\n\n', ['Did something go wrong in the ASL module for ' NameSubjSess '?']);
                 Ddir = DirUnknown_sCoV;
             else
                 sCoV = xASL_str2num(sCoVList{Index});
-
                 % find folder
                 if ~isfinite(sCoV) || ~isnumeric(sCoV) || sCoV<=0
                     % for illegal sCoV, 4_Unknown_sCoV
@@ -154,6 +143,5 @@ for iSubject=1:x.dataset.nSubjects
     end
 end
 fprintf('\n');
-
 end
     

@@ -32,6 +32,10 @@ function jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,bidsModality)
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Default
     if nargin < 1 || isempty(jsonIn)
@@ -43,7 +47,6 @@ function jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,bidsModality)
     if nargin < 3
         bidsModality = 'asl';
     end
-
     % List of required fields
     switch bidsModality
         case 'asl'
@@ -60,7 +63,6 @@ function jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,bidsModality)
             jsonIn.(fieldList{iField}) = studyPar.(fieldList{iField});
         end
     end
-
     % Check if manufacturer field does not exist, but we know the model name
     if ~isfield(jsonIn,'Manufacturer') && isfield(jsonIn,'ManufacturersModelName')
         modelList = xASL_bids_BIDSifyFixBasicFields_GetModelList();
@@ -71,13 +73,9 @@ function jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,bidsModality)
             end
         end
     end
-
 end
-
-
 %% ManufacturerModel list: if the Manufacturer DICOM tag was deleted (strict anonymization), we can try to check the ManufacturersModelName tag instead.
 function modelList = xASL_bids_BIDSifyFixBasicFields_GetModelList()
-
     modelList = {
         'Signa',             'GE'; ...
         'Discovery',         'GE'; ...
@@ -90,7 +88,4 @@ function modelList = xASL_bids_BIDSifyFixBasicFields_GetModelList()
         'Verio',             'Siemens'; ...
         'Prisma',            'Siemens'
     };
-
-
 end
-

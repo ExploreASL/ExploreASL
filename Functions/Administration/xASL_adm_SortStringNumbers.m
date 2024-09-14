@@ -22,21 +22,22 @@ function [outputString] = xASL_adm_SortStringNumbers(inputString, numberPatternI
 % EXAMPLE: outputString = xASL_adm_SortStringNumbers(inputString);
 % __________________________________
 % Copyright 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     if nargin<2 || isempty(numberPatternInString)
         numberPatternInString = 'ASL_%d';
     elseif ~contains(numberPatternInString, '%d')
         error('numberPatternInString should contain a numerical descriptor %d');
     end
-
     % First sort alphabetically
     % (although numberPatternInString must support this)
     outputString = sort(inputString);
     
     % Then obtain numbers from text
     numberSorting = cellfun(@(x)sscanf(x, numberPatternInString), outputString);
-
     % sort them, and get the sorting order
       [~, sortOrder] = sort(numberSorting);
     % use to this sorting order to sort the filenames

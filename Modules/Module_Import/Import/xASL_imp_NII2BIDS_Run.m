@@ -26,11 +26,14 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 % EXAMPLE:     x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Print the run that is being converted
     xASL_adm_BreakString('CONVERT RUN');
     fprintf('Converting subject %s, session %s, run %s, ', bidsLabel.subject, bidsLabel.visit, listRuns{iRun});
-
     %% 1. Make a subject directory with a correct session name
     if ~isempty(bidsLabel.visit)
         %if ~isempty(bidsLabel.visit)
@@ -46,21 +49,17 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
         
         inSessionPath = fullfile(x.modules.import.imPar.TempRoot, nameSubjectSession, listRuns{iRun});
         outSessionPath = fullfile(x.modules.import.imPar.BidsRoot, ['sub-' bidsLabel.subject], sessionLabel);
-
         % Need to add the underscore so that it doesn't need to be added automatically and can be skipped for empty session
         sessionLabel = ['_' sessionLabel];
     else
         % Session label is skipped
         sessionLabel = '';
-
         % Only one session - no session labeling
 		% xASL_adm_CreateDir(fullfile(x.modules.import.imPar.BidsRoot, ['sub-' bidsLabel.subject], bidsPar.stringPerfusion));
         % This folder is created before copying the respective files
-
 		inSessionPath = fullfile(x.modules.import.imPar.TempRoot, nameSubjectSession, listRuns{iRun});
         outSessionPath = fullfile(x.modules.import.imPar.BidsRoot, ['sub-' bidsLabel.subject]);
     end
-
     %% 2. Convert structural and ASL runs
 	subjectSessionLabel = [bidsLabel.subject sessionLabel];
 	try
@@ -79,14 +78,11 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
 		xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'perfusion', subjectSessionLabel, iRun);
 	end
-
 end
-
 %% -------------------------------------------------------------
 %% Issue failed run as a warning
 %% -------------------------------------------------------------
 function xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, Scantype, subjectSessionLabel, iRun)
-
     xASL_adm_BreakString('');
     fprintf(2, 'NII2BIDS failed for %s image of %s_run-%s\n', Scantype, subjectSessionLabel, xASL_num2str(iRun));
     if size(loggingEntry.stack,1)>0

@@ -25,45 +25,30 @@ function x = xASL_init_Process(x)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 1. Load dataset_description.json
     x = xASL_init_Loaddataset_description(x);
-
     
     %% 2. Initialize environmental variables dependent on loaded data
     % Define several ExploreASL environment parameters that are dependent on the loaded data,
     % such as the subfolders of the population folder, which maps and templates to use, which visualization settings, and which fields are deprecated.
     x = xASL_init_DefineDataParDependentSettings(x);
     
-
     %% 3. xASL_init_DefineStudyStats
     % Define study statistical parameters for this pipeline run
     x = xASL_init_DefineStudyStats(x);
-
-
     %% 4. xASL_init_PrintCheckSettings
     % Define & print settings (path, iWorker, nWorkers, Quality, DELETETEMP)
     x = xASL_init_PrintCheckSettings(x);
     
-
-
 end
-
-
-
-
-
-
 %% =======================================================================================================================
 %% =======================================================================================================================
 %% SUBFUNCTIONS start here
-
-
-
-
-
 %% =======================================================================================================================
 %% =======================================================================================================================
 function [x] = xASL_init_DefineDataParDependentSettings(x)
@@ -302,10 +287,6 @@ function [x] = xASL_init_DefineDataParDependentSettings(x)
             spm_get_defaults('cmd_line',true);
     
         end
-
-
-
-
 %% =======================================================================================================================
 %% =======================================================================================================================
 function x = xASL_init_PrintCheckSettings(x)

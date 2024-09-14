@@ -34,49 +34,45 @@ function diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask,bPVC,imGM,imWM,b3D)
 %
 % __________________________________
 % Copyright © 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2017-00-00 JP
-
 % Admin
 if nargin < 2 || isempty(imMask)
 	imMask = ones(size(imCBF));
 end
-
 if nargin < 3 || isempty(bPVC)
 	bPVC = 0;
 end
-
 if nargin < 4
 	imGM = [];
 end
-
 if nargin < 5
 	imWM = [];
 end
-
 if nargin < 6 || isempty(b3D)
 	b3D = 0;
 end
-
 if bPVC < 2
 	if ~isempty(imGM) || ~isempty(imWM)
 		error('xASL_stat_ComputeDifferCoV: imGM and imWM should only be provided for bPVC==2.');
 	end
 end
-
 if bPVC == 2
 	% If running PVC, then need imGM and imWM of the same size as imCBF
 	if (~isequal(size(imCBF),size(imGM))) || (~isequal(size(imCBF),size(imWM)))
 		error('xASL_stat_ComputeDifferCoV: When running PVC, need imGM and imWM of the same size as imCBF');
 	end
 end
-
 % Initialize the filters
 sobelFilter     = [-1 -2 -1;0 0 0; 1 2 1];
 averageFilter   = [1 1 1; 1 1 1; 1 1 1];
 tempEdge        = zeros(size(imCBF),'single');
 tempAverage     = zeros(size(imCBF),'single');
-
 % Calculate the pseudoCoV as well for partial volume normalization
 if bPVC == 2
 	pseudoCoV    = zeros(size(imCBF),'single');
@@ -131,11 +127,9 @@ imMask                  = imMask & isfinite(tempAverage);
     
 % Calculate a mean of all data and of the derivatives
 diffCoV         = mean(tempEdge(imMask)) / mean(imCBF(imMask));
-
 if  bPVC==2
 	pseudoCoV       = mean(pseudoCoV(imMask)) / mean(imPseudoCBF(imMask));
 	diffCoV     = diffCoV./pseudoCoV;
 end
     
 end
-

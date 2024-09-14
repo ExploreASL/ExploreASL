@@ -28,7 +28,10 @@ function xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions, bOverwrite)
 % EXAMPLE: xASL_stat_GetDICOMStatistics(x, 'ASL', true);
 % __________________________________
 % Copyright 2016-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% -----------------------------------------------------------------------------------------------
 %% Admin
@@ -38,19 +41,13 @@ end
 if nargin<3 || isempty(HasSessions)
     HasSessions = false;
 end
-
 PathTSV = fullfile(x.D.DICOMparameterDir, ['QuantificationParameters_' ScanType '.tsv']);
-
 % Print header
 TSV = {'participant_id' 'session'};
-
-
 %% 1. Loading JSON sidecars
 fprintf('%s\n', ['Loading ' ScanType '.json sidecars...  ']);
-
 for iSubject=1:x.dataset.nSubjects
     for iSession=1:x.dataset.nSessions
-
         % Track progress
         iSubjSess = (iSubject-1)*x.dataset.nSessions+iSession;
         xASL_TrackProgress(iSubjSess, x.dataset.nSubjects * x.dataset.nSessions);
@@ -91,7 +88,6 @@ for iSubject=1:x.dataset.nSubjects
     end
 end
 fprintf('\n');
-
 % Verify that all gathered cells include strings and not cells inside
 listCells = find(cellfun(@iscell, TSV(:)));
 for indexCells = 1:numel(listCells)
@@ -100,5 +96,4 @@ for indexCells = 1:numel(listCells)
 end
 %% 2. Write TSV file
 xASL_tsvWrite(TSV, PathTSV, bOverwrite);
-
 end

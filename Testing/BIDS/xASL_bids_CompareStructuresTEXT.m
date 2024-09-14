@@ -29,7 +29,10 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresTEXT(difference
 % REFERENCES:       ...
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Read files if they exist
     if (exist(currentFileA,'file') && exist(currentFileB,'file')) % xASL_exist somehow didn't work here (again)
@@ -40,10 +43,4 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresTEXT(difference
             [identical,differences,dn] = xASL_bids_CompareStoreDifference(bPrintReport,differences,dn,allFiles,iFile);
         end
     end
-
 end
-
-
-
-
-

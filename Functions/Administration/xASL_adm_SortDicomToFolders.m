@@ -22,19 +22,20 @@ function xASL_adm_SortDicomToFolders(pathDICOM, nDirLayers, bUseDCMTK, bVerbose)
 %     xASL_adm_SortDicomToFolders('tmp/DICOM', [], 0)
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if nargin<2 || isempty(nDirLayers)
 	nDirLayers = 0;
 end
-
 if nargin<3 || isempty(bUseDCMTK)
     bUseDCMTK = true; % DCMTK is used by default as it is faster
 end
-
 if nargin<4 || isempty(bVerbose)
     bVerbose = true;
 end
-
 if nDirLayers > 0
 	Dlist = xASL_adm_GetFsList(pathDICOM, '^.*$', 1, 0, 0, [0 Inf]);
 	for iL=3:length(Dlist)
@@ -46,10 +47,8 @@ else
 	for iL=1:length(Flist)
 		% Track progress if verbosity is on
 		if bVerbose; xASL_TrackProgress(iL, length(Flist)); end
-
 		% Read the DICOM file - all error handling is inside this function
 		tDcm = xASL_io_DcmtkRead(Flist{iL}, false, bUseDCMTK, true);
-
 		% Check that the header was read and contains the basic tags
 		if isempty(tDcm) || ~isfield(tDcm, 'EchoTime') || ~isfield(tDcm, 'RepetitionTime') ||...
 				~isfield(tDcm, 'ImageType') || isempty(tDcm.ImageType) || ~isfield(tDcm, 'ProtocolName') || isempty(tDcm.ProtocolName)
@@ -57,21 +56,17 @@ else
 		else
 			% Always add the protocol name to the directory name
 			Fname = tDcm.ProtocolName;
-
 			% Add series description if available
 			if isfield(tDcm, 'SeriesDescription') && ~isempty(tDcm.SeriesDescription) && ~strcmp(tDcm.ProtocolName, tDcm.SeriesDescription)
 				Fname = [Fname '_' tDcm.SeriesDescription];
 			end
-
 			if isfield(tDcm, 'SeriesNumber') && ~isempty(tDcm.SeriesNumber)
 				Fname = [Fname '_' xASL_num2str(tDcm.SeriesNumber)];
 			end
-
 			% Remove special characters and create the directory name if needed
 			Fname = xASL_adm_CorrectName(Fname);
 			NewDir = fullfile(pathDICOM, Fname);
 			xASL_adm_CreateDir(NewDir);
-
 			[~, Pname, Pext] = fileparts(Flist{iL});
 			if strcmpi(Pext, '.ima') || strcmpi(Pext, '.dcm')
 				% In case the extension is IMA or DCM, we don't change the filename
@@ -82,14 +77,12 @@ else
 				% when a period (.) was in the filename
 				NewFile = fullfile(NewDir, [Pname Pext '.dcm']);
 			end
-
 			% The file is moved to the correct directory
 			if ~strcmp(Flist{iL}, NewFile) && exist(Flist{iL}, 'file') && ~exist(NewFile, 'file')
 				xASL_Move(Flist{iL}, NewFile);
 			end
 		end
 	end
-
 	% List all directories in the rootPath
 	Dlist = xASL_adm_GetFsList(pathDICOM, '^.*$', 1, 0, 0, [0 Inf]);
 	for iD=3:length(Dlist)
@@ -98,7 +91,6 @@ else
 	end
 end
 end
-
 %% Recursively delete directories
 function xASL_adm_SortDicomToFolders_RecursiveDirectoryDelete(pathROOT, dirName)
 pathCurrent = fullfile(pathROOT, dirName);
@@ -107,7 +99,6 @@ Dlist = xASL_adm_GetFsList(pathCurrent, '^.*$', 1, 0, 0, [0 Inf]);
 for iD=3:length(Dlist)
 	xASL_adm_SortDicomToFolders_RecursiveDirectoryDelete(pathCurrent, Dlist{iD});
 end
-
 % Then check for a list of remaining files and subdirectories
 % If empty, then delete the directory
 if  isempty(xASL_adm_GetFileList(pathCurrent, '^.*', 'FPListRec',[0 Inf]))

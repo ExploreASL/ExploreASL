@@ -18,15 +18,14 @@ function [IsEqualResolution] = xASL_im_CompareNIfTIResolutionXYZ(PathNIfTI1, Pat
 % EXAMPLE: IsEqualResolution = xASL_im_CompareNIfTIResolutionXYZ('/ASL/MyStudyName/Sub-001/c1T1.nii', '/ASL/MyStudyName/Sub-001/c1T1.nii');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 nii1 = xASL_io_ReadNifti(PathNIfTI1);
 nii2 = xASL_io_ReadNifti(PathNIfTI2);
-
 res1 = nii1.hdr.pixdim(2:4);
 res2 = nii2.hdr.pixdim(2:4);
-
 IsEqualResolution = isequal(xASL_round(res1,2), xASL_round(res2,2));
-
 end
-

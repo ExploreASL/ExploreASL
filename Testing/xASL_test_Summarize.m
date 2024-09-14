@@ -13,13 +13,15 @@ function [summary, summaryTable] = xASL_test_Summarize(ResultsDir)
 % EXAMPLE:      [summary] = xASL_test_Summarize('/User/ASLTestResults/2022-20-01-results');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 MatFileList = xASL_adm_GetFileList(ResultsDir,'^*.mat$','List',[0 Inf], false);
 TsvFileList = xASL_adm_GetFileList(ResultsDir,'^*.tsv$','List',[0 Inf], false);
-
 summary  = struct;
 tsvSummary = struct;
-
 % Load in all mat files
 for iList=1:length(MatFileList)
     % Get the full file path
@@ -31,7 +33,6 @@ for iList=1:length(MatFileList)
         summary(1).(catName{1}) = load(iFile, '*');
     end
 end
-
 % Load in all tsv files
 for iList=1:length(TsvFileList)
     % Get files and directories
@@ -42,7 +43,6 @@ for iList=1:length(TsvFileList)
     % Add the table to the summary 
     tsvSummary(1).(catName{1}) = iCell;
 end
-
 tsvFieldnames = fieldnames(tsvSummary);
 summaryTable = struct;
 for iList=1:length(tsvFieldnames)
@@ -75,19 +75,14 @@ for iList=1:length(tsvFieldnames)
         summaryTable(1).(tsvFieldnames{iList}) = saveArray;
     end
 end
-
 % Save path
 TimeString = datestr(now,'yyyy-mm-dd_HH_MM');
 TimeString(end-2) = 'h';
 savePathMat = fullfile(ResultsDir, [TimeString, '_summary.mat']);
 savePathTSV = fullfile(ResultsDir, [TimeString, '_summary.tsv']);
-
 % Save files
 %xASL_tsvWrite(UnitTestsCells,savePathTSV);
 save(savePathMat,'summary');
-
-
-
 %% Print test results
 %clc
 fprintf('====================================== Summary Mat ======================================\n\n')
@@ -97,6 +92,4 @@ disp(tsvSummary);
 fprintf('====================================== Fails Only  ======================================\n\n')
 disp(summaryTable);
 fprintf('==========================================================================================\n')
-
 end
-

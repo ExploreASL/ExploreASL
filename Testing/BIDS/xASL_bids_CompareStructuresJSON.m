@@ -29,13 +29,14 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
 % REFERENCES:       ...
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Ignore Acknowledgements (setting to ignore version differences (ExploreASL v1.x.x) there)
     ignoreAcknowledgements = true;
-
     jsonErrorReport='';
-
     % Compare JSON files on field basis
     if (exist(currentFileA,'file') && exist(currentFileB,'file')) % xASL_exist somehow didn't work here (again)
         % Import JSON files
@@ -45,14 +46,11 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
         % Make all paths to paths of THIS os
         jsonA = fixPathFields(jsonA);
         jsonB = fixPathFields(jsonB);
-
         % Get JSON field names
         fieldNamesA = fieldnames(jsonA);
         fieldNamesB = fieldnames(jsonB);
-
         % Check which fields are shared and which different
         sharedFieldsAB = intersect(fieldNamesB,fieldNamesA);
-
         % Fields that are in B, but missing in A
         missingFields = setdiff(fieldNamesB,fieldNamesA);
         % Print out missing fields
@@ -62,7 +60,6 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
             end
             jsonErrorReport = sprintf('%s           Missing field: %s\n',jsonErrorReport,missingFields{iField});
         end
-
         extraFields = setdiff(fieldNamesA,fieldNamesB);
         % Print out missing fields
         for iField=1:numel(extraFields)
@@ -71,10 +68,8 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
             end
             jsonErrorReport = sprintf('%s           Extra field: %s\n',jsonErrorReport,extraFields{iField});
         end
-
         % Now we can compare these fields like in the part above
         jsonErrorReport = [jsonErrorReport, xASL_bids_CompareFieldLists(jsonA,jsonB,sharedFieldsAB, {'Acknowledgements','GeneratedBy'})];
-
         if ~isempty(jsonErrorReport)
             if bPrintReport
                 fprintf('File:      %s\n',allFiles{iFile});
@@ -90,7 +85,6 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
                     onlyAcknowledgements = true;
                 end
             end
-
             % Save difference
             if ~onlyAcknowledgements
                 differences{dn,1} = ['Different file content: ', allFiles{iFile}, ' '];
@@ -99,16 +93,10 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
             end
             dn = dn+1;
         end
-
     end
-
 end
-
-
-
 %% Fix path fields
 function jsonStruct = fixPathFields(jsonStruct)
-
     fieldNames = fieldnames(jsonStruct);
     numOfField = size(fieldNames,1);
     
@@ -122,8 +110,4 @@ function jsonStruct = fixPathFields(jsonStruct)
             end
         end
     end
-
 end
-
-
-

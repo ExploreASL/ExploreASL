@@ -46,19 +46,19 @@ function [x] = xASL_quant_DefineQuantificationParameters(x)
 % EXAMPLE: x = xASL_quant_DefineQuantificationParameters(x);
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 0. Admin
 if ~isfield(x, 'Q')
     x.Q = struct;
 end
-
 if ~isfield(x, 'MagneticFieldStrength') || isempty(x.MagneticFieldStrength)
     warning('MagneticFieldStrength was not defined, defaulting to 3T');
     x.MagneticFieldStrength = 3;
 end
-
-
 %% 1. Define arterial blood T1
 if ~isfield(x.Q,'BloodT1') || isempty(x.Q.BloodT1)
     % T1 relaxation time of arterial blood
@@ -94,8 +94,6 @@ if ~isfield(x.Q,'BloodT1') || isempty(x.Q.BloodT1)
             % Administration above
     end
 end
-
-
 %% 2. Define arterial blood T2
 if ~isfield(x.Q, 'T2art')
 	if x.MagneticFieldStrength == 3
@@ -110,8 +108,6 @@ end
 if ~isfield(x.Q,'Lambda')
     x.Q.Lambda = 0.9; % Brain/blood water coefficient (mL 1H/ mL blood)
 end
-
-
 %% 3. Define tissue T1
 if ~isfield(x.Q,'TissueT1')
 	switch(x.MagneticFieldStrength)
@@ -133,8 +129,6 @@ if ~isfield(x.Q,'TissueT1')
 			fprintf('%s\n',['Warning: Unknown T1 GM for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 	end
 end
-
-
 %% 4. Define tissue T2(*)
 if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
     if x.MagneticFieldStrength == 3
@@ -159,6 +153,4 @@ if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
 	    fprintf('%s\n',['Warning: Unknown T2 for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
     end
 end
-
-
 end

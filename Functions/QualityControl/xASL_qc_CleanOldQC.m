@@ -20,26 +20,25 @@ function [x] = xASL_qc_CleanOldQC(x, bRemoveCurrentSession)
 % EXAMPLE: x = xASL_qc_RemoveOutdatedQC(x);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL	
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if nargin < 2
 	error('Two parameters are required');
 end
-
 if nargin < 3 || isempty(bRemoveCurrentSession)
 	bRemoveCurrentSession = false;
 end
-
 % We go through all possible scantype lists
 ScanTypeList = {'func', 'ASL', 'dwi'};
-
-
 %%     1. Load QC for all session from QC.json and save it to x-struct
 % Load QC.json and save it to x-struct
 QC_Path = fullfile(x.D.ROOT, x.SUBJECT, ['QC_collection_' x.SUBJECT '.json']);
 if xASL_exist(QC_Path, 'file')
 	% Load the save QC parameters
 	oldOutput = xASL_io_ReadJson(QC_Path);
-
 	% Go through all possible scantypes
 	for iScanType = 1:length(ScanTypeList)
 		ScanType = ScanTypeList{iScanType};
@@ -58,17 +57,14 @@ if xASL_exist(QC_Path, 'file')
 		end
 	end
 end
-
 %%     2. Clean QC for the current session from x-struct if bRemoveCurrentSession is true
 % Go through all possible scantypes
 for iScanType = 1:length(ScanTypeList)
 	ScanType = ScanTypeList{iScanType};
-
 	% x.Output_im.ASL should not longer be a cell array, but should instead contain subfields.s
 	if isfield(x,'Output_im') && isfield(x.Output_im, ScanType) && iscell(x.Output_im.(ScanType))
 		x.Output_im = rmfield(x.Output_im, ScanType);
 	end
-
 	% If doing a complete clean of the current session
 	if ~isempty(regexpi(x.SESSION, [ScanType '_\d+'], 'once'))
 		if bRemoveCurrentSession
@@ -76,7 +72,6 @@ for iScanType = 1:length(ScanTypeList)
 			if isfield(x,'Output_im') && isfield(x.Output_im, ScanType) && isfield(x.Output_im.(ScanType), x.SESSION)
 				x.Output_im.(ScanType) = rmfield(x.Output_im.(ScanType), x.SESSION);
 			end
-
 			if isfield(x, 'Output') && isfield(x.Output, ScanType) && isfield(x.Output.(ScanType), x.SESSION)
 				x.Output.(ScanType) = rmfield(x.Output.(ScanType), x.SESSION);
 			end
@@ -85,7 +80,6 @@ for iScanType = 1:length(ScanTypeList)
 	%%     3. Remove outdated tags from x-struct that do not have the session sub-field for ASL, dwi, func
 	% In previous versions, we have parameters for session one only directly under x.Output.ASL (or similar for other modules) - if these are detected
 	% they are removed as obsolete and a warning is issued. We only keep parameters in x.Output.ASL.ASL_1 etc
-
     if isfield(x, 'Output')
         if isfield(x.Output, ScanType)
 		    listFields = fields(x.Output.(ScanType));
@@ -107,6 +101,4 @@ for iScanType = 1:length(ScanTypeList)
         end
     end
 end
-
-
 end

@@ -19,10 +19,13 @@ function xASL_MoveDirMerge(SrcDir, DstDir, bOverwrite, bVerbose)
 %          xASL_MoveDirMerge('c:\User\path1', 'c:\User\path2',true);  Merge contents, overwriting
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% =========================================
 %% Start with the same input argument checks
-
     % Checks input arguments
     if nargin<2
         error('Please provide both SrcPath & DstPath');
@@ -39,11 +42,9 @@ function xASL_MoveDirMerge(SrcDir, DstDir, bOverwrite, bVerbose)
 	if nargin<4 || isempty(bVerbose)
 		bVerbose = true;
     end
-
     
 %% =========================================
 %% Start merging
-
     if ~exist(DstDir,'dir') % if destination dir doesnt exist, simply move
         xASL_Move(SrcDir, DstDir, bOverwrite, bVerbose);
     else
@@ -61,8 +62,4 @@ function xASL_MoveDirMerge(SrcDir, DstDir, bOverwrite, bVerbose)
             xASL_delete(SrcDir);
         end
     end
-
-
-
 end
-

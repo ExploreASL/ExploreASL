@@ -24,6 +24,10 @@ function x = xASL_wrp_DCM2NII(x)
 %
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     
     %% 1. Initialize defaults of dcm2nii
@@ -39,7 +43,6 @@ function x = xASL_wrp_DCM2NII(x)
     
     % Initialization of an empty catched errors struct
     dcm2niiCatchedErrors = struct;
-
     %% 3. Import visit by visit, session by session, scan by scan for current subject
     fprintf('\nRunning DCM2NIIX...\n');
     [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, x.modules.import.matches, dcm2niiCatchedErrors);
@@ -59,13 +62,8 @@ function x = xASL_wrp_DCM2NII(x)
     %% 5. Clean-Up
     xASL_imp_DCM2NII_CleanUp(x, dcm2niiCatchedErrors);
 end
-
-
-
 %% Clean-Up
 function xASL_imp_DCM2NII_CleanUp(x, dcm2niiCatchedErrors)
-
-
     if ~x.modules.import.settings.bUseDCMTK || isempty(x.modules.import.pathDcmDict)
         dicomdict('factory');
     end

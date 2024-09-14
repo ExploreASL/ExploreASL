@@ -26,8 +26,10 @@ function [FSLdir, x, RootWSLdir] = xASL_fsl_SetFSLdir(x, bAutomaticallyDetectFSL
 % EXAMPLE: FSLdir = xASL_fsl_SetFSLdir(x);
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 if nargin<1
@@ -40,36 +42,28 @@ if nargin<2 || isempty(bAutomaticallyDetectFSL)
         bAutomaticallyDetectFSL = false;
     end
 end
-
 FSLdir = NaN;
 RootWSLdir = NaN;
 RootFSLdir = '';
-
 if isfield(x,'FSLdir') && isfield(x,'RootFSLdir') && ~isempty(x.FSLdir) && ~isempty(x.RootFSLdir)
     % if we already have an FSL dir, skip this function
     FSLdir = x.FSLdir;
     RootWSLdir = x.RootFSLdir;
     return;
 elseif isfield(x, 'FSLdir') && ~isfield(x, 'RootFSLdir') && ~ispc
-
     FSLdir = x.FSLdir;
-
     if length(FSLdir)>7 && strcmp(FSLdir(end-6:end), fullfile('bin', 'fsl'))
         FSLdir = fileparts(FSLdir);
     end
-
     if length(FSLdir)>17 && strcmp(FSLdir(end-16:end), fullfile('fsl', 'share', 'fsl', 'bin'))
         FSLdir = FSLdir(1:end-14);
         % some new FSL distributions also have a share/fsl/bin folder that might be
         % defaulted to by the OS, which doesn't have the 'etc' subfolder so
         % this would crash later on
     end
-
     RootWSLdir = FSLdir;
-
     return
 end
-
 %% Detect OS
 if ismac
     fprintf('Running FSL from Matlab on macOS\n');
@@ -83,7 +77,6 @@ elseif ispc
         return;
     end
 end
-
 %% 1) Check if FSL is initialized by system
 if ispc 
     [bSuccess, result2] = system('wsl which fsl');
@@ -91,29 +84,23 @@ else
     [bSuccess, result2] = system('which fsl');
 end 
 bSuccess = bSuccess==0;
-
 if bSuccess
     RootFSLdir{end+1} = fileparts(result2);
-
     if length(RootFSLdir{end})>17 && strcmp(RootFSLdir{end}(end-16:end), fullfile('fsl', 'share', 'fsl', 'bin'))
         RootFSLdir{end} = RootFSLdir{end}(1:end-14);
         % some new FSL distributions also have a share/fsl/bin folder that might be
         % defaulted to by the OS, which doesn't have the 'etc' subfolder so
         % this would crash later on
     end
-
 end
-
 if bAutomaticallyDetectFSL
     %% 2) Try searching at different ROOT paths, first layer subfolder
     PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin' '/usr/local/apps' '/usr/lib'};
-
     if ispc
         PathApps{end+1} = getenv('USERPROFILE');
     else
         PathApps{end+1} = getenv('HOME');
     end
-
     if ispc % for Windows Subsystem of Linux
         [~, result] = system('echo %LOCALAPPDATA%');
         SearchDir = fullfile(strtrim(result), 'Packages');
@@ -157,7 +144,6 @@ if bAutomaticallyDetectFSL
             PathApps{end+1} = fullfile(RootWSLdir,'usr','local');
         end
     end
-
     %% Search for first & second-layer subfolder
     for iP=1:length(PathApps)
         TempDir = xASL_adm_GetFileList(lower(PathApps{iP}), '(?i)^fsl.*', 'FPList', [0 Inf], true); % we can set this to recursive to be sure, but this will take a long time
@@ -175,7 +161,6 @@ if bAutomaticallyDetectFSL
         end
     end
 end
-
 %% Create new list with valid FSL folders
 FSLdir = '';
 if isempty(RootFSLdir) || isempty(RootFSLdir{end})
@@ -203,10 +188,8 @@ for iDir=1:length(RootFSLdir)
         end
     end
 end
-
 % Remove doubles
 FSLdir = sort(unique(FSLdir));
-
 %% Pick FSLdir
 if length(FSLdir)<1
     warning('Cannot find valid FSL installation dir');
@@ -218,9 +201,7 @@ elseif length(FSLdir)>1
 else
     % dont print anything
 end
-
 FSLdir = FSLdir{end}; % default to most recent version (and convert from cell to char array
-
 if ispc
     if iscell(RootWSLdir)
         RootWSLdir = RootWSLdir{end}; % default to most recent version
@@ -229,7 +210,6 @@ if ispc
     FSLdir = FSLdir(length(RootWSLdir)+1:end);
 end
 FSLdir = strrep(FSLdir,'\','/');
-
 % %% If FSL is installed in a subfolder, find it
 % if ~exist(fullfile(FSLdir,'bin'),'dir') || ~exist(fullfile(FSLdir,'bin','fsl'),'file') || ~exist(fullfile(FSLdir,'bin','bet'),'file')
 %     fprintf('Found potential FSL folder but not the installation, trying subfolders, this might take a while...\n');
@@ -252,18 +232,13 @@ FSLdir = strrep(FSLdir,'\','/');
 %         return;        
 %     end
 % end        
-
-
 %% Manage RootFSLdir
 if ~exist('RootWSLdir','var') || (isnumeric(RootWSLdir) && isnan(RootWSLdir))
     RootWSLdir = FSLdir; % default
 else
     RootWSLdir = fullfile(RootWSLdir, FSLdir); % for e.g. WSL
 end
-
 %% Add to x
 x.FSLdir = FSLdir;
 x.RootFSLdir = RootWSLdir;
-
-
 end

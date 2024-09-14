@@ -37,56 +37,48 @@ function sCov = xASL_stat_ComputeSpatialCoV(imCBF, imMask, nMinSize, bPVC, bPara
 %             2017 Sep;37(9):3184-92.
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 1. Admin
 if nargin < 1
 	error('imCBF is a required parameter');
 end
-
 if nargin < 2 || isempty(imMask)
 	imMask = ones(size(imCBF));
 end
-
 if nargin < 3 || isempty(nMinSize)
 	nMinSize = 0;
 end
-
 if nargin < 4 || isempty(bPVC)
 	bPVC = 0;
 end
-
 if nargin<5 || isempty(bParametric)
 	bParametric = 1;
 end
-
 if (bParametric == 0) || (bPVC == 1)
 	error('This option is not implemented yet')
 end
-
 if nargin < 6
 	imGM = [];
 end
 if nargin < 7
 	imWM = [];
 end
-
 if bPVC == 2
 	% If running PVC, then need imGM and imWM of the same size as imCBF
 	if ~isequal(size(imCBF),size(imGM)) || ~isequal(size(imCBF),size(imWM))
 		warning('When running PVC, need imGM and imWM of the same size as imCBF');
 	end
 end
-
 %% 2. Create masks
 % Only compute in real data
 imMask = (imMask>0) & isfinite(imCBF);
-
 imMask = imMask & (imCBF~=0); % Exclude zero values as well
-
 % Constrain calculation to the mask and to finite values
 imCBF = imCBF(imMask);
-
 if ~isempty(imGM)
 	imGM = imGM(imMask); 
 end
@@ -98,11 +90,8 @@ if sum(imMask(:))<nMinSize
     sCov  = NaN;
     return;
 end
-
 %% 3. sCoV computation
-
 sCov = std(imCBF(:)) / mean(imCBF(:));
-
 if bPVC==2
     % Partial volume correction by normalizing by expected variance because of the structural data
     PseudoCoV = imGM + 0.3.*imWM;
@@ -110,6 +99,4 @@ if bPVC==2
     sCov = sCov./PseudoCoV;
 end
     
-
 end
-

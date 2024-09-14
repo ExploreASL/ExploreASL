@@ -18,20 +18,19 @@ function x = xASL_imp_ReadSourceData(x)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Here we try to fix backwards compatibility
     x.modules.import.imPar = xASL_imp_TokenBackwardsCompatibility(x.modules.import.imPar);
-
-
     %% Check if directories are files are supposed to be matched
     if x.modules.import.imPar.bMatchDirectories
         strLookFor = 'Directories';
     else
         strLookFor = 'Files';
     end
-
-
     %% Check folderHierarchy
     xASL_imp_ReadSourceData_CheckFolderHierarchy(x);
     
@@ -63,25 +62,17 @@ function x = xASL_imp_ReadSourceData(x)
     
     % Define Subjects (vSubjectIDs: cell vector with extracted subject IDs (for all visits, sessions and scans)
     x.modules.import.listsIDs.vSubjectIDs = x.modules.import.tokens(:,x.modules.import.imPar.tokenOrdering(1));
-
-
 end
-
-
 %% ==========================================================================================================================
 %% ==========================================================================================================================
 %% Check the last argument of folderHierarchy
 function xASL_imp_ReadSourceData_CheckFolderHierarchy(x) % PM: this should be renamed, we specifically check the last element only here!!!
-
     % Get last element
     lastElement = lower(x.modules.import.imPar.folderHierarchy{end});
-
     % Condition for file extension
     conditionFile = '(zip|dcm|ima|xml|par|rec|nii|nii\.gz)';
-
     % Other extension
     conditionExtension = '\.';
-
     % Check folderHierarchy based on bMatchDirectories
     if x.modules.import.imPar.bMatchDirectories
         % Check that there is no extension in the last folderHierachy element
@@ -97,6 +88,4 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x) % PM: this should be re
               warning('No extension used in the last element of the folder hierarchy (%s)...',lastElement);
            end
     end
-
-
 end

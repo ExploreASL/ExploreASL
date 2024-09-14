@@ -28,18 +28,20 @@ function imHist = xASL_im_JointHist(imA,imB,imMask,minA,maxA,minB,maxB,nBins)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2019-06-26 JP
-
 % Admin
 if nargin < 2
 	error('xASL_im_JointHist: Needs at least two images to calculate histogram from.');
 end
-
 if ~isequal(size(imA),size(imB))
 	error('xASL_im_JointHist: The two input images need to have the same size.');
 end
-
 if nargin < 3 || isempty(imMask)
 	imMask = ones(size(imA));
 else
@@ -47,27 +49,20 @@ else
 		error('xASL_im_JointHist: The input images and the mask need to have the same size.');
 	end
 end
-
 if nargin < 4 || isempty(minA)
 	minA = min(imA(:));
 end
-
 if nargin < 5 || isempty(maxA)
 	maxA = min(imA(:));
 end
-
 if nargin < 6 || isempty(minB)
 	minB = min(imB(:));
 end
-
 if nargin < 7 || isempty(maxB)
 	maxB = min(imB(:));
 end
-
 if nargin < 8 || isempty(nBins)
 	nBins = 20;
 end
-
 imHist = xASL_mex_JointHist(imA,imB,imMask,minA,maxA,minB,maxB,nBins);
-
 end

@@ -25,6 +25,10 @@ function [DiceCoeff] = xASL_stat_PairwiseDice(GroupA, GroupB)
 % 
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 0. For testing with CICERO data, remove later
 %
@@ -40,13 +44,10 @@ function [DiceCoeff] = xASL_stat_PairwiseDice(GroupA, GroupB)
 % for iSubject=1:length(SubjectsB)
 %     GroupB{iSubject,1} = fullfile(x.D.PopDir, ['MaskVascular_' SubjectsB{iSubject} '_ASL_1.nii']);
 % end
-
-
 %% 1. Admin (check cell, image exist etc)
 if nargin < 2 || isempty(GroupA) || isempty(GroupB)
 	error('Two inputs are required.');
 end
-
 if ~iscell(GroupA) && isnumeric(GroupA) && ndims(GroupA)==4
     fprintf('Group A matrix detected, converting to cell structure\n');
     TempMatrix = GroupA;
@@ -55,7 +56,6 @@ if ~iscell(GroupA) && isnumeric(GroupA) && ndims(GroupA)==4
         GroupA{iCell} = TempMatrix(:,:,:,iCell);
     end
 end
-
 if ~iscell(GroupB) && isnumeric(GroupB) && ndims(GroupB)==4
     fprintf('Group B matrix detected, converting to cell structure\n');
     TempMatrix = GroupB;
@@ -64,17 +64,12 @@ if ~iscell(GroupB) && isnumeric(GroupB) && ndims(GroupB)==4
         GroupB{iCell} = TempMatrix(:,:,:,iCell);
     end
 end
-
-
 if ~iscell(GroupA) || ~iscell(GroupB)
     error('Input images/paths should be a cell structure');
 end
-
 InitialLengths = [length(GroupA), length(GroupB)];
-
 ExcludeGroupA = zeros(InitialLengths(1), 1);
 ExcludeGroupB = zeros(InitialLengths(2), 1);
-
 for iSubject=1:length(GroupA)
     if ~isnumeric(GroupA{iSubject}) && ~xASL_exist(GroupA{iSubject}, 'file')
         warning([GroupA{iSubject} ' did not exist, excluding']);
@@ -87,23 +82,18 @@ for iSubject=1:length(GroupB)
         ExcludeGroupB(iSubject, 1) = 1;
     end
 end
-
 fprintf('%s\n', ['Group A: found ' xASL_num2str(InitialLengths(1)-sum(ExcludeGroupA)) ' out of ' xASL_num2str(InitialLengths(1)) ' scans']);
 fprintf('%s\n', ['Group B: found ' xASL_num2str(InitialLengths(2)-sum(ExcludeGroupB)) ' out of ' xASL_num2str(InitialLengths(2)) ' scans']);
 fprintf('%s\n', ['In total: ' xASL_num2str(sum(ExcludeGroupA)+sum(ExcludeGroupB)) ' missing scans, excluded from calculations']);
-
 % Exclude scans
 PathsGroup{1} = GroupA(~ExcludeGroupA);
 PathsGroup{2} = GroupB(~ExcludeGroupB);
 GroupA = NaN;
 GroupB = NaN;
-
 %% 2. Obtain matrix of pair-wise permutations
 IndicesA = (1:length(PathsGroup{1}))';
 IndicesB = (1:length(PathsGroup{2}))';
-
 PermutationList = xASL_stat_UniquePairwisePermutations(IndicesA, IndicesB);
-
 %% 3. Obtain DICE scores
 fprintf('%s\n', 'Obtaining DICE scores:   ');
 for iPerm=1:length(PermutationList)
@@ -120,13 +110,10 @@ for iPerm=1:length(PermutationList)
         % Convert to a binary mask
         MaskImage{iMask} = logical(MaskImage{iMask});
     end
-
     DiceCoeff(iPerm,1) = xASL_im_ComputeDice(MaskImage{1}, MaskImage{2});
 end
 fprintf('\n');
 DiceMean = xASL_stat_MeanNan(DiceCoeff);
 DiceSD = xASL_stat_StdNan(DiceCoeff);
 fprintf('%s\n', ['Dice coeff was (mean +/- SD) : ' xASL_num2str(DiceMean) ' +/- ' xASL_num2str(DiceSD)]);
-
-
 end

@@ -22,6 +22,10 @@ function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePa
 %
 % __________________________________
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Store JSON
     if exist(SavePathJSON{1}, 'file') && ~isempty(first_match)
@@ -38,12 +42,8 @@ function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePa
             [parms, pathDcmDict] = xASL_bids_Dicom2JSON(imPar, first_match, SavePathJSON, imPar.dcmExtFilter, bUseDCMTK, pathDcmDict);
         end
     end
-
     % Fallback
     if ~exist('parms','var')
         parms = cell(1,1);
     end
-
 end
-
-

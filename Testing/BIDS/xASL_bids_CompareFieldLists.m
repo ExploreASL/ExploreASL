@@ -23,17 +23,19 @@ function strError = xASL_bids_CompareFieldLists(jsonStructA, jsonStructB, fieldL
 % REFERENCES:       ...
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     if nargin < 4
         ignoreFields = {};
     end
-
     strError = '';
     
     % Threshold for the difference of numeric values
     threshNumeric = 1e-5;
     threshNumericArray = 1e-2;
-
     % Iterate over fields
     for iField=1:numel(fieldList)
         doCompare = true;
@@ -137,5 +139,3 @@ function strError = xASL_bids_CompareFieldLists(jsonStructA, jsonStructB, fieldL
         end
     end
 end
-
-

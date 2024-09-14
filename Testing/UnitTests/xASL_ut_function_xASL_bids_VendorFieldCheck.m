@@ -15,16 +15,16 @@ function UnitTest = xASL_ut_function_xASL_bids_VendorFieldCheck(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_bids_VendorFieldCheck(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Test run 1
-
 % Give your individual subtest a name
 UnitTest.tests(1).testname = 'Test GE JSON';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 jsonIn.Manufacturer = 'GE';
 jsonIn.CoilString = 'ThisIsACoilString';
@@ -33,10 +33,8 @@ jsonIn.TotalReadoutTime = -1;
 jsonIn.NumberSegments = 1;
 jsonIn.PhaseEncodingAxis = 'i';
 jsonOut = xASL_bids_VendorFieldCheck(jsonIn);
-
 % Define one or multiple test conditions here
 testCondition = true;
-
 % Define one or multiple test conditions here
 if ~isstruct(jsonOut)
     testCondition = false;
@@ -77,17 +75,10 @@ if isfield(jsonOut,'ReceiveCoilName') && ...
         testCondition = false;
     end
 end
-
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
-
-
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
-
 end
-
-

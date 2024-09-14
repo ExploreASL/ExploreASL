@@ -16,13 +16,15 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
 % EXAMPLE: x = xASL_qc_CollectSoftwareVersions(x);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Admin
     if nargin<1
         error('This function needs the ExploreASL x-struct as input');
     end
-
     %% Get Matlab version
     Software.Matlab = version;
     [startIndex, endIndex] = regexp(Software.Matlab, '^\d*\.\d*\.');
@@ -32,28 +34,23 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
 		Software.Matlab = Software.Matlab(startIndex(1):endIndex(1)-1);
 	end
     % Extract matlab version until just before the second dot
-
     
     %% Get SPM version
     [~, rev_spm] = spm('Ver');
     Software.SPM12 = rev_spm;
-
     
     %% Get CAT version
     [~, rev_cat] = cat_version;
     Software.CAT12 = rev_cat;
-
     
     %% Get LST version
     TxtPath = fullfile(x.D.SPMDIR,'toolbox','LST','lst-version.txt');
     FID = fopen(TxtPath);
     LSTversion = textscan(FID,'%s');
     Software.LST = LSTversion{1}{1};
-
     
     %% Get FSL version
     Software.FSL = 'Not used/found'; % default
-
     if ispc % Manage PC WSL
         wslString = 'wsl '; % windows subsystem for linux
     else
@@ -67,11 +64,9 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
             Software.FSL = Result2;
         end
     end
-
     
     %% Get ExploreASL version
     % PM: make similar function as spm('Ver')/cat_version
-
     VersionPath = xASL_adm_GetFileList(x.opts.MyPath, '^VERSION.*$', 'FPList', [0 Inf]);
     if isempty(VersionPath)
         warning('Could not obtain ExploreASL version, version file missing');
@@ -80,10 +75,8 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
         Software.ExploreASL = [Fname(9:end) Fext];
     end
     
-
     %% Get ExploreASL commit for optimal provenance
     % We also record if git was installed and if a git-version of ExploreASL was downloaded
-
     % Test if git was installed
     [ResultIs, gitVersion] = xASL_system('git --version');
     if ResultIs~=0
@@ -97,14 +90,12 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
         end
         
         Software.GIT = gitVersion;
-
         % Test if there is a gitdir (if ExploreASL was cloned from github)
         gitDir = fullfile(x.opts.MyPath, '.git');
         
         if ~exist(gitDir, 'dir')
             Software.ExploreASL_git = 'NoGitDir';
         else
-
             oldPath = pwd;
             cd(x.opts.MyPath);
             
@@ -117,7 +108,6 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
             end
         end
     end
-
     %% Add software field to x output
     try
         x.Output.SoftwareVersion(1) = Software;

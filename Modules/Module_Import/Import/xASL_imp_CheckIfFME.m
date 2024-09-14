@@ -19,6 +19,10 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded)
 %
 % __________________________________
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     if nargin < 1 || isempty(jsonIn)
 		error('Require JSON structure on the input');
@@ -75,7 +79,6 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded)
 		end
 				
 	end
-
 	% Or protocol name
 	if isfield(jsonIn,'ProtocolName') &&...
 	   (~isempty(regexpi(char(jsonIn.ProtocolName), 'fme_gammastar_Had(4|8)', 'once')) ||...

@@ -21,10 +21,13 @@ function [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfF
 %
 % __________________________________
 % Copyright 2015-2022 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Initialize JSON struct
     resultJSON = struct;
-
     if numel(nii_files)>=1
         [resultPath, resultFile] = xASL_fileparts(nii_files{1});
         % Check if we have the corresponding JSON file

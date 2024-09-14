@@ -48,13 +48,15 @@ function pathOut = xASL_im_PreSmooth(pathRef,pathSrc,pathSmo,resRef,resSrc,srcAf
 % vol 9350. Springer, Cham
 % __________________________________
 % Copyright 2015-2019 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 0) Admin
 if nargin < 2 || isempty(pathRef) || isempty(pathSrc)
 	error('Need to specify the reference and source images');
 end
-
 % Create the output by adding a prefix 's'
 if nargin < 3 || isempty(pathSmo)
 	[Fpath, Ffile, Fext] = xASL_fileparts(pathSrc);
@@ -62,16 +64,13 @@ if nargin < 3 || isempty(pathSmo)
 else
 	pathOut = pathSmo;
 end
-
 % Loads the input images
 imRef = xASL_io_ReadNifti(pathRef);
 imSrc = xASL_io_ReadNifti(pathSrc);
-
 % ===============================================================================
 %% 1) Obtain the voxel size
 voxRef = [norm(imRef.mat(:,1)), norm(imRef.mat(:,2)), norm(imRef.mat(:,3))];
 voxSrc = [norm(imSrc.mat(:,1)), norm(imSrc.mat(:,2)), norm(imSrc.mat(:,3))];
-
 % Define the reference and source resolution as FWHM in voxels
 if nargin < 4 || isempty(resRef)
 	% By default equal to the voxel size
@@ -80,7 +79,6 @@ else
 	% Divide the resolution by the voxel size
 	resVoxRef = resRef./voxRef;
 end
-
 if nargin < 5 || isempty(resSrc)
 	% By default equal to the voxel size
 	resVoxSrc = [1 1 1];
@@ -88,26 +86,21 @@ else
 	% Divide the resolution by the voxel size
 	resVoxSrc = resSrc./voxSrc;
 end
-
 ResultantResolutionRef = voxRef.*resVoxRef;
 ResultantResolutionSrc = voxSrc.*resVoxSrc;
-
 % ===============================================================================
 %% 2) Skip this function if reference resolution is equal to, or lower than source resolution
 % The smoothing is only required when the reference resolution is in any dimension lower
 % than the source resolution. The minimal resolution difference is 0.2 mm (in any dimension).
 RefSmallerThanSrc = max(ResultantResolutionRef>(ResultantResolutionSrc+0.2));
-
 fprintf(['Effective spatial resolution source image: [' xASL_num2str(ResultantResolutionSrc) '] mm\n']);
 fprintf(['Effective spatial resolution reference image: [' xASL_num2str(ResultantResolutionRef) '] mm\n']);
-
 if ~RefSmallerThanSrc
     xASL_Copy(pathSrc, pathOut, 1);
     fprintf('Pre-smoothing skipped, resolutions were not significantly different\n');
     return; % skip pre-smoothing
 end
 fprintf('Pre-smoothing...\n');
-
 % ===============================================================================
 %% 3) Deal with affine transformation
 if nargin < 6 || isempty(srcAffinePath)
@@ -115,18 +108,15 @@ if nargin < 6 || isempty(srcAffinePath)
 elseif iscell(srcAffinePath)
 	srcAffinePath = srcAffinePath{1};
 end
-
 if nargin < 7 || isempty(bInvAffine)
 	bInvAffine = false;
 end
-
 % Checks if the sn-mat exists and then loads it
 if ~isempty(srcAffinePath) && exist(srcAffinePath,'file')
 	SnMat = load(srcAffinePath);
 else
 	SnMat = [];
 end
-
 % Check if the affine transform was loaded and then modify the source matrix accordingly
 if isempty(SnMat)
 	srcMat = imSrc.mat;
@@ -144,32 +134,24 @@ else
 		srcMat = (srcMat/SnMat.VF.mat)*imSrc.mat;%mat*inv(SnMat.VF.mat)*locMat;
 	end
 end
-
-
 % ===============================================================================
 %% 4) Obtain the transformation matrix from the Reference to the Source space
 %transMat = inv(imSrc.mat)*imRef.mat;
 transMat = srcMat\imRef.mat;
 transMat = transMat(1:3,1:3);
-
 % The covariance matrix in both spaces is simply a diagonal matrix of the resolution in voxels
 % Multiply by the transformation matrix to bring the covariance matrix of the reference space to the source
 % space and subtract the covariance matrix of the source to obtain the covariance matrix of the filter
 covMat = (transMat*diag(resVoxRef.^2)*(transMat') - diag(resVoxSrc.^2));
-
 % covMat is in FWHM^2 we need to move it to var by dividing by (2*sqrt(2*log(2)))^2
 covMat = covMat/((2*sqrt(2*log(2)))^2);
-
 % The inverse of the covariance matrix is needed to calculate the 3D Gaussian
 %covMatInv = inv(covMat);
-
 % Obtain the maximal sigma. We cut the window at 2.7 sigma.
 wSize = ceil(sqrt(max(abs(covMat),[],2))*2.7);
-
 % Prepare the pixel grid for calculating of the kernel
 [pX,pY,pZ] = ndgrid(-wSize(1):wSize(1),-wSize(2):wSize(2),-wSize(3):wSize(3));
 pVec = [pX(:),pY(:),pZ(:)]';
-
 % Prepare the empty kernel
 kFil = zeros(size(pVec,2),1);
 for ii=1:size(pVec,2)
@@ -178,13 +160,10 @@ for ii=1:size(pVec,2)
 end
 % Reshape back to normal size
 kFil = reshape(kFil,size(pX));
-
 % Calculate the PDF
 kFil = exp(-kFil/2);
-
 % Normalize the PDF
 kFil = kFil/sum(kFil(:));
-
 % ===============================================================================
 %% 5) Apply the smoothing filter on the source image(s)
 % Do this within the first 3 dimensions only
@@ -204,10 +183,7 @@ for i7=1:size(imSrc.dat,7)
     end
 end
 fprintf('\n');
-
 % ===============================================================================
 %% 6) Save the smoothed image
 xASL_io_SaveNifti(pathSrc, pathOut, imSmo, [], 0);
-
-
 end

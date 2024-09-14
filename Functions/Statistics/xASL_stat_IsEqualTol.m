@@ -23,34 +23,31 @@ function bIsnear = xASL_stat_IsEqualTol(x, y, tol)
 %
 % __________________________________
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Admin
 if nargin < 2 || isempty(x) || isempty(y)
     error('Two non-empty inputs are required')
 end
-
 % Default tolerance
 if nargin < 3 || isempty(tol)
    tol = 1e-8;
 end
-
 % Check that all inputs are numerical arrays
 if ~isnumeric(x) || ~isnumeric(y) || ~isnumeric(tol)
    error('All inputs must be numerical arrays')
 end
-
 % Check if X and Y inputs are the same size or scalars
 if ~isequal(size(x), size(y)) && numel(x) > 1 && numel(y) > 1
    error('Inputs X and Y must be the same size or either of them must be a scalar');
 end
-
 % Check if tol is a scalar or has the same size as X and Y
 if numel(tol) > 1 && ( (numel(x) > 1 && ~isequal(size(tol), size(x))) || (numel(y) > 1 && ~isequal(size(tol), size(y))) )
 	error('Input TOL must be a scalar or have the same size as X or Y');
 end
-
 % Check if the difference is smaller than tolerance
 bIsnear = abs(x-y) <= abs(tol);
-
 end

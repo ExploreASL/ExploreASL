@@ -42,19 +42,21 @@ function [H,P,CI,stats] = xASL_stat_ttest2(X,Y,alpha,tail,vartype,dim)
 %             http://inspirehep.net/record/1389910/files/suf9601.pdf
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Admin
 if nargin < 2
     error('Two samples need to be given.');
 end
-
 % Alpha is a scalar with values between 0 and 1
 if nargin < 3 || isempty(alpha)
     alpha = 0.05;
 elseif ~isscalar(alpha) || alpha <= 0 || alpha >= 1 || isnan(alpha)
     error('Significance level alpha needs to be a scalar between 0 and 1');
 end
-
 % By default, two-tailed test is performed
 if nargin < 4 || isempty(tail)
     tail = 0;
@@ -83,7 +85,6 @@ else
 		error('Tail must be either -1, 0, or 1 or ''both'', ''right'', or ''left''');
 	end
 end
-
 % Equal variances are assumed by default
 if nargin < 5 || isempty(vartype)
     vartype = 1;
@@ -101,7 +102,6 @@ else
 		error('vartype must be one of the strings ''equal'' or ''unequal''.');
 	end
 end
-
 if nargin < 6 || isempty(dim)
     % By default, use the first non-singleton dimension
 	% First try X
@@ -115,7 +115,6 @@ if nargin < 6 || isempty(dim)
 		dim = 1;
 	end
 end
-
 % The data must have the same dimension, except for the working dimension - there, a different number of samples can be given
 NX = size(X); 
 NY = size(Y);
@@ -123,7 +122,6 @@ NY(dim) = NX(dim);
 if ~isequal(NX,NY)
     error('Dimensions of X and Y must match in non-working dimensions.');
 end
-
 % Identify the NaNs and calculate the sample size excluding NaNs
 nansX = isnan(X);
 if any(nansX(:))
@@ -137,11 +135,9 @@ if any(nansY(:))
 else
 	NY = size(Y,dim); 
 end
-
 varX    = xASL_stat_VarNan(X,[],dim);
 varY    = xASL_stat_VarNan(Y,[],dim);
 dmeanXY = xASL_stat_MeanNan(X,dim) - xASL_stat_MeanNan(Y,dim);
-
 switch (vartype)
 	% Equal variances
 	case 1 
@@ -161,7 +157,6 @@ switch (vartype)
 			df = 1; 
 		end
 end
-
 % Calculate the P-values
 switch (tail)
 	case 0
@@ -171,7 +166,6 @@ switch (tail)
 	case -1
 		P = xASL_stat_tcdf(-tval,df);
 end
-
 if nargout > 2
 	switch (tail)
 		case 0
@@ -185,12 +179,10 @@ if nargout > 2
 			CI = cat(dim, -Inf(size(P)),dmeanXY+CIspread);
 	end
 end
-
 % Create the outputs
 % The rejection of the null hypothesis
 H = double(P <= alpha);
 H(isnan(P)) = nan;
-
 % Output the additional statisticas
 if nargout > 3
 	stats.tstat = tval;
@@ -200,10 +192,8 @@ if nargout > 3
 		stats.sd = sqrt(cat(dim, varX, varY));
 	end
 	stats.df    = df;
-
     if ~isequal(size(df),size(tval))
         stats.df = repmat(stats.df,size(tval));
     end
 end
-
 return

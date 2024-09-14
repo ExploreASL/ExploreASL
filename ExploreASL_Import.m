@@ -17,7 +17,10 @@ function [x] = ExploreASL_Import(x)
 %
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Hyperlink
     xASL_adm_BreakString('ExploreASL Import');
@@ -27,7 +30,6 @@ function [x] = ExploreASL_Import(x)
         fprintf('The ExploreASL DICOM to BIDS (Import) tutorial is available at: https://exploreasl.github.io/Documentation/latest/Tutorials-Import\n');
     end
     
-
     %% Import Initialization
     try
         % Before we run the subject-wise xASL_module_Import we need to initialize some x structure fields. For DCM2NII & NII2BIDS 

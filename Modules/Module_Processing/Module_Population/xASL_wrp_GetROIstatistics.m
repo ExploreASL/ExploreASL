@@ -43,75 +43,61 @@ function xASL_wrp_GetROIstatistics(x)
 % EXAMPLE: xASL_wrp_GetROIstatistics(x);
 % __________________________________
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ------------------------------------------------------------------------------------------------------------
 %% Admin
-
 if ~isfield(x.S,'IsASL') || isempty(x.S.IsASL)
     x.S.IsASL = true;
 end
 if ~isfield(x.S,'IsVolume') || isempty(x.S.IsVolume)
     x.S.IsVolume = false; % default
 end
-
 if isfield(x.D,'PopDir') || ~isempty(x.D.PopDir)
     x.S.InputDataDir = x.D.PopDir; 
 end
-
 if ~isfield(x.S,'InputNativeSpace') || isempty(x.S.InputNativeSpace)
 	x.S.InputNativeSpace = 0;
 end
-
 if ~isfield(x.S, 'bSubjectSpecificROI') || isempty(x.S.bSubjectSpecificROI)
 	x.S.bSubjectSpecificROI = false;
 end
-
 x.S.CheckMasksDir = fullfile(x.S.StatsDir,'CheckMasksVisually');
-
 x.S.Input2Check = {'InputDataStr'           'InputAtlasPath'              }; % 'InputDataDir'
 x.S.InputFormat = {'string'                 'file'                        }; % 'dir'
 x.S.InputNaming = {'name of the input data' 'atlas file (.nii or .nii.gz)'}; % 'input data'
-
 [x] = xASL_adm_uiGetInput(x); % Request missing input fields
 [x.S] = xASL_adm_uiGetInput(x.S); % Request missing input fields
-
 if ~isfield(x.S,'SubjectWiseVisualization') || isempty(x.S.SubjectWiseVisualization)
     x.S.SubjectWiseVisualization = false; % this takes lots of computation time, off by default
 end    
 if iscell(x.S.InputDataStr)
     x.S.InputDataStr = x.S.InputDataStr{1}; 
 end
-
 if ~isfield(x,'LabEffNorm') || isempty(x.LabEffNorm)
     x.LabEffNorm = false;
 elseif x.LabEffNorm ==true
     x.S.output_ID = [x.S.output_ID '_LabEffNorm'];
 end
-
-
 %% ------------------------------------------------------------------------------------------------------------
 %% 1) Load the atlas
-
     %% =======================================================================================================
     %% PM QUICK AND DIRTY SOLUTION TO LOAD SUBJECT-WISE ATLASES, THIS GOES OUT OF THIS CODE IN THE NEAR FUTURE
     %% =======================================================================================================
-
 if ~x.S.bSubjectSpecificROI
 	x = xASL_stat_AtlasForStats(x); % check all atlases that are requested (see InputAtlasPath above)
 	% check them, check their ROI names, and make them ready for use below
-
 	% Skip atlas loading here for subject-specific atlases
 else
 	% In the case of subject specific ROIs/Lesions, load ROI/Lesion to be able to create the ROI names
 	% Save the Path without subject to a temporary variable
 	tempPath = x.S.InputAtlasPath;
-
 	% Find any fitting atlas
 	[~, pathAtlasName] = fileparts(x.S.InputAtlasPath);
-
 	atlasList = xASL_adm_GetFileList(x.D.PopDir, [pathAtlasName '.*\.nii$'], 'FPList', [0 Inf]);
-
 	if ~isempty(atlasList)
 		x.S.InputAtlasPath = atlasList{1};
 		% Load the atlas
@@ -120,12 +106,9 @@ else
 	% Restore the path without subject name
 	x.S.InputAtlasPath = tempPath;
 end
-
     %% =======================================================================================================
     %% PM QUICK AND DIRTY SOLUTION TO LOAD SUBJECT-WISE ATLASES, THIS GOES OUT OF THIS CODE IN THE NEAR FUTURE
     %% =======================================================================================================
-
-
 %% ------------------------------------------------------------------------------------------------------------
 %% 2) Organize TSV output name
 [~, Ffile] = xASL_fileparts(x.S.InputAtlasPath);
@@ -135,7 +118,6 @@ elseif isempty(x.S.output_ID)
 else
     x.S.output_ID = [x.S.output_ID '_']; % add underscore if not empty
 end
-
 x.S.output_ID = [x.S.output_ID x.S.InputDataStr];
 if x.S.InputNativeSpace
 	x.S.output_ID = [x.S.output_ID '_NativeSpace'];
@@ -143,13 +125,9 @@ else
 	x.S.output_ID = [x.S.output_ID '_StandardSpace'];
 end
 x.S.output_ID = [x.S.output_ID '_' Ffile '_n=' num2str(x.dataset.nSubjects) '_' date];
-
-
 %% ------------------------------------------------------------------------------------------------------------
 %% 3) Obtain the ROI statistics
 x = xASL_stat_GetROIstatistics(x); % calculate median CBF/spatial CoV etc per ROI
-
-
 %% ------------------------------------------------------------------------------------------------------------
 %% 4)  Print statistics in TSV files
 if ~isempty(strfind(x.S.InputDataStr,'CBF'))
@@ -167,7 +145,6 @@ elseif ~isempty(strfind(x.S.InputDataStr,'ATT'))
 else
     x.S.unit = 'au';
 end
-
 Statistics = {'median' 'mean' 'CoV' 'CoV' 'sum'};
 for iStat=1:length(Statistics)
     for iPVC=1:3
@@ -180,6 +157,5 @@ for iStat=1:length(Statistics)
         end
     end
 end
-
     
 end

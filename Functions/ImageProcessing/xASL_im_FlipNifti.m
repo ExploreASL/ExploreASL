@@ -31,10 +31,12 @@ function xASL_im_FlipNifti(pathInput, flipAxis, bOverwrite)
 % EXAMPLE: xASL_im_FlipNifti('CICERO_Nolan/analysis/C3T-S007_1/RPI_4V/4V.nii');
 % __________________________________
 % Copyright 2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
-
 if nargin<3 || isempty(bOverwrite)
     bOverwrite = false;
 end
@@ -44,10 +46,8 @@ end
 if nargin<1 || isempty(pathInput)
     error('Input path missing');
 end
-
 [Fpath, Ffile, Fext] = xASL_fileparts(pathInput);
 pathOutput = fullfile(Fpath, [Ffile '_flipped' Fext]);
-
 %% 1. Manage if we overwrite the new NIfTI
 if xASL_exist(pathOutput, 'file') && bOverwrite
     xASL_delete(pathOutput);
@@ -57,7 +57,6 @@ elseif xASL_exist(pathOutput, 'file') && ~bOverwrite
     fprintf('%s\n', 'Hint, either delete this file manually or set bOverwrite to true');
 end
     
-
 %% 2. Manage if we zip the new NIfTI
 if strcmp(Fext, '.nii')
     bGZip = 0;
@@ -66,15 +65,10 @@ elseif strcmp(Fext, '.nii.gz')
 else
     warning('Unknown extension!');
 end
-
 %% 3. Load image from NIfTI
 imageIn = xASL_io_Nifti2Im(pathInput);
-
 %% 4. Flip image
 imageOut = xASL_im_Flip(imageIn, flipAxis);
-
 %% 5. Save image to NIfTI
 xASL_io_SaveNifti(pathInput, pathOutput, imageOut, [], bGZip);
-
-
 end

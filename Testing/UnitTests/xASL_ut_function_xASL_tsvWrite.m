@@ -15,16 +15,16 @@ function UnitTest = xASL_ut_function_xASL_tsvWrite(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_tsvWrite(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Test run 1
-
 % Give your individual subtest a name
 UnitTest.tests(1).testname = 'Read and write test file (default options)';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 testFile = fullfile(TestRepository,'UnitTesting','io_files','TestFile.tsv');
 testFileWrite = fullfile(TestRepository,'UnitTesting','working_directory','TestFile.tsv');
@@ -33,7 +33,6 @@ InputCell = xASL_tsvRead(testFile);
 xASL_tsvWrite(InputCell, testFileWrite, false, false);
 % Read test file
 OutputCell = xASL_tsvRead(testFileWrite);
-
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
 if ~exist(testFileWrite,'file')
@@ -51,25 +50,17 @@ end
 if ~(ischar(OutputCell{2,1}) && ischar(OutputCell{2,2}) && isa(OutputCell{2,3},'double'))
     testCondition = false; % Test failed
 end
-
 % Remove file after test
 delete(testFileWrite);
-
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
-
-
 %% Test run 2
-
 % Give your individual subtest a name
 UnitTest.tests(2).testname = 'Read and write test file (force overwrite)';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 testFile = fullfile(TestRepository,'UnitTesting','io_files','TestFile.tsv');
 testFileWrite = fullfile(TestRepository,'UnitTesting','working_directory','TestFile.tsv');
@@ -79,7 +70,6 @@ xASL_tsvWrite(InputCell, testFileWrite, false, false);
 xASL_tsvWrite(InputCell, testFileWrite, true, false); % Overwrite file from previous step
 % Read test file
 OutputCell = xASL_tsvRead(testFileWrite);
-
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
 if ~exist(testFileWrite,'file')
@@ -97,20 +87,12 @@ end
 if ~(ischar(OutputCell{2,1}) && ischar(OutputCell{2,2}) && isa(OutputCell{2,3},'double'))
     testCondition = false; % Test failed
 end
-
 % Remove file after test
 delete(testFileWrite);
-
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(2).passed = testCondition;
-
-
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
-
 end
-
-

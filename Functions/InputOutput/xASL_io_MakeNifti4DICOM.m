@@ -30,7 +30,10 @@ function xASL_io_MakeNifti4DICOM(PathIn, x, DataType, OrientationPath, ResampleP
 % EXAMPLE: xASL_io_MakeNifti4DICOM(x.P.PathCBF, x);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 if nargin<3 || isempty(DataType)
@@ -45,56 +48,41 @@ end
 if nargin<5
     ResamplePath = []; % by default don't resample
 end
-
 CBFim = xASL_io_Nifti2Im(PathIn);
 [Fpath, Ffile] = xASL_fileparts(PathIn);
-
 FileNew = [Ffile '_Visual2DICOM'];
 RegExpNew = [Ffile '_Visual2DICOM'];    
-
 if ~isempty(OrientationPath)
     [~, FfileRef] = xASL_fileparts(OrientationPath);
     FileNew = [FileNew '_align-' FfileRef];
     RegExpNew = [RegExpNew '_align-' FfileRef];
 end
-
 if ~isempty(ResamplePath)
     [~, FfileRef] = xASL_fileparts(ResamplePath);
     FileNew = [FileNew '_space-' FfileRef];
     RegExpNew = [RegExpNew '_space-' FfileRef];
 end
-
 FileNew = [FileNew '.nii'];
 RegExpNew = [RegExpNew '\.nii'];
-
 PathNew = fullfile(Fpath, FileNew);
-
-
 %% 1) Remove peak signal
 [~, CBFim] = xASL_im_MaskPeakVascularSignal(CBFim, [], true, 6);
-
 %% 2) Remove valley signal
 % Define the lower threshold
 NegativeSignal = CBFim(CBFim<0);
-
 % medianValue = xASL_stat_MedianNan(NegativeSignal);
 madValue = xASL_stat_MadNan(NegativeSignal,1);
 ClipThr = 2*madValue; % medianValue - (4*madValue);
-
 CBFim(CBFim<ClipThr) = 0;
 CBFim(CBFim<0) = 0;
-
 %% 3) Remove NaNs
 CBFim(isnan(CBFim)) = 0;
-
 %% 4) Rescale to 12 bit integers
 RescaleSlope = 4095/max(CBFim(:));
 CBFim = round(CBFim.*RescaleSlope);
-
 %% 5) Save NIfTI
 xASL_io_SaveNifti(PathIn, PathNew, CBFim, [], false);
 newNifti = xASL_io_ReadNifti(PathNew);
-
 %% 6) Manage scale slope/datatype
 if strcmp(DataType,'UINT16')
     newNifti.dat(:,:,:) = uint16(CBFim);
@@ -105,22 +93,18 @@ else
     newNifti.dat.scl_slope = 1/RescaleSlope;
     newNifti.dat.dtype = 'INT16-LE';
 end
-
 %% 7) Apply original orientation
 % Here, we assume that the ASL scan is registered with the T1 NIfTI.
 % The original position of the T1 scan, can be found in the mat0 of the
 % NIfTI, either the T1_ORI or the T1.
-
 % PM: If the T1.nii doesnt exist, we can compare ASL4D.nii.mat with
 % ASL4D.nii.mat0 instead, but this will revert any registrations of ASL4D
 % with structural scans
-
 % We assume that the pipeline has done the following:
 % 1) original T1 orientation from scanner = T1[_ORI].nii.mat0
 % 2) T1 (& derivatives) moved to MNI ACPC center
 % 3) ASL (& derivatives) registered to T1
 % -> Hence, we only revert step 1-2 here
-
 if ~isempty(OrientationPath)
     % define path to backup NIfTI
     [Fpath, Ffile, Fext] = xASL_fileparts(OrientationPath);
@@ -134,15 +118,11 @@ if ~isempty(OrientationPath)
     niiReg_ORI = xASL_io_ReadNifti(OrientationPathOri);
     matReg = niiReg.mat;
     matReg_ORI = niiReg_ORI.mat0;
-
     Transformation = matReg_ORI/matReg;
-
     % Apply this transformation (which should be translations & rotations only)
     newNifti.mat = Transformation*newNifti.mat;
 end
-
 create(newNifti);
-
 %% 8) Resample
 if ~isempty(ResamplePath)
     if ~xASL_exist(ResamplePath, 'file') || isempty(regexp(ResamplePath,'\.nii(|\.gz)$'))
@@ -161,10 +141,6 @@ if ~isempty(ResamplePath)
         xASL_delete(TempPath);
     end
 end        
-
-
 %% 9) Zip NIfTI
 xASL_adm_ZipFileList(Fpath, RegExpNew, false, true, [0 Inf], true);
-
-
 end

@@ -18,6 +18,10 @@ function [x] = xASL_qc_AddLoggingInfo(x, loggingEntry)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Try logging of errors and warnings
     try
@@ -25,10 +29,8 @@ function [x] = xASL_qc_AddLoggingInfo(x, loggingEntry)
         if ~isfield(x, 'logging')
             x.logging = struct;
         end
-
         % Get number of current errors & warnings
         numOfLoggingEntries = size(x.logging,2);
-
         % Determine current logging entry number
         if numOfLoggingEntries==1
             if ~isfield(x.logging, 'message')
@@ -36,7 +38,6 @@ function [x] = xASL_qc_AddLoggingInfo(x, loggingEntry)
             end
         end
         entryNumber = numOfLoggingEntries+1;
-
         % Add logging entry
         x.logging(entryNumber).message = loggingEntry.message;
         x.logging(entryNumber).stack = loggingEntry.stack;
@@ -46,5 +47,3 @@ function [x] = xASL_qc_AddLoggingInfo(x, loggingEntry)
     end
     
 end
-
-

@@ -15,25 +15,24 @@ function UnitTest = xASL_ut_function_xASL_adm_SortStringNumbers(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_adm_SortStringNumbers(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Test run 1
-
 % Give your individual subtest a name
 UnitTest.tests(1).testname = 'Test string number sorting';
-
 % Start the test
 testTime = tic;
-
 % Run your test here
 NewList{1,1} = 'ASL_1';
 NewList{2,1} = 'ASL_6';
 NewList{3,1} = 'ASL_3';
 NewList{4,1} = 'ASL_05';
 NewList{5,1} = 'ASL_12';
-
 % Sort the list
 SortedList = xASL_adm_SortStringNumbers(NewList);
-
 % Define one or multiple test conditions here
 testCondition = true; % Fallback
 if ~strcmp(SortedList{1},'ASL_1')
@@ -51,14 +50,10 @@ end
 if ~strcmp(SortedList{5},'ASL_12')
     testCondition = false; % Test failed
 end
-
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
-
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
-
 end

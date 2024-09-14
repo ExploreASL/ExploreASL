@@ -18,14 +18,16 @@ function [IM] = xASL_im_ZeroEdges(IM, EdgeThicknessPerc)
 % EXAMPLE: ImOut = xASL_im_ZeroEdges(ImIn);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2019-05-02 HJM
-
-
 if nargin<2 || isempty(EdgeThicknessPerc)
     EdgeThicknessPerc = 0.05;
 end
-
 % Get thickness edge
 nVox = round((size(IM)./2).*EdgeThicknessPerc);
 % Correct edges (set to 0)
@@ -35,7 +37,4 @@ IM(:              ,1:nVox(2)      ,:              ) = 0;
 IM(:              ,end-nVox(2):end,:              ) = 0;
 IM(:              ,:              ,1:nVox(3)      ) = 0;
 IM(:              ,:              ,end-nVox(3):end) = 0;
-
-
 end
-

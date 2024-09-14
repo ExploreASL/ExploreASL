@@ -20,6 +20,10 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     if nargin < 3
 		error('Three input parameters required');
@@ -32,7 +36,6 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
     else 
         bTimeEncoded = false; 
     end
-
     % Check for specific time encoded sequence of FME (Fraunhofer Mevis)
 	bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded);
 	
@@ -42,7 +45,6 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
     
 	if isfield(jsonOut, 'EchoTime')
 		NumberEchoTimes = length(uniquetol(jsonOut.EchoTime,0.001)); % Obtain the number of echo times
-
 		% Either 1 TE or matching the number of the volumes
 		if length(jsonOut.EchoTime) > 1 && nVolumes>length(jsonOut.EchoTime)
 			if mod(nVolumes,length(jsonOut.EchoTime)) == 0
@@ -88,7 +90,6 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
             end
         end
     end
-
     % Check for FME Hadamard sequences
     if isfield(jsonOut,'SeriesDescription')
         bTimeEncodedFME = ~isempty(regexp(jsonOut.SeriesDescription,'(Encoded_Images_Had)\d\d(_)\d\d(_TIs_)\d\d(_TEs)', 'once'));
@@ -111,9 +112,4 @@ function [jsonOut,bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEnc
 		% Determine the TotalAcquiredPairs
 		jsonOut.TotalAcquiredPairs = nVolumes / (NumberEchoTimes * numberPLDs);
     end
-
 end
-
-
-
-

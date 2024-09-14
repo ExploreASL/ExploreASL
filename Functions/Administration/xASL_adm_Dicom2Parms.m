@@ -24,6 +24,10 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 % REFERENCES:  n/a
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% ----------------------------------------------------------------------------------
 	% Admin
@@ -59,7 +63,6 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 	DcmParDefaults.MRScaleSlope              = 1;   % MRScaleSlope
 	DcmParDefaults.RescaleIntercept          = 0;   % RescaleIntercept (although this one is standard dicom)
 	DcmParDefaults.AcquisitionTime           = 0;   % AcquisitionTime
-
 	% TopUp parameters
 	DcmParDefaults.AcquisitionMatrix         = NaN;
 	DcmParDefaults.EffectiveEchoSpacing      = NaN;
@@ -181,13 +184,11 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
                 % for simplicity, take the first value from the enhanced
                 % sequences and store them in the temp-struct as if it is a
                 % classic structure.
-
                 if ~isfield(temp, 'PerFrameFunctionalGroupsSequence')
                     warning('Enhanced DICOM but PerFrameFunctionalGroupsSequence not found');
                 else
                     itemNames = fieldnames(temp.PerFrameFunctionalGroupsSequence);
                     SequenceFields = temp.PerFrameFunctionalGroupsSequence.(itemNames{1}); % here we assume the same ScaleSlope for all images in the sequence
-
                     % Fill temp dicominfo with these fields
                     Fields1Are = fields(SequenceFields);
                     for iField1=1:length(Fields1Are)
@@ -196,7 +197,6 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
                         elseif isstruct(SequenceFields.(Fields1Are{iField1}))
                             Fields2Are = fields(SequenceFields.(Fields1Are{iField1}));
                             SequenceFields2 = SequenceFields.(Fields1Are{iField1}).(Fields2Are{1});
-
                             Fields3Are = fields(SequenceFields2);
                             for iField3=1:length(Fields3Are)
                                 temp.(Fields3Are{iField3}) = SequenceFields2.(Fields3Are{iField3});
@@ -285,7 +285,6 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
                 for iL=1:length(t_parms)
                     t_parms(iL).AcquisitionTime = xASL_str2num(t_parms(iL).AcquisitionTime);
                 end
-
                 if length(t_parms)>1
                     if imPar.bVerbose; fprintf('%s\n','Parameter AcquisitionTime has multiple values:'); end
                     % t_parms.AcquisitionTime
@@ -331,13 +330,11 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 		% Philips software version, and should give an error (later we can
 		% make this a warning, or try to deal with this)
 		
-
 		
         %% Calculate the TopUp parameters
         if isfield(parms,'AcquisitionMatrix')
             parms.AcquisitionMatrix = double(parms.AcquisitionMatrix(1));
         end
-
         switch bManufacturer
             case 'GE'
                 if isfield(parms,'AssetRFactor') && isfield(parms,'EffectiveEchoSpacing') && isfield(parms,'AcquisitionMatrix')
@@ -426,16 +423,13 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
 % 	end
 	
 end
-
 if ~isempty(parmsfile)
 	X = load(parmsfile,'-mat');
 % 	parms = X.parms % show me the values >>>>>>>>>> TOO VERBOSE
 else
 % 	parms % show me the values >>>>>>>>>> TOO VERBOSE
 end
-
 return
-
 %% Obtain a value from a structure 
 function val = GetDicomValue(I, fieldname, default)
 if nargin>2
@@ -443,7 +437,6 @@ if nargin>2
 else
 	val = [];
 end
-
 if isfield(I, fieldname)
 	val = I.(fieldname);
 end

@@ -17,22 +17,21 @@ function xASL_wrp_LinearReg_Others2T1w(x, bAutoACPC)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if nargin<2 || isempty(bAutoACPC)
     bAutoACPC = true;
 end
-
 if (~xASL_exist(x.P.Path_T1c, 'file')) && (~xASL_exist(x.P.Path_T2, 'file'))
 	return;
 end
-
 fprintf('\n%s\n','----------------------------------------');
 fprintf('%s\n','T1c.nii or T2.nii detected, processing...');
-
-
 %% ---------------------------------------------------------------------------------------------------
 %% 1)Perform the registration
-
 listPaths = {x.P.Path_T2, x.P.Path_T1c};
 for iFile = 1:length(listPaths)
 	if xASL_exist(listPaths{iFile},'file')

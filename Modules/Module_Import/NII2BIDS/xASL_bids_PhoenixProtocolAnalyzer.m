@@ -27,6 +27,10 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 %
 % __________________________________
 % Copyright @ 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 1. Extract parameters from Phoenix - create a list of parameters
 	parIndex = 1;
@@ -111,13 +115,11 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 	sourcePar = addParToList('sWipMemBlock.adFree[11]',sourcePar, parIndex);parIndex = parIndex+1;
 	sourcePar = addParToList('sWipMemBlock.adFree[12]',sourcePar, parIndex);parIndex = parIndex+1;
     sourcePar = addParToList('sWipMemBlock.adFree[13]',sourcePar, parIndex);parIndex = parIndex+1;
-
     % Get the predefined parameters
     sourcePar = xASL_bids_PhoenixProtocolAnalyzer_getPhoenixParameters(sourcePar,parameterList,false);
     
     % Get xASL parameters
     sourcePar = xASL_bids_PhoenixProtocolAnalyzer_convertCellArrayToStruct(sourcePar);
-
 	%% 2. Obtain basic information about the sequence
 	bidsPar = struct();
     % Find out if it's a product sequence or a patch
@@ -158,9 +160,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 	if isfield(sourcePar,'sProtConsistencyInfotBaselineString') && ~isempty(sourcePar.sProtConsistencyInfotBaselineString)
 		bidsPar.SoftwareVersions = strrep(sourcePar.sProtConsistencyInfotBaselineString,'"','');
 	end
-
 	bSequenceIdentified = false; % Try to identify different sequences and in case this doesn't work we rollback to the defaults
-
 	%% 3. Reading sequence VEPCASL
 	if ~bSequenceIdentified && ~isempty(regexp(sourcePar.tSequenceFileName,'VEPCASL', 'once'))
 		% Check that the PCASL tag is filled as ON (==1)
@@ -172,10 +172,8 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			% Check that PLD and LabelingDuration tags are provided
 			if ~isempty(sourcePar.sWipMemBlockalFree9) &&  ~isempty(sourcePar.sWipMemBlockalFree11) 
 				% Proceed to parameter parsing
-
 				% Load the required parameters
 				bidsPar.LabelingDuration = sourcePar.sWipMemBlockalFree9 / 1000;
-
 				% PLDs are in alFree11 till alFree20
 				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockalFree11 / 1000;
 				iPLD = 2;
@@ -183,7 +181,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 					bidsPar.PostLabelingDelay(iPLD) = sourcePar.(['sWipMemBlockalFree' num2str(iPLD+10)]) / 1000;
 					iPLD = iPLD + 1;
 				end
-
 				% Check if all control and label images are acquired and saved
 				if sourcePar.sWipMemBlockalFree2 == 4
 					% If more than 1 PLD is given, we have to double that for control and labels
@@ -197,12 +194,10 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 				if ~isempty(sourcePar.sWipMemBlockalFree3) && (sourcePar.sWipMemBlockalFree3 == 2 || sourcePar.sWipMemBlockalFree3 == 3)
 					bidsPar.BackgroundSuppression = true;
 				end
-
 				% Flip angle
 				if ~isempty(sourcePar.sWipMemBlockalFree4)
 					bidsPar.LabelingPulseFlipAngle = sourcePar.sWipMemBlockalFree4;
 				end
-
 				% Details of the labeling pulse design
 				if ~isempty(sourcePar.sWipMemBlockalFree5)
 					bidsPar.LabelingPulseDuration = sourcePar.sWipMemBlockalFree5 / 1000;
@@ -213,14 +208,11 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			else
 				warning('Missing important parameters in Phoenix for Siemens VEPCASL sequence');
 			end
-
 		elseif ~isempty(regexp(sourcePar.tSequenceFileName, 'jw_tgse_VEPCASL', 'once'))
 			% Check that PLD and LabelingDuration tags are provided
 			if ~isempty(sourcePar.sWipMemBlockalFree10) &&  ~isempty(sourcePar.sWipMemBlockalFree31) 
-
 				% Load the required parameters
 				bidsPar.LabelingDuration = sourcePar.sWipMemBlockalFree10 / 1000;
-
 				% For 3D GRASE, PLDs are in alFree31 till alFree40
 				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockalFree30 / 1000;
 				iPLD = 2;
@@ -228,7 +220,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 					bidsPar.PostLabelingDelay(iPLD) = sourcePar.(['sWipMemBlockalFree' num2str(iPLD+29)]) / 1000;
 					iPLD = iPLD + 1;
 				end
-
 				% Check if all control and label images are acquired and saved
 				if sourcePar.sWipMemBlockalFree4 == 4
 					% If more than 1 PLD is given, we have to double that for control and labels
@@ -242,12 +233,10 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 				if ~isempty(sourcePar.sWipMemBlockalFree5) && (sourcePar.sWipMemBlockalFree5 == 3 || sourcePar.sWipMemBlockalFree5 == 2)
 					bidsPar.BackgroundSuppression = true;
 				end
-
 				% Flip angle
 				if ~isempty(sourcePar.sWipMemBlockalFree6)
 					bidsPar.LabelingPulseFlipAngle = sourcePar.sWipMemBlockalFree6;
 				end
-
 				% Details of the labeling pulse design
 				if ~isempty(sourcePar.sWipMemBlockalFree7)
 					bidsPar.LabelingPulseDuration = sourcePar.sWipMemBlockalFree7/ 1000;
@@ -262,63 +251,49 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			% An unknown version detected, skipping to the default
 			error('An unknown version of Siemens VEPCASL sequence detected');
 		end
-
 		bSequenceIdentified = true;
-
 		% Common parameters for all VEPCASL implementations
 		if ~isempty(sourcePar.sWipMemBlockalFree0) && sourcePar.sWipMemBlockalFree0 == 1
 			bidsPar.ArterialSpinLabelingType = 'PCASL';
 		end
-
 		if ~isempty(sourcePar.sWipMemBlockadFree0)
 			bidsPar.LabelingPulseAverageGradient = sourcePar.sWipMemBlockadFree0;
 		end
-
 		if ~isempty(sourcePar.sWipMemBlockadFree1)
 			bidsPar.LabelingPulseMaximumGradient = sourcePar.sWipMemBlockadFree1;
 		end
 	end
-
 	%% 4. Reading the _VE11C sequences from DJJ Wang
 	if ~bSequenceIdentified && ~isempty(regexpi(sourcePar.tSequenceFileName,'pcasl_ve11c', 'once'))
-
 		if ~isempty(regexpi(sourcePar.tSequenceFileName,'ep2d_pcasl_ve11c', 'once'))
 			% 2DEPI VE11C PCASL
 			if ~isempty(sourcePar.sWipMemBlockadFree2)
 				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockadFree2 / 1000000.0;
 			end
-
 		elseif ~isempty(regexpi(sourcePar.tSequenceFileName,'tgse_pcasl_ve11c', 'once'))
 			% 3DGRASE VE11C PCASL
 			if ~isempty(sourcePar.sWipMemBlockadFree2)
 				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockadFree2 / 1000000.0;
 			end
-
 			if ~isempty(sourcePar.sWipMemBlockalFree13) && sourcePar.sWipMemBlockalFree13 == 1
 				bidsPar.BackgroundSuppression = true;
 			else
 				bidsPar.BackgroundSuppression = false;
 			end
-
 		else
 			error('Unknown variant of PCASL_VE11C');
 		end
-
 		if ~isempty(sourcePar.sWipMemBlockadFree1)
 			bidsPar.LabelingDistance = sourcePar.sWipMemBlockadFree1;
 		end
-
 		bSequenceIdentified = true;
 		bidsPar.ArterialSpinLabelingType = 'PCASL';
-
 		if ~isempty(sourcePar.sWipMemBlockadFree10)
 			bidsPar.LabelingPulseAverageGradient = sourcePar.sWipMemBlockadFree10 / 10.0; % MeanGz x 10 mT/m
 		end
-
 		%sourcePar.sWipMemBlockadFree4 is RFGap in micro seconds (typically 360)
 		%sourcePar.sWipMemBlockadFree11 is PhiAdjust 100
 		%sourcePar.sWipMemBlockadFree11 T1 in usec
-
 		if ~isempty(sourcePar.sWipMemBlockadFree3)
 			%  Number of 20 RF pulses (each block is 18.4ms, recommend 82 for total labeling duration of 1.5s
 			bidsPar.LabelingDuration = sourcePar.sWipMemBlockadFree3 * 18.4 / 1000.0;
@@ -336,7 +311,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			if ~isempty(sourcePar.sWipMemBlockadFree13)
 				bidsPar.LabelingPulseFlipAngle = sourcePar.sWipMemBlockadFree13;
 			end
-
 			% Read PLD and LabDur from the common Phoenix fields
 			if ~isempty(sourcePar.alTI0)
 				bidsPar.LabelingDuration = sourcePar.alTI0 / 1000 / 1000;
@@ -344,12 +318,10 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 					bidsPar.PostLabelingDelay = (sourcePar.alTI2-sourcePar.alTI0) / 1000 / 1000;
 				end
 			end
-
 			% Number of control/label pairs
 			if ~isempty(sourcePar.lRepetitions)
 				bidsPar.NumberOfAverages = sourcePar.lRepetitions + 1;
 			end
-
 			% Number of segments in the 3D GRASE readout
 			if ~isempty(sourcePar.sFastImaginglSegments)
 				bidsPar.NumberSegments = sourcePar.sFastImaginglSegments;
@@ -357,7 +329,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
  
 			% The repetitiontime of M0
 			bidsPar.RepetitionTimePreparationM0 = sourcePar.sWipMemBlockalFree2 / 1000;
-
 			% The normal repetition time
 			bidsPar.RepetitionTimePreparation = sourcePar.alTR0 / 1000 / 1000;
 		else
@@ -373,7 +344,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 		%    bidsPar.BolusCutOffFlag = true;
 		%	bidsPar.BolusCutOffTechnique = 'Q2TIPS';
 		%end
-
 		% TODO - does it really work for other sequences?
 		if ~isempty(sourcePar.alTI0) && ~isempty(sourcePar.alTI2)
 			if sourcePar.alTI0~=100000 && sourcePar.alTI2~=7000000
@@ -382,7 +352,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 				bidsPar.ScanType = 'PseudoM0';
 			end
 		end
-
 		% N4_VD13D and N4_VE11C have also slab_thickness_mm parameter defined and it is unclear if this is imaging FOV or labeling slab thickness...
 		if isfield(bidsPar,'SoftwareVersions') &&...
 				(~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB15A', 'once'))||...
@@ -391,7 +360,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			if isfield(sourcePar,'sGroupArraysPSatdGap') && ~isempty(sourcePar.sGroupArraysPSatdGap)
 				bidsPar.LabelingDistance = sourcePar.sGroupArraysPSatdGap;
 			end
-
 			if isfield(bidsPar,'ArterialSpinLabelingType') && ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl', 'once')) &&...
 					isfield(sourcePar,'sGroupArraysPSatdThickness') && ~isempty(sourcePar.sGroupArraysPSatdThickness)
 				bidsPar.LabelingSlabThickness = sourcePar.sGroupArraysPSatdThickness;
@@ -401,7 +369,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 		%if isfield(sourcePar,'Slab_thickness_mm') && ~isempty(sourcePar.Slab_thickness_mm)
 		%	bidsPar.LabelingSlabThickness = sourcePar.Slab_thickness_mm;
 		%end
-
 		% If the labeling type is recognized, then proceed to labeling timing information extraction
 		if isfield(bidsPar,'ArterialSpinLabelingType')
 			if ~isempty(regexpi(bidsPar.ArterialSpinLabelingType,'pasl', 'once'))
@@ -411,7 +378,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 						~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VB19A', 'once'))||...
 						~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VD13D', 'once'))||...
 						~isempty(regexpi(bidsPar.SoftwareVersions,'N4_VE11C', 'once')))
-
 					if isfield(sourcePar,'alTI0') && ~isempty(sourcePar.alTI0)
 						bidsPar.PostLabelingDelay = sourcePar.alTI0 / 1000 / 1000;
 					end
@@ -446,7 +412,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			end
 		end
 	end
-
 	%% 7. Reading TE vector and TR vector
 	if isfield(sourcePar,'alTE0') && ~isempty(sourcePar.alTE0)
 		bidsPar.EchoTime = sourcePar.alTE0 / 1000 / 1000;
@@ -464,7 +429,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			end
 		end
 	end
-
 end
 %% --------------------------------------------------------------------------------------------------------
 %% Get individual phoenix parameter
@@ -480,7 +444,6 @@ function value = xASL_bids_PhoenixProtocolAnalyzer_getPhoePar(sourcePar,curParTo
         value = str2double(value);
     end
 end
-
 %% --------------------------------------------------------------------------------------------------------
 %% Convert cell array to struct
 %% --------------------------------------------------------------------------------------------------------
@@ -498,18 +461,15 @@ function parameterStruct = xASL_bids_PhoenixProtocolAnalyzer_convertCellArrayToS
         parameterStruct.(validFieldName) = value;        
     end
 end
-
 %% --------------------------------------------------------------------------------------------------------
 %% Get ID of parameter name
 %% --------------------------------------------------------------------------------------------------------
 function parameters = xASL_bids_PhoenixProtocolAnalyzer_getPhoenixParameters(parameters,phoenixParameterList,debugMode)
-
     % Get number of parameters
     parameterNames = parameters(:,1);
     numberOfParameters = numel(parameterNames);
     IDs = nan(numberOfParameters,1);
     newPar = 1;
-
     for curParameter=1:numberOfParameters
         % Get parameter name and ID in parameter list
         curName = parameterNames{curParameter,1};
@@ -558,10 +518,8 @@ function parameters = xASL_bids_PhoenixProtocolAnalyzer_getPhoenixParameters(par
         end
     end
 end
-
 % Add parameter to list
 function parameters = addParToList(parName,parameters,parNum)
     parameters{parNum,1} = parName;
     parameters{parNum,2} = NaN;
 end
-

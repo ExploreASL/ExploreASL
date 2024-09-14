@@ -44,6 +44,11 @@ function xASL_wrp_CreateIndividualMask(x)
 % EXAMPLE: xASL_wrp_CreateIndividualMask(x);
 % __________________________________
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 %% 0. Create native space FoV mask
 % Use either original or motion estimated ASL4D
@@ -55,19 +60,15 @@ end
 if ~xASL_exist(x.P.Path_PWI, 'file')
     error([x.P.Path_PWI ' missing']);
 end
-
 FoVim = xASL_io_Nifti2Im(x.P.Path_PWI);
 FoVim(:) = 1;
 xASL_io_SaveNifti(x.P.Path_PWI, x.P.Path_FoV, FoVim, 8, false);
-
 if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
     AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
 else
     AffineTransfPath = [];
 end
-
 xASL_spm_deformations(x, x.P.Path_FoV, x.P.Pop_Path_FoV, 0, [], AffineTransfPath, x.P.Path_y_ASL);
-
 %% Deal with different readouts
 if  strcmpi(x.Q.PulseSequenceType, 'EPI') && strcmpi(x.Q.MRAcquisitionType, '2D')
 	Path_Template = fullfile(x.D.MapsDir,'Templates','Susceptibility_pSignal_2D_EPI.nii');
@@ -83,13 +84,11 @@ elseif strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType
 else
         error('Unknown ASL sequence!');
 end
-
 %% 1. Negative vascular signal
 NegativeMaskNative = xASL_im_MaskNegativeVascularSignal(x, 1); % native space
 NegativeMaskMNI = xASL_im_MaskNegativeVascularSignal(x, 2); % standard space
 NegativeMaskNative = xASL_im_DilateErodeFull(NegativeMaskNative,'dilate',xASL_im_DilateErodeSphere(1));
 NegativeMaskMNI = xASL_im_DilateErodeFull(NegativeMaskMNI,'dilate',xASL_im_DilateErodeSphere(1));
-
 %% 2. Detect peak vascular signal
 if xASL_exist(x.P.Path_rM0,'file')
     PositiveMaskNative = xASL_im_MaskPeakVascularSignal(x.P.Path_PWI, x.P.Path_rM0, [], ClipThresholdValue);
@@ -99,37 +98,30 @@ else
     PositiveMaskMNI = xASL_im_MaskPeakVascularSignal(x.P.Pop_Path_PWI, [], ClipThresholdValue); % no M0
 end
 PositiveMaskMNI = xASL_im_DilateErodeFull(PositiveMaskMNI,'dilate',xASL_im_DilateErodeSphere(1));
-
 %% 3A. Brainmasking & FoV-masking native space
 % Use previously created smoothed PGM images
 pGM = xASL_io_Nifti2Im(x.P.Path_PVgm);
 pWM = xASL_io_Nifti2Im(x.P.Path_PVwm);
 pCSF = xASL_io_Nifti2Im(x.P.Path_PVcsf);
-
 MaskVascularNative = ~NegativeMaskNative & ~PositiveMaskNative;
 BrainMask = (pGM+pWM)>0.5;
 MaskVascularNative(~BrainMask) = 0; % Remove extracranial (same setting as in ROI module)
 MaskVascularNative(pWM>0.8) = 1; % Remove WM vascular spots
 MaskVascularNative(pCSF>0.8) = 1; % Remove WM vascular spots
-
 % Obtain brain mask for image processing (e.g., BASIL)
 BrainMaskProcessingNativeSpace = (pGM+pWM+pCSF)>0.1;
-
 %% 3B. Brainmasking & FoV-masking standard space
 pGM = xASL_io_Nifti2Im(x.P.Pop_Path_rc1T1);
 pWM = xASL_io_Nifti2Im(x.P.Pop_Path_rc2T1);
 pCSF = xASL_io_Nifti2Im(x.P.Pop_Path_rc3T1);
 FoVim = xASL_io_Nifti2Im(x.P.Pop_Path_FoV);
-
 MaskVascularMNI = ~NegativeMaskMNI & ~PositiveMaskMNI;
 BrainMask = (pGM+pWM)>0.5 & FoVim; % -> same setting as used in ROI analysis
 MaskVascularMNI(~BrainMask) = 0; % Remove extracranial & FoVim
 MaskVascularMNI(pWM>0.9) = 1; % Remove WM vascular spots
 MaskVascularMNI(pCSF>0.9) = 1; % Remove CSF vascular spots
-
 % Obtain brain mask for image processing (e.g., BASIL)
 BrainMaskProcessingStandardSpace = (pGM+pWM+pCSF)>0.1 & FoVim;
-
 %% 3C. Save brain mask for image processing (e.g., BASIL)
 % This mask can be used for fitting data, e.g., BASIL, fitting ATT, Tex,
 % etc. that is not useful in extracranial voxels, and beneficial to speed
@@ -137,18 +129,11 @@ BrainMaskProcessingStandardSpace = (pGM+pWM+pCSF)>0.1 & FoVim;
 % helpful to also process some voxels outside the brain for inspecting
 % artifacts, and registration errors shouldn't lead to accidentally
 % excluding intracranial voxels. Therefore, we use a rather inclusive mask.
-
 xASL_io_SaveNifti(x.P.Path_PWI, x.P.Path_BrainMaskProcessing, BrainMaskProcessingNativeSpace, 8, false);
 xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Pop_Path_BrainMaskProcessing, BrainMaskProcessingStandardSpace, 8, false);
-
 %% 4. Save vascular masks
 xASL_io_SaveNifti(x.P.Path_PWI, x.P.Path_MaskVascular, MaskVascularNative, 8, false);
 xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Pop_Path_MaskVascular, MaskVascularMNI, 8, false);
-
-
-
-
-
 %% 5. Create susceptibility mask in standard space
 if DoSusceptibility
 	
@@ -181,14 +166,12 @@ if DoSusceptibility
              SusceptibilityThreshold = 1;
      end
 	 MaskSuscept = pTemplate<SusceptibilityThreshold*max(pTemplate(:)); % create susceptibility mask
-
      MixedIm = pTemplate.^0.25.*ControlIm.*PWIIm; % combine images into single probability map
      % we want to limit the influence of the template a bit, which is why
      % we use the .^0.25
      MixedIm(MixedIm<0) = 0; % clip below zero
      MixedIm(~MaskSuscept) = NaN; % remove everything outside susceptibility mask
      MixedIm = MixedIm./max(MixedIm(:)); % scale probabilities (not required)
-
      ThresholdPercentile = 0.75;
      % select where in the histogram we threshold
      % with proper registration, this is more dependent on smoothness of
@@ -196,7 +179,6 @@ if DoSusceptibility
      % or smaller sinuses, which is why we also set an intensity threshold:
      ThresholdIntensity = 0.125;
      % PM: SHOULD THIS THRESHOLD TAKE THE VASCULAR MIN & MAX THRESHOLDS INTO ACCOUNT?
-
      SortedInt = sort(MixedIm(isfinite(MixedIm)));
      % bugfix in case of poor registration:
      if isempty(SortedInt)
@@ -205,15 +187,12 @@ if DoSusceptibility
      end
      % don't mask for FoV, to have the same percentile everytime
      SortedInt = SortedInt(round(ThresholdPercentile*length(SortedInt)));
-
      FinalThreshold = (ThresholdIntensity+SortedInt)/2; % average of 2 thresholds
      FinalMask = MixedIm>FinalThreshold;
-
      % %% Brief explanation what these masks here mean:
      % BrainMask   => brain parenchyma (GM+WM) == 1, CSF & outside the brain == 0
      % MaskSuscept => potential susceptibility regions, where artifacts may occur == 1, otherwise == 0
      % FinalMask   => within MaskSuscept, voxels we want to include in the mask == 1, otherwise == 0
-
      MaskSusceptibility = BrainMask; % we start with a wholebrain parenchyme mask
      MaskSusceptibility(MaskSuscept) = FinalMask(MaskSuscept); % within potential susceptibility regions, we mask out susceptibility artifacts
      MaskSusceptibility(~BrainMask) = 0; % we ensure that voxels without susceptibility artifacts, outside the brain, are still masked out
@@ -222,8 +201,5 @@ else
     % for e.g. 3D spiral the susceptibility mask is equal to the brain
     % mask, effectively not masking out susceptibility artifacts
 end
-
 xASL_io_SaveNifti(x.P.Pop_Path_PWI, x.P.Pop_Path_MaskSusceptibility, MaskSusceptibility, [], false);
-
-
 end

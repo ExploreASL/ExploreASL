@@ -21,19 +21,20 @@ function parms = xASL_bids_Par2JSON(pathPar, pathJSON)
 %
 % __________________________________
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Admin
-
 if nargin<2 || isempty(pathPar) || isempty(pathJSON)
 	error('Need the paths of .PAR and .JSON files.');
 end
-
 if iscell(pathJSON)
 	nJSON = length(pathJSON);
 else
 	nJSON = 1;
 end
-
 for iJSON = 1:nJSON
 	% Either load JSON or one from the list of JSONs
 	if iscell(pathJSON)
@@ -41,15 +42,12 @@ for iJSON = 1:nJSON
 	else
 		currentPathJSON = pathJSON;
 	end
-
 	% Parms already exist, so its content is loaded
 	if exist(currentPathJSON, 'file')
 		parms = xASL_io_ReadJson(currentPathJSON);
 	end
-
 	% Parse the PAR header
 	hdr = xASL_adm_ParReadHeader(pathPar);
-
 	% Extract DICOM tags
 	if isfield(hdr,'InversionTime')
 		parms.InversionTime = hdr.InversionTime;
@@ -70,15 +68,11 @@ for iJSON = 1:nJSON
 	end
 	parms.VascularCrushing = logical(hdr.FlowCompensation);
 	parms.AcquisitionDuration = hdr.ScanDuration;
-
 	% Converts parameters from the legacy to the BIDS format
 	parms = xASL_bids_parms2BIDS(parms, [], 1, 0);
-
 	% To make sure that this is not removed for non-ASL sequences
 	parms.RepetitionTime                = hdr.RepetitionTime/1000;
-
 	% Saves the JSON sidecar
 	xASL_io_WriteJson(currentPathJSON, parms);
 end
-
 return

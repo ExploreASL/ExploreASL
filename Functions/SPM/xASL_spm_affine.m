@@ -27,6 +27,10 @@ function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT, bQ
 % EXAMPLE: xASL_spm_affine('/MyStudy/Subject1/T1.nii.gz', '/MyStudy/Subject1/mean_control.nii', 5, 5);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
    
 % Check parameters
@@ -41,26 +45,21 @@ end
 if ~xASL_exist(srcPath) || ~xASL_exist(refPath)
 	error('Cannot find input images');
 end
-
 if nargin < 6 || isempty(bDCT)
 	bDCT = false;
 end
-
 if ~isempty(otherList) && bDCT
 	% It can happen that the list is a cell and it contains only a first empty string - that is effectively empty though not captured as empty by isempty
 	if ~iscell(otherList) || numel(otherList) > 1 || ~isempty(otherList{1,1})
 		warning('otherList not empty and bDCT==1. DCT produces a _sn.mat file with transformation parameters. The files in the otherList are not touched (they do not get the transformation applied)');
 	end
 end
-
 if nargin < 7 || isempty(bQuality)
 	bQuality = true;
 end
-
 % Unzip the input files 
 srcPath = xASL_adm_UnzipNifti(srcPath);
 refPath = xASL_adm_UnzipNifti(refPath);
-
 % Old Normalize settings
 matlabbatch{1}.spm.tools.oldnorm.est.subj.source            = xASL_spm_admin(srcPath);
 matlabbatch{1}.spm.tools.oldnorm.est.subj.wtsrc             = '';
@@ -82,28 +81,22 @@ else
 	matlabbatch{1}.spm.tools.oldnorm.est.eoptions.nits      = 0;
 end
 matlabbatch{1}.spm.tools.oldnorm.est.eoptions.reg           = 1;
-
 %  ------------------------------------------------------------------------------------------
 %  Print & run
-
 fprintf('\n%s\n','------------------------------------------------------------------------------------------');
 fprintf('%s\n',['Affine registering ' srcPath ' to ' refPath]);   
-
 spm_jobman('run',matlabbatch);
-
 %% Apply to NIfTIs
 % If we apply this to NIfTIs, we remove the transformation,
 % to keep this transparant. This is done by providing otherList,
 % even if we want to apply it to the srcPath
 % If we don't provide an otherList, this estimated affine transformation
 % is only saved as _sn.mat, not applied
-
 if ~isempty(otherList) && ~bDCT
     [Fpath, Ffile] = xASL_fileparts(srcPath);
     PathMat = fullfile(Fpath, [Ffile '_sn.mat']);
     SnMat = load(PathMat);
     Affine = (SnMat.VG.mat/SnMat.Affine)/SnMat.VF.mat;
-
     for iList=1:length(otherList)
         nii = [];
         
@@ -134,6 +127,4 @@ if ~isempty(otherList) && ~bDCT
     end
     xASL_delete(PathMat);
 end
-
-
 end

@@ -25,15 +25,17 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExplo
 %               
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Input check
     if nargin<2
         error('Please provide both a draft struct and the ExploreASL version...');
     end
-
     % Get default BIDS configuration
     bidsPar = xASL_bids_Config();
-
     % Create the output dataset_description.json
     json = struct;
     

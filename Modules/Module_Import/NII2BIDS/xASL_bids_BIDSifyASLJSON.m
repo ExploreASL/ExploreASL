@@ -37,20 +37,21 @@ function jsonOut = xASL_bids_BIDSifyASLJSON(jsonIn, studyPar, headerASL)
 %
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 0. Admin
 if nargin < 1 || isempty(jsonIn)
 	error('Missing input parameter jsonIn');
 end
-
 if nargin < 2 || isempty(studyPar)
 	error('Missing input parameter studyPar');
 end
-
 if nargin < 3 || isempty(headerASL)
 	error('Missing input parameter headerASL');
 end
-
 %% 1. Obtain the dimensions of the ASL data
 dimASL = headerASL.dat.dim;
 if length(dimASL) < 4
@@ -59,7 +60,6 @@ end
 	
 %% 2. Take all the manually predefined fields from studyPar
 jsonOut = studyPar;
-
 % Check if required fields exist in studyPar but not in jsonIn
 jsonInMerged = xASL_bids_MergeStudyPar(jsonIn, studyPar, 'asl');
 	
@@ -70,26 +70,20 @@ if isfield(jsonInMerged, 'StationName') && ~isfield(jsonInMerged, 'Manufacturer'
         jsonInMerged.Manufacturer = jsonInMerged.StationName;
     end
 end
-
-
 if ~isempty(regexpi(jsonInMerged.Manufacturer, 'Philips'))
 	jsonOut.scaleFactor = xASL_adm_GetPhilipsScaling(jsonInMerged, headerASL);
 else
 	jsonOut.scaleFactor = 1;
 end
-
-
 %% 4. Convert certain DICOM fields
 % For GE, the NumberOfExcitations tag can act as a replacement for TotalAcquiredPairs
 if isfield(jsonInMerged,'NumberOfExcitations') && ~isfield(jsonInMerged, 'TotalAcquiredPairs') && ~isempty(regexpi(jsonInMerged.Manufacturer, 'GE'))
 	jsonInMerged.TotalAcquiredPairs = jsonInMerged.NumberOfExcitations;
 end
-
 % TotalAcquiredPairs - use only the maximum values from DICOM
 if isfield(jsonInMerged,'TotalAcquiredPairs') && ~isempty(jsonInMerged.TotalAcquiredPairs) && length(jsonInMerged.TotalAcquiredPairs)>1
 	jsonInMerged.TotalAcquiredPairs = max(jsonInMerged.TotalAcquiredPairs);
 end
-
 % In case of LookLocker and manually defined multiple flip angle, use this as a priority
 if isfield(studyPar,'LookLocker') && ~isempty(studyPar.LookLocker) && studyPar.LookLocker
 	if isfield(studyPar,'FlipAngle') && ~isempty(studyPar.FlipAngle) && length(studyPar.FlipAngle)>1
@@ -98,7 +92,6 @@ if isfield(studyPar,'LookLocker') && ~isempty(studyPar.LookLocker) && studyPar.L
 		end
 	end
 end
-
 %% 5. Prioritize DICOM fields over the manually provided studyPar fields
 % Overwrite differing fields with those from Dicom, but report all differences
 for fn = fieldnames(jsonInMerged)'
@@ -110,7 +103,6 @@ for fn = fieldnames(jsonInMerged)'
 				% Report that differing values were found
 				warningMessage = [fn{1} ' differed between DICOM (' xASL_num2str(jsonInMerged.(fn{1}))...
 					') & studyPar (' xASL_num2str(jsonOut.(fn{1})) '). '];
-
 				% Define the DICOM or studyPar priority
 				if strcmp(fn{1}, 'TotalAcquiredPairs') || strcmp(fn{1}, 'ArterialSpinLabelingType') || strcmp(fn{1}, 'EchoTime') || strcmp(fn{1}, 'VascularCrushing')
 					jsonInMerged.(fn{1}) = jsonOut.(fn{1});
@@ -126,7 +118,6 @@ for fn = fieldnames(jsonInMerged)'
 	% Prioritize the DICOM values in general case
 	jsonOut.(fn{1}) = jsonInMerged.(fn{1});
 end
-
 %% 6. Field check and name conversion
 % Check repetition time
 if isfield(studyPar,'RepetitionTimePreparation')
@@ -146,7 +137,6 @@ elseif isfield(jsonInMerged,'RepetitionTime')
 		warning('TR was a vector. Taking the maximum only.');
 	end
 end
-
 % In Philips and dcm2niix20220720, often RepetitionTimePreparation is assigned the time right after the last readout and 
 % RepetitionTimeExcitation the length of the whole cycle - that needs to be fixed.
 if strcmpi(jsonOut.Manufacturer,'Philips')
@@ -163,7 +153,6 @@ if isfield(jsonOut,'EchoTime') && length(jsonOut.EchoTime)>1
 		jsonOut.EchoTime = jsonOut.EchoTime(jsonOut.EchoTime ~= 0);
 	end
 end
-
 % Convert the field name of the old LabelingType
 if isfield(jsonOut,'LabelingType')
 	if isfield(jsonOut,'ArterialSpinLabelingType') && ~isequal(jsonOut.LabelingType,jsonOut.ArterialSpinLabelingType)
@@ -172,7 +161,6 @@ if isfield(jsonOut,'LabelingType')
 		jsonOut.ArterialSpinLabelingType = jsonOut.LabelingType;
 	end
 end
-
 % Rename field PostLabelDelay
 if isfield(jsonOut,'PostLabelDelay')
 	if isfield(jsonOut,'PostLabelingDelay') && ~isequal(jsonOut.PostLabelDelay, jsonOut.PostLabelingDelay)
@@ -181,7 +169,6 @@ if isfield(jsonOut,'PostLabelDelay')
 		jsonOut.PostLabelingDelay = jsonOut.PostLabelDelay;
 	end
 end
-
 % For Siemens, the parameter NumRFBlocks multiplied by 18.4ms gives the labeling duration
 if strcmpi(jsonOut.Manufacturer,'Siemens')
 	if isfield(jsonIn, 'NumRFBlocks') && ~isempty(jsonIn.NumRFBlocks)
@@ -192,7 +179,6 @@ if strcmpi(jsonOut.Manufacturer,'Siemens')
 		end
 	end
 end
-
 % The Labeling defined in a private GE field has a priority
 if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 	% Verify if this doesn't differ from the predefined file, but the DICOM field has priority
@@ -237,7 +223,6 @@ if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 		end
 	end
 end
-
 % For GE and multi-PLD or single-PLD not defined in the GELabelingDurationField, we prefer LabelingDuration from study par due to issues with eASL
 if strcmp(jsonInMerged.Manufacturer, 'GE') && isfield(studyPar,'LabelingDuration') && ~isequal(studyPar.LabelingDuration, jsonOut.LabelingDuration) &&...
 	( length(jsonOut.LabelingDuration)>1 || ~isfield(jsonInMerged,'GELabelingDuration'))
@@ -258,12 +243,10 @@ if isfield(jsonInMerged,'SoftwareVersions')
 	end
 	jsonOut.PulseSequenceDetails = [jsonOut.PulseSequenceDetails jsonInMerged.SoftwareVersions];
 end
-
 % Process all the data and automatically fill in the missing parameters
 if ~isfield(jsonOut,'MRAcquisitionType')
 	error('MRAcquisitionType has to be defined in the studyPar.json');
 end
-
 if strcmpi(jsonOut.MRAcquisitionType,'2D')
 	jsonOut.PulseSequenceType = 'EPI';
 else
@@ -276,7 +259,6 @@ end
     
 %% 7. Check for time encoded sequence
 [jsonOut, bTimeEncoded, bTimeEncodedFME] = xASL_bids_BIDSifyCheckTimeEncoded(jsonInMerged, jsonOut, dimASL(4));
-
 	
 %% 8. Merge data from the Phoenix protocol
 % Check if the Phoenix protocol is present and parse it
@@ -308,7 +290,6 @@ if isfield(jsonInMerged,'PhoenixAnalyzed') && ~isempty(jsonInMerged.PhoenixAnaly
 		fprintf('Warning: The following user-defined/DICOM fields and DICOM-Phoenix fields differ: %s\n',strDifferentFields);
 	end
 end
-
 %% 9. Background suppression check
 % BSup sanity check
 if ~isfield(jsonOut,'BackgroundSuppression')
@@ -333,7 +314,6 @@ elseif strcmp(jsonOut.MRAcquisitionType, '3D')
         warning('BackgroundSuppression set to off, which is unlikely for a 3D acquisition');
     end
 end
-
 if jsonOut.BackgroundSuppression == false
 	% remove pulsenumbers and timings if BSup is OFF
 	if isfield(jsonOut,'BackgroundSuppressionNumberPulses')
@@ -354,9 +334,7 @@ else
 		end
 	end
 end
-
 %% 10. SliceTiming check
-
 % Fill in extra parameters based on the JSON from the data
 if jsonOut.MRAcquisitionType(1) == '2'
     % Parse slicetiming for 2D acquisitions
@@ -395,13 +373,10 @@ else
 		jsonOut = rmfield(jsonOut,'SliceTiming');
 	end
 end
-
 %% 11. Check for Look-Locker TR
-
 % Check for Philips Look-Locker
 % Look-Locker acquisition for Philips has often TR given as the length of a single readout of single volume, not as the entire cycle of all PLDs within a single labeling cycle
 % The correct TR thus has to be correctly recalculated 
-
 % Verify that we are dealing with Philips Look-Locker sequence with flip angle below 90
 if isfield(jsonOut, 'LookLocker') && jsonOut.LookLocker
 	if isfield(jsonOut, 'Manufacturer') && strcmpi(jsonOut.Manufacturer, 'Philips')
@@ -431,7 +406,6 @@ if isfield(jsonOut, 'LookLocker') && jsonOut.LookLocker
 		end
 	end
 end
-
 %% 12. Reformat ASLcontext field
 % Remove ',' and ';' at the end
 if ~isfield(jsonOut, 'ASLContext')
@@ -440,17 +414,14 @@ if ~isfield(jsonOut, 'ASLContext')
     % would crash below anyway. PM: would it be good to verify the
     % existence of a few obligatory fields?
 end
-
 if (jsonOut.ASLContext(end) == ';') || (jsonOut.ASLContext(end) == ',')
 	jsonOut.ASLContext = jsonOut.ASLContext(1:(end-1));
 end
-
 % Replace all ',' and ';' by \n
 jsonOut.ASLContext = strrep(jsonOut.ASLContext, ' ','');
 jsonOut.ASLContext = strrep(jsonOut.ASLContext, ';',',');
 lengthASLContext = sum(jsonOut.ASLContext == ',')+1;
 jsonOut.ASLContext = strrep(jsonOut.ASLContext, ',',sprintf('\n'));
-
 % Check if the length is the same
 if dimASL(4) ~= lengthASLContext
 	% Check if we can simply repeat it
@@ -503,7 +474,6 @@ if dimASL(4) ~= lengthASLContext
 	end
 end
 jsonOut.ASLContext = sprintf('%s\n',jsonOut.ASLContext);
-
 %% 13. Check if length of vector fields match the number of volumes and ASLcontext
 % If fields have a length higher than 1, but shorter then number of volumes then repeat it to fit
 listFieldsRepeat = {'VascularCrushingVENC', 'FlipAngle', 'RepetitionTimePreparation', 'EchoTime'};
@@ -516,26 +486,21 @@ for iRepeat = 1:length(listFieldsRepeat)
 		end
 	end
 end
-
 % For certain fields, we don't only check if they repeat enough times to match the ASL number of volumes, but we also set those fields to 0 for M0scans
 % Also, when we need to repeat them and find out that the number of repetitions is not possible, we repeat again, but skipping M0s
-
 % Find m0scans indices in ASLContext
 ASLContextCell = strsplit(jsonOut.ASLContext,'\n'); % Split to cells by line-end
 ASLContextM0Index = regexp(ASLContextCell,'^m0scan'); % Find m0scans
 ASLContextM0Index = cellfun(@(x)~isempty(x),ASLContextM0Index); % Create a vector out of it
 ASLContextM0Index = ASLContextM0Index(1:dimASL(4)); % Remove the last empty field
-
 % If ASLContext contains M0-scans, and repetitionTimePreparation vector is a scalar, and RepetitionTimeM0 is defined, then we create a repetitionTimePreparation vector
 if sum(ASLContextM0Index) && length(jsonOut.RepetitionTimePreparation) == 1 && isfield(jsonOut, 'RepetitionTimePreparationM0') && ~isempty(jsonOut.RepetitionTimePreparationM0)
 	jsonOut.RepetitionTimePreparation = ones(size(ASLContextM0Index)) * jsonOut.RepetitionTimePreparation; % Fill with normal TR
 	jsonOut.RepetitionTimePreparation(ASLContextM0Index) = jsonOut.RepetitionTimePreparationM0;
 end
-
 % If Post-labeling delay or labeling duration is longer than 1 then we need to verify this against
 % the ASLContext - these fields should be 0 for m0scans
 listFieldsRepeat = {'PostLabelingDelay', 'LabelingDuration', 'RepetitionTimePreparation'};
-
 % Go through all variables, check those that have length bigger than 1
 for iRepeat = 1:length(listFieldsRepeat)
 	if isfield(jsonOut,listFieldsRepeat{iRepeat}) && length(jsonOut.(listFieldsRepeat{iRepeat})) > 1
@@ -573,7 +538,6 @@ if isfield(jsonOut,'NumberOfAverages') && (max(jsonOut.NumberOfAverages) > 1)
 		end
 	end
 end
-
 % First count the number of controls, labels, and deltaMs
 % Check and exclude dummy scans first from ASLContext
 if isfield(studyPar, 'DummyScanPositionInASL4D') && ~isempty(studyPar.DummyScanPositionInASL4D)
@@ -583,16 +547,12 @@ if isfield(studyPar, 'DummyScanPositionInASL4D') && ~isempty(studyPar.DummyScanP
 		end
 	end
 end
-
 ASLContextControlIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^control')); % Create a vector out of it
 ASLContextControlIndex = ASLContextControlIndex(1:dimASL(4)); % Remove the last empty field
 ASLContextLabelIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^label')); % Create a vector out of it
 ASLContextLabelIndex = ASLContextLabelIndex(1:dimASL(4)); % Remove the last empty field
 ASLContextDeltaMIndex = cellfun(@(x)~isempty(x),regexpi(ASLContextCell,'^deltam')); % Create a vector out of it
 ASLContextDeltaMIndex = ASLContextDeltaMIndex(1:dimASL(4)); % Remove the last empty field
-
-
-
 % If TotalAcquiredPairs is 1, but more control/label pairs od deltaMs are present, then set this to the correct
 % number
 if ~isfield(jsonOut,'TotalAcquiredPairs') || jsonOut.TotalAcquiredPairs == 1
@@ -622,7 +582,6 @@ if ~isfield(jsonOut,'TotalAcquiredPairs') || jsonOut.TotalAcquiredPairs == 1
 		end
 	end
 end
-
 %% 15. Final field check
 if isfield(jsonOut,'BolusCutOffFlag') && jsonOut.BolusCutOffFlag
 	if isfield(jsonOut,'BolusCutOffTechnique') && strcmpi(jsonOut.BolusCutOffTechnique,'Q2TIPS')
@@ -631,7 +590,4 @@ if isfield(jsonOut,'BolusCutOffFlag') && jsonOut.BolusCutOffFlag
 		end
 	end
 end
-
 end
-
-

@@ -25,8 +25,10 @@ function [x] = xASL_init_DataLoading(x)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright (c) 2015-2023 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 1. Print the hyperlink
 	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
@@ -37,20 +39,15 @@ function [x] = xASL_init_DataLoading(x)
         fprintf('A full explanation of processing parameters is @: https://exploreasl.github.io/Documentation/latest/ProcessingParameters\n');
 	end
     
-
     %% 2. Go to ExploreASL folder
     cd(x.opts.MyPath);
-
-
     %% 3. Initialize x struct
     x = xASL_init_SubStructs(x);
-
     
     %% 4. Which data to read
     if ~isfield(x.opts, 'bReadRawdata') || isempty(x.opts.bReadRawdata)
         % If the developer has not set this parameter, we try to detect whether we should read from /rawdata or /derivatives/ExploreASL 
         % Usually, this parameter will not exist
-
         if xASL_exist(x.dir.RawData, 'dir')
             % we assume we start with BIDS data
             
@@ -83,8 +80,6 @@ function [x] = xASL_init_DataLoading(x)
         warning(['ExploreASL derivatives folder missing: ' x.dir.xASLDerivatives]);
         error('/derivatives/ExploreASL did not exist, if you want to load BIDS subjects from /rawdata, set x.opts.bReadRawdata to true in dataPar.json');
     end
-
-
     %% 5. Create directories
     xASL_adm_CreateDir(fullfile(x.dir.xASLDerivatives, 'log')); % Create logging directory if it does not exist
     xASL_adm_CreateDir(x.dir.xASLDerivatives); % Create ExploreASL derivatives directory if it does not exist
@@ -92,6 +87,5 @@ function [x] = xASL_init_DataLoading(x)
     
     %% 6. Load BIDS configuration for file renaming
     x.modules.bids2legacy.bidsPar = xASL_bids_Config;
-
     
 end

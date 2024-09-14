@@ -40,7 +40,10 @@ function [x] = xASL_stat_AtlasForStats(x)
 % EXAMPLE: x = xASL_stat_AtlasForStats(x);
 % __________________________________
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 % Check different file types
@@ -61,23 +64,18 @@ elseif ~xASL_exist(x.S.InputAtlasPath, 'file')
 	fprintf('%s\n', x.S.InputAtlasPath);
 	return;
 end
-
 SumMask = sum(x.S.masks.WBmask(:));
-
 if strcmp(x.S.InputAtlasPath(end-2:end),'.gz')
     x.S.InputAtlasPath = x.S.InputAtlasPath(1:end-3); % allow .gz or .nii input
 end
-
 %% 1) Load atlas ROI names
 x.S.ROInamesPath = fullfile(Fpath,[Ffile '.tsv']);
-
 % Find out whether we are run in GUI or CLI
  if ~usejava('desktop') || ~usejava('jvm') || ~feature('ShowFigureWindows')
      UseGUI = false;
  else
      UseGUI = true;
  end
-
 if ~exist(x.S.ROInamesPath, 'file') && ~x.S.bSubjectSpecificROI
     if UseGUI
         YesNo = questdlg(['Would you like to specify a tsv-file containing the ROI names for ' x.S.InputAtlasPath '?']);
@@ -99,14 +97,11 @@ if ~exist(x.S.ROInamesPath, 'file') && ~x.S.bSubjectSpecificROI
         end
     end
 end
-
 if isfield(x.S,'ROInamesPath') && exist(x.S.ROInamesPath, 'file') % open TSV file
     fclose all;
     FileID = fopen(x.S.ROInamesPath);
-
     C = textscan(FileID,'%s');
     C = C{1};
-
     if ~isempty(C)
         % Concatenate cells, if multiple cells
         if length(C)>1
@@ -117,9 +112,7 @@ if isfield(x.S,'ROInamesPath') && exist(x.S.ROInamesPath, 'file') % open TSV fil
         else
             Cnew = C{1};
         end
-
         CommasIndex = strfind(Cnew,' ');
-
         if isempty(CommasIndex)
             x.S.NamesROI{1} = Cnew;
         else
@@ -135,8 +128,6 @@ if isfield(x.S,'ROInamesPath') && exist(x.S.ROInamesPath, 'file') % open TSV fil
     end
     fclose(FileID);
 end
-
-
 %% 2) Load atlas image matrix, deal with memory mapping
 AtlasIsColumns = false;
 if ischar(x.S.InputAtlasPath) % allows both image input or ImagePath input
@@ -144,7 +135,6 @@ if ischar(x.S.InputAtlasPath) % allows both image input or ImagePath input
         %% Part for Atlas stored as columns
         AtlasIsColumns = true;
         TempAtlas = memmapfile(x.S.InputAtlasPath);
-
         if isfield(x.S,'NamesROI') % get number of masks
             nMasks = length(x.S.NamesROI);
         else
@@ -158,7 +148,6 @@ if ischar(x.S.InputAtlasPath) % allows both image input or ImagePath input
 else
     InputAtlasIM = x.S.InputAtlasPath;
 end
-
 if ~AtlasIsColumns
     %% 3) Resample atlas 50 1.5 mm^3 MNI
     % Allow for multiple voxel dimensions, BUT THIS FORCES MNI 1.5 mm
@@ -174,7 +163,6 @@ if ~AtlasIsColumns
         end
         InputAtlasIM = xASL_io_Nifti2Im(Atlas15Path);
     end
-
     %% 4) Converted atlas with integers to 4D binary image
     %  Allow for multiple atlas forms (3D or 4D), later transformed to multi-atlas 2D (Columns)
     if ~(size(InputAtlasIM,4)==1 && max(InputAtlasIM(:))>1)
@@ -189,7 +177,6 @@ if ~AtlasIsColumns
         end
         InputAtlasIM = AtlasOut;
     end
-
     %% 5) Convert/compress masks into Columns
     fprintf('%s\n','Converting masks:   ');
     x.S.InputMasks = zeros(sum(x.S.masks.WBmask(:)),size(InputAtlasIM,4),'uint8'); % memory pre-allocation
@@ -201,7 +188,6 @@ if ~AtlasIsColumns
 else
 	x.S.InputMasks = InputAtlasIM;
 end
-
 %% Create dummy ROI names, if we don't have them
 if ~isfield(x.S,'NamesROI')
     if size(InputAtlasIM,4)>1
@@ -213,7 +199,6 @@ if ~isfield(x.S,'NamesROI')
         x.S.NamesROI{iR} = ['ROI_' num2str(iR)]; % default ROIs
     end
 end
-
 %% 6) Print atlas overview image (takes time, disabled by default)
 if x.S.SubjectWiseVisualization
     fprintf('Printing subject-specific masks (if exist) together in label colors:   ')
@@ -227,6 +212,4 @@ if x.S.SubjectWiseVisualization
         xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir, [Ffile '_Subj_' num2str(iSub) '.jpg']));
     end
 end
-
-
 end

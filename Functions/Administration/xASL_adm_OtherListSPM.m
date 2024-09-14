@@ -20,14 +20,16 @@ function [OtherListSPM, OtherListOut] = xASL_adm_OtherListSPM(OtherList, bList4D
 % EXAMPLE:      ...
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     if nargin<2 || isempty(bList4D)
         bList4D = true;
     end
-
     OtherListSPM = '';
     OtherListOut = '';
-
     if ~iscell(OtherList)
         OtherList = {OtherList};
     end
@@ -59,14 +61,10 @@ function [OtherListSPM, OtherListOut] = xASL_adm_OtherListSPM(OtherList, bList4D
             end
         end
     end
-
     if isempty(OtherListSPM)
         OtherListSPM = {''};
     end
     if isempty(OtherListOut)
         OtherListOut = {''};
     end
-
-
-
 end

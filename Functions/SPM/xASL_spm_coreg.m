@@ -31,15 +31,17 @@ function xASL_spm_coreg(refPath, srcPath, OtherList, x, sep, FastReg)
 % EXAMPLE: xASL_spm_coreg('/MyStudy/Subject1/T1.nii.gz', '/MyStudy/Subject1/mean_control.nii', {'/MyStudy/Subject1/M0.nii'});
 % __________________________________
 % Copyright 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %%  ------------------------------------------------------------------------------------------
 %%   Admin, manage input, unzipping if needed
 [~, refFile, refExt] = xASL_fileparts(refPath);
 [~, srcFile, srcExt] = xASL_fileparts(srcPath);
-
 refFile = [refFile refExt];
 srcFile = [srcFile srcExt];
-
 if nargin<4 || isempty(x) || ~isfield(x,'settings') || ~isfield(x.settings,'Quality') || isempty(x.settings.Quality)
     x.settings.Quality = true; % default quality is high
     x.settings.DELETETEMP = true;
@@ -60,7 +62,6 @@ if nargin<6 || isempty(FastReg)
     % knowing that NMI registration will suffice, which is case e.g. with
     % DTI to c1+c2+c3
 end
-
 if FastReg
     [Fpath, Ffile] = xASL_fileparts(refPath);
     tempResliced = fullfile(Fpath, [Ffile '_tempResliced.nii']);
@@ -86,7 +87,6 @@ if FastReg
         NewVoxelSize = repmat(VoxelSizeSrcMin,[1,3]);
         xASL_spm_smooth(tempResliced, NewVoxelSize, tempResliced);
         xASL_im_Upsample(tempResliced, tempResliced, NewVoxelSize);
-
         matlabbatch{1}.spm.spatial.coreg.estimate.ref = xASL_spm_admin(tempResliced);
         matlabbatch{1}.spm.spatial.coreg.estimate.source = xASL_spm_admin(srcPath);
     elseif ResliceIs==2
@@ -95,7 +95,6 @@ if FastReg
         NewVoxelSize = repmat(VoxelSizeRefMin,[1,3]);
         xASL_spm_smooth(tempResliced, NewVoxelSize, tempResliced);
         xASL_im_Upsample(tempResliced, tempResliced, NewVoxelSize);
-
         matlabbatch{1}.spm.spatial.coreg.estimate.ref = xASL_spm_admin(refPath);
         matlabbatch{1}.spm.spatial.coreg.estimate.source = xASL_spm_admin(tempResliced);
     else
@@ -107,34 +106,24 @@ else
     matlabbatch{1}.spm.spatial.coreg.estimate.ref = xASL_spm_admin(refPath);
     matlabbatch{1}.spm.spatial.coreg.estimate.source = xASL_spm_admin(srcPath);    
 end
-
-
 %%  ------------------------------------------------------------------------------------------
 %%  Default SPM settings
-
 matlabbatch{1}.spm.spatial.coreg.estimate.other = xASL_adm_OtherListSPM(OtherList);
-
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'nmi';
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.fwhm = [7 7];
 matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.sep = sep;
-
-
 %%  ------------------------------------------------------------------------------------------
 %%  Print & run
 fprintf('\n%s\n\n','------------------------------------------------------------------------------------------');
 fprintf('%s\n',['Rigid-body registering ' srcFile ' to ' refFile]);
-
 spm_jobman('run',matlabbatch);
 close all
-
 if x.settings.DELETETEMP
     srcPath = xASL_spm_admin(srcPath);
     xASL_adm_DeleteFileList(fileparts(srcPath{1}), '^spm_.*\.ps$', false, [0 Inf]);
-
     if FastReg
         xASL_delete(tempResliced);
     end
 end
-
 end

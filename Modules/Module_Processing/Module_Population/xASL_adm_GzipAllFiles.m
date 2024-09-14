@@ -22,7 +22,10 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
 % EXAMPLE: xASL_adm_GzipAllFiles(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% ----------------------------------------------------
     %% 0) Admin
@@ -40,7 +43,6 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
     if nargin<4 || isempty(pathExternal)
         pathExternal = [];
     end
-
     exit_code = NaN;
     
     %% ----------------------------------------------------
@@ -80,7 +82,6 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
         warning('An error occurred trying to zip using the system: %s', system_result);
         fprintf('Trying slower Matlab version...\n');
     end    
-
     %% ----------------------------------------------------
     %% 2) Slower Matlab version
     if ~usejava('desktop')
@@ -106,14 +107,12 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
         
         for iList=1:length(PathList)
             xASL_TrackProgress(iList,length(PathList));
-
             try
                 if bFolder
                    zip([PathList{iList} '.zip'], PathList{iList});
                    xASL_adm_DeleteFileList(PathList{iList}, '^.*$', true, [0 Inf]);
                    xASL_delete(PathList{iList});
                 else           
-
                     Fname = PathList{iList};
                     [~, ~, Fext] = xASL_fileparts(Fname);
                     if strcmp(Fext,'.nii') || strcmp(Fext,'.wav') || strcmp(Fext,'.bmp')
@@ -131,6 +130,5 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
         end
         fprintf('\n');
     end
-
     
 end

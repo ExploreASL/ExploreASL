@@ -23,7 +23,10 @@ function [NotOutliers, iOutliers] = xASL_stat_RobustMean(IM, ParameterFunction)
 % EXAMPLE: NotOutliers = xASL_stat_RobustMean(IM);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 if size(IM,2)<16 % only do the outlier detection with too small datasets
@@ -43,42 +46,30 @@ end
 if size(IM,2)>size(IM,1)
     warning('Input IM has incorrect dimensions');
 end
-
-
 %% THIS IS PROBABLY REDUNDANT CODE
 % if prod(size(IM))==1 % assume this is a memory mapping file
 %     IM = shiftdim(IM.Data.data,1);
 % end
 % 
 % IM2 = xASL_im_IM2Column(IM,x.S.masks.WBmask); % Make sure to convert to column if too large
-
 %% Compute median, MAD, & deviations
-
 Size4 = size(IM,2);
-
 % Create template image, to compare with
 fprintf('%s\n',['Detecting outliers for n=' num2str(Size4)]);
-
 MedianIM = repmat(xASL_stat_MedianNan(IM,2),[1 Size4]);
-
 if strcmp(ParameterFunction,'SoS')
      ValueMask = abs(IM - MedianIM);
 elseif strcmp(ParameterFunction,'AI')
      ValueMask = abs(IM - repmat(IMtemp,[1 Size4])) ./ (0.5.*(IM + repmat(IMtemp,[1 Size4]))); % weighted SoS, AI
 end        
-
 Deviation = xASL_stat_MeanNan(ValueMask,1); % gives deviation sum per image, higher is worse quality
 % so the higher deviation, the more outlier the image is
 NaNmask = isfinite(Deviation);
 MedianDeviation = median(Deviation(NaNmask)); % average deviation from average image
 MadDeviation = median(abs(Deviation(NaNmask) - MedianDeviation)); % Mean Absolute Difference (MAD)
-
 %% Compute threshold & provide indices for those that are not outliers (i.e. not above threshold)
 ThresholdDeviation = MedianDeviation+3.*MadDeviation;
 NotOutliers = ~(Deviation>ThresholdDeviation)';
 iOutliers = find(Deviation>ThresholdDeviation)';
-
 fprintf(['Detected ' num2str(numel(iOutliers)) ' outliers\n']);
-
-
 end

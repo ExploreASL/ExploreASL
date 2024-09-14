@@ -27,32 +27,29 @@ function xASL_stat_GetRegistrationStatistics(x)
 % EXAMPLE: xASL_stat_GetRegistrationStatistics(x);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% -----------------------------------------------------------------------------------------------
 %% Admin
 if nargin<1 || isempty(x)
     error('Missing the x-struct');
 end
-
 % Define a list of fields to write
 jsonFields = {'TC_ASL2T1w_Perc'};
 nFields = length(jsonFields);
-
 % Create the file name for TSV file to save
 PathTSV = fullfile(x.D.PopDir, 'Stats','RegistrationTC.tsv');
-
 % Print header
 TSV = {'participant_id' 'session'};
 TSV(1,3:2+nFields) = jsonFields(1:nFields);
-
 %% -----------------------------------------------------------------------------------------------
 %% 1. Load & extract parameters from individual parameter files
 fprintf('%s\n','Loading & saving individual parameter files...  ');
-
 for iSubject=1:x.dataset.nSubjects
     for iSession=1:x.dataset.nSessions
-
         % Joint index for subject and session
         iSubjSess = (iSubject-1)*x.dataset.nSessions+iSession;
 		
@@ -68,7 +65,6 @@ for iSubject=1:x.dataset.nSubjects
         
         % Define path of the parameter file
 		PathJSON = fullfile(x.dir.xASLDerivatives, x.SUBJECTS{iSubject}, ['QC_collection_' x.SUBJECTS{iSubject} '.json']);
-
 		if exist(PathJSON, 'file')
 			% Load the file
             Parms = xASL_io_ReadJson(PathJSON);
@@ -85,11 +81,8 @@ for iSubject=1:x.dataset.nSubjects
 		end
     end
 end
-
 fprintf('\n');
-
 %% -----------------------------------------------------------------------------------------------
 %% 2. Write TSV file
 xASL_tsvWrite(TSV, PathTSV, 1);
-
 end

@@ -17,7 +17,10 @@ function x = xASL_init_MapsAndAtlases(x)
 %
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% --------------------------------------------------------
 %% 1. Define directories
@@ -25,12 +28,10 @@ if isfield(x.opts, 'MyPath')
     % ExploreASL license
     x.D.MapsDir             = fullfile(x.opts.MyPath, 'Maps');
     x.D.TemplateDir         = fullfile(x.opts.MyPath, 'Maps', 'Templates');    
-
     % SPM modified, for image processing
     x.D.MapsSPMmodifiedDir  = fullfile(x.opts.MyPath, 'External', 'SPMmodified', 'MapsAdded');
     x.D.ResliceRef          = fullfile(x.opts.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'rgrey.nii');
     x.D.IdentityTransfRef   = fullfile(x.opts.MyPath, 'External', 'SPMmodified', 'MapsAdded', 'Identity_Deformation_y_T1.nii');
-
     % Atlases 4 ROIs
     % This includes:
     % /LicenseLimited: several atlases with a limited license (only free for non-commercial usage)
@@ -40,21 +41,15 @@ if isfield(x.opts, 'MyPath')
 else
     warning('MyPath field not defined...');
 end
-
-
 %% --------------------------------------------------------
 %% 2. Add all atlas/ROI NIFTIs to the x.D.Atlas field
-
 % Get all NIfTI files in atlas subfolders (recursively)
 % Note that these atlases need to have the .nii.mat sidecar
 filesInAtlasDir = xASL_adm_GetFileList(x.D.AtlasDir, '^.+\.nii\.mat$', 'FPListRec');
-
 % Iterate over atlases
 for iFile=1:numel(filesInAtlasDir)
     % Get current atlas
     [fPath, currentAtlas] = xASL_fileparts(filesInAtlasDir{iFile});
     x.D.Atlas.(currentAtlas) = fullfile(fPath, [currentAtlas '.nii']);
 end
-
-
 end

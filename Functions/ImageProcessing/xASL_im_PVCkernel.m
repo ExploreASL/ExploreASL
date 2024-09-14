@@ -38,20 +38,21 @@ function [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV, kernel, mo
 %  arterial spin labeling MRI. MAGMA 2018. DOI:10.1007/s10334-018-0691-y
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 0. Admin
 if nargin<2
 	error('CBF image and PV-maps have to be given on the input');
 end
-
 if nargin<3 || isempty(kernel)
 	kernel = [5 5 1];
 end
-
 if nargin<4 || isempty(mode)
 	mode = 'flat';
 end
-
 %% 1. Prepare the parameters
 % Check the input parameters
 switch (lower(mode))
@@ -85,47 +86,35 @@ switch (lower(mode))
 	otherwise
 		error('xASL_im_PVCkernel: Only gauss and flat modes are supported.');
 end
-
 imPV(isnan(imPV)) = 0;
 imCBF(isnan(imCBF)) = 0;
-
 % Tissue below this threshold has not PVEC calculated, nor is considered
 % for the neighboring voxel PVEC calculation.
 opt.pvTh = 0.01;
-
 % The sum of PV across the whole kernel has to be above this to all the
 % calculations of PVEC
 opt.pvTotTh = 0.1;
-
 % There has to be at least 1 pixel with partial volume higher than 'opt.rankTh' to compute the inversion
 opt.rankTh = 0.01;
-
 if doGauss
 	opt.pvTh = 0.002;
 	opt.pvTotTh = 0.5;
 	opt.rankTh = 0.002;
 end
-
 % Any value below this is 
 opt.resMin = 0;
-
 %% 2. Performs the PV correction
 imTotPV = sum(imPV,4);
-
 % Creates a mask of the region covered by tissue
 imMask = (imTotPV > opt.pvTh);
-
 imCBF = imCBF.*imMask;
 imPV = imPV.*repmat(imMask,[1 1 1 2]);
-
 % Specify the vectors for defining the kernel
 xVec = (-winWidth(1)):winWidth(1);
 yVec = (-winWidth(2)):winWidth(2);
 zVec = (-winWidth(3)):winWidth(3);
-
 % Creates the empty images for the tissue specific magnetization
 imPVC = zeros(size(imPV));
-
 %tic
 % For each pixel on the mask do the calculation
 fprintf('\nCalculating PVC:    ');
@@ -238,13 +227,10 @@ for z=1:size(imCBF,3)
 end % for z=1:size(imCBF,3)
 fprintf('\n');
 %toc
-
 %% 3. Creates additional outputs
 % Reconstructed CBF based on CBF-PVEC and PV maps
 imCBFrec = sum(imPV.*imPVC,4);
         
 % The residual error
 imResidual = imMask.*(abs(imCBFrec-imCBF));
-
 end
-

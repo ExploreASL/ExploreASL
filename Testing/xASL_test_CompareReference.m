@@ -20,6 +20,10 @@ function [result] = xASL_test_CompareReference(pathReference, pathResults, pathD
 %      [result] = xASL_test_CompareReference('<dir>/ExploreASL/Testing//ReferenceValues.tsv', '<dir>/TestDataSetsTemp', '<dir>/TestResults');
 % __________________________________
 % Copyright (c) 2015-2023 ExploreASL 
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Validate the input options
 if nargin < 2 || isempty(pathReference) || isempty(pathResults)
@@ -28,18 +32,15 @@ end
 if nargin < 3 || isempty(pathDestination)
     pathDestination = pathResults;
 end
-
 result = struct;
 Dlist = xASL_adm_GetFileList(pathResults,'^.*$','List',[0 Inf], true);
 [result.ResultsTable, result.ResultTableFile,  result.SaveFile] = xASL_test_DetermineResultsTable(pathResults, Dlist, pathDestination);
 [result.ReferenceTables , result.ReferenceTable] = xASL_qc_LoadRefTable(pathReference);
 [result.ResultsComparison, result.ResultsDifference] = xASL_qc_CompareTables(pathResults, result.ReferenceTable, result.ResultsTable, pathDestination);  
-
 end    
     
 % Load Reference Table
 function [ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(pathRefTable)
-
     % Load TSV file
     ReferenceTables = xASL_tsvRead(pathRefTable);
     
@@ -57,11 +58,8 @@ function [ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(pathRefTable)
         iRow=iRow+1;
     end
 end
-
-
 %% Compare Results and Reference Tables
 function [ResultsComparison, ResultsDifference] = xASL_qc_CompareTables(TestDir, ReferenceTable, ResultsTable, SaveDir)
-
     % Compare tables (skip first row)
     ResultsComparison = ReferenceTable;
     ResultsDifference = ReferenceTable;
@@ -70,7 +68,6 @@ function [ResultsComparison, ResultsDifference] = xASL_qc_CompareTables(TestDir,
     TimeString = datestr(now,'yyyy-mm-dd_HH_MM');
     TimeString(end-2) = 'h';
     
-
     % Iterate over versions
     versionsXASL = fieldnames(ResultsComparison);
     for iVersion = 1:size(versionsXASL,1)
@@ -138,10 +135,8 @@ function [ResultsComparison, ResultsDifference] = xASL_qc_CompareTables(TestDir,
         xASL_tsvWrite(ResultsDifference.(versionsXASL{iVersion}), fullfile(SaveDir, DifferencesTableTsv));
     end
 end
-
 %% Determine the results table
 function [ResultsTable,ResultTableFile,SaveFile] = xASL_test_DetermineResultsTable(TestDir, Dlist, SaveDir)
-
     % Define results table name & fields
     ResultTableName = datestr(now,'yyyy-mm-dd_HH_MM');
     ResultTableName(end-2) = 'h';

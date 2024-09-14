@@ -25,10 +25,13 @@ function x = xASL_imp_DetermineSubjectStructure(x)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Check if imPar exists
     imParCondition = isfield(x.modules.import,'imPar') && isstruct(x.modules.import.imPar);
-
     %% Specific initialization for sourcedata, temp data, and rawdata
     if x.opts.bImport(1) && x.opts.bImportData && imParCondition
         % Determine structure from sourcedata
@@ -47,7 +50,6 @@ function x = xASL_imp_DetermineSubjectStructure(x)
     % SESSIONS DUMMY
     x.SESSIONS = {''};
 end
-
 function [x] = xASL_imp_DetermineStructureFromRawdata(x)
 %xASL_imp_DetermineStructureFromRawdata Determine structure from rawdata
 %
@@ -65,14 +67,11 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-
-
     %% Check if rawdata exists
     if xASL_exist(x.dir.RawData,'dir')
         
         % SUBJECTS
         x.SUBJECTS = xASL_adm_GetFileList(x.dir.RawData,[],false,[],true);
-
         % Remove 'sub-' from subject name if it exists
         for iSubject=1:numel(x.SUBJECTS)
             if regexpi(x.SUBJECTS{iSubject},'sub-')==1
@@ -86,7 +85,6 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
         fprintf(2,'There is no rawdata directory, skipping defacing...\n');
     end
 end
-
 function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 %xASL_imp_DetermineStructureFromTempdata Determine structure from temp data
 %
@@ -104,10 +102,7 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-
-
     %% Determine structure from temp data
-
     % Get subject/visits list
     listSubjectsVisits = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],false,[],true);
     
@@ -154,7 +149,6 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 	if ~isfield(x.modules.import.imPar, 'tokenVisitAliases') || isempty(x.modules.import.imPar.tokenVisitAliases)
 		% Create a unique list of visits
 		listVisits = unique(listVisits);
-
 		% Create a list of unique visits names
 		if isempty(listVisits)
 			% In case we haven't detected any visits (not even with empty visit names), we set them to empty

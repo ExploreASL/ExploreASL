@@ -15,6 +15,10 @@ function textArray = xASL_io_ReadTextFileLineByLine(pathTextFile)
 % EXAMPLE:        textArray = xASL_io_ReadTextFileLineByLine(pathTextFile);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Open text file
     fid = fopen(pathTextFile);
@@ -30,8 +34,4 @@ function textArray = xASL_io_ReadTextFileLineByLine(pathTextFile)
     
     % Close text file
     fclose(fid);
-
-
 end
-
-

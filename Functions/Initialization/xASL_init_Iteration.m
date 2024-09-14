@@ -26,13 +26,15 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% General settings
     dbSettings.x                     = x;
     dbSettings.x.settings.RERUN      = false;
     dbSettings.x.settings.MUTEXID    = moduleName;
-
     % Lock dir
     dbSettings.x.dir.LockDir = fullfile(x.dir.xASLDerivatives, 'lock', moduleName);
     
@@ -68,14 +70,12 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         elseif isempty(x.SUBJECTS)
             error('x.SUBJECTS was empty: loading subjects went wrong, verify that ExploreASL was correctly initialized');
         end
-
         try
             SelectedSubjects = x.SUBJECTS;
         catch ME
             error('Something wrong with x.SUBJECTS: loading subjects went wrong, verify that ExploreASL was correctly initialized: \n%s',ME.message);
         end
     end
-
     
     %% Print module name
     dbSettings.jobfn = str2func(moduleName);
@@ -109,7 +109,6 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         % we don't want the population module to run for multiple sets (subjects or sessions)
         dbSettings.sets.SUBJECT = SelectedSubjects; % x.SUBJECTS
     end
-
     
     % Checking SESSIONS
     if isempty(regexpi(ModName,'(BIDS2Legacy|Population)', 'once'))
@@ -120,7 +119,6 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
             error('x.SESSIONS was empty: loading sessions went wrong, verify that ExploreASL was correctly initialized');
         end
     end    
-
     
     % SESSION, MUTEXID & SESSIONDIR
     if ~isempty(regexpi(ModName,'(ASL|func|dwi)', 'once'))
@@ -151,8 +149,6 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
     %% Actually run the iteration
     [bAborted, xOut] = runIteration(dbSettings);
 end
-
-
 %% Run Iteration
 function [bAborted, x] = runIteration(db)
 % Iterates through all combinations of the parameter sets defined in db and calls a job function for each set.
@@ -172,10 +168,8 @@ function [bAborted, x] = runIteration(db)
 % OUTPUT:
 %   bAborted        - Report if the run was aborted
 %   xOut            - x-struct on the output
-
     % Admin
     bAborted = false;
-
     % Run multi-level batch
     if numel(db)>1
         for iCell=1:numel(db)
@@ -205,7 +199,6 @@ function [bAborted, x] = runIteration(db)
         
         return
     end
-
     % Make sure minimum required input is defined 
     if ~isfield(db,'sets') % add a dummy set to be able to run the script using parfor without sets
         db.sets.DUMMY = { '' };
@@ -266,7 +259,6 @@ function [bAborted, x] = runIteration(db)
         
         % Backward compatibility
         Fields = {'ROOT' 'DARTELDIR'};
-
         if ~isfield(x,'D')
             x.D = struct;
         end
@@ -342,7 +334,6 @@ function [bAborted, x] = runIteration(db)
             end
         end
         
-
         %% Replace symbols
         if ischar(job)
             job_ex = xASL_adm_ReplaceSymbols(job,x);
@@ -404,8 +395,6 @@ function [bAborted, x] = runIteration(db)
              end
             fprintf('\n');
         end        
-
-
         %% Start the job with all expanded x
         pwd_org = pwd; % remember the current working dir, so it can be restored if job fails
         try
@@ -438,7 +427,6 @@ function [bAborted, x] = runIteration(db)
             end
             
             fprintf('\n%s\n',['ERROR: ' ModuleString ' module terminated ' subjectString]);
-
             % Catch error in logging field
             [x] = xASL_qc_AddLoggingInfo(x, ME);
             
@@ -468,7 +456,6 @@ function [bAborted, x] = runIteration(db)
             diary off
         end
         
-
     
         %% FEEDBACK ON THE SCREEN
         if AlreadyProcessed
@@ -480,12 +467,10 @@ function [bAborted, x] = runIteration(db)
                 fprintf('\n');
             end
         end
-
     end % next DB iteration
     fprintf('%s completed 100%s\n',x.settings.MUTEXID,'%');
    
 end    
-
 % Helper function to increment indices of parameter sets
 function I = NextIter(I,N)
 % This function increments the indices in vector I and by
@@ -493,24 +478,20 @@ function I = NextIter(I,N)
 % Vector N should hold the maximum index values for all levels in I.
 % The easiest way to start is to initialize N with the required values
 % and then use I=ones(size(N)) as initial indexing vector.
-
 % First check if all indices are zero.
 if sum(I)==0
 	I = I + 1; % set all to 1
 	return
 end
-
 % First flip ordering of index vectors because we consider the set that was defined first (lowest index)
 % as most significant (=slowest running index). The resulting vector I will be flipped back at the end.
 I=fliplr(I);
 N=fliplr(N);
-
 % Which indices are about to overflow?
 C = I==N;
 if size(C,2)==1
 	C = C';
 end
-
 % Convert this 0-1 pattern to a decimal number and add one
 d = bin2dec(char(char('0')+fliplr(C))); % bin2dec accepts strings, but remember that the rightmost (least significant) char get highest index
 d = d + 1; % increment, might overflow!
@@ -527,7 +508,6 @@ else
 	ii=find(D>C); % this one must increment
 	I(ii) = I(ii)+1;
 end
-
 % Reverse the flipping that was applied above
 I=fliplr(I);
 end % function NextIter

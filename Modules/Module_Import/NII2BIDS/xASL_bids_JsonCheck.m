@@ -20,17 +20,18 @@ function [jsonOut,reportOut] = xASL_bids_JsonCheck(jsonIn,fileType)
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Create an empty output structure and a structure with fields to delete
 jsonOut = struct;
 jsonRemove = struct;
 reportOut = struct;
-
 bidsPar = xASL_bids_Config();
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Remove fields not belonging to BIDS
-
 % Remove certain empty fields
 for iField = 1:length(bidsPar.listRemoveIfEmpty)
     if isfield(jsonIn,bidsPar.listRemoveIfEmpty{iField})
@@ -39,14 +40,12 @@ for iField = 1:length(bidsPar.listRemoveIfEmpty)
         end
     end
 end
-
 % Remove non-BIDS fields
 for iField = 1:length(bidsPar.listFieldsRemoveGeneral)
     if isfield(jsonIn,bidsPar.listFieldsRemoveGeneral{iField})
         jsonRemove.(bidsPar.listFieldsRemoveGeneral{iField}) = '';
     end
 end
-
 % Remove non-ASL-BIDS fields from ASL sequences
 if strcmpi(fileType,'ASL') || strcmpi(fileType,'M0')
     for iField = 1:length(bidsPar.listFieldsRemoveASL)
@@ -69,7 +68,6 @@ else % And remove certain fields only from non-ASL sequences
 		end
 	end
 end
-
 % Remove fields belonging to dataset_description
 for iField = 1:length(bidsPar.datasetDescription.Required)
     if isfield(jsonIn,bidsPar.datasetDescription.Required{iField})
@@ -86,20 +84,17 @@ for iField = 1:length(bidsPar.datasetDescription.Optional)
         jsonRemove.(bidsPar.datasetDescription.Optional{iField}) = '';
     end
 end
-
 % Go through all input fields and copy to output, but skip those in jsonRemove
 for nameField = fieldnames(jsonIn)'
     if ~isfield(jsonRemove, nameField{1})
         jsonOut.(nameField{1}) = jsonIn.(nameField{1});
     end
 end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Check field requirements and dependencies
 if strcmpi(fileType,'ASL')
     xASL_adm_BreakString('BIDS JSON Check Results');
 end
-
 % Check required ASL fields
 if strcmpi(fileType,'ASL')
     strReport = '';
@@ -130,7 +125,6 @@ if strcmpi(fileType,'ASL')
         fprintf('Missing recommended ASL fields: %s\n',strReport);
     end
 end
-
 % Check required M0 fields
 if strcmpi(fileType,'M0')
     strReport = '';
@@ -147,7 +141,6 @@ if strcmpi(fileType,'M0')
         fprintf(2,'Missing required M0 fields: %s\n',strReport);
     end
 end
-
 % Check ASL dependencies
 if strcmpi(fileType,'ASL')
     % Iterate over bidsPar and check conditions for ASL JSON file
@@ -217,7 +210,6 @@ if strcmpi(fileType,'ASL')
                 % One of the dependencies was not fulfilled
                 if ~isempty(strReportFilled) || ~isempty(strReportEmpty) || ~isempty(strReportRecommended)
                     fprintf('%s\n', 'BIDS dependency check: ');
-
                     % Report the conditional field
                     if isempty(bidsPar.ASLCondition{iCond}.value)
                         fprintf('The field %s is empty, please check the dependencies below:\n',bidsPar.ASLCondition{iCond}.field);
@@ -247,21 +239,14 @@ if strcmpi(fileType,'ASL')
     end
     fprintf('\n');
 end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sort fields in a predefined order
-
 % Create the structure with the correct field order
 fieldOrderStruct = [];
 for iField=1:length(bidsPar.listFieldOrder)
     fieldOrderStruct.(bidsPar.listFieldOrder{iField}) = '';
 end
-
 % And sort the fields
 jsonOut = xASL_adm_OrderFields(jsonOut,fieldOrderStruct);
-
     
 end
-
-
-

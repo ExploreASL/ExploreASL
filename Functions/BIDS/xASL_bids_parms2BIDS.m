@@ -26,7 +26,10 @@ function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids
 %          outParms = xASL_bids_parms2BIDS(inXasl, [], 1, 0);
 % __________________________________
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 if nargin < 1
@@ -44,16 +47,13 @@ end
 if nargin < 4 || isempty(bPriorityBids)
 	bPriorityBids = 1;
 end
-
 % In case we input BIDS and want output in BIDS we skip the rest
 if isempty(inXasl) && bOutBids
 	outParms = inBids;
 	return;
 end
-
 %% ----------------------------------------------------------------------
 %% 1) Define field names that need to be convert/renamed/merged
-
 % Fields with these names need to have the time converted between XASL legacy and BIDS, and define their recommended range in ms
 convertTimeFieldsXASL =       {'EchoTime' 'uniqueEchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'T2' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
 convertTimeFieldsRange =       [0.5        0.5              5                0             10                 10                   10              5                  100       10   100        5                  5;...% Minimum in ms
@@ -63,20 +63,16 @@ convertTimeFieldsAllowOutliers=[0          0                0                1  
 % Fields that are entered under the subfield 'Q' for xASL on the output
 xASLqFields = {'EchoTime' 'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LookLocker' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1' 'MRAcquisitionType' 'PulseSequenceType' ...
 	           'BackgroundSuppressionPulseTime' 'BackgroundSuppressionNumberPulses' 'TimeEncodedMatrixSize' 'nUniqueEchoTime' 'TimeEncodedMatrixType' 'SoftwareVersions' 'TimeEncodedMatrix'};
-
 % Some JSON fields need to be updated to fit the BIDS definition
 % This is a one way process of changing the names from old to new
 updateNamesBIDSold = {'PhilipsRescaleSlope' 'PhilipsRWVSlope' 'PhilipsScaleSlope' 'PhilipsRescaleIntercept' 'PhilipsRWVIntercept' 'BackGrSupprPulses'                 'TotalAcquiredVolumes'  'InitialPostLabelDelay'};
 updateNamesBIDSnew = {'RescaleSlope'        'RWVSlope'        'MRScaleSlope'      'RescaleIntercept'        'RWVIntercept'        'BackgroundSuppressionNumberPulses' 'TotalAcquiredPairs'    'PostLabelingDelay'};
-
 % These fields have different names in xASL and in BIDS
 % They are therefore renamed depending on the type of output
 changeNamesXASL = {'Vendor'       'Initial_PLD'         'LabelingType'              'RepetitionTime'            'NumberOfAverages'     'SliceReadoutTime'};
 changeNamesBIDS = {'Manufacturer' 'PostLabelingDelay'   'ArterialSpinLabelingType'  'RepetitionTimePreparation' 'TotalAcquiredPairs'   'SliceTiming'     };
-
 %% ----------------------------------------------------------------------
 %% 2) Convert XASL fields to the output format (BIDS or XASL legacy)
-
 % Goes through all XASL fields
 if ~isempty(inXasl)
     % Flatten inXasl structure (include x.Q, x.settings, x.dataset, x.modules, x.modules.structural, x.modules.asl, x.modules.population parameters)
@@ -114,23 +110,19 @@ if ~isempty(inXasl)
 						inXasl.(FieldsA{iA}) = inXasl.(FieldsA{iA})/1000;
 					end
 				end
-
 				% Rename XASL fields to BIDS field according to the information in changeNamesXASL and changeNamesBIDS
 				for iL = find(strcmp(FieldsA{iA},changeNamesXASL))
 					inXasl.(changeNamesBIDS{iL}) = inXasl.(changeNamesXASL{iL});
-
 					% Remove only if the name was different
 					if ~strcmp(changeNamesBIDS{iL},changeNamesXASL{iL})
 						inXasl = rmfield(inXasl,changeNamesXASL{iL});
 					end
 				end
-
 				if isfield(inXasl,'LabelingType') && strcmpi(inXasl.LabelingType,'PASL') && isfield(inXasl,'LabelingDuration') && ~isempty(inXasl.LabelingDuration)
 					inXasl.BolusCutOffDelayTime(1) = unique(inXasl.LabelingDuration) / 1000; % Convert and convert units from ms to s
 					inXasl = rmfield(inXasl,'LabelingDuration');
 					inXasl.BolusCutOffFlag = true;
 				end
-
 				if isfield(inXasl,'BackgroundSuppressionNumberPulses') && inXasl.BackgroundSuppressionNumberPulses == 0
 					inXasl.BackgroundSuppression = false;
 					inXasl = rmfield(inXasl,'BackgroundSuppressionNumberPulses');
@@ -139,10 +131,8 @@ if ~isempty(inXasl)
 		end
 	end
 end
-
 %% ----------------------------------------------------------------------
 %% 3) Convert BIDS fields to the output format (BIDS or XASL)
-
 % Goes through all BIDS fields
 if ~isempty(inBids)
 	% Move all fields from Q to the main structure
@@ -261,10 +251,8 @@ if ~isempty(inBids)
 		end
 	end
 end
-
 %% ----------------------------------------------------------------------
 %% 4) Merge the BIDS and XASL fields, convert field values
-
 % Performs merging of XASL and BIDS, prioritizing either BIDS or XASL
 % Don't overwrite existing field with a zero, empty, nan or inf value
 if bPriorityBids
@@ -314,7 +302,6 @@ else
 		end
 	end
 end
-
 % Last conversions
 FieldsA = fields(outParms);
 for iA = 1:length(FieldsA)
@@ -328,13 +315,11 @@ for iA = 1:length(FieldsA)
 		end
 	end
 end
-
 % Remove zeros from PhoenixProtocol
 if isfield(outParms,'PhoenixProtocol')
 	nullChar = char(0);
 	outParms.PhoenixProtocol = strrep(outParms.PhoenixProtocol,nullChar,'');
 end
-
 % If output is in XASL, then copy into Q subfield
 if bOutBids ~= 1
 	FieldsA = fields(outParms);
@@ -345,18 +330,15 @@ if bOutBids ~= 1
 		end
 	end
 end
-
 % If we convert to xASL Legacy format, we have to move fields to correct position in the outParms structure
 % as some fields belong to x.Q.fields and some to x.fields
 if ~bOutBids
     outParms = xASL_io_CheckDeprecatedFieldsX(outParms);
 end
-
 % If we convert to Legacy, we make sure to properly initialize the field outParms.Q.PulseSequenceType
 if ~bOutBids
 	outParms.Q = xASL_adm_DefineASLReadout(outParms.Q);
 end
-
 % We check and correctly rename the discontinued Legacy fields that require a more complicated conversion than is done using xASL_io_CheckDeprecatedFieldsX
 % (this is done only for backwards compatibility, and won't be done on BIDS2Legacy, just in Legacy2BIDS and Legacy2Legacy)
 if (bOutBids && (isfield(outParms, 'PulseSequenceType') || isfield(outParms, 'Sequence'))) || (~bOutBids && isfield(outParms.Q, 'PulseSequenceType'))
@@ -375,7 +357,6 @@ if (bOutBids && (isfield(outParms, 'PulseSequenceType') || isfield(outParms, 'Se
 		end
 		outParmsTemp = outParms.Q;
 	end
-
 	% Sequence is now split to MRAcquisitionType and PulseSequenceType
 	% Splitting to MRAcquisitionType
 	if ~isfield(outParmsTemp, 'MRAcquisitionType') || isempty(outParmsTemp.MRAcquisitionType)
@@ -385,7 +366,6 @@ if (bOutBids && (isfield(outParms, 'PulseSequenceType') || isfield(outParms, 'Se
 			outParmsTemp.MRAcquisitionType = '3D';
 		end
 	end
-
 	% Splitting to PulseSequenceType
 	if isfield(outParmsTemp, 'PulseSequenceType')
 		if ~isempty(regexpi(outParmsTemp.PulseSequenceType, 'epi'))
@@ -396,7 +376,6 @@ if (bOutBids && (isfield(outParms, 'PulseSequenceType') || isfield(outParms, 'Se
 			outParmsTemp.PulseSequenceType = 'GRASE';
 		end
 	end
-
 	% Put it to the correct field
 	if bOutBids
 		if isfield(outParmsTemp, 'MRAcquisitionType')
@@ -413,14 +392,10 @@ if (bOutBids && (isfield(outParms, 'PulseSequenceType') || isfield(outParms, 'Se
 			outParms.Q.PulseSequenceType = outParmsTemp.PulseSequenceType;
 		end
 	end
-
 end
 end
-
-
 % Flatten the x structure to a single level
 function inXasl = xASL_wrp_Quantify_FlattenX(inXasl)
-
     % Flatten inXasl structure: move x.Q, x.settings, & x.dataset main level of x
     firstLevelStructs = {'Q', 'settings', 'dataset'};
     
@@ -437,5 +412,4 @@ function inXasl = xASL_wrp_Quantify_FlattenX(inXasl)
             inXasl = rmfield(inXasl,firstLevelStructs{iStruct});
         end
 	end
-
 end

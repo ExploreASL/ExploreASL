@@ -52,27 +52,25 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 %
 % __________________________________
 % Copyright 2015-2022 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 0. Admin and initialization
 % Dummy output in case this code crashes
 flavors = struct;
-
 % clear screen for easier warning/error tracking
 clc;
-
 if nargin<2 || isempty(bOnlyRemoveResults)
 	bOnlyRemoveResults = false;
 end
 if nargin<3 || isempty(bRunProcessing)
 	bRunProcessing = false;
 end
-
 % Check for testConfig
-
 % Get testing path
 pathTesting = fileparts(mfilename('fullpath'));
-
 % Check if testConfig.json needs to be read
 if nargin<1 || isempty(testConfig)
 	if exist(fullfile(pathTesting,'testConfig.json'),'file')
@@ -86,11 +84,9 @@ if nargin<1 || isempty(testConfig)
 		return
 	end
 end
-
 if isempty(testConfig.pathExploreASL) || isempty(testConfig.pathFlavorDatabase)
 	error('The paths to the code and working directory needs to be specified...');
 end
-
 % Clone the flavors database if necessary
 cd(testConfig.pathExploreASL);
 x = ExploreASL;
@@ -100,7 +96,6 @@ else
 	cd(fileparts(testConfig.pathFlavorDatabase));
 	system(testConfig.cmdCloneFlavors);
 end
-
 % Load database JSON
 if xASL_exist(fullfile(testConfig.pathFlavorDatabase,'flavors.json'),'file')
 	databaseInfo = xASL_io_ReadJson(fullfile(testConfig.pathFlavorDatabase,'flavors.json'));
@@ -112,7 +107,6 @@ end
 % Check for flavor list
 if ~isfield(testConfig,'flavorList')
     testConfig.directoryList = xASL_adm_GetFileList(testConfig.pathFlavorDatabase, [], false, [], true);
-
     % Generate a list of flavors that should be tested from flavors.json
     flavorList = {};
     for iFlavor=1:length(flavors.data)
@@ -121,14 +115,12 @@ if ~isfield(testConfig,'flavorList')
         end
     end
     testConfig.flavorList = flavorList;
-
     % Check if fields are missing in directory
     testConfig.missingFields = setdiff(testConfig.flavorList, testConfig.directoryList);
     if ~isempty(testConfig.missingFields)
         warning(['Flavors specified in flavors.json are missing in directory'])
         display(testConfig.missingFields);
     end
-
     % Notify of ignored flavors 
     testConfig.ignoredFields = setdiff(testConfig.directoryList, testConfig.flavorList);
     if ~isempty(testConfig.ignoredFields)
@@ -136,25 +128,21 @@ if ~isfield(testConfig,'flavorList')
         display(testConfig.ignoredFields);
     end
 end    
-
 % Logging table
 flavors.loggingTable = array2table(zeros(0,3), 'VariableNames',{'message','stack','name'});
 flavors.comparisonTable = array2table(zeros(0,4), 'VariableNames',{'flavor','dataset','name','message'});
     
 % Change directory to ExploreASL root folder
 cd(testConfig.pathExploreASL);
-
 %% 1. Clean previous test output
 % Remove output testdata (derivatives and rawdata), keeps the input and reference (sourcedata, configuration JSONs, rawdataReference, derivativesReference)
 xASL_test_Flavors_RemoveExistingTestData(testConfig);
-
 % Stop testing pipeline if we only want to remove test data
 if bOnlyRemoveResults
 	fclose('all');
 	diary off;
 	return
 end
-
 % Remove empty directories
 fprintf('\nChecking for empty folders:   ');
 for iList=1:length(testConfig.flavorList)
@@ -165,27 +153,20 @@ for iList=1:length(testConfig.flavorList)
         xASL_delete(currentFolder, 1);
     end
 end
-
-
 %% 2. Run the DCM->BIDS import
 xASL_adm_BreakString('RUN DICOM TO BIDS');
 flavors.loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, flavors.loggingTable);
-
 %% 3. Check the DCM->BIDS import results
 xASL_adm_BreakString('CHECK THE BIDS CONVERSION');
 [flavors,~] = xASL_test_Flavors_Compare(testConfig,flavors,'rawdata','rawdataReference');
-
 %% 4. Run BIDS->Legacy import
 xASL_adm_BreakString('RUN BIDS TO LEGACY');
 flavors.loggingTable = xASL_test_Flavors_BIDS2LEGACY(testConfig, flavors.loggingTable);
-
 %% 5. Check the the BIDS->Legacy import results
 xASL_adm_BreakString('CHECK THE LEGACY CONVERSION');
 [flavors,~] = xASL_test_Flavors_Compare(testConfig,flavors,'derivatives','derivativesReference');
-
 % Already save conversion results and ignore some files before processing
 flavors = xASL_test_FlavorsSaveResults(flavors, testConfig);
-
 % Processing
 if bRunProcessing
 	%% 6. Run ExploreASL on all Legacy-converted data
@@ -204,10 +185,8 @@ end
 fclose('all');
 diary off;
 end
-
 %% Save the test results in a .mat file and ignore log files
 function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
-
     % Ignore some files
     flavors = xASL_test_IgnoreFiles(flavors);
     
@@ -220,7 +199,6 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
     savePathMat = fullfile(testConfig.pathExploreASL,'Testing', [TimeString, '_flavor_results.mat']);
     savePathTSV = fullfile(testConfig.pathExploreASL,'Testing', [TimeString, '_flavor_comparison.tsv']);
     savePathLogging = fullfile(testConfig.pathExploreASL,'Testing', [TimeString, '_flavor_loggingtable.tsv']);
-
 	save(savePathMat,'flavors','testConfig');
     if ~isempty(flavors.comparisonTable)
         xASL_tsvWrite(table2cell(flavors.comparisonTable), savePathTSV);
@@ -239,12 +217,9 @@ function flavors = xASL_test_FlavorsSaveResults(flavors, testConfig)
     fprintf('[\bLOGGING TABLE:]\b\n');
     disp(flavors.loggingTable);
     fprintf('\n');
-
 end
-
 %% Ignore version in dataset_description.json, ASL4D.json, ASL4D_Source.json, M0.json, T1.json, FLAIR.json
 function flavors = xASL_test_IgnoreSomeFields(flavors,testConfig)
-
     % Default
     ignoreRows = [];
     
@@ -280,17 +255,11 @@ function flavors = xASL_test_IgnoreSomeFields(flavors,testConfig)
             ignoreRows = xASL_test_CompareFieldsOfJSON(currentMessage,filename,flavorPath,ignoreRows,iElement);
         end
     end
-
     % Actually remove the corresponding rows
     flavors.comparisonTable(ignoreRows,:) = [];
-
-
 end
-
-
 %% Compare JSON files but ignore the version field
 function ignoreRows = xASL_test_CompareFieldsOfJSON(currentMessage,filename,flavorPath,ignoreRows,iElement)
-
     % We only want to match derivatives JSON files
     if ~isempty(regexpi(currentMessage,'ExploreASL')) && ~isempty(filename)
         startExploreASL = regexpi(currentMessage,'ExploreASL');
@@ -319,12 +288,9 @@ function ignoreRows = xASL_test_CompareFieldsOfJSON(currentMessage,filename,flav
             end
         end
     end
-
 end
-
 %% We need to be sure that there are no differences in the shared fields for our JSON version comparison
 function diffSharedFields = xASL_test_CheckSharedJSONFields(jsonA,jsonB,sharedFields,diffSharedFields)
-
     % Iterate over shared fields
     for iField=1:numel(sharedFields)
         curField = sharedFields{iField};
@@ -339,12 +305,9 @@ function diffSharedFields = xASL_test_CheckSharedJSONFields(jsonA,jsonB,sharedFi
             end
         end
     end
-
 end
-
 %% Escape to unix
 function [jsonA,jsonB] = xASL_test_EscapeToUnix(jsonA,jsonB,sharedFields)
-
     % Make it windows/unix compatible
     for iField=1:numel(sharedFields)
         curField = sharedFields{iField};
@@ -357,5 +320,4 @@ function [jsonA,jsonB] = xASL_test_EscapeToUnix(jsonA,jsonB,sharedFields)
             jsonA.(curField) = strrep(jsonA.(curField),'\','/');
         end
     end
-
 end

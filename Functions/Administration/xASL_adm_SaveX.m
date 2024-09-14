@@ -20,8 +20,10 @@ function xASL_adm_SaveX(x, Path_xASL, bOverwrite)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright (C) 2015-2020 ExploreASL
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% -------------------------------------
 %  Admin
@@ -34,13 +36,10 @@ end
 if nargin<3 || isempty(bOverwrite)
     bOverwrite = true;
 end
-
 if exist(Path_xASL, 'file') && ~bOverwrite
     error('x.mat already existed, skipping...');
 else
     xASL_delete(Path_xASL);
     save(Path_xASL,'x');
 end
-
-
 end

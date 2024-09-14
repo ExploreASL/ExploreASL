@@ -1,4 +1,9 @@
 % Copyright 2015-2024 ExploreASL (Works In Progress code)
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 function [ovol,varargout]=bilateralFilterASL_HJM_LV(volIM,VoxelSize,varargin)
 % function [ovol,[filter]]=bilateralFilterASL_HJM_LV(vol,voxelsize,[label],[mask])
 %

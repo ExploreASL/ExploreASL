@@ -28,19 +28,20 @@ function header = xASL_io_DcmtkRead(filepath, bPixel, bTryDCMTK, bSkipNonDicoms)
 % REFERENCES:
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if nargin < 2 || isempty(bPixel)
 	bPixel = false;
 end
-
 if nargin < 3 || isempty(bTryDCMTK)
 	bTryDCMTK = true;
 end
-
 if nargin < 4 || isempty(bSkipNonDicoms)
     bSkipNonDicoms = false;
 end
-
 if bTryDCMTK
 	try
 		% Read using DCMTK
@@ -49,22 +50,17 @@ if bTryDCMTK
         fprintf('%s%s\n','Warning, reading a DICOM with DCMTK failed. Will continue with SPM. Warning message: ', ME.message);
 		% Read using SPM routines
 		header = spm_dicom_headers(filepath);
-
         % Verify that this is a DICOM file
         if xASL_io_DcmtkRead_bSkipNonDicoms(bSkipNonDicoms, header, filepath), return; end
-
 		header = xASL_io_DcmtkRead_TrimSPM(header{1});
 	end
 else
 	% Read using SPM routines
 	header = spm_dicom_headers(filepath);
-
     % Verify that this is a DICOM file
     if xASL_io_DcmtkRead_bSkipNonDicoms(bSkipNonDicoms, header, filepath), return; end
-
 	header = xASL_io_DcmtkRead_TrimSPM(header{1});
 end
-
 % Correct the acquisition time formatting from string to seconds
 if ~isempty(header.AcquisitionTime) && ~isnumeric(header.AcquisitionTime)
 	% The old import uses probably str2double, an looses some precission by that - but that won't be more than seconds...
@@ -78,12 +74,10 @@ if ~isempty(header.AcquisitionTime) && ~isnumeric(header.AcquisitionTime)
 	%atMs  = acqTim - atSec;
 	%header.AcquisitionTime = atMs + atSec + atMin/100*60 + atH/10000*3600;
 end
-
 % Correct the seies time formatting from string to seconds
 if ~isempty(header.SeriesTime) && ~isnumeric(header.SeriesTime)
 	header.SeriesTime = str2num(header.SeriesTime);
 end
-
 % Convert the MRScaleSlope - i.e. the Private_2005_100e tag
 listConvert = {'MRScaleSlope' 'PhilipsNumberTemporalScans' 'PhilipsLabelControl' 'PhoenixProtocol'};
 typeConvert = {'float' 'decimal' 'char' 'char'};
@@ -106,7 +100,6 @@ for iField = 1:length(listConvert)
 		end
 	end
 end
-
 %% Philips fields
 % Convert the RescaleSlopeOriginal - i.e. the Private_2005_140a tag
 % If the field exists and is still in a string format
@@ -124,12 +117,10 @@ if isfield(header,'RescaleSlopeOriginal') && ~isempty(header.RescaleSlopeOrigina
 		header.RescaleSlopeOriginal = num;
 	end
 end
-
 if ~isempty(header.EffectiveEchoSpacing) 
 	% Unknown format
 	header.EffectiveEchoSpacing = str2double(header.EffectiveEchoSpacing);
 end
-
 if ~isempty(header.MRSeriesWaterFatShift) 
 	% FL
 	% First try normal conversion to a double precision
@@ -145,7 +136,6 @@ if ~isempty(header.MRSeriesWaterFatShift)
 		header.MRSeriesWaterFatShift = single(num);
 	end
 end
-
 if ~isempty(header.MRSeriesEPIFactor) 
 	% SL
 	num = str2double(header.MRSeriesEPIFactor);
@@ -160,16 +150,12 @@ if ~isempty(header.MRSeriesEPIFactor)
 		header.MRSeriesEPIFactor = single(num);
 	end
 end
-
-
 %% GE fields
 if ~isempty(header.AssetRFactor) 
 	% Unknown format
 	header.AssetRFactor = str2double(header.AssetRFactor);
 end
-
 %% Siemens fields
-
 if ~isempty(header.BandwidthPerPixelPhaseEncode) 
 	% Unknown format
 	header.BandwidthPerPixelPhaseEncode = str2double(header.BandwidthPerPixelPhaseEncode);
@@ -187,31 +173,24 @@ end
 % 		rmfield(header,'Private_2005_100e');
 % 	end
 % end
-
 end
-
 %-------------------------------------------------------------------------------------------------------------
 % Rename and sort some of the fields
 % And remove those fields that are not necessary
 function header = xASL_io_DcmtkRead_TrimSPM(header)
-
 % Those were already defined in SPM, so we have to redefine them here
 if isfield(header,'PhaseNumber')
 	header.PhilipsNumberTemporalScans = header.PhaseNumber;
 end
-
 if isfield(header,'EPIFactor')
 	header.MRSeriesEPIFactor = header.EPIFactor;
 end
-
 if isfield(header,'WaterFatShift')
 	header.MRSeriesWaterFatShift = header.WaterFatShift;
 end
-
 if isfield(header,'CSASeriesHeaderInfo')
 	header.PhoenixProtocol = char(header.CSASeriesHeaderInfo);
 end
-
 % Read the nested fields
 if isfield(header,'SharedFunctionalGroupsSequence')
 	if iscell(header.SharedFunctionalGroupsSequence)
@@ -223,7 +202,6 @@ if isfield(header,'SharedFunctionalGroupsSequence')
 		header.RepetitionTime = timingItem.RepetitionTime;
 	end
 end
-
 %% Philips fields
 if isfield(header, 'PerFrameFunctionalGroupsSequence')
 	privateItem = [];
@@ -275,7 +253,6 @@ if isfield(header, 'PerFrameFunctionalGroupsSequence')
 		end
 	end
 end
-
 if isfield(header,'RealWorldValueMappingSequence')
 	rwItem = header.RealWorldValueMappingSequence;
 	if isfield(rwItem,'RealWorldValueIntercept')
@@ -285,46 +262,35 @@ if isfield(header,'RealWorldValueMappingSequence')
 		header.RWVSlope = rwItem.RealWorldValueSlope;
 	end
 end
-
 if isfield(header, 'Private_0043_192c')
 	header.EffectiveEchoSpacing = header.Private_0043_192c;
 end
-
 if isfield(header, 'Private_2001_1022')
 	header.MRSeriesWaterFatShift = header.Private_2001_1022;
 end
-
 if isfield(header, 'Private_2001_1013')
 	header.MRSeriesEPIFactor = header.Private_2001_1013;
 end
-
 if isfield(header, 'Private_0019_1028')
 	header.BandwidthPerPixelPhaseEncode = header.Private_0019_1028;
 end
-
 %% GE fields
-
 if isfield(header, 'Private_0043_1083')
 	header.AssetRFactor = header.Private_0043_1083;
 end
-
 if isfield(header, 'Private_0019_109c')
 	header.GELabelingType = header.Private_0019_109c;
 end
-
 if isfield(header, 'Private_0043_10a5')
 	header.GELabelingDuration = header.Private_0043_10a5;
 end
-
 %% Siemens fields
 if isfield(header, 'Private_0029_1020')
 	header.PhoenixProtocol = header.Private_0029_1020;
 end
-
 if isfield(header, 'Private_0019_1029')
 	header.SiemensSliceTime = header.Private_0019_1029;
 end
-
 %% General field cleanup
 % Keep only those fields below...
 listFieldsKeep = {'RepetitionTime', 'EchoTime', 'RescaleSlope', 'RescaleIntercept',...
@@ -339,7 +305,6 @@ listFieldsKeep = {'RepetitionTime', 'EchoTime', 'RescaleSlope', 'RescaleIntercep
 		'InversionTime', 'GELabelingDuration', 'PhilipsNumberTemporalScans', 'ProtocolName', ...
 		'PhilipsLabelControl', 'TemporalPositionIdentifier', 'PhoenixProtocol', 'SoftwareVersions',...
 		'SiemensSliceTime', 'StudyID', 'SeriesNumber', 'AcquisitionNumber', 'InstanceNumber' };
-
 headerOld = header;
 header = struct;
 for iField=1:length(listFieldsKeep)
@@ -350,8 +315,6 @@ for iField=1:length(listFieldsKeep)
 	end
 end
 end
-
-
 function [isNotADicom] = xASL_io_DcmtkRead_bSkipNonDicoms(bSkipNonDicoms, header, filepath)
 %xASL_io_DcmtkRead_bSkipNonDicoms Manage bSkipNonDicoms
 %
@@ -360,9 +323,7 @@ function [isNotADicom] = xASL_io_DcmtkRead_bSkipNonDicoms(bSkipNonDicoms, header
 %                             e.g., with xASL_adm_SortDicomToFolders
 %                             as DICOM files do not necessarily have a unique extension
 %                             (OPTIONAL, DEFAULT=false)
-
 isNotADicom = false;
-
 if isempty(header)
     if bSkipNonDicoms
         fprintf('%s\n', ['Non-dicom: ' filepath]);
@@ -372,6 +333,4 @@ if isempty(header)
         error(['Non-dicom: ' filepath]);
     end
 end
-
-
 end

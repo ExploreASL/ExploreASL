@@ -22,19 +22,19 @@ function resultJSON = xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncode
 %
 % __________________________________
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if numel(nii_files)>=1
 	[resultPath, resultFile] = xASL_fileparts(nii_files{1});
-
 	% Run this for a general TimeEncoded data only
 	if bTimeEncoded && xASL_exist(nii_files{1},'file')
-
 		% Load the image data
 		imASL = xASL_io_Nifti2Im(nii_files{1});
-
 		% Determine the number of time points within each NIfTI
 		numberTEs = length(unique(resultJSON.EchoTime));
-
 		% Check if the current sequence is a Hadamard from FME or not
 		if bTimeEncodedFME
 			interleavedPLDs = false;
@@ -56,12 +56,10 @@ if numel(nii_files)>=1
 				numberPLDs = int32(size(imASL,4)/numberTEs);
 				numberRepetitions = 1;
 			end
-
 			if numberTEs > 1 && numberRepetitions > 0
 				if numberRepetitions > 1 && interleavedPLDs
 					error('Import of FME TimeEncoded for multiple TEs and Repetitions is not yet implemented for interleaved PLDs');
 				end
-
 				% Reorder TEs and PLDs - first cycle TE afterwards PLD
 				vectorOldOrder = zeros(size(imASL,4),1);
 				for iPLD = 1:(double(numberPLDs*numberRepetitions))
@@ -69,10 +67,8 @@ if numel(nii_files)>=1
 				end
 				imASL(:,:,:,1:end) = imASL(:,:,:,vectorOldOrder);
 				xASL_io_SaveNifti(nii_files{1}, nii_files{1}, imASL);
-
 				% Repeat Echo Times
 				resultJSON.EchoTime = repmat(resultJSON.EchoTime, (numberPLDs*numberRepetitions), 1);
-
 				% Save the JSON with the updated echo times
 				xASL_io_WriteJson(fullfile(resultPath, [resultFile '.json']),resultJSON);
 			elseif numberRepetitions > 1

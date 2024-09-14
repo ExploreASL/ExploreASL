@@ -79,6 +79,10 @@ function [x] = xASL_io_ReadDataPar(pathDataPar, bStudyPar)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Input Check
 if nargin < 2 || isempty(bStudyPar)
@@ -91,11 +95,9 @@ if nargin < 1 || isempty(pathDataPar) || ~exist(pathDataPar, 'file')
 		error('Data parameter file does not exist...');
     end
 end
-
 % Input has to be a character array
 pathDataPar = char(pathDataPar);
 [Fpath, Ffile, Fext] = fileparts(pathDataPar);
-
 if strcmpi(Fext, '.m')
 	%% In case an m-file is provided, it reads it, checks it and saves a converted copy to JSON as m-files are deprecated
 	% Read the m-file by executing it
@@ -103,10 +105,8 @@ if strcmpi(Fext, '.m')
 	if ~isempty(Fpath)
 		cd(Fpath);
 	end
-
 	FunctionHandle = str2func(Ffile);
 	x = FunctionHandle();
-
 	cd(CurrentFolder);
 	
 	PathJSON = fullfile(Fpath, [Ffile '.json']);
@@ -135,12 +135,10 @@ if strcmpi(Fext, '.m')
 		fprintf('Warning: m-files are deprecated. Converted to a JSON file. Please delete the original m-file');
 		xASL_io_WriteJson(PathJSON, x);
 	end
-
 elseif strcmpi(Fext, '.json')
 	%% In case a JSON file is provided, it reads it, checks it and just give it to the output, no need for conversion or saving
 	% Read a JSON file	
 	jsonData = xASL_io_ReadJson(pathDataPar);
-
 	% Remove x field if it exists
 	if isfield(jsonData,'x')
 		x = jsonData.x;
@@ -205,33 +203,22 @@ elseif strcmpi(Fext, '.json')
 else
 	error('Unknown file extension');
 end
-
 end
-
-
 %% Goes through the JSON fields and make sure that incorrect entries are corrected
 function [StructOut] = xASL_io_ReadDataPar_FixFields(StructIn)
-
 % First fixes the numerical fields in the root structure and x.Q substructure
 StructOut = xASL_io_ReadDataPar_ConvertNumericalFields(StructIn);
 if isfield(StructIn,'Q')
 	StructOut.Q = xASL_io_ReadDataPar_ConvertNumericalFields(StructIn.Q);
 end
-
 % Looks for fields with a specific cell array structure entered as a string, which is incorrect by new JSON standards, and fixes this
 StructOut = xASL_io_ReadDataPar_ConvertCellArrays(StructOut);
-
 end
-
-
 %% ConvertNumericalFields (Convert strings which contain numbers to numbers, remove invalid fields)
 function [StructOut] = xASL_io_ReadDataPar_ConvertNumericalFields(StructIn)   
-
 StructOut = struct; % initialize output
-
 % Get fields
 listFields = fields(StructIn);
-
 % Iterate over fields
 for iField=1:length(listFields)
 	
@@ -270,21 +257,16 @@ for iField=1:length(listFields)
 		StructOut.(listFields{iField}) = StructIn.(listFields{iField});
 	end
 end
-
 end
-
 %%xASL_io_ReadDataPar_ConvertCellArrays finds all the cell arrays entered as strings and fixes them
 function StructOut = xASL_io_ReadDataPar_ConvertCellArrays(StructIn)
 % Go through the whole StructIn iteratively at all levels. Find all character arrays entered as a single character array
 % {'text','text2','text3'} and breaks it down to cell array of characters. 
 % Note that the Matlab notation '{'text','text2','text3'}' shouldn't be used in JSON and the correct JSON notation
 % ["text","text2","text3"] should be used in JSON instead. 
-
 StructOut = struct; % initialize output
-
 % Get fields
 listFields = fields(StructIn);
-
 % Iterate over fields
 for iField=1:length(listFields)
 	
@@ -325,5 +307,3 @@ for iField=1:length(listFields)
 	end
 end
 end
-
-

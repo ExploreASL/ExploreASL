@@ -28,6 +28,11 @@ function [resFWHM, resSigma, resErr, imSmo, imMask] = xASL_im_EstimateResolution
 % EXAMPLE: [resFWHM, resSigma, resErr, imSmo, imMask] = xASL_im_EstimateResolution(imCBF, imGM, imWM, [], {'gaussian' 'gaussian' 'gaussian'}, 5);
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 %% Parameter admin
 if nargin < 3 || isempty(imCBF) || isempty(imGM) || isempty(imWM)

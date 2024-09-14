@@ -31,11 +31,13 @@ function [x] = ExploreASL_Initialize(varargin)
 %
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 1. Admin
     % Validate Matlab version, parse input parameters, check which modules should be run.
-
 	if ~exist('x','var') || isempty(x)
 		x = struct;
 	end
@@ -43,12 +45,10 @@ function [x] = ExploreASL_Initialize(varargin)
     % Validate the Matlab version
 	fprintf('%s\n', ['Matlab version detected: ' version]);
 	fprintf('%s\n', 'Minimal Matlab version required: 9.6 (R2019a)');
-
 	if verLessThan('matlab', '9.6')
 		disp('<a href="https://nl.mathworks.com/support/requirements/previous-releases.html; ">Click here for the Matlab version overview</a>');
 		error('Too old Matlab version for ExploreASL');
 	end
-
     %% xASL_init_InputParsing Parse the input parameters of ExploreASL, 
     % meaning to divide and identify the input parameters, if they are provided in the correct format, 
     % define their defaults, and their meaning for ExploreASL.
@@ -59,11 +59,8 @@ function [x] = ExploreASL_Initialize(varargin)
     x = xASL_init_GetBooleansImportProcess(x);
   
     %% 2. Get main ExploreASL path
-
     x = xASL_init_GetMainExploreASLfolder(x);
-
     %% 3. Add ExploreASL paths to Matlab and prepare x (sub)structs
-
     %% xASL_init_AddDirsOfxASL  Add specific ExploreASL directories as Matlab paths, avoiding adding folders that are unused or that may even cause conflict.
     % If toolboxes that ExploreASL uses were already added to the paths, they are removed from the Matlab paths (such as spm, bids) to avoid conflicts.
     xASL_init_AddDirsOfxASL(x.opts.MyPath);
@@ -74,7 +71,6 @@ function [x] = ExploreASL_Initialize(varargin)
     x = xASL_init_SubStructs(x);
    
     %% 4. Check DatasetRoot provided by user & provide feedback on which ExploreASL module is run
-
     if x.opts.bImportData || x.opts.bLoadData || x.opts.bProcessData
         % xASL_init_checkDatasetRoot Check the provided ExploreASL input parameter "DatasetRoot".
         %  Is it a path? Does it exist? is it a directory? It should be the dataset root folder, 
@@ -88,19 +84,15 @@ function [x] = ExploreASL_Initialize(varargin)
     xASL_init_BasicFeedback(x);
     
     %% 5. Define several general settings (mostly used for processing, PM: move these to processing initialization)
-
     % Go to ExploreASL folder
     cd(x.opts.MyPath);
-
     % These settings are data-independent
     % Define several data independent settings for processing 
     % (PM: move these to the processing initialization)
     x = xASL_init_DefineIndependentSettings(x);
-
     %% 6. Print logo, settings, ExploreASL version etc
     % xASL_init_PrintLogo Print the ExploreASL logo before running ExploreASL
     xASL_init_PrintLogo();
-
     % Print chosen settings
     % xASL_init_printSettings Print chosen settings, for:
     %  - Dataset root (which dataset root folder is selected)
@@ -109,26 +101,20 @@ function [x] = ExploreASL_Initialize(varargin)
     % - Pause before processing (yes/no)
     % - iWorker and nWorkers (for parallelization)
     xASL_init_printSettings(x);
-
     % Check permissions 
     % This part is skipped for now, this checked if the data and ExploreASL paths had sufficient permissions)
     % xASL_adm_CheckPermissions(x.opts.MyPath, false);
-
-
     % xASL_init_PrintVersion Print ExploreASL version to the screen, beta as well
     xASL_init_PrintVersion(x.Version);
-
 	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
         disp('<a href="https://exploreasl.github.io/Documentation; ">Click here for the ExploreASL manual</a>');
     else % text only
         fprintf('ExploreASL manual is available at https://exploreasl.github.io/Documentation\n');
     end
 end
-
 %% =======================================================================================================================
 %% =======================================================================================================================
 %% SUBFUNCTIONS start here 
-
 %% 1. Admin ==============================================================================================================
 %% =======================================================================================================================
 %% =======================================================================================================================
@@ -276,7 +262,6 @@ function x = xASL_init_InputParsing(x, varargin)
             
         % Field to check if the data was loaded or not
         x.opts.bDataLoaded = false;
-
         % On default, we do not load the data
         x.opts.bLoadData = false;
     
@@ -310,7 +295,6 @@ function x = xASL_init_InputParsing(x, varargin)
         end
     
     end
-
 %% 2. Get main ExploreASL path ===========================================================================================
 %% =======================================================================================================================
 %% =======================================================================================================================
@@ -372,14 +356,12 @@ function x = xASL_init_GetMainExploreASLfolder(x)
         cd(x.opts.MyPath);
     
     end
-
 %% 3. Add ExploreASL paths ===============================================================================================
 %% =======================================================================================================================
 %% =======================================================================================================================
 function xASL_init_AddDirsOfxASL(MyPath)
 %% Add specific ExploreASL directories as Matlab paths, avoiding adding folders that are unused or that may even cause conflict.
 % If toolboxes that ExploreASL uses were already added to the paths, they are removed from the Matlab paths (such as spm, bids) to avoid conflicts.
-
     if ~isdeployed
         
         % First remove existing toolbox initializations
@@ -395,13 +377,11 @@ function xASL_init_AddDirsOfxASL(MyPath)
         else
             pathList = currentPathList;
         end
-
         % Iterate over paths
         for iPath=1:numel(pathList)
             if ~isempty(regexpi(pathList{iPath}, [filesep '(spm|bids-matlab)'])) % toolboxes can be added here
                 % Here we want search for toolboxes that ExploreASL uses, but
                 % that are in another path (e.g., within the Matlab toolboxes)
-
                 if isempty(regexp(pathList{iPath}, fullfile('ExploreASL', 'External'), 'once'))
                     % If this path is not an ExploreASL-contained toolbox
                     rmpath(pathList{iPath});
@@ -412,7 +392,6 @@ function xASL_init_AddDirsOfxASL(MyPath)
         if numel(pathList)>1
             fprintf('\n');
         end
-
         % Define paths (should be equal when loading data or only initializing)
         addpath(MyPath); % ExploreASL
         subfoldersToAdd = {...
@@ -459,11 +438,9 @@ function xASL_init_AddDirsOfxASL(MyPath)
     end
     
 end
-
 %% 4. Check DatasetRoot provided =========================================================================================
 %% =======================================================================================================================
 %% =======================================================================================================================
-
     function [x] = xASL_init_checkDatasetRoot(x)
         %xASL_init_checkDatasetRoot Check the ExploreASL parameter DatasetRoot
         %
@@ -486,8 +463,6 @@ end
         % EXAMPLE:     n/a
         %
         % __________________________________
-
-
             %% Check the ExploreASL parameter "DatasetRoot"
             
             % Default
@@ -540,7 +515,6 @@ end
         
 			%% Check and remove empty spaces at the start and end of the DatasetRoot
 			if ~isempty(x.opts.DatasetRoot)
-
 				% Remove the empty spaces at the start
 				% Get the start and end of a regexp of 'empty spaces at the start of the string
 				[indexStart, indexEnd] = regexp(x.opts.DatasetRoot, '^ +', 'start', 'end');
@@ -549,7 +523,6 @@ end
 					x.opts.DatasetRoot = x.opts.DatasetRoot(indexEnd(1)+1:end);
 					warning(['x.opts.DataserRoot contains ' xASL_num2str(indexEnd(1)-indexStart(1)+1) ' empty spaces at the start. Fixing this']);
 				end
-
 				% Remove the empty spaces at the end
 				% Look for the start and end of a string that is at the end and composed of ' ' only
 				[indexStart, indexEnd] = regexp(x.opts.DatasetRoot, ' +$', 'start', 'end');
@@ -558,7 +531,6 @@ end
 					warning(['x.opts.DataserRoot contains ' xASL_num2str(indexEnd(end)-indexStart(end)+1) ' empty spaces at the end. Fixing this']);
 				end
 			end
-
             %% Check if the user provided any path, and if this path exists
             if isempty(x.opts.DatasetRoot)
                 warning('Dataset root directory is not specified...');
@@ -660,7 +632,6 @@ end
             end
         
         end
-
         %% =======================================================================================================================
         %% =======================================================================================================================
         function [x] = xASL_init_DetermineRequiredPaths(x)
@@ -682,7 +653,6 @@ end
             % EXAMPLE:     n/a
             %
             % __________________________________
-
             
                 %% Check the BIDS dataset root for the metadata JSON files
             
@@ -713,7 +683,6 @@ end
                 
                 % First try the derivatives folder
                 fileListDataPar = xASL_adm_GetFileList(fullfile(x.dir.DatasetRoot, 'derivatives', 'ExploreASL'), '(?i)^datapar.*\.json$');
-
                 if isempty(fileListDataPar)
                     % Derivatives maybe does not exist already, we'll try study root
                     fileListDataPar = xASL_adm_GetFileList(x.dir.DatasetRoot, '(?i)^datapar.*\.json$');
@@ -769,7 +738,6 @@ function xASL_init_BasicFeedback(x)
         fprintf('ExploreASL %swill %s...\n',reportImport,reportProcess);
     
     end
-
 %% 5. Define several general settings ====================================================================================
 %% =======================================================================================================================
 %% =======================================================================================================================
@@ -792,7 +760,6 @@ function xASL_init_BasicFeedback(x)
         % -----------------------------------------------------------------------------------------------------------------------------------------------------
         % REFERENCES:  n/a
         %
-
         
         
         %% --------------------------------------------------------------------------------------------------------------------
@@ -834,7 +801,6 @@ function xASL_init_BasicFeedback(x)
         %% Visualization
         x = xASL_init_VisualizationSettings(x);
         end    
-
 %% 6. Print ==============================================================================================================
 %% =======================================================================================================================
 %% =======================================================================================================================
@@ -859,7 +825,6 @@ function xASL_init_PrintLogo()
         xASL_adm_BreakString('',[],[],1);
         fprintf(logoString);
     end
-
 %% =======================================================================================================================
 %% =======================================================================================================================
 function xASL_init_printSettings(x)
@@ -886,7 +851,6 @@ function xASL_init_printSettings(x)
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
     % REFERENCES:  n/a
     %
-
     
         %% Printing
         xASL_adm_BreakString('ExploreASL Settings');
@@ -936,7 +900,6 @@ function xASL_init_printSettings(x)
         xASL_adm_BreakString('',[],[],1);
     
     end
-
 %% =======================================================================================================================
 %% =======================================================================================================================
 function xASL_init_PrintVersion(vExploreASL)

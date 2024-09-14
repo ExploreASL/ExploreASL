@@ -31,26 +31,26 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 % REFERENCES: Petr, 2018 MAGMA; Vidorreta 2013 Neuroimage
 %
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ----------------------------------------------------------------------------------------
 %% Admin
 [tIM, ~, tJson] = xASL_io_ReadNifti(PathASL);
 NativeResolution = tIM.hdr.pixdim(2:4);
-
 % Check for missing JSON
 if isempty(tJson) || ~isfield(tJson, 'Q') 
 	error(['Missing JSON sidecar for ' PathASL]);
 end
-
 % Obtain the x.Q.PulseSequenceType and x.Q.MRAcquisition fields from the json
 x.Q.PulseSequenceType = tJson.Q.PulseSequenceType;
 x.Q.MRAcquisitionType = tJson.Q.MRAcquisitionType;
-
 % If sequence is still missing we skip this function
 if ~isfield(x.Q, 'PulseSequenceType') || ~isfield(tJson.Q, 'MRAcquisitionType')
     error('Setting x.Q.PulseSequenceType or x.Q.MRAcquisitionType is missing');
 end
-
 %% ----------------------------------------------------------------------------------------
 %% 1) Educated-guess FWHM
 if strcmpi(x.Q.PulseSequenceType, 'EPI') && strcmpi(x.Q.MRAcquisitionType, '2D')
@@ -77,7 +77,6 @@ elseif strcmpi(x.Q.PulseSequenceType, 'GRASE') && strcmpi(x.Q.MRAcquisitionType,
 else
 	warning(['Unknown setting x.Q.PulseSequenceType=' xASL_num2str(x.Q.PulseSequenceType) ', x.Q.MRAcuqisitionType=' xASL_num2str(x.Q.MRAcquisitionType)]);
 end
-
 %% ----------------------------------------------------------------------------------------
 %% 2) Attempt accounting for in-plane interpolation in reconstruction
 if strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D') && NativeResolution(1)<4
@@ -86,10 +85,8 @@ if strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3
 elseif strcmpi(x.Q.PulseSequenceType, 'GRASE') && strcmpi(x.Q.MRAcquisitionType, '3D') && NativeResolution(1)<3
 	NativeResolution(1:2) = max(NativeResolution(1:2),[3.8 3.8]);
 end
-
 %% ----------------------------------------------------------------------------------------
 %% 3) Calculate and report effective spatial resolution
 EffectiveResolution = NativeResolution.*Estimated_FWHM;
 fprintf('%s\n',[x.Q.PulseSequenceType ' NIfTI has native resolution ' num2str(NativeResolution(1)) ' ' num2str(NativeResolution(2)) ' ' num2str(NativeResolution(3)) ', assuming PSF ' num2str(Estimated_FWHM(1)) ' ' num2str(Estimated_FWHM(2)) ' ' num2str(Estimated_FWHM(3)) ' this gives estimated effective resolution ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(3))])
-
 end

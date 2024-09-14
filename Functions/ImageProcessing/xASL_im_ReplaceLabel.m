@@ -35,11 +35,13 @@ function xASL_im_ReplaceLabel(pathNifti, LabelNumbersOld, LabelNumbersNew, pathN
 % 
 % __________________________________
 % Copyright 2021-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% -------------------
 %% Admin
-
 if nargin<3 || isempty(LabelNumbersNew)
     error('No new label numbers assigned, skipping');
 elseif ~isnumeric(LabelNumbersNew)
@@ -55,16 +57,13 @@ elseif ~ischar(pathNifti)
 elseif ~xASL_exist(pathNifti)
     error([pathNifti ' does not exist']);
 end
-
 if nargin<4 || isempty(pathNewNifti)
     frpintf('%s\n', ['Overwriting ' pathNifti]);
     pathNewNifti = pathNifti;
 end
-
 % Enforce horizontal vector
 LabelNumbersOld = LabelNumbersOld(:)';
 LabelNumbersNew = LabelNumbersNew(:)';
-
 if ~isequal(size(LabelNumbersOld), size(LabelNumbersNew))
     LengthOld = length(LabelNumbersOld);
     LengthNew = length(LabelNumbersNew);
@@ -72,15 +71,11 @@ if ~isequal(size(LabelNumbersOld), size(LabelNumbersNew))
     fprintf('%s\n', ['LabelNumbersNew has size ' num2str(LengthNew)]);
     error('LabelNumbersOld and LabelNumbersNew should have identical size');
 end
-
     
-
 %% -------------------
 %% 1. Load NIfTI
 ImageOld = xASL_io_Nifti2Im(pathNifti);
 ImageNew = ImageOld;
-
-
 %% -------------------
 %% 2. Replace numbers
 for iNumber=1:length(LabelNumbersOld)
@@ -90,11 +85,7 @@ for iNumber=1:length(LabelNumbersOld)
         ImageNew(ImageOld==LabelNumbersOld(iNumber)) = LabelNumbersNew(iNumber);
     end
 end
-
-
 %% -------------------
 %% 3. Save NIfTI
 xASL_io_SaveNifti(pathNifti, pathNewNifti, ImageNew, 8);
-
-
 end

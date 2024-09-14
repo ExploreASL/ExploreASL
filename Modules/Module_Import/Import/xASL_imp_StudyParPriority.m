@@ -23,41 +23,37 @@ function studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll, 
 % EXAMPLE:        studyPar = xASL_imp_StudyParPriority(studyParAll, 'sub-01', '1', '2')
 % __________________________________
 % Copyright 2015-2022 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Check existence of studyParAll and return if single studyPar
 if nargin < 1 || isempty(studyParAll)
 	studyParSpecificSubjVisitSess = struct();
 	return;
 end
-
 % Default subject/visit/session strings to empty
 if nargin < 2
 	subjectName = '';
 end
-
 if nargin < 3
 	sessionName = '';
 end
-
 if nargin < 4
 	runName = '';
 end
-
 if nargin < 5 || isempty(bVerbose)
 	bVerbose = true;
 end
-
 % Do nothing for a single-instance studyPar
 if ~isfield(studyParAll,'StudyPars')
 	studyParSpecificSubjVisitSess = studyParAll;
 	return;
 end
-
 % Initialize empty studyPar and then go through different studyPars
 studyParSpecificSubjVisitSess = struct();
-
 textOverwriteWarning = '';
-
 % At each step, check for all conditions and set a flag for overwrite (first step having the lowest priority
 for iStudyPar = 1:length(studyParAll.StudyPars)
 	bOverwrite = 1;
@@ -128,13 +124,11 @@ for iStudyPar = 1:length(studyParAll.StudyPars)
 		end
 	end
 end
-
 % If there are overwritten fields, then add a general info about the subject and print the warning
 if ~isempty(textOverwriteWarning)
 	textOverwriteWarning = sprintf('Evaluating multi-parameter studyPar for subject/visit/session: %s/%s/%s\n%s', subjectName, sessionName, runName, textOverwriteWarning);
 	fprintf(textOverwriteWarning);
 end
-
 % Delete the keywords for merging
 if isfield(studyParSpecificSubjVisitSess,'SubjectRegExp')
 	studyParSpecificSubjVisitSess = rmfield(studyParSpecificSubjVisitSess,'SubjectRegExp');

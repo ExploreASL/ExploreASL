@@ -35,6 +35,10 @@ function [xasl,parameters,parameterList,phoenixProtocol] = xASL_bids_GetPhoenixP
 % REFERENCES:       ...
 % __________________________________
 % Copyright @ 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Input Check
     
@@ -42,12 +46,10 @@ function [xasl,parameters,parameterList,phoenixProtocol] = xASL_bids_GetPhoenixP
     if nargin < 1
         error('Missing input parameters...');
     end
-
     % Check bUseDCMTK
     if nargin < 2
         bUseDCMTK = true;
     end
-
     % Check if the input path is a character array or a string
     if ~(ischar(pathData))
         error('Input path is neither a char array not a string...');
@@ -65,9 +67,7 @@ function [xasl,parameters,parameterList,phoenixProtocol] = xASL_bids_GetPhoenixP
     rawPhoenixProtocol = parsePhoenixProtocol(pathData,bUseDCMTK);
     [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPhoenixProtocol);
     [xasl,parameters] = xASL_bids_PhoenixProtocolAnalyzer(parameterList);
-
 end
-
 % Function to parse the phoenix protocol
 function rawPhoenixProtocol = parsePhoenixProtocol(pathData,bUseDCMTK)
     rawPhoenixProtocol = ''; % Fallback
@@ -85,6 +85,3 @@ function rawPhoenixProtocol = parsePhoenixProtocol(pathData,bUseDCMTK)
         rawPhoenixProtocol = phoenixProtocol;                       % Raw phoenix protocol as a char array
     end
 end
-
-
-

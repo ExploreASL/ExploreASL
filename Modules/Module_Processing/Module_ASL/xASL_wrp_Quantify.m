@@ -41,15 +41,17 @@ function xASL_wrp_Quantify(x, PWI4D_Path, pathOutputCBF, M0Path, SliceGradientPa
 %     Neuroimage. 2017; 156:363-376.
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ------------------------------------------------------------------------------------------------
 %% 0.   Administration
-
 % by default, we use standard space NIfTIs
 if nargin<2 || isempty(PWI4D_Path)
     PWI4D_Path = x.P.Pop_Path_PWI4D;
 end
-
 if nargin<3 || isempty(pathOutputCBF)
     pathOutputCBF = x.P.Pop_Path_qCBF;
 end
@@ -60,48 +62,37 @@ iStringCBF = iStringCBF(end);
 pathOutputATT = [pathOutputCBF(1:(iStringCBF-1)) 'ATT' pathOutputCBF((iStringCBF+3):end)];
 pathOutputTex = [pathOutputCBF(1:(iStringCBF-1)) 'Tex' pathOutputCBF((iStringCBF+3):end)];
 pathOutputABV = [pathOutputCBF(1:(iStringCBF-1)) 'ABV' pathOutputCBF((iStringCBF+3):end)];
-
 if nargin<4 || isempty(M0Path)
     M0Path = x.P.Pop_Path_M0;
 end
 if nargin<5 || isempty(SliceGradientPath)
     SliceGradientPath = x.P.Pop_Path_SliceGradient_extrapolated;
 end
-
 if ~isfield(x.modules.asl,'bUseBasilQuantification') || isempty(x.modules.asl.bUseBasilQuantification)
    x.modules.asl.bUseBasilQuantification = false;
 end
-
 if nargin<6 || isempty(bSaveCBF4D)
 	bSaveCBF4D = false;
 end
-
 if x.modules.asl.bUseBasilQuantification && bSaveCBF4D
 	warning('Cannot save CBF4D when using BASIL');
 end
-
 if ~isfield(x,'Q')
     x.Q = struct;
 end
-
 % Define quantification parameters
 x = xASL_quant_DefineQuantificationParameters(x);
-
 % Check if PWI4D exists
 if ~xASL_exist(PWI4D_Path, 'file')
     warning('Skipped xASL_wrp_Quantify: files missing, please rerun step 4: xASL_wrp_ResampleASL');
-
     fprintf('%s\n', ['Missing: ' PWI4D_Path]);
     return;
 end
-
 % 0b. Remove output paths if they exist, to avoid confusion between different ExploreASL repetitions
-
 xASL_delete(pathOutputCBF);
 xASL_delete(pathOutputATT);
 xASL_delete(pathOutputTex);
 xASL_delete(pathOutputABV);
-
 % For BASIL, only native images are processed and standard space images are not directly quantified, but only transformed
 % So that's why we need to delete both the native and standard space images at once for BASIL
 if x.modules.asl.bUseBasilQuantification
@@ -110,14 +101,11 @@ if x.modules.asl.bUseBasilQuantification
     xASL_delete(x.P.Pop_Path_Tex);
     xASL_delete(x.P.Pop_Path_ABV);
 end
-
 %% ------------------------------------------------------------------------------------------------
 %% 1.   Load PWI4D
 fprintf('%s\n','Loading PWI4D & M0 images');
-
 % Load ASL single PWI
 [~, jsonASL] = xASL_io_Nifti2Im(PWI4D_Path, [], [], true); % Load CBF nifti and convert JSON to Legacy
-
 if isempty(jsonASL)
     % If jsonASL is missing, this could mean either:
 	% A. this is old derivatives data, where we didn't use json sidecars yet
@@ -125,24 +113,19 @@ if isempty(jsonASL)
 	% In both cases, we have to throw an error. Because what we have in x.Q cannot be used, this is a leftover from the start of the pipeline (from the rawdata unsubtracted volumes).
 	error(['JSON file missing for: ' PWI4D_Path]);
 end
-
 % Assign the shortest minimal positive TE for ASL
 ASLshortestTE = min(jsonASL.Q.EchoTime(jsonASL.Q.EchoTime > 0));
-
 %% ------------------------------------------------------------------------------------------------
 %% 2.   Prepare M0
 if x.modules.asl.ApplyQuantification(5)==0
     % M0 division disabled, so we use a dummy M0 value only
     M0_im = NaN;
-
 elseif isnumeric(x.Q.M0)
         % Single value per scanner
         % In this case we assume that this nifti value has been properly acquired,
         % does not need any corrections, and whole ASL PWI will be divided by this single value.
-
         M0_im = x.Q.M0;
         fprintf('%s\n',['Single M0 value ' num2str(M0_im) ' used']);
-
         if x.modules.asl.ApplyQuantification(4)
             % in case of separate M0, or M0 because of no background suppression,
             % T2* effect is similar in both images and hence removed by division
@@ -155,25 +138,19 @@ elseif isnumeric(x.Q.M0)
 				error('EchoTime unknown for ASL, but it is needed for the quantification to correct for ASL vs M0 signal differences.');
 			end
         end
-
 else
     % In this case we have a proper M0 image that should have voxel-wise
     % orientation agreement with the ASL PWI. We may need to correct it"s values.
-
     % Load M0 images
-
     fprintf('%s\n','M0 scan used');
     M0_im = xASL_io_Nifti2Im(M0Path);
-
     if xASL_stat_SumNan(M0_im(:))==0
         warning(['Empty M0:' M0Path]);
     end
-
     % NB: M0 quantification has largely been done in previous script,
     % load M0-parms only to check that ASL & M0-parms are identical
     % Scale slopes & incomplete T1 relaxation were already corrected in M0 module
 end
-
 %% ------------------------------------------------------------------------------------------------
 %% 3.   Hematocrit & blood T1 correction
 % Here, we check if the user has provided a hematocrit value for this
@@ -181,7 +158,6 @@ end
 % Below, at the quantification section, this is only taken into account
 % when x.Q.BloodT1 exists, otherwise default Blood T1 values are used based
 % on MagneticFieldStrength.
-
 % a. We prioritize x.S.SetsID > x.Hematocrit
 indexSetsName = find(strcmpi(x.S.SetsName, 'hematocrit'));
 if ~isempty(indexSetsName) && isfield(x, 'Hematocrit')
@@ -190,7 +166,6 @@ if ~isempty(indexSetsName) && isfield(x, 'Hematocrit')
 elseif ~isempty(indexSetsName)
     x.Hematocrit = x.S.SetsID(:,indexSetsName);
 end
-
 % b. We prioritze x.Hematocrit > x.hematocrit
 if isfield(x, 'hematocrit') && isfield(x, 'Hematocrit')
     warning('Two hematocrit fields, ignoring x.hematocrit');
@@ -199,22 +174,18 @@ elseif isfield(x, 'hematocrit')
     x.Hematocrit = x.hematocrit;
 	x = rmfield(x, 'hematocrit');
 end
-
 % c. We convert x.Hematocrit -> x.Q.BloodT1
 if isfield(x,'Hematocrit')
     x.Q.Hematocrit = x.Hematocrit(x.iSubjectSession);
     x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Q.Hematocrit, [], x.MagneticFieldStrength);
 end
-
 % d. If we do not have a x.Q.BloodT1, we use a default value - that is done in xASL_quant_DefineQuantificationParameters called in section 0 here
 % PM: model hematocrit based on age, sex, ethnicity
 % See xASL_quant_AgeSex2Hct & improve this function with population-based stats
-
 %% ------------------------------------------------------------------------------------------------
 %% 4)   ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
 if strcmpi(x.Q.M0,'separate_scan')
 	[~, jsonM0] = xASL_io_Nifti2Im(x.P.Path_M0, [], [], true); %and convert JSON to Legacy
-
     %M0_parms = xASL_adm_LoadParms(x.P.Path_M0_parms_mat, x);
 	
 	% Assigns the shortest minimal positive TE for M0
@@ -224,7 +195,6 @@ if strcmpi(x.Q.M0,'separate_scan')
     else
         warning('Missing M0 Echo Time');
 	end
-
     % Check echo times
     if  ~isempty(ASLshortestTE) && ~isempty(M0shortestTE)
         
@@ -242,7 +212,6 @@ if strcmpi(x.Q.M0,'separate_scan')
 			CorrFactor = x.Q.T2star;
 			CorrName = 'T2star';
         end
-
         % Correct M0 for any EchoTime differences between ASL & M0
         if x.modules.asl.ApplyQuantification(4)
 			% If the shortest TEs are unequal, then we have to compensate for this
@@ -255,7 +224,6 @@ if strcmpi(x.Q.M0,'separate_scan')
 			if ASLshortestTE ~= M0shortestTE
 				ScalingASL = exp(ASLshortestTE/CorrFactor);
 				ScalingM0 = exp(M0shortestTE/CorrFactor);
-
 				M0_im = M0_im.*ScalingM0./ScalingASL;
 				fprintf('Delta TE between ASL %s ms & M0 %s ms, for %s, assuming %s decay of arterial blood, factor applied to M0: %s\n', ...
 					num2str(ASLshortestTE),num2str(M0shortestTE),...
@@ -267,13 +235,9 @@ if strcmpi(x.Q.M0,'separate_scan')
         warning('Could not compare TEs from ASL & M0, JSON fields missing...');
     end
 end
-
-
-
 if ~x.modules.asl.ApplyQuantification(3) % if conversion PWI for label units is not requested
     SliceGradient = [];
 else
-
     %% ------------------------------------------------------------------------------------------------
     %% 5    Load SliceGradient
     if  strcmpi(x.Q.MRAcquisitionType, '2D')
@@ -281,8 +245,6 @@ else
     else
         SliceGradient = [];
     end
-
-
     %% ------------------------------------------------------------------------------------------------
     %% 6.   Initialize quantification parameters
 	if ~isfield(x.Q,'nCompartments') || isempty(x.Q.nCompartments)
@@ -292,18 +254,13 @@ else
         fprintf('%s\n', 'Now x.Q.nCompartments set to 1 (single compartment model)');
         x.Q.nCompartments = 1;
 	end
-
 	if ~isfield(x.Q,'ATT')
         x.Q.ATT = 1800; % ms as default micro-vascular ATT
 	end
-
-
-
     % Check correct order of magnitude blood T1 (this value should be around 1700, or ~ 1000-3000)
     if x.Q.BloodT1<10
         x.Q.BloodT1 = x.Q.BloodT1.*1000;
     end
-
 	if ~isfield(x.Q,'LabelingType')
            error('Unknown LabelingType, needed for quantification');
     elseif isempty(regexpi(x.Q.LabelingType, '^(PC|P|C)ASL$', 'once'))
@@ -311,7 +268,6 @@ else
     elseif strcmpi(x.Q.LabelingType,'PCASL')
            x.Q.LabelingType = 'CASL';
 	end
-
 	if isfield(x.Q,'BackgroundSuppression') && ~x.Q.BackgroundSuppression
 		% In case BSup is defined and turned off, then we set the number of pulses to 0
 		x.Q.BackgroundSuppressionNumberPulses = 0;
@@ -344,8 +300,6 @@ else
 			end
         end
 	end
-
-
     %% 7.   Labeling efficiency
     if ~isfield(x.Q,'LabelingEfficiency') || isempty(x.Q.LabelingEfficiency)
 		switch lower(x.Q.LabelingType)
@@ -371,11 +325,9 @@ else
         case 5 % e.g. GE 3D spiral
             x.Q.LabEff_Bsup = 0.75; % 0.75 = 5 background suppression pulses (GE FSE) (Garcia et al., MRM 2005)
     end
-
     x.Q.LabEff_Orig = x.Q.LabelingEfficiency;
     x.Q.LabelingEfficiency = x.Q.LabelingEfficiency*x.Q.LabEff_Bsup;
 end
-
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
 if ~x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bUseBasilQuantification % multi-PLD with BASIL or single-PLD
@@ -384,7 +336,6 @@ else
     % multi-PLD quantification without BASIL
     error('Multi PLD quantification without BASIL is not yet implemented.');
 end
-
 if x.modules.asl.ApplyQuantification(5)==0
     MeanCBF = xASL_stat_MeanNan(CBF(:));
     if MeanCBF>666 % this is the average including air
@@ -393,29 +344,23 @@ if x.modules.asl.ApplyQuantification(5)==0
         fprintf('%s\n',['mean whole image CBF normalized from ' xASL_num2str(MeanCBF) ' to 10 mL/100g/min']);
     end
 end
-
 %% ------------------------------------------------------------------------------------------------
 %% 9.	Save files
 % Both ExploreASL and BASIL-quantified maps will be saved similarly here
 fprintf('%s\n','Saving PWI & CBF niftis');
-
 xASL_io_SaveNifti(PWI4D_Path, pathOutputCBF, CBF, 32, 0);
-
 if numel(ATT) > 1
 	% Save the ATT file
 	xASL_io_SaveNifti(PWI4D_Path, pathOutputATT, ATT, 32, 0);
 end
-
 if numel(ABV) > 1 
 	% Save the ABV file
 	xASL_io_SaveNifti(PWI4D_Path, pathOutputABV, ABV, 32, 0);
 end
-
 if numel(Tex) > 1
 	% Save the Tex file
 	xASL_io_SaveNifti(PWI4D_Path, pathOutputTex, Tex, 32, 0);
 end
-
 %% 9.b Save files in standard space for BASIL native space output
 % Transform BASIL CBF to standard space as BASIL only quantifies in native space
 if x.modules.asl.bUseBasilQuantification && strcmp(x.P.Path_CBF, pathOutputCBF)
@@ -433,13 +378,10 @@ if x.modules.asl.bUseBasilQuantification && strcmp(x.P.Path_CBF, pathOutputCBF)
 	if xASL_exist(x.P.Path_Tex,'file')
 		xASL_spm_deformations(x, {x.P.Path_Tex}, {x.P.Pop_Path_Tex}, [], [], AffineTransfPath, x.P.Path_y_ASL);
 	end
-
 	if xASL_exist(x.P.Path_ABV,'file')
 		xASL_spm_deformations(x, {x.P.Path_ABV}, {x.P.Pop_Path_ABV}, [], [], AffineTransfPath, x.P.Path_y_ASL);
 	end
 end
-
-
 %% ------------------------------------------------------------------------------------------------
 %% 10.   FEAST quantification
 % run FEAST quantification if crushed & non-crushed ASL sessions exist
@@ -449,8 +391,6 @@ if (x.dataset.nSessions>1 && isfield(x,'session') && isfield(x.session,'options'
         xASL_quant_FEAST(x);
     end
 end
-
-
 %% ------------------------------------------------------------------------------------------------
 %% 11.  Create standard space masked image to visualize masking effect
 if (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.modules.asl.bUseBasilQuantification) && ~bSaveCBF4D
@@ -459,11 +399,9 @@ if (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.modules.asl.bUseBasilQuantific
     % 1. strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) -> if the created output CBF is the standard space NIfTI
     % 2. || x.modules.asl.bUseBasilQuantification -> for BASIL, the standard space qCBF is a copy of the here created native space CBF NIfTI
     % 3. ~bSaveCBF4D -> we create the masked image only for the single volume CBF
-
     if ~xASL_exist(x.P.Pop_Path_qCBF, 'file')
         error(['Somehow, saving went wrong for : ' x.P.Pop_Path_qCBF]);
     end
-
     % Load CBF image
     MaskedCBF = xASL_io_Nifti2Im(x.P.Pop_Path_qCBF);
     % Mask vascular voxels (i.e. set them to NaN)
@@ -479,6 +417,4 @@ if (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.modules.asl.bUseBasilQuantific
         xASL_io_SaveNifti(x.P.Pop_Path_qCBF, x.P.Pop_Path_qCBF_masked, MaskedCBF, [], false);
     end
 end
-
-
 end

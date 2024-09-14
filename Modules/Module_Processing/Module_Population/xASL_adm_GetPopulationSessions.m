@@ -23,12 +23,15 @@ function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSession
 % EXAMPLE: n/a
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 1. Administration
 if nargin<2 || isempty(bVerbose)
     bVerbose = true;
 end
-
 currentSubjectRegExp = x.dataset.subjectRegexp;
 if strcmp(currentSubjectRegExp(1), '^')
     currentSubjectRegExp = currentSubjectRegExp(2:end);
@@ -36,18 +39,14 @@ end
 if strcmp(currentSubjectRegExp(end), '$')
     currentSubjectRegExp = currentSubjectRegExp(1:end-1);
 end
-
 if ~isfield(x.S, 'InputDataStr')
     warning('x.S.InputDataStr missing, defaulting to qCBF');
     x.S.InputDataStr = 'qCBF';
 end
-
 %% 2. Look for processed files from which to determine the amount of sessions present
 SessionList = xASL_adm_GetFileList(x.D.PopDir,['^' x.S.InputDataStr '_' currentSubjectRegExp '.*_ASL_\d+\.nii$'], 'FPList', [0 Inf]);
-
 %% 3. Obtain nSessions
 if isempty(SessionList) % If no files found, search for subject files instead of session files
-
 	nSessions = 1;
 	bSessionsMissing = 1;
 	SESSIONS = {'ASL_1'};
@@ -66,7 +65,6 @@ else % If files found, continue with defining sessions from SessionList
     % 4. define nSessions as highest unique session number
     nSessions = numel(SESSIONS);
     bSessionsMissing = 0;
-
     for iSession = 1:nSessions
         iSessionName = char(SESSIONS(iSession));
         iSessionNumber = iSessionName(5:end); % Session number
@@ -79,5 +77,4 @@ else % If files found, continue with defining sessions from SessionList
         warning('Amount of Sessions differs between Subjects');
     end
 end
-
 end

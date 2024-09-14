@@ -16,26 +16,25 @@ function xASL_io_WriteJson(pathJSON, json, bOverwrite)
 % EXAMPLE: xASL_io_WriteJson('/tmp/test.json', json);
 % __________________________________
 % Copyright (C) 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% ------------------------------------------------------------------------------------------------
 %% 0.   Administration
 if nargin < 1 || isempty(pathJSON)
 	error('The path to the JSON file is missing.');
 end
-
 if nargin < 2 || isempty(json)
 	error('The json structure to be saved is missing.')
 end
-
 if nargin < 3 || isempty(bOverwrite)
 	bOverwrite = true;
 end
-
 if xASL_exist(pathJSON,'file') && ~bOverwrite
 	error(['File exists, please set bOverwrite to true: ' pathJSON]);
 end
-
 %% 1. Encode the content to text.
 % This is executed first in case there are issues with the file
 % Our version of PrettyPrint is preferred to avoid printing each vector to several lines
@@ -45,10 +44,8 @@ end
 %else
 %	txt = jsonencode(json, 'PrettyPrint', true);
 %end
-
 %% 2. Open the JSON file for writing and save it
 fileID = fopen(pathJSON,'w+');
-
 try
 	fprintf(fileID, '%s', txt);
 catch ME
@@ -56,25 +53,18 @@ catch ME
 	fclose(fileID);
 	error('%s',ME.getReport());
 end
-
 % Close the file and return
 fclose(fileID);
-
 end
-
-
 %% Add newlines to make json output readable
 function txt = xASL_sub_PrettyPrint(txt)
-
 	txt = strrep(txt, '",', ['",'  newline]);
 	txt = strrep(txt, '],', ['],'  newline]);
 	txt = strrep(txt, '},', ['},'  newline]);
 	txt = strrep(txt, ':false,', [':false,'  newline]);
 	txt = strrep(txt, ':true,', [':true,'  newline]);
-
 	txt = regexprep(txt, ':(\d+),', [':$1,'  newline]);
 	txt = regexprep(txt, ':(\d+\.\d+),', [':$1,'  newline]);
 	txt = regexprep(txt, ':(\d+\.\d+E-\d+),', [':$1,'  newline]);
 	txt = regexprep(txt, ':(\d+\.\d+E\d+),', [':$1,'  newline]);
 end
-

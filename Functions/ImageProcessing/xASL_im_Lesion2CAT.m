@@ -18,39 +18,35 @@ function LesionPathOut = xASL_im_Lesion2CAT(PathIn)
 % EXAMPLE:      ...
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % Parse the directory names
 [x.dir.SUBJECTDIR, x.P.STRUCT , ~]     = xASL_fileparts(PathIn);
 x.P.STRUCT    = 'T1';
 x.P.FLAIR     = 'FLAIR';
-
 % Create the directory and specify the path to the merged lesion file
 if ~exist(fullfile(x.dir.SUBJECTDIR,'mri'),'dir'),mkdir(fullfile(x.dir.SUBJECTDIR,'mri'));end
 LesionPathOut = fullfile(x.dir.SUBJECTDIR,'mri','LesionCAT.nii');
-
 % Load the lesion names
 Lesion_T1_list      = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.STRUCT '.*\.nii$'],'FPList',[0 Inf]);
 Lesion_FLAIR_list   = xASL_adm_GetFileList(x.dir.SUBJECTDIR,['^Lesion_' x.P.FLAIR  '.*\.nii$'],'FPList',[0 Inf]);
-
 % Initialize the rLesion list to have the same size as the original (or empty)
 rLesion_FLAIR_list  = Lesion_FLAIR_list;
-
 % First resample the lesion masks in FLAIR space to the T1 space
 for iL=1:length(Lesion_FLAIR_list)
 	[Fpath, Ffile, Fext]        = xASL_fileparts(Lesion_FLAIR_list{iL});
 	rLesion_FLAIR_list{iL}      = fullfile(Fpath,['r' Ffile Fext]);
     xASL_spm_reslice( PathIn, Lesion_FLAIR_list{iL}, [], [], [], rLesion_FLAIR_list{iL}, 2);
 end
-
 %%% ---------------------------------------------------------------------
 %%% Check if there are lesions
-
 if  isempty(Lesion_T1_list) && isempty(rLesion_FLAIR_list)
 	fprintf('%s\n','No Lesion*.nii specified, cost function masking skipped');
 	LesionPathOut = '';
 else
-
 	%%% ---------------------------------------------------------------------
 	fprintf('Cost function masking before running DARTEL:   ');
 	% Initialize output image
@@ -59,7 +55,6 @@ else
 	else
 		LesionImOut     = false(size(xASL_io_Nifti2Im(rLesion_FLAIR_list{1})));
 	end
-
 	% Collect all lesions into output image
 	TotalLength     = length(Lesion_T1_list) + length(rLesion_FLAIR_list);
 	for iL=1:length(Lesion_T1_list)
@@ -77,5 +72,4 @@ else
 	xASL_io_SaveNifti(PathIn,LesionPathOut,LesionImOut,16,0);xASL_TrackProgress(1,1);
 end
 fprintf('\n');
-
 return

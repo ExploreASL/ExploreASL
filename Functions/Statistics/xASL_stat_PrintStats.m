@@ -47,20 +47,20 @@ function [x] = xASL_stat_PrintStats(x, bFollowSubjectSessions)
 % EXAMPLE: x = xASL_stat_PrintStats(x);
 % __________________________________
 % Copyright 2015-2024 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Admin
 if nargin<2 || isempty(bFollowSubjectSessions)
     bFollowSubjectSessions = false;
 end
-
-
 % Manage missing type of statistics
 % x.S.Sets1_2Sample indicates the type of data
 % x.S.Sets1_2Sample==1 means paired data, e.g. sessions
 % x.S.Sets1_2Sample==2 means a two-sample data, e.g. cohorts
 % x.S.Sets1_2Sample==3 means continues data, e.g. age
-
 if ~isfield(x, 'S')
     error('Missing field x.S, something went wrong');
 end
@@ -71,9 +71,6 @@ else
     % This would do nothing if x.S.Sets1_2Sample was already defined for each set
     x.S.Sets1_2Sample(end+1:nSets) = 3;
 end
-
-
-
 %% -----------------------------------------------------------------------------------------------
 %% 1) First remove previous TSV-file, if already existed
 fclose all; % safety procedure
@@ -88,35 +85,24 @@ catch ME
     fprintf(2, ['Message: ' ME.message '\n']);
     return;
 end
-
-
-
-
 %% -----------------------------------------------------------------------------------------------
 %% 2) Print overview of sets to TSV
-
 % Build cell array 'SUBJECT' & x.S.SetsName{iSet} & x.S.NamesROI{ii}
 [~, thisFileName] = fileparts(x.S.SaveFile);
 thisFile = matlab.lang.makeValidName(thisFileName);
 [x, statCell] = xASL_stat_PrintStats_GetStatCellArray(x);
 x.modules.population.(thisFile) = statCell;
-
 %% -----------------------------------------------------------------------------------------------
 %% 3) Define number of sessions, force to 1 in case of TT or volume metrics
 SingleSessions = {'volume' 'TT' 'PV_pGM' 'PV_pWM' 'pGM' 'pWM' 'mrc1T1' 'mrc2T1'};
-
 HasSingleSessionOnly = sum(cellfun(@(y) ~isempty(regexpi(y,['^' x.S.output_ID])), SingleSessions));
-
 if HasSingleSessionOnly
     nSessions = 1;
 else
     nSessions = xASL_adm_GetPopulationSessions(x); % obtain number of Sessions by determining amount of input files present in the Population folder
 end
-
-
 %% -----------------------------------------------------------------------------------------------
 %% 4) Print overview
-
 if bFollowSubjectSessions % see header. This boolean is only true when we force to 
     % use subject & session indices from participants.tsv only, instead of relying 
     % on what is actually captured in x.S.DAT. In the normal case, we want ~bFollowSubjectSessions,
@@ -125,7 +111,6 @@ if bFollowSubjectSessions % see header. This boolean is only true when we force 
     for iSubject=1:x.dataset.nSubjects
         for iSession=1:nSessions
             iSubjectSession = (iSubject-1)* nSessions +iSession;
-
             % check first if this SubjectSession has data, otherwise skip &
             % issue a warning
             if length(x.S.SubjectSessionID)<iSubjectSession || size(x.S.DAT, 1)<iSubjectSession || size(x.S.SetsID,1)<iSubjectSession
@@ -133,17 +118,14 @@ if bFollowSubjectSessions % see header. This boolean is only true when we force 
             else
                 % print subject name
                 x.modules.population.(thisFile){iSubjectSession+2,1} = x.S.SubjectSessionID{iSubjectSession, 1};
-
                 %% Print the covariates and data
 				iSubjectSession_SetsID = iSubjectSession;
                 iSubjectSession_DAT = iSubjectSession;
                 bPrintSessions = true;
                 x.modules.population.(thisFile) = xASL_stat_PrintStats_FillStatCellArray(x, x.modules.population.(thisFile), iSubjectSession, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions);
-
             end
         end
     end
-
 else
     
     % Get Subject regular expression
@@ -151,7 +133,6 @@ else
     if strcmp(SubjectExpression(end), '$') % remove this for allowing an ASL suffix
         SubjectExpression = SubjectExpression(1:end-1);
     end
-
     printedSessionN = 0;
     
     % Initialize empty table with dimensions based on what was provided to xASL_stat_PrintStats (e.g., by xASL_stat_GetROIStatistics)
@@ -165,7 +146,6 @@ else
 	% Go through all sessions that were provided to xASL_stat_PrintStats (e.g., by xASL_stat_GetROIStatistics)
     for iSubjSess=1:numSubjectsSessions
         % x.S.SubjectSessionID == subject/session IDs created in xASL_stat_GetROIStatistics
-
         % Get subject ID
         [startSubjectIndex, endSubjectIndex] = regexp(x.S.SubjectSessionID{iSubjSess}, SubjectExpression);
         
@@ -201,13 +181,11 @@ else
                 % Fill stat cell array - subject name and session
                 x.modules.population.(thisFile) = xASL_stat_PrintStats_AddSubjectSessionStatCellArray(x,x.modules.population.(thisFile),iSubjSess);
                 
-
                 %% print values for other covariates
                 if isfield(x.S,'SetsID')
                     % Ensure to match subject/session
                     SubjectIndex = find(strcmp(x.SUBJECTS, SubjectID));
                     SessionIndex = find(strcmp(x.SESSIONS, SessionID));
-
                     if isempty(SubjectIndex)
                         fprintf(2, ['Could not find subject ' SubjectID ', skipping\n']);
                     else
@@ -243,25 +221,18 @@ else
         end
     end
 end
-
 % Write table to cell array
 fprintf('Saving %s...\n', thisFile);
 xASL_tsvWrite(x.modules.population.(thisFile),x.S.SaveFile,1);
 x.S = rmfield(x.S,'SaveFile');
-
-
 end
-
-
 %% Legend
 function [Legend] = xASL_stat_CreateLegend(x)
 %xASL_stat_CreateLegend Create a row with legends to be printed in the TSV file
 %containing ASL analysis stats
-
     if ~isfield(x,'S')
         x.S = struct;
     end
-
     Legend{1} = 'StudyID';
     
     if isfield(x.S,'SetsName')
@@ -316,14 +287,10 @@ function [Legend] = xASL_stat_CreateLegend(x)
     else
         fprintf(2, 'Could not find ROI names or filename to save, tsv header may be invalid\n');
     end
-
 end
-
 %% Function to write statistics to cell array so that we can use xASL_tsvWrite later on
 function [x, statCell] = xASL_stat_PrintStats_GetStatCellArray(x)
-
     x.S.Legend = xASL_stat_CreateLegend(x);
-
     % Columns
     iCell = 1;
     iCell2 = 1;
@@ -339,7 +306,6 @@ function [x, statCell] = xASL_stat_PrintStats_GetStatCellArray(x)
             iCell = iCell+1;
         end
     end
-
     % ROIs
     if isfield(x.S,'NamesROI')
         for ii=1:length(x.S.NamesROI)
@@ -357,24 +323,18 @@ function [x, statCell] = xASL_stat_PrintStats_GetStatCellArray(x)
             iCell2 = iCell2+1;
         end
     end
-
 end
-
 %% Fill the stat cell array with all subjects and sessions xASL_tsvWrite later on
 function statCell = xASL_stat_PrintStats_AddSubjectSessionStatCellArray(x,statCell,rowNum)
-
     % Skip the first two rows (Labels & Legend)
     rowNum = rowNum+2;
     
     % Add subject and session of current row
     statCell{rowNum,1} = x.dataset.currentSubjectID;
     statCell{rowNum,2} = x.dataset.currentSessionID;
-
 end
-
 %% Fill the stat cell array with all subjects and sessions xASL_tsvWrite later on
 function statCell = xASL_stat_PrintStats_FillStatCellArray(x, statCell, rowNum, iSubjectSession_SetsID, iSubjectSession_DAT, bPrintSessions)
-
     % statCell - we write into this structure
 	% rowNum   - number of the row in this structure to write to
 	% iSubjectSession_SetsID - index in the general dataset of all ASL scans
@@ -405,7 +365,6 @@ function statCell = xASL_stat_PrintStats_FillStatCellArray(x, statCell, rowNum, 
 		% Previously, this was changes to DAT, because there was a bug in SetsID calculation
 		% Now we are back at the correct SetsID and but we have also corrected calculation of this index
         String2Print = printMatrix(iSubjectSession_SetsID, iPrint);
-
         if length(optionsMatrix{iPrint})>1 % we need options
             if length(optionsMatrix{iPrint}) >= length(unique(printMatrix(:,iPrint)))-2 % allow for zeros & NaNs
                 if isnumeric(String2Print) && (int16(String2Print) == String2Print) && String2Print>0 && x.S.Sets1_2Sample(iPrint)~=3
@@ -416,7 +375,6 @@ function statCell = xASL_stat_PrintStats_FillStatCellArray(x, statCell, rowNum, 
         statCell{rowNum,iCell} = xASL_num2str(String2Print);
         iCell = iCell+1;
     end
-
     % 2. Print data in x.S.DAT
     % This part is different for volume or TT, since there will be only 1 value per subject (this will be done by the above in which nSessions is set to 1
     for iPrint=1:size(x.S.DAT,2) % print actual data

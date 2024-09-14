@@ -18,7 +18,10 @@ function [DiceCoeff] = xASL_im_ComputeDice(imA, imB)
 %          two voxels, of which 1 voxel overlaps, so DiceCoeff=0.5
 % __________________________________
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 0. Admin
 if nargin<2
@@ -36,11 +39,9 @@ if ~islogical(imB)  && isnumeric(imB)
 elseif ~islogical(imB) && ~isnumeric(imB)
     error('Input image B has the wrong format');
 end
-
 if ~isequal(size(imA), size(imB))
     error('Input image matrices A & B must have the same size');
 end
-
 %% 1. Calculate Dice coefficient
 if sum(imA(:))==0 && sum(imB(:))==0
     warning('Two empty maps, DICE overlap 1');
@@ -48,7 +49,4 @@ if sum(imA(:))==0 && sum(imB(:))==0
 else
     DiceCoeff = (2 .* sum(sum(sum(imA & imB)))) ./ (sum(imA(:)) + sum(imB(:)) );
 end
-
-
 end
-

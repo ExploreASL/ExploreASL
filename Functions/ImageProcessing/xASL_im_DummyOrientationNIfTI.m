@@ -56,9 +56,10 @@ function xASL_im_DummyOrientationNIfTI(PathSrc, PathRef, PathDummyOut, bApplyRot
 % And also the explanation inside xASL_im_DecomposeAffineTransformation.m
 % __________________________________
 % Copyright (C) 2015-2020 ExploreASL
-
-
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% 0) Admin: by default, apply all orientations
 if nargin<4 || isempty(bApplyRotationMinor)
@@ -75,18 +76,13 @@ if nargin<7 || isempty(bApplyTranslation)
 end
     
     
-
 %% 1) Load orientations & calculate transformation
 niiSrc = xASL_io_ReadNifti(PathSrc);
 niiRef = xASL_io_ReadNifti(PathRef);
-
 Mtransformation = niiRef.mat/niiSrc.mat; % obtain transformation between 2 orientations
-
-
 %% 2) Calculate the desired transformation
 % by replacing the disabled ones by the identity matrix eye(4,4)
 [M, P] = xASL_im_DecomposeAffineTransformation(Mtransformation);
-
 if ~bApplyTranslation
     M.Translation = eye(4,4);
 end
@@ -99,27 +95,19 @@ end
 if ~bApplyZoom
     M.Zoom = eye(4,4);
 end
-
 TransformMat = M.Translation*M.rotationsMinor*M.rotations90*M.Zoom; % Transformation matrix = Magnification x Rotations x Translation
-
-
-
 %% 3) Calculate new orientation matrix
 % Here we apply the net transformation matrix as calculated above, to the
 % old orientation matrix
 NewMat = TransformMat*niiSrc.mat;
-
 %% 4) Calculate the new image size
 % Here we create a dummy image, because we only need to know the image
 % matrix size, and xASL_spm_reslice will do the rest when resampling to the
 % dummy NIfTI
-
 ZoomApply = [norm(TransformMat(1:3,1)) norm(TransformMat(1:3,2)) norm(TransformMat(1:3,3))];
 NewImageSize = round(size(niiSrc.dat(:,:,:))./ZoomApply);
 NewImageSize([1 2 3]) = NewImageSize([3 2 1]);
-
 DummyImage = zeros(NewImageSize);
-
 % ->>>>>>>>>> HERE WE STILL NEED TO ROTATE THE DUMMY IMAGE MATRIX INTO THE
 % CORRECT IMAGE MATRIX SIZE
 % I PUT HERE CODE THAT DOESNT WORK, BUT IT SHOULD BE SOMETHING SIMILAR
@@ -139,10 +127,6 @@ if P.rotations90(3)~=0
     xASL_im_rotate(DummyImage, P.rotations90(3)); % perform the rotations
     DummyImage = shiftdim(DummyImage, 1); % Bring back to the original plane
 end
-
-
 %% 5) Save the dummy NIfTI
 xASL_io_SaveNifti(PathSrc, PathDummyOut, DummyImage, [], 0, NewMat);
-
-
 end

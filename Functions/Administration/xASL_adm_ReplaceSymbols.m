@@ -23,6 +23,10 @@ function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, brack
 %
 % __________________________________
 % Copyright (c) 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     % Admin
 	if ~ischar(strIn)
@@ -32,7 +36,6 @@ function strOut = xASL_adm_ReplaceSymbols(strIn, symbolTable, bracketLeft, brack
 	if nargin<2 || isempty(symbolTable)
 		error('This function needs at least two input parameters.');
 	end
-
 	if nargin<3 || isempty(bracketLeft)
 		bracketLeft='<';
 	end

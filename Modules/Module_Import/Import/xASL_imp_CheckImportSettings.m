@@ -23,7 +23,10 @@ function [x] = xASL_imp_CheckImportSettings(x)
 % EXAMPLE:        n/a
 % __________________________________
 % Copyright 2015-2023 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% 1. Check bCheckPermissions
     if x.modules.import.settings.bCheckPermissions
@@ -42,7 +45,6 @@ function [x] = xASL_imp_CheckImportSettings(x)
 		% but there would be a dot/period before a bunch of numbers
 		x.modules.import.imPar.dcmExtFilter = '^(.*\.dcm|.*\.DCM|.*\.img|.*\.IMA|[^.]+|.*\.\d*)$';
 	end
-
 	%% 4. Check SkipSubjectIfExists
 	if ~isfield(x.modules.import.imPar,'SkipSubjectIfExists') || isempty(x.modules.import.imPar.SkipSubjectIfExists)
 		% allows to skip existing subject folders in the temp folder, when this is set to true,
@@ -52,15 +54,12 @@ function [x] = xASL_imp_CheckImportSettings(x)
 		warning('Skipping existing subjects in temp folder...');
 		fprintf('If you want to overwrite, first remove the full subject folder...');
 	end
-
 	%% 5. Check if captured groups in folderHierarchy matches with the number of tokens defined in tokenOrdering
     % Any (X|Y|Z) expression is referred to as a "captured group"
     % All captured groups defined in tokenOrdering, scanAliases, visitAliases, and sessionAliases are "tokens"
     % While it is simplest if all captured groups in folderHierarchy represent tokens (for the user and bugfixing), this is not required
-
 	nLeftBrackets = 0;
 	nRightBrackets = 0;
-
     % Check if the number of left brackets == number of right brackets
 	for iLayer = 1:numel(x.modules.import.imPar.folderHierarchy)
 		leftBracket = regexp(x.modules.import.imPar.folderHierarchy{iLayer}, '(');
@@ -68,24 +67,19 @@ function [x] = xASL_imp_CheckImportSettings(x)
 		if numel(leftBracket)~=numel(rightBracket)
 			error(['Unequal brackets used in folderHierarchy layer ' num2str(iLayer) ': ' x.modules.import.imPar.folderHierarchy{iLayer}]);
 		end
-
 		nLeftBrackets = nLeftBrackets + numel(leftBracket);
 		nRightBrackets = nRightBrackets + numel(rightBracket);
 	end
-
     nGroupsFolderHierarchy = nLeftBrackets;
 	nGroupsTokenOrdering = max(x.modules.import.imPar.tokenOrdering);
     nTokensTokenOrdering = sum(x.modules.import.imPar.tokenOrdering>0);
-
     nVisitAliases = size(x.modules.import.imPar.tokenVisitAliases,1);
     nSessionAliases = size(x.modules.import.imPar.tokenSessionAliases,1);
     nScanAliases = size(x.modules.import.imPar.tokenScanAliases,1);
-
 	% Report this
 	fprintf('%s\n', [xASL_num2str(nGroupsFolderHierarchy) ' captured groups () defined in folderHierarchy']);
     fprintf('%s\n', [xASL_num2str(nGroupsTokenOrdering) ' captured groups () defined in tokenOrdering']);
 	fprintf('%s\n', [xASL_num2str(nTokensTokenOrdering) ' tokens () defined in tokenOrdering']);
-
     fprintf('%s\n', [xASL_num2str(nVisitAliases) ' visits defined in tokenVisitAliases']);
     fprintf('%s\n', [xASL_num2str(nSessionAliases) ' sessions defined in tokenSessionAliases: ']);
     fprintf('%s\n', [xASL_num2str(nScanAliases) ' scans defined in tokenSessionAliases']);
@@ -93,7 +87,6 @@ function [x] = xASL_imp_CheckImportSettings(x)
     if nGroupsFolderHierarchy < nGroupsTokenOrdering
 		error('The number of captured groups in folderHierarchy should >= the number of tokens in tokenOrdering');
     end
-
     % These warnings can be additive, so we report them separately
 	if nGroupsFolderHierarchy > nTokensTokenOrdering
 		warning('The number of captured groups in folderHierarchy is higher than the number of tokens in tokenOrdering. Ensure that this is correct');
@@ -101,12 +94,10 @@ function [x] = xASL_imp_CheckImportSettings(x)
     if nGroupsTokenOrdering ~= nTokensTokenOrdering
 		warning('Not all captured groups in folderHierarchy are used as a token in tokenOrdering. Ensure that this is correct')
     end
-
     % Check visits
     if nVisitAliases > 0
         listUniqueVisits = unique(x.modules.import.imPar.tokenVisitAliases(:,2));
         nUniqueVisits = numel(listUniqueVisits);
-
         if nUniqueVisits ~= nVisitAliases
             warning('Visit definitions are used more than one time. Ensure that this is correct')
             for iVisit=1:nUniqueVisits
@@ -114,7 +105,6 @@ function [x] = xASL_imp_CheckImportSettings(x)
             end
         end
     end
-
     % Check sessions
     if nSessionAliases > 0
         listUniqueSessions = unique(x.modules.import.imPar.tokenSessionAliases(:,2));
@@ -127,9 +117,7 @@ function [x] = xASL_imp_CheckImportSettings(x)
             end
         end
     end
-
     fprintf('\n');
-
 	%% 6. Manage .nii vs .nii.gz extensions
 	if ~isempty(x.modules.import.imPar.folderHierarchy)
 		lastHierarchy = x.modules.import.imPar.folderHierarchy{end};
@@ -146,5 +134,4 @@ function [x] = xASL_imp_CheckImportSettings(x)
 		% Return $
 		x.modules.import.imPar.folderHierarchy{end} = [lastHierarchy '$'];
 	end
-
 end

@@ -26,18 +26,19 @@ function scaleFactor = xASL_adm_GetPhilipsScaling(parms, header)
 % EXAMPLE: scaleFactor = xASL_adm_GetPhilipsScaling('ASL4D_parms.mat','ASL.json');
 % __________________________________
 % Copyright 2015-2022 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 if nargin < 2 || isempty(parms) || isempty(header)
 	error('Need 2 input parameters');
 	
 end
-
 % Read the NIFTI header to check the scaling there
 rescaleSlopeNifti = header.dat.scl_slope;
-
 % bApplyScaling should be set to true if we need to apply the scalings, otherwise to false
 bApplyScaling = true;
-
 if isfield(parms,'RWVSlope')
 	% Obtains dcm2niix version used for conversion and ExploreASL version
 	% If ExploreASL version >= 1.10.0 or dcm2niix version >= 20210317
@@ -140,13 +141,11 @@ else
 		warning('Scale slope was 1, could be a scale slope issue');
 	end
 end
-
 % In case the scaleFactor was read as zero from DICOM or JSON, then don't apply it
 if scaleFactor == 0
 	bApplyScaling = false;
 	scaleFactor = 1;
 end
-
 % Apply the correct scaling
 if bApplyScaling
 	if ~isfield(parms,'MRScaleSlope')
@@ -174,14 +173,11 @@ if bApplyScaling
 	fprintf('%s\n',['Using DICOM (re)scale slopes ' xASL_num2str(scaleFactor) ' * ' xASL_num2str(MRScaleSlope)]);
 	scaleFactor = 1./(scaleFactor .* MRScaleSlope);
 end
-
 % Set scaleFactor to zero if xASL_adm_GetPhilipsScaling failed?
 if isempty(scaleFactor)
     warning('xASL_adm_GetPhilipsScaling failed, scaleFactor will be set to 1...');
     scaleFactor = 1;
 end
-
 % Linebreak after printing of user feedback
 fprintf('\n');
-
 end

@@ -1,4 +1,9 @@
 % Copyright 2015-2024 ExploreASL (Works In Progress code)
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 function axesBar = xASL_io_colorbar(ColorMap,TickLabels)
 % Display a color bar, but replace it with a colorbar with given 'ticks' and colormap
 % Display colorbar and get its handle

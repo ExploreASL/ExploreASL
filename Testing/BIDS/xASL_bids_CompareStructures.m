@@ -30,10 +30,12 @@ function [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatas
 % REFERENCES:       ...
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
     %% Input Check
-
     % Check if both root folders are valid char arrays or strings
     if ~ischar(pathDatasetA)
         error('The path of structure A is not a char array');
@@ -44,7 +46,6 @@ function [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatas
     if strcmp(pathDatasetA,pathDatasetB)
         warning('The path of dataset A is equal to the path of dataset B...');
     end
-
     % Check if both root folders exists
     if ~xASL_exist(pathDatasetA, 'dir') || ~xASL_exist(pathDatasetB, 'dir')
         warning('The root folder of structure A or B does not exist: %s',pathDatasetA);
@@ -78,13 +79,9 @@ function [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatas
     if nargin < 7 || isempty(ignoreLogs)
         ignoreLogs = false;
     end
-
-
     %% Defaults
-
     % Set identical to true (will be set to false as soon as a difference is found)
     identical = true;
-
     % Initialize results structure
     results = struct;
     
@@ -93,11 +90,9 @@ function [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatas
     % - name: file or folder name
     % - message: information about missing file or folder or difference in content
     reportTable = array2table(zeros(0,3), 'VariableNames',{'dataset','name','message'});
-
     %% Initialization
     [results,pathDatasetA,pathDatasetB,datasetA,datasetB,fileListA,fileListB,~,~] = ...
         xASL_bids_CompareStructures_Init(results,pathDatasetA,pathDatasetB,ignoreLogs);
-
     %% Checks
     
     % Identical check
@@ -129,13 +124,9 @@ function [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatas
         printMissingAsWarnings(results);
         printDifferencesAsWarnings(results.differences);
     end
-
 end
-
-
 %% Add all entries (missing files, folders and differences in content) to the table
 function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable,results,datasetA,datasetB)
-
     % Go through missing folders
     if numel(results.(datasetA).missingFolders)>0 && ...
             ~isempty(results.(datasetA).missingFolders{1})
@@ -155,7 +146,6 @@ function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable
             %reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
         end
     end
-
     % Go through missing files
     if numel(results.(datasetA).missingFiles)>0 && ...
             ~isempty(results.(datasetA).missingFiles{1})
@@ -175,7 +165,6 @@ function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable
             reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
         end
     end
-
     % Go through differences
     if ~isempty(results.differences{1})
         for iElement=1:numel(results.differences)
@@ -185,11 +174,7 @@ function reportTable = xASL_bids_CompareStructures_AddEntriesToTable(reportTable
             reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message);
         end
     end
-
-
 end
-
-
 %% Add row to table
 function reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,dataset,name,message)
     
@@ -200,14 +185,10 @@ function reportTable = xASL_bids_CompareStructures_AddTableRow(reportTable,datas
     thisRow = struct2table(thisStruct);
     % Add row
     reportTable = [reportTable;thisRow];
-
 end
-
-
 %% Compare Structures Initialization
 function [results,pathDatasetA,pathDatasetB,datasetA,datasetB,fileListA,fileListB,folderListA,folderListB] = ...
     xASL_bids_CompareStructures_Init(results,pathDatasetA,pathDatasetB,ignoreLogs)
-
     % Remove last character if it is a slash
     if strcmp(pathDatasetA(end),'/') || strcmp(pathDatasetA(end),'\')
         pathDatasetA = pathDatasetA(1:end-1);
@@ -215,29 +196,23 @@ function [results,pathDatasetA,pathDatasetB,datasetA,datasetB,fileListA,fileList
     if strcmp(pathDatasetB(end),'/') || strcmp(pathDatasetB(end),'\')
         pathDatasetB = pathDatasetB(1:end-1);
     end
-
     % Convert to valid paths
     pathDatasetA = fullfile(pathDatasetA);
     pathDatasetB = fullfile(pathDatasetB);
-
     % Get dataset names
     [~, datasetA] = fileparts(pathDatasetA);
     [~, datasetB] = fileparts(pathDatasetB);
-
     % Make sure you have valid identifiers for the field names
     datasetA = matlab.lang.makeValidName(datasetA,'ReplacementStyle','delete');
     datasetB = matlab.lang.makeValidName(datasetB,'ReplacementStyle','delete');
-
     % Make sure that datasetA and datasetB are not exactly the same
     if strcmp(datasetA, datasetB)
         sameName = datasetA;
         datasetA = [sameName '_A'];
         datasetB = [sameName '_B'];
     end
-
     results.(datasetA) = struct;
     results.(datasetB) = struct;
-
     % Get files and folders of datasets A and B
     if verLessThan('matlab', '9.1') % Matlab version 2016
 		% dir does not work recursively in older versions
@@ -246,39 +221,29 @@ function [results,pathDatasetA,pathDatasetB,datasetA,datasetB,fileListA,fileList
         filesA = dir(fullfile(pathDatasetA, '**','*.*'));
         filesB = dir(fullfile(pathDatasetB, '**','*.*'));
 	end
-
     % Remove root path
     filesA = modifyFileList(filesA,pathDatasetA,ignoreLogs);
     filesB = modifyFileList(filesB,pathDatasetB,ignoreLogs);
-
     % Get lists
     fileListA = getListWithout('folders', filesA);
     fileListB = getListWithout('folders', filesB);
     folderListA = getListWithout('files', filesA);
     folderListB = getListWithout('files', filesB);
-
     % Get folder lists
     folderListA = unique({folderListA.folder}');
     folderListB = unique({folderListB.folder}');
-
     % Get real file lists
     fileListA = unique({fileListA.name}');
     fileListB = unique({fileListB.name}');
-
     % Missing Folders
     results.(datasetA).missingFolders = setdiff(folderListB,folderListA);
     results.(datasetB).missingFolders = setdiff(folderListA,folderListB);
-
     % Missing Files
     results.(datasetA).missingFiles = setdiff(fileListB,fileListA);
     results.(datasetB).missingFiles = setdiff(fileListA,fileListB);
-
 end
-
-
 %% Print full report
 function xASL_bids_CompareStructures_PrintFullReport(results,datasetA,datasetB,detailedOutput)
-
     if detailedOutput
         fprintf(strcat(repmat('=',100,1)','\n'));
     end
@@ -287,13 +252,11 @@ function xASL_bids_CompareStructures_PrintFullReport(results,datasetA,datasetB,d
     end
     printList(results.(datasetA).missingFolders)
     printList(results.(datasetA).missingFiles)
-
     if detailedOutput
         if isempty(results.(datasetA).missingFolders) && isempty(results.(datasetA).missingFiles)
             fprintf('           %s\n','No missing files');
         end
     end
-
     if detailedOutput
         fprintf(strcat(repmat('=',100,1)','\n'));
     end
@@ -302,25 +265,18 @@ function xASL_bids_CompareStructures_PrintFullReport(results,datasetA,datasetB,d
     end
     printList(results.(datasetB).missingFolders)
     printList(results.(datasetB).missingFiles)
-
     if detailedOutput
         if isempty(results.(datasetB).missingFolders) && isempty(results.(datasetB).missingFiles)
             fprintf('           %s\n','No missing files');
         end
     end
-
     % End of report
     if detailedOutput
         fprintf(strcat(repmat('=',100,1)','\n'));
     end
-
 end
-
-
-
 %% Print differences as warnings
 function printDifferencesAsWarnings(differences)
-
     % Iterate over differences
     if ~isempty(differences{1,1})
         for iT = 1:size(differences,1)
@@ -330,11 +286,8 @@ function printDifferencesAsWarnings(differences)
     end
     
 end
-
-
 %% Print missing files and folders as warnings
 function printMissingAsWarnings(results)
-
     fieldNames = fieldnames(results);
     for iT = 1:(length(fieldNames)-1)
         if ~strcmp(fieldNames(iT),'differences')
@@ -356,8 +309,6 @@ function printMissingAsWarnings(results)
     end
     
 end
-
-
 %% Get list without files/folders
 function returnList = getListWithout(thisType,List)
     
@@ -386,10 +337,7 @@ function returnList = getListWithout(thisType,List)
         returnList.isdir = 0;
         returnList.datenum = 0;
     end
-
 end
-
-
 %% Modify file lists
 function fileList = modifyFileList(fileList,root,ignoreLogs)
     
@@ -422,8 +370,6 @@ function fileList = modifyFileList(fileList,root,ignoreLogs)
     
     
 end
-
-
 %% Print list functions
 function printList(currentList)
     % Iterate over list
@@ -433,16 +379,9 @@ function printList(currentList)
         end
     end
 end
-
-
-
-
-
 %% xASL_bids_CompareStructures_GetFileListsUnix
 function [filesA, filesB] = xASL_bids_CompareStructures_GetFileListsUnix(pathDatasetA,pathDatasetB)
-
     fprintf('This method is not able to find empty directories right now...\n');
-
     % Get file lists
     onlyFilesA = xASL_adm_GetFileList(pathDatasetA,'^.+$','FPListRec');
     onlyFilesB = xASL_adm_GetFileList(pathDatasetB,'^.+$','FPListRec');
@@ -463,7 +402,6 @@ function [filesA, filesB] = xASL_bids_CompareStructures_GetFileListsUnix(pathDat
         filesB(iFile).name = [thisFile thisExtension];
         filesB(iFile).isdir = 0;
         filesB(iFile).folder = thisFolder;
-
     end
     
     % Add folder list
@@ -491,7 +429,4 @@ function [filesA, filesB] = xASL_bids_CompareStructures_GetFileListsUnix(pathDat
     % Transpose
     filesA = filesA';
     filesB = filesB';
-
 end
-
-

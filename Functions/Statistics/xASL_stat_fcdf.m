@@ -20,6 +20,10 @@ function p = xASL_stat_fcdf(F,M,N)
 %             http://inspirehep.net/record/1389910/files/suf9601.pdf
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 % If degrees of freedom are given as a scalar value
 if nargin < 3 || isempty(M) || isempty(N) || isempty(F)
@@ -29,13 +33,10 @@ end
 if isscalar(M)
 	M = M*ones(size(F));
 end
-
 if isscalar(N)
 	N = N*ones(size(F));
 end
-
 p = NaN(size(F));
-
 ii = (F>0) & (M>0) & (N>0);
 if sum(ii(:))
     jj = (ii & (F(ii) >= N(ii)./M(ii)));
@@ -47,6 +48,5 @@ if sum(ii(:))
         p(jj) = betainc(M(jj).*F(jj)./(M(jj).*F(jj)+N(jj)), M(jj)/2, N(jj)/2, 'lower');
     end
 end
-
 p(F<=0) = 0;
 return

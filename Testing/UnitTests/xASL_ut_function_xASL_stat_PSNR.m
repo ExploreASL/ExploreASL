@@ -15,22 +15,21 @@ function UnitTest = xASL_ut_function_xASL_stat_PSNR(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_stat_PSNR(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
-
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
 
 %% Test run 1
-
 % Give your individual subtest a name
 UnitTest.tests(1).testname = 'Artificial noise examples';
-
 % Start the test
 testTime = tic;
-
 % Prepare test
 xASL_Copy(fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0','rawdata','sub-001','perf','sub-001_acq-001_asl.nii.gz'),...
           fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'))
 im = xASL_io_Nifti2Im(fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'));
 xASL_delete(fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'));
-
 % Run your test here
 imNoiseless = im;
 randomMatrix = rand(size(im),'single');
@@ -43,10 +42,8 @@ PSNR1 = xASL_stat_PSNR(imNoiseless,noisyImage1);
 PSNR2 = xASL_stat_PSNR(imNoiseless,noisyImage2);
 PSNR3 = xASL_stat_PSNR(imNoiseless,noisyImage3);
 PSNR4 = xASL_stat_PSNR(imNoiseless,noisyImage4);
-
 % Define one or multiple test conditions here
 testCondition = true;
-
 % Define one or multiple test conditions here
 if ~isnumeric(PSNR1) || ~isnumeric(PSNR2) || ~isnumeric(PSNR3) || ~isnumeric(PSNR4)
     testCondition = false;
@@ -54,37 +51,26 @@ end
 if ~(PSNR1>PSNR2) || ~(PSNR2>PSNR3) || ~(PSNR3>PSNR4)
     testCondition = false;
 end
-
 clear PSNR1 PSNR2 PSNR3 PSNR4 im imNoiseless noisyImage1 noisyImage2 noisyImage3 noisyImage4 randomMatrix downscaledMatrix
-
 % Get test duration
 UnitTest.tests(1).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(1).passed = testCondition;
-
-
 %% Test run 2
-
 % Give your individual subtest a name
 UnitTest.tests(2).testname = 'Dummy examples';
-
 % Start the test
 testTime = tic;
-
 % Prepare test
 xASL_Copy(fullfile(TestRepository,'UnitTesting','dro_files','test_patient_2_3_0','rawdata','sub-001','perf','sub-001_acq-001_asl.nii.gz'),...
           fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'))
 im = xASL_io_Nifti2Im(fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'));
 xASL_delete(fullfile(TestRepository,'UnitTesting','working_directory','test.nii.gz'));
-
 % Run your test here
 PSNR1 = xASL_stat_PSNR(0,0);
 PSNR2 = xASL_stat_PSNR(im,im);
-
 % Define one or multiple test conditions here
 testCondition = true;
-
 % Define one or multiple test conditions here
 if ~isnan(PSNR1)
     testCondition = false;
@@ -92,17 +78,10 @@ end
 if ~isinf(PSNR2)
     testCondition = false;
 end
-
 % Get test duration
 UnitTest.tests(2).duration = toc(testTime);
-
 % Evaluate your test
 UnitTest.tests(2).passed = testCondition;
-
-
 %% End of testing
 UnitTest = xASL_ut_CheckSubtests(UnitTest);
-
 end
-
-
