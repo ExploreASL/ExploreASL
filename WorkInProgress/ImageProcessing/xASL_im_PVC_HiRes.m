@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function [ x ] = xASL_im_PVC_HiRes( x )
 % xASL_im_PVC_HiRes This function does a standard partial volume error correction,
 % but on high resolution using 3D B-splines, which is faster

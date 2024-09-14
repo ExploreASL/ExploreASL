@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 %% Newer version, with slightly improved signal creation & ROI visualization.
 %% GM masking implemented
 

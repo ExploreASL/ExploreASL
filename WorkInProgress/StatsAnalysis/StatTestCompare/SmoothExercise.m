@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 %% Smooth exercise
 
 addpath(genpath('c:\ASL_pipeline_HJ'));

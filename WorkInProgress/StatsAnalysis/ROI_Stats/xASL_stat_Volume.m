@@ -1,9 +1,8 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function [x] = xASL_stat_Volume(x)
 %xASL_stat_Volume Permute over groups to compare volume stats
-
 % Restructure DATA per ROI/measurement
 x.S.DAT = vol;
-
 % Restructure x.S.SetsID into single session only
 if  isfield(x.S,'SetsID')
     if  numel(x.S.SetsID)>0
@@ -14,16 +13,10 @@ if  isfield(x.S,'SetsID')
         end
     end
 end
-
 % Initiation parameters for xASL_wrp_PermuteSets1
-
 x.dataset.nSessions = 1;
 x.S.KISS = 1; % keeps it simple
 x.S.StatsDir = x.S.StatsDir;
 x.S.function2call = @xASL_stat_PrintBasicStats;
-
 xASL_wrp_PermuteSets1(x);
-
-
 end
-

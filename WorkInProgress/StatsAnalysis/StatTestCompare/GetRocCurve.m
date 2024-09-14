@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function [ StatCalc AUC  ] = GetRocCurve( x, GoldPos, FigureOut, FilterFile )
 %GetRocCurve
 

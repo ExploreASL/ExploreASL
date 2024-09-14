@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function xASL_stat_PrintBasicStats(x)
 %xASL_stat_PrintBasicStats Prints row of basic statistics, part of statistical module of ExploreASL
 % HJMM Mutsaerts, ExploreASL 2016

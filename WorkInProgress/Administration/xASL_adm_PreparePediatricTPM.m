@@ -1,17 +1,15 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 %% Please add here the path to the atlas files and to ExploreASL
 pathTPM = '/home/janpetr/tmp/UNCInfant012Atlas_20140325';
 pathExploreASL = '/home/janpetr/code/ExploreASL';
-
 %% Set the names of the pediatric templates to include
 nameTPM{1} = 'infant-1yr';
 nameTPM{2} = 'infant-2yr';
 nameTPM{3} = 'infant-neo';
-
 pathMaps = fullfile(pathExploreASL,'External','SPMmodified','MapsAdded');
 pathSPM = fullfile(pathExploreASL,'External','SPMmodified');
 pathTemplates = fullfile(pathExploreASL,'Maps','Templates');
 pathAtlases = fullfile(pathExploreASL,'External','Atlases');
-
 %% Prepare a 6-component template that can be used for SPM12 segmentation
 % TPM 1GM,2WM,3CSF,4cavity,5skull,6air
 for ii=1:length(nameTPM)
@@ -42,7 +40,6 @@ for ii=1:length(nameTPM)
 	
 	xASL_io_SaveNifti(fullfile(pathTPM,[nameTPM{ii} '.nii']),fullfile(pathTPM,[nameTPM{ii} '-TPM.nii']),imTPM,16,0);
 end
-
 %% Smooth to prepare the DARTEL template
 for ii=1:length(nameTPM)
 	% Presmooth
@@ -59,10 +56,8 @@ for ii=1:length(nameTPM)
 	matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
 	matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
 	spm_jobman('run',matlabbatch);
-
 	xASL_delete(fullfile(pathTPM,['s' nameTPM{ii} '-seg-gm.nii']));
 	xASL_delete(fullfile(pathTPM,['s' nameTPM{ii} '-seg-wm.nii']));
-
 	% Load GM and WM and save as the step 6 of DARTEL
 	imGM = xASL_io_Nifti2Im(fullfile(pathTPM,['ws' nameTPM{ii} '-seg-gm.nii']));
 	imWM = xASL_io_Nifti2Im(fullfile(pathTPM,['ws' nameTPM{ii} '-seg-wm.nii']));
@@ -75,25 +70,20 @@ for ii=1:length(nameTPM)
 	xASL_io_SaveNifti(fullfile(pathTPM,'Template_6_IXI555_MNI152.nii'),fullfile(pathTPM,[ 'Template_6_' nameTPM{ii} '_DARTEL.nii']),imGM,[],0);
 	
 	% Create the DARTEL steps by smoothing
-
 	StartSmooth     = 1;
 	EndSmooth       = 6;
 	StepsN          = 4;
-
 	xASL_Copy(fullfile(pathTPM,[ 'Template_6_' nameTPM{ii} '_DARTEL.nii']),fullfile(pathTPM,[ 'Template_5_' nameTPM{ii} '_DARTEL.nii']));
 	for jj=1:5
 		fwhm(jj,:) = repmat(EndSmooth-(jj-1)*((EndSmooth-StartSmooth)/StepsN),[1 3]);
-
 		matlabbatch = [];
 		INPUTim{1,1} = fullfile(pathTPM,[ 'Template_5_' nameTPM{ii} '_DARTEL.nii,1']);
 		INPUTim{2,1} = fullfile(pathTPM,[ 'Template_5_' nameTPM{ii} '_DARTEL.nii,2']);
-
 		matlabbatch{1}.spm.spatial.smooth.data      = INPUTim;
 		matlabbatch{1}.spm.spatial.smooth.fwhm      = fwhm(jj,:);
 		matlabbatch{1}.spm.spatial.smooth.dtype     = 0;
 		matlabbatch{1}.spm.spatial.smooth.im        = 0;
 		matlabbatch{1}.spm.spatial.smooth.prefix    = 's';
-
 		spm_jobman('run',matlabbatch);
 	
 		xASL_Move( fullfile(pathTPM,['sTemplate_5_' nameTPM{ii} '_DARTEL.nii']) , fullfile(pathTPM,['Template_' num2str(jj-1) '_' nameTPM{ii} '_DARTEL.nii']), true);
@@ -102,30 +92,24 @@ for ii=1:length(nameTPM)
 	StartSmooth     = 1;
 	EndSmooth       = 4;
 	StepsN          = 3;
-
 	xASL_Copy(fullfile(pathTPM,[ 'Template_6_' nameTPM{ii} '_DARTEL.nii']),fullfile(pathTPM,[ 'Template_4_' nameTPM{ii} '_CAT.nii']));
 	for jj=1:4
 		fwhm(jj,:) = repmat(EndSmooth-(jj-1)*((EndSmooth-StartSmooth)/StepsN),[1 3]);
-
 		matlabbatch = [];
 		INPUTim{1,1} = fullfile(pathTPM,[ 'Template_4_' nameTPM{ii} '_CAT.nii,1']);
 		INPUTim{2,1} = fullfile(pathTPM,[ 'Template_4_' nameTPM{ii} '_CAT.nii,2']);
-
 		matlabbatch{1}.spm.spatial.smooth.data      = INPUTim;
 		matlabbatch{1}.spm.spatial.smooth.fwhm      = fwhm(jj,:);
 		matlabbatch{1}.spm.spatial.smooth.dtype     = 0;
 		matlabbatch{1}.spm.spatial.smooth.im        = 0;
 		matlabbatch{1}.spm.spatial.smooth.prefix    = 's';
-
 		spm_jobman('run',matlabbatch);
 	
 		xASL_Move( fullfile(pathTPM,['sTemplate_4_' nameTPM{ii} '_CAT.nii']) , fullfile(pathTPM,['Template_' num2str(jj-1) '_' nameTPM{ii} '_CAT.nii']), true);
 	end
 	
 end
-
 %% Adapt the whole xASL templates including vascular territories/masks/etc to be transformed to pediatric sizes
-
 for ii=1:length(nameTPM)
 	mkdir(fullfile(pathMaps,nameTPM{ii}));
 	mkdir(fullfile(pathMaps,nameTPM{ii},'VascularTerritories'));
@@ -178,7 +162,6 @@ for ii=1:length(nameTPM)
 	for jj=1:length(listMap)
 		xASL_Move(fullfile(pathMaps,nameTPM{ii},['w' listMap{jj} '.nii']),fullfile(pathMaps,nameTPM{ii},[listMap{jj} '.nii']),true);
 	end
-
 	% Copy all the adult masks and transform to pediatric size
 	listMask = {'brainmask' 'TotalGM' 'TotalWM' 'WholeBrain'  'brainmask_supratentorial' 'ParenchymNarrow' 'LeftRight' 'DeepWM' 'CentralWM_QC' 'GhostSignalRatio' 'MNI_Structural'};
 	matlabbatch = [];
@@ -204,7 +187,6 @@ for ii=1:length(nameTPM)
 	for jj=1:length(listMask)
 		xASL_Move(fullfile(pathMaps,nameTPM{ii},['w' listMask{jj} '.nii']),fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']),true);
 	end
-
 	% Save as .mat and zip
 	for jj=1:length(listMask)
 		IM = xASL_io_Nifti2Im(fullfile(pathMaps,nameTPM{ii},[listMask{jj} '.nii']));
@@ -248,7 +230,6 @@ for ii=1:length(nameTPM)
 		save(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii.mat']),'IM');
 		xASL_adm_GzipNifti(fullfile(pathMaps,nameTPM{ii},'VascularTerritories',[listMask{jj} '.nii']));
 	end
-
 	% Copy all the templates and transform to pediatric size
 	listTemp = {'ATT_BiasField' 'GE_3Dspiral_Product_CBF' 'MaxVesselTemplate' 'Philips_2DEPI_Bsup_CBF' 'Philips_2DEPI_noBsup_CBF' 'Philips_2DEPI_noBsup_Control'...
 		        'Siemens_2DEPI_PCASL_noBsup_CBF' 'Siemens_2DEPI_PCASL_noBsup_Control' 'Siemens_3DGRASE_PASL_CBF' 'Siemens_3DGRASE_PCASL_Control_BiasfieldCorr_MoodStudy'...
@@ -342,7 +323,6 @@ for ii=1:length(nameTPM)
 	for jj=1:length(listFile)
 		xASL_Copy(fullfile(pathAtlases,listFile{jj}), fullfile(pathAtlases,nameTPM{ii},listFile{jj}),true);
 	end
-
 	
 end
 	

@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function SnPMscript( x, nSubjects, CoVaryMean, nPerm, PermutationRun, InferenceOption )
 %SnPMscript = Wrapper for SnPM factorial design 2-sample t-test
 %PM: make into 1 or 2 sample t-test, dependent upon groups/conditions

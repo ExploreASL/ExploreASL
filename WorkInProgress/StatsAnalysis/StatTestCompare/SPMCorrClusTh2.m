@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function SPMCorrClusTh2( x, p1, GoldPos )
 %SPMCorrClusTh2 Summary of this function goes here
 %   Detailed explanation goes here

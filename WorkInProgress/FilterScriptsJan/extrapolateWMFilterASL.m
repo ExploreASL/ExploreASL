@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function varargout=extrapolateWMFilterASL(varargin)
 % function [corr_cbf,corr]=extrapolateWMFilterASL(niifile|matrix,[voxelsize],[label],[mask])
 %

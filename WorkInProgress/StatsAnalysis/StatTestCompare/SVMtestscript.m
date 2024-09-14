@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 addpath(genpath('c:\ASL_pipeline_HJ'))
 
 ROOT    = 'E:\Backup\ASL_E\KCL_stats\INOX\analysis\dartel\StatsCompare\SVMtrial';

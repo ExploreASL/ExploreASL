@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 % function xASL_spm_GLM( x )
 %xASL_spm_GLM xASL_spm_GLM but rewritten for one-way
 % ANalysis Of VAriance (ANOVA) & t-tests

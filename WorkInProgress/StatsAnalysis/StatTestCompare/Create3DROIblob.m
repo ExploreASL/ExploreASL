@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function [BLOB ROIvar] = Create3DROIblob( x, ASL, MaskChoice, PeakValue)
 %Create3DROIblob Creates 3D Gaussian blob within ROI
 % as artificial signal

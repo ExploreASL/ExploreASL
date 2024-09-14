@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 %% Administration
 x.PrintDir    = fullfile( x.D.PopDir , 'StatsCompare');
 xASL_adm_CreateDir(x.PrintDir);

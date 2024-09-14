@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function xASL_wrp_PermuteSetsPer1_2SampleTests( x )
 %xASL_wrp_PermuteSetsPer1_2SampleTests 
 % INPUT

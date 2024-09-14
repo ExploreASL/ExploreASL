@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 %% Trial blob creation
 
 temp        = xASL_io_ReadNifti('E:\Backup\ASL_E\KCL_stats\GE_trial\analysis\dartel\DARTEL_CBF_HART12_ASL_1.nii');

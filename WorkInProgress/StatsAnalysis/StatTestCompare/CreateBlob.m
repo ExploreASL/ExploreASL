@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function Kernel = CreateBlob( FwHm, SliceDim, NormValue, PeakValue, NoiseFactor, CutOffLevel, TranslVox )
 %CreateBlob Creates 2D Gaussian kernel blob
 % as artificial signal

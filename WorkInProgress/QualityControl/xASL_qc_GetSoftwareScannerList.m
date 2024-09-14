@@ -1,11 +1,10 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function [Sequence] = xASL_qc_GetSoftwareScannerList(RootIn, subjectRegexp, ScanType)
 %xASL_qc_GetSoftwareScannerList Read JSON files for each NIfTI
 % & compose a "sequence identifier" by concatenating
 %[Manufacturer ?_? ManufacturersModelName DeviceSerialNumber ?_? SoftwareVersion]
 % example: subjectRegexp = '^OAS\d*_\d*$';
-
 % ScanType = ASL, T1 (default), FLAIR, M0
-
 if nargin<2 || isempty(subjectRegexp)
     warning('Subject regular expression missing, defaulting to anything ".*"');
     subjectRegexp = '.*';
@@ -14,11 +13,8 @@ if nargin<3 || isempty(ScanType)
     ScanType = 'T1';
 end
     
-
 DirList = xASL_adm_GetFileList(RootIn, subjectRegexp, 'List', [0 Inf], true);
-
 Sequence = '';
-
 fprintf('Collecting ASL sequences:...');
 for iDir=1:length(DirList)
     xASL_TrackProgress(iDir, length(DirList));
@@ -69,9 +65,6 @@ for iDir=1:length(DirList)
         end
     end
 end
-
 MatPath = fullfile(RootIn, 'Sequence.mat');
 save(MatPath,'Sequence','-mat');
-
-
 end

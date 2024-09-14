@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function [ovol,varargout]=bilateralFilterASL_HJM_LV(volIM,VoxelSize,varargin)
 % function [ovol,[filter]]=bilateralFilterASL_HJM_LV(vol,voxelsize,[label],[mask])
 %
