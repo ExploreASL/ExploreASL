@@ -57,7 +57,7 @@ if ~xASL_exist(x.P.Path_PWI, 'file')
 end
 
 FoVim = xASL_io_Nifti2Im(x.P.Path_PWI);
-FoVim(:) = 1;
+FoVim = isfinite(FoVim);
 xASL_io_SaveNifti(x.P.Path_PWI, x.P.Path_FoV, FoVim, 8, false);
 
 if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
