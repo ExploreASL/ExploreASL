@@ -1,4 +1,4 @@
-function [config] = xASL_qc_LoadPdfConfig(x, configPath)
+function [config] = xASL_qc_LoadPdfConfig(x, configPath, bOverWrite)
 % xASL_qc_LoadPdfConfig loads parameters from a .json config file to be used in xASL_qc_GenerateReport.
 % Using the config file, the user can define the parameters of the report.
 % If no config file is given, it will first look in the derivatives folder if configReportPDF.json exists.
@@ -9,6 +9,7 @@ function [config] = xASL_qc_LoadPdfConfig(x, configPath)
 % INPUT:
 %   x           - Struct containing all ExploreAsl Parameters (REQUIRED)
 %   configPath  - Path to the config file (OPTIONAL)
+%   bOverWrite  - Boolean to determine if current configReportPDF.json should be overwritten. (OPTIONAL, default == false)
 %
 %   OUTPUT:
 %   config      - Struct containing all parameters of the jsonfile
@@ -38,14 +39,22 @@ if nargin<2 || isempty(configPath)
     configPath = fullfile(x.dir.xASLDerivatives, 'configReportPDF.json');
 end
 
+if nargin<3 || isempty(bOverWrite)
+    bOverWrite = false;
+end
 
 %% ------------------------------------------------------------------------
 %% 2. Load JSON file 
 if exist(configPath, 'file')
+    if bOverWrite
+        fprintf(['Overwriting old PDF config.\n']);
+        xASL_delete(configPath);
+        xASL_qc_GeneratePdfConfig(x, x.SUBJECT, true);
+    end
     config = xASL_io_ReadJson(configPath);
 else
     fprintf(['Custom PDF definitions not found, using default configuration for PDF generation.\n']);
-    xASL_qc_GeneratePdfConfig(x, x.SUBJECT, false);
+    xASL_qc_GeneratePdfConfig(x, x.SUBJECT, bOverWrite);
     config = xASL_io_ReadJson(configPath);
 end
 

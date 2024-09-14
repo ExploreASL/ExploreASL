@@ -7,13 +7,14 @@
         "fontWeight": "normal",
         "color": "k",
         "axesVisible": "off",
-        "HorizontalAlignment": "left"
+        "HorizontalAlignment": "left",
+        "numberFormat": "%.2f"
     },
     "pages": [
         {
             "category": "metadata",
             "type": "page",
-            "pageIdentifier": "Example_1",
+            "identifier": "Example_1",
             "content": [
                 {
                     "category": "content",
@@ -35,11 +36,6 @@
                             "contour": "true",
                             "opacity": "0.3",
                             "color": "r"
-                        },
-                        "Pop_Path_SliceGradient": {
-                            "contour": "true",
-                            "opacity": "0.3",
-                            "color": "r"
                         }
                     }
                 },
@@ -53,13 +49,6 @@
                         "TraSlice": "[25 75]",
                         "CorSlice": "[25 75]",
                         "SagSlice": "[]"
-                    },
-                    "overlay": {
-                        "Pop_Path_SliceGradient": {
-                            "contour": "true",
-                            "opacity": "0.3",
-                            "color": "r"
-                        }
                     }
                 },
                 {
@@ -129,10 +118,9 @@
                     "category": "content",
                     "type": "text",
                     "textSettings": {
-                        "fontSize": "10",
                         "fontWeight": "bold"
                     },
-                    "text": "Below the Quality parameters of the Structural module will be printed."
+                    "text": "QC Parameters of module Structural(if they exist):"
                 },
                 {
                     "category": "content",
@@ -150,7 +138,11 @@
                     "parameter": "T1w_GM_vol_mL",
                     "module": "Structural",
                     "range": "1000-1200",
-                    "unit": "mL"
+                    "unit": "mL",
+                    "textSettings": {
+                        "numberFormat": "%.0f"
+                    }
+
                 },
                 {
                     "category": "content",
@@ -158,7 +150,10 @@
                     "parameter": "T1w_WM_vol_mL",
                     "module": "Structural",
                     "range": "300-600",
-                    "unit": "mL"
+                    "unit": "mL",
+                    "textSettings": {
+                        "numberFormat": "%.0f"
+                    }
                 },
                 {
                     "category": "content",
@@ -166,13 +161,15 @@
                     "parameter": "T1w_CSF_vol_mL",
                     "module": "Structural",
                     "range": "150-300",
-                    "unit": "mL"
+                    "unit": "mL",
+                    "textSettings": {
+                        "numberFormat": "%.0f"
+                    }
                 },
                 {
                     "category": "content",
                     "type": "text",
                     "textSettings": {
-                        "fontSize": "10",
                         "fontWeight": "bold"
                     },
                     "text": "Below the some version numbers are printed."
@@ -211,16 +208,16 @@
                     "category": "content",
                     "type": "text",
                     "textSettings": {
-                        "fontSize": "10",
                         "fontWeight": "Bold"
                     },
-                    "text": "And below this, some quality parametenrs of the ASL Module are printed"
+                    "text": "QC Parameters of module ASL, Session ASL_1 (if they exist)"
                 },
                 {
                     "category": "content",
                     "type": "QCValues",
                     "parameter": "CBF_GM_Median_mL100gmin",
                     "module": "ASL",
+                    "session": "ASL_1",
                     "range": "50-120",
                     "alias": "Median CBF",
                     "unit": "mL/100g/min"
@@ -229,13 +226,15 @@
                     "category": "content",
                     "type": "QCValues",
                     "parameter": "LabelingType",
-                    "module": "ASL"
+                    "module": "ASL",
+                    "session": "ASL_1"
                 },
                 {
                     "category": "content",
                     "type": "QCValues",
                     "parameter": "MotionMean_mm",
                     "module": "ASL",
+                    "session": "ASL_1",
                     "alias": "Mean Motion",
                     "unit": "mm"
                 },
@@ -244,6 +243,7 @@
                     "type": "QCValues",
                     "parameter": "MotionSD_mm",
                     "module": "ASL",
+                    "session": "ASL_1",
                     "alias": "SD Motion",
                     "unit": "mm"
                 },
@@ -252,6 +252,7 @@
                     "type": "QCValues",
                     "parameter": "MotionSD_mm",
                     "module": "ASL",
+                    "session": "ASL_1",
                     "alias": "Max Motion",
                     "unit": "mm"
                 },
@@ -260,6 +261,7 @@
                     "type": "QCValues",
                     "parameter": "VoxelSize_mm",
                     "module": "ASL",
+                    "session": "ASL_1",
                     "unit": "mm",
                     "textSettings": {
                         "fontWeight": "bold"
@@ -270,38 +272,162 @@
                     "type": "QCValues",
                     "parameter": "LabelingDuration_ms",
                     "module": "ASL",
+                    "session": "ASL_1",
                     "unit": "ms"
                 },
                 {
                     "category": "content",
                     "type": "QCValues",
                     "parameter": "SpatialCoV_GM_Perc",
-                    "module": "ASL"
+                    "module": "ASL",
+                    "session": "ASL_1"
                 },
                 {
                     "category": "content",
                     "type": "QCValues",
                     "parameter": "PulseSequenceType",
-                    "module": "ASL"
+                    "module": "ASL",
+                    "session": "ASL_1"
                 },
                 {
                     "category": "content",
                     "type": "QCValues",
                     "parameter": "Vendor",
-                    "module": "ASL"
+                    "module": "ASL",
+                    "session": "ASL_1"
                 },
                 {
                     "category": "content",
                     "type": "QCValues",
                     "parameter": "PeakSNR_Ratio",
-                    "module": "ASL"
+                    "module": "ASL",
+                    "session": "ASL_1"
+                },{
+                    "category": "content",
+                    "type": "text",
+                    "textSettings": {
+                        "fontWeight": "Bold"
+                    },
+                    "text": "QC Parameters of module ASL, Session ASL_2 (if they exist)."
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "CBF_GM_Median_mL100gmin",
+                    "module": "ASL",
+                    "session": "ASL_2",
+                    "range": "50-120",
+                    "alias": "Median CBF",
+                    "unit": "mL/100g/min"
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "LabelingType",
+                    "module": "ASL",
+                    "session": "ASL_2"
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "MotionMean_mm",
+                    "module": "ASL",
+                    "session": "ASL_2",
+                    "alias": "Mean Motion",
+                    "unit": "mm"
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "MotionSD_mm",
+                    "module": "ASL",
+                    "session": "ASL_2",
+                    "alias": "SD Motion",
+                    "unit": "mm"
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "MotionSD_mm",
+                    "module": "ASL",
+                    "session": "ASL_2",
+                    "alias": "Max Motion",
+                    "unit": "mm"
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "VoxelSize_mm",
+                    "module": "ASL",
+                    "session": "ASL_2",
+                    "unit": "mm",
+                    "textSettings": {
+                        "fontWeight": "bold"
+                    }
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "LabelingDuration_ms",
+                    "module": "ASL",
+                    "session": "ASL_2",
+                    "unit": "ms"
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "SpatialCoV_GM_Perc",
+                    "module": "ASL",
+                    "session": "ASL_2"
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "PulseSequenceType",
+                    "module": "ASL",
+                    "session": "ASL_2"
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "Vendor",
+                    "module": "ASL",
+                    "session": "ASL_2"
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "PeakSNR_Ratio",
+                    "module": "ASL",
+                    "session": "ASL_2"
+                },
+                {
+                    "category": "content",
+                    "type": "text",
+                    "text": "ExploreASL also automatically generates some QC Images in x.Output_im",
+                    "textSettings": {
+                        "fontWeight": "bold"
+                    }
+                },{
+                    "category": "content",
+                    "type": "text",
+                    "text": "These can be called and printed as well"
+                },
+                {
+                    "category": "content",
+                    "type": "QCValues",
+                    "parameter": "qc_images",
+                    "position": "[0.0 0.0]",
+                    "size": "[0.70 0.3]",
+                    "module": "ASL",
+                    "session": "ASL_1"
                 }
             ]
         },
         {
             "category": "metadata",
             "type": "page",
-            "pageIdentifier": "Example_2",
+            "identifier": "Example_2",
             "content": [
                 {
                     "category": "content",

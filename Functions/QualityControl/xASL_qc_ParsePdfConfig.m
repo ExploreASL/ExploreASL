@@ -50,7 +50,7 @@ for iField = 1:length(fields)
     % This progress counting doesnt work, because the loop loops in itself
     currentField = layoutStructure.(fields{iField});
 
-    if strcmp(fields{iField}, 'content') || strcmp(fields{iField}, 'pages')
+    if strcmp(fields{iField}, 'content') || strcmp(fields{iField}, 'pages') || strcmp(fields{iField}, 'modules')
         for iContent = 1:length(currentField)
             if iscell(currentField(iContent))
                 [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentField{iContent}, x, currentFigure, line, settingsPDF);
@@ -100,6 +100,8 @@ function [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentFi
         end  
         case 'metadata'
             switch currentField.type
+            case 'module'
+                xASL_qc_ParsePdfConfig_sub_printModule(currentField, x, settingsPDF);
             case 'page'
                 xASL_qc_ParsePdfConfig_sub_printPage(currentField, x, settingsPDF);  
             case 'block'
@@ -112,11 +114,20 @@ end
 
 % ====================================================================================================================================================
 
+function  xASL_qc_ParsePdfConfig_sub_printModule(moduleStruct, x, settingsPDF)
+
+    for page = 1:size(moduleStruct.content)
+        xASL_qc_ParsePdfConfig_sub_printPage(moduleStruct.content(page), x, settingsPDF);
+    end
+end
+
+% ====================================================================================================================================================
+
 function  xASL_qc_ParsePdfConfig_sub_printPage(pageStruct, x, settingsPDF)
 % This function prints pages using the layout defined in the json file.
 % It first creates a new figure, and then iterates over and prints all content in the pageStruct
 % The pageStruct should contain a field "content" which contains all content to be printed on the page.
-% The pageStruct should also contain a field "pageIdentifier" which is used to name the printed PDF file.
+% The pageStruct should also contain a field "identifier" which is used to name the printed PDF file.
 
     %% Create the figure defaults
     figPrimary = figure('visible', 'off', 'Units', 'centimeters', 'Position', [0 0 21 29.7]);
@@ -132,8 +143,8 @@ function  xASL_qc_ParsePdfConfig_sub_printPage(pageStruct, x, settingsPDF)
     %% Parse pageStruct and create the page as defined in the json file
     xASL_qc_ParsePdfConfig(pageStruct, x, figPrimary, [0 0.93 1 0], settingsPDF);
 
-    % Finally it prints the page to a PDF file using the pageIdentifier as filename in the subject directory.
-    fileName = ['xASL_Report_', pageStruct.pageIdentifier];
+    % Finally it prints the page to a PDF file using the identifier as filename in the subject directory.
+    fileName = ['xASL_Report_', pageStruct.identifier];
     printPathFile = fullfile(x.dir.xASLDerivatives, x.SUBJECT, fileName); 
     print(figPrimary, printPathFile, '-dpdf', '-bestfit');
 
@@ -230,8 +241,15 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_PrintImage(input, x, current
 end
 
 function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, currentFigure, settingsPDF)
-% This function prints images using the layout defined in the json file.
-    if ~isfield(x, 'Output_im') || ~isfield(x.Output_im, qcStruct.module)
+    % This function prints images using the layout defined in the json file.
+
+    if ~isfield(qcStruct, 'module') ||  ~isfield(x.Output, (qcStruct.module))
+        return
+    elseif ~isfield(qcStruct, 'session') || qcStruct.session == "" 
+        allImages = x.Output_im.(qcStruct.module);
+    elseif isfield(x.Output_im.(qcStruct.module), qcStruct.session) 
+        allImages = x.Output_im.(qcStruct.module).(qcStruct.session);
+    else
         return
     end
 
@@ -244,11 +262,10 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, c
     [canvas] = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), settingsPDF.canvas);
     
     % Dimensions, at most 16 images will be printed
-    nImages  = min(size(x.Output_im.(qcStruct.module), 2), 16);
+    nImages  = min(size(allImages, 2), 16);
     imPerRow = ceil(sqrt(nImages));
     imSize   = 1/imPerRow;
 
-    allImages = x.Output_im.(qcStruct.module);
     % Print images
     for iImage = 1:nImages
         CurrentIm  = double(allImages{iImage});
@@ -438,7 +455,7 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, 
 
     % Check if participant information exists in the participants.tsv
     if isempty(PatientInfo)
-        fprintf ('No patient information found in participants.tsc in the ExploreASL derivatives folder.\n');
+        fprintf ('No patient information found in participants.tsv in the ExploreASL derivatives folder.\n');
         return
     end
     
@@ -487,7 +504,7 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
 % QC Values are extracted from the x.Output structure, and printed to the PDF report in a single line.
 % Certain settings can be applied to the QC values, for example a range can be specified.
 % If the QC value is outside the range, it will be printed in red.
-
+    
     if ~isfield(qcStruct, 'parameter') || ~isfield(qcStruct, 'module')
         fprintf (['QC content field not properly defined in JSON, skipping printing of QC parameter. \n']);
         return
@@ -497,8 +514,12 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
     end
 
     % Stop if module and field don't exists in output
-    if ~isfield(x.Output, (qcStruct.module)) || ~isfield(x.Output.(qcStruct.module), qcStruct.parameter) 
-        return     
+    if ~isfield(qcStruct, 'session') || qcStruct.session == ""
+        if ~isfield(x.Output, (qcStruct.module)) || ~isfield(x.Output.(qcStruct.module), qcStruct.parameter) 
+            return
+        end
+    elseif ~isfield(x.Output, (qcStruct.module)) || ~isfield(x.Output.(qcStruct.module), qcStruct.session)  || ~isfield(x.Output.(qcStruct.module).(qcStruct.session), qcStruct.parameter) 
+        return
     end
 
     % Use field specific settings if they exists, otherwise default to monospace for QC values. 
@@ -544,19 +565,23 @@ function [string] = xASL_qc_ParsePdfConfig_sub_BIDS_Translation(string)
 end
 
 function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, settingsPDF)
-    
-    if ~isfield(x.Output, (qcStruct.module)) 
-        fprintf (['QC Value ' x.Output.(qcStruct.module) ' not found, skipping. \n']);
+  
+    if ~isfield(qcStruct, 'module') ||  ~isfield(x.Output, (qcStruct.module))
         return
-    end 
-
-    if ~isfield(x.Output.(qcStruct.module),( qcStruct.parameter)) 
-        fprintf (['QC Value ' x.Output.(qcStruct.module).(qcStruct.parameter) ' not found, skipping. \n']);
-        return
+    elseif ~isfield(qcStruct, 'session') || qcStruct.session == "" 
+        if ~isfield(qcStruct, 'parameter') || ~isfield(x.Output.(qcStruct.module), qcStruct.parameter) 
+            return
+        else
+            TempValue = x.Output.(qcStruct.module).(qcStruct.parameter);
+        end
+    elseif isfield(x.Output.(qcStruct.module), qcStruct.session) 
+        if ~isfield(qcStruct, 'parameter') || ~isfield(x.Output.(qcStruct.module).(qcStruct.session), qcStruct.parameter) 
+            return
+        else
+            TempValue = x.Output.(qcStruct.module).(qcStruct.session).(qcStruct.parameter);
+        end
     end
 
-    TempValue = x.Output.(qcStruct.module).(qcStruct.parameter);
-    
     % Translate from the provided translation tsv if that's enabled
     if settingsPDF.QC_TSV_Translations
         qcStruct = xASL_qc_ParsePdfConfig_sub_QC_Translation(qcStruct, settingsPDF);
@@ -588,7 +613,11 @@ function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, s
     end
 
     % Convert the value to a string.
-    TempValue = xASL_num2str(TempValue);
+    TempValue = xASL_num2str(TempValue, settingsPDF.numberFormat);
+
+    if iscell(TempValue)
+        TempValue = cell2mat(TempValue);
+    end
 
     qcStruct.alias  = xASL_qc_ParsePdfConfig_sub_PaddedString( qcStruct.alias, settingsPDF.QC_string_limit);
     TempValue       = xASL_qc_ParsePdfConfig_sub_PaddedString( TempValue, 12, 'right');
@@ -669,6 +698,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_defaultSettings(x)
     settingsPDF.QC_TSV_Translations = 1; 
     settingsPDF.imageHeaders = 1;
     settingsPDF.QC_string_limit  = 25;
+    settingsPDF.numberFormat = '%.2f';
 
     settingsPDF.QC_Translation = xASL_tsvRead(fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'qc_glossary.tsv'));
 
