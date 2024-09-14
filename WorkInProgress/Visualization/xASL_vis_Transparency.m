@@ -1,11 +1,10 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function [ImageOut] = xASL_vis_Transparency(ForegroundImage, BackgroundImage, Transparency, bWhite)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 % Make foreground transparent over background
 % If no background image provided, this will be a black image
 % Optional -> transparancy to white
-
-
 if nargin<4 || isempty(bWhite)
     bWhite= false; % black background by default
 end
@@ -15,7 +14,6 @@ end
 if nargin<2 || isempty(BackgroundImage)
     BackgroundImage = zeros(size(ForegroundImage));
 end
-
 if ~isequal(size(ForegroundImage),size(BackgroundImage))
     warning('Input images need to have the same size, skipping');
     return;
@@ -27,21 +25,14 @@ elseif max(BackgroundImage(:))>1 || min(BackgroundImage(:))<0
     return;
 end
     
-
 % 
 % ImageOut = BackgroundIm;
-
 DeltaImage = ForegroundImage - BackgroundImage;
-
 % ImageOut(~Mask) = BackgroundIm.*Transparency + DeltaImage.*Transparency;
 ImageOut = BackgroundImage + DeltaImage.*Transparency;
 % EmptyIm = zeros(size(DeltaImage));
 % FullIm = ones(size(DeltaImage));
 % ImageOut = max(ImageOut, EmptyIm);
 % ImageOut = min(ImageOut, FullIm);
-
 % figure(1);imshow(ImageOut, 'InitialMagnification',500)
-
-
 end
-

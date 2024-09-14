@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function xASL_stat_CreateHistograms( x )
 %xASL_stat_CreateHistograms Creates histograms, part of statistical module of ExploreASL
 % HJMM Mutsaerts, ExploreASL 2016

@@ -1,10 +1,9 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function varargout=extrapolateWMFilterASL_HJM_JP(varargin)
 % function [corr_cbf,corr]=extrapolateWMFilterASL_HJM(niifile|matrix,[voxelsize],[label],[mask])
 %
 % Extrapolate WM-signal to correct GM-signal in ASL.
 % NaNs are treated as zeros during filtering, and then set back.
-
-
 % Inputs:
 %     niifile|matrix  : nifti filename or matrix
 %     (voxelsize): voxel size
@@ -17,18 +16,12 @@ function varargout=extrapolateWMFilterASL_HJM_JP(varargin)
 % No output arguments: saves a few files to disk
 %
 % Matthan Caan, AMC 2016
-
 %% variables
 spatSigma=[16 16 16]; %7; % smoothing in N (isotropic)
 labelIDs=[0 1]; % unlabeled/labeled IDs in label input
-
 %% CHANGED by HJM
 % doPlot was 1, set to 0, since older Matlab versions do not support the function "arr"
-
 doPlot=1; % do not plot images
-
-
-
 if ischar(varargin{1})
   niifile=varargin{1};
   if ~xASL_exist(niifile)
@@ -47,7 +40,6 @@ elseif isnumeric(varargin{1})
 else
   error('Unexpected input.')
 end
-
 if length(sz)~=4
   error('No 4D input')
 end
@@ -62,7 +54,6 @@ end
 FwHm2SD     = (2*(2*reallog(2))^0.5);
 % FWHM = (2*spatSigma+1)/5*voxelsize*FwHm2SD;
 % disp(['Applying smoothing kernel ' num2str(spatSigma,3)])
-
 % label vector
 if nargin<3 || isempty(varargin{3})
   disp('Assuming alternating unlabeled/labeled dynamics')
@@ -83,7 +74,6 @@ if sum(label==0)~=sum(label==1)
 end
 disp(['Nr of unlabeled pairs: ' num2str(sum(label==0))]);
 disp(['Nr of labeled pairs: ' num2str(sum(label==1))]);
-
 % create mask, if no mask was given
 if nargin<4 || isempty(varargin{4});
   disp('Calculating mask:');
@@ -115,19 +105,16 @@ if ~all(sort(unique(mask(:)))==[0;1])
    error('Mask is not binary.');
 end
 mask=mask>0;
-
 %% prepare
 % deal with NaNs
 nanmask=any(isnan(vol),4);
 vol=reshape(vol,[],sz(4));
 vol(nanmask,:)=0;
 vol=reshape(vol,sz);
-
 idx1=label==labelIDs(1);
 idx2=label==labelIDs(2);
 d=vol(:,:,:,idx1)-vol(:,:,:,idx2); % difference
 cbf=median(d,4); % cbf as median - robust to outliers
-
 % % revert labels if needed -> PM: taken care of by the filter wrapper of ExploreASL already
 % if mean(cbf(mask(:)))<0
 %   idx1=label==labelIDs(2);
@@ -135,11 +122,8 @@ cbf=median(d,4); % cbf as median - robust to outliers
 %   d=vol(:,:,:,idx1)-vol(:,:,:,idx2); % difference
 %   cbf=median(d,4); % cbf
 % end
-
 md=bsxfun(@minus,d,cbf); % demean
-
 % gm=xASL_im_IsoDataThreshold(cbf); % GM-mask
-
 OLD = 1;
 if OLD
     sortInt     = sort(cbf(:));
@@ -149,26 +133,22 @@ else
     GMthr       = sortInt(round(0.5.*length(sortInt)));
 end;
 gm          = cbf>GMthr;
-
 if OLD
     wm = ~gm;
 else
     wm=((gm-1).*mask)>0;           % non-GM-mask (incl background)
 end;
-
 %warning('dd')
 %wm=ishow('wm_rtemp_ASL4D.nii')>0;
 %% do correction
 %extrapolate dCBF from WM-mask
 sz=size(md);
-
 % make robust for
 %[xx,yy,zz]=meshgrid(1:sz(1),1:sz(2),1:sz(3));
 [xx,yy,zz]=ndgrid(1:sz(1),1:sz(2),1:sz(3));
 % xx=permute(xx,[2 1 3]);
 % yy=permute(yy,[2 1 3]);
 % zz=permute(zz,[2 1 3]);
-
 % loop over dynamics
 fprintf('%s\n','Smoothing dynamics for filter, some patience please...    ');
 for ii=1:sz(4)
@@ -190,27 +170,21 @@ for ii=1:sz(4)
   %tmp2=tmp2-mean(tmp2(wm>0));
   tmp2(~mask)=0;
   md(:,:,:,ii) = xASL_3DgaussMask(tmp2,mask,repmat(spatSigma,[1 3]));
-
     %tmpFilter   = tmp2;
 %     tmpFilter   = xASL_im_ndnanfilter(tmpFilter,'rect',repmat(spatSigma,[1 3])); % blur a little bit
 %     for ii=1:16
 %         tmpFilter   = xASL_im_ndnanfilter(tmpFilter,'rect',[2 2 2]);
 %     end
-
    %md(:,:,:,ii)     = tmpFilter;
-
 end
-
 % calc corrected cbf
 cbf_corr=d-md;
-
 %% stats and plot images
 tmp=reshape(d,[],sz(4));
 std_before=std(tmp(mask,:),[],2);
 tmp=reshape(cbf_corr,[],sz(4));
 std_after=std(tmp(mask,:),[],2);
 disp(['Std from ' num2str(median(std_before)) ' to ' num2str(median(std_after))])
-
 % get mean GM/WM orig&corrected timeseries
 tmp=reshape(d,[],sz(4));
 gmorig=mean(tmp(gm(:)>0,:),1);
@@ -226,7 +200,6 @@ idx1=1:round(sz(4)/4);
 idx2=sz(4)-round(sz(4)/4)+1:sz(4);
 disp(['Before: ' num2str(mean(gmorig(idx1)-gmorig(idx2))/std(gmorig))])
 disp(['After:  ' num2str(mean(gmcorr(idx1)-gmcorr(idx2))/std(gmcorr))]);
-
 % if doPlot
 %   dipshow(arr(mean(cbf_corr(:,:,:,1:30),4)),[0 75])
 %   try,arr(wm),end
@@ -241,14 +214,12 @@ disp(['After:  ' num2str(mean(gmcorr(idx1)-gmcorr(idx2))/std(gmcorr))]);
 %   legend({'orig','corr'})
 %   title('mean non-GM')
 % end
-
 %% set back NaNs
 nanmask=double(nanmask);
 nanmask(nanmask>0)=NaN;
 nanmask(~isnan(nanmask))=1;
 cbf_corr=bsxfun(@times,cbf_corr,nanmask);
 md=bsxfun(@times,md,nanmask);
-
 %% write output (specific for large series pharmaASL)
 if nargout
   varargout{1}=cbf_corr;
@@ -262,7 +233,6 @@ else
   n.dat.scl_slope=max(abs(cbf_corr(:)))/1e4;
   create(n);
   n.dat(:,:,:,:)=cbf_corr;
-
   [path,name,ext]=fileparts(niifile);
   ofile=fullfile(path,['orig_diff_' name ext]);
   n.dat.fname=ofile;
@@ -270,7 +240,6 @@ else
   n.dat.scl_slope=max(abs(d(:)))/1e4;
   create(n);
   n.dat(:,:,:,:)=d;
-
   ofile=fullfile(path,['cbf_first30_' name ext]);
   n.dat.fname=ofile;
   n.dat.dim=size(cbf);
@@ -278,7 +247,6 @@ else
   n.dat.scl_slope=max(abs(tmp(:)))/1e4;
   create(n);
   n.dat(:,:,:,:)=tmp;
-
   ofile=fullfile(path,['cbf_last30_' name ext]);
   n.dat.fname=ofile;
   n.dat.dim=size(cbf);
@@ -286,7 +254,6 @@ else
   n.dat.scl_slope=max(abs(tmp(:)))/1e4;
   create(n);
   n.dat(:,:,:,:)=tmp;
-
   ofile=fullfile(path,['cbf_first30_orig_' name ext]);
   n.dat.fname=ofile;
   n.dat.dim=size(cbf);
@@ -294,7 +261,6 @@ else
   n.dat.scl_slope=max(abs(tmp(:)))/1e4;
   create(n);
   n.dat(:,:,:,:)=tmp;
-
   ofile=fullfile(path,['cbf_last30_orig_' name ext]);
   n.dat.fname=ofile;
   n.dat.dim=size(cbf);
@@ -302,13 +268,11 @@ else
   n.dat.scl_slope=max(abs(tmp(:)))/1e4;
   create(n);
   n.dat(:,:,:,:)=tmp;
-
   ofile=fullfile(path,['wm_' name ext]);
   n.dat.fname=ofile;
   n.dat.dim=size(wm);
   n.dat.scl_slope=max(abs(wm(:)))/1e4;
   create(n);
   n.dat(:,:,:,:)=wm;
-
 end
 disp('Done.')

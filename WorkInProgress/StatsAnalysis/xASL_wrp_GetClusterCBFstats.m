@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function []                 = xASL_wrp_GetClusterCBFstats(x,printTitle,InputDataStr)
 %% Create a CSV with CBF info for ROIs from the statistical mask
 

@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 %% Single slice exercise for kernel multiplication to get difference
 
 

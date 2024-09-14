@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function xASL_wrp_PermuteSets1( x )
 %xASL_wrp_PermuteSets1 
 % INPUT

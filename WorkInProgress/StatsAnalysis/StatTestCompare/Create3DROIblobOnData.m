@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function [BLOB CBFout CBF1 GoldPos] = Create3DROIblobOnData( x, CBFin, CBF1, MaskChoice, ChangeFactor, ShapeFactor, ActivationVolume)
 %Create3DROIblobOnData Imposes 4D Gaussian blob on ROI, for consistent change (artificial signal)
 % This script takes the original signal distribution, multiplies it with an ROI convolved with 

@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function xASL_wrp_PermuteWithinSet( x )
 %xASL_wrp_PermuteWithinSet Part of statistical module of ExploreASL
 % HJMM Mutsaerts, ExploreASL 2016

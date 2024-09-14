@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function SPMDesignT2Loop( x, nSubjects, CoVaryMean )
 %SPMDesignT2Loop = Wrapper for SPM factorial design 2-sample t-test
 %PM: make into 1 or 2 sample t-test, dependent upon groups/conditions

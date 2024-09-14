@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function [ovol,varargout]=xASL_bilateralFilter(volIM,VoxelSize,varargin)
 % function [ovol,[filter]]=xASL_bilateralFilter(vol,voxelsize,[label],[mask])
 %
@@ -16,13 +17,11 @@ function [ovol,varargout]=xASL_bilateralFilter(volIM,VoxelSize,varargin)
 %     filter   : applied correction (for debugging purposes)
 %
 % Matthan Caan, AMC 2016
-
 % HJM:
 % Masking disabled in script
 % xASL_stat_MeanNan & xASL_stat_MedianNan instead of mean & median
 % avoiding NaN-smoothing
 % clearing to free memory
-
 % JP:
 % 2018-05-31 - removing low frequency fluctuations in time done pixel-wise instead of globally
 %            - this removes the previous WM-CBF bias
@@ -32,14 +31,11 @@ function [ovol,varargout]=xASL_bilateralFilter(volIM,VoxelSize,varargin)
 tonSigma=0.1; % tonal sigma, relative to median signal intensity
 spatSigma=4; % smoothing in mm (isotropic)
 labelIDs=[0 1]; % unlabeled/labeled IDs in label input
-
 %% process and sanity check
-
 sz=size(volIM);
 if length(sz)~=4
   error('No 4D input')
 end
-
 % voxel size
 if length(VoxelSize)~=3
   error('Voxel size must contain 3 elements.')  
@@ -49,7 +45,6 @@ if min(VoxelSize)<1
 end
 spatSigma=spatSigma./double(VoxelSize); % apply spacing 
 disp(['Spatial sigma in voxels: ' num2str(spatSigma)])
-
 % label vector
 if nargin<3 || isempty(varargin{1})
   disp('Assuming alternating unlabeled/labeled dynamics')
@@ -69,7 +64,6 @@ if sum(label==0)~=sum(label==1)
   error('Number of unlabeled and labeled dynamics does not match.')
 end
 disp(['Nr of unlabeled/labeled pairs: ' num2str(sum(label==0))])
-
 % mask
 if nargin<4 || isempty(varargin{2});
   disp('Calculating mask:')
@@ -100,19 +94,16 @@ if ~all(sort(unique(mask(:)))==[0;1])
   error('Mask is not binary.')
 end
 mask=mask>0;
-
 %% adjust tonal sigma to median intensity
 tmp=reshape(volIM,[],sz(4));
 tmpMask=tmp(mask>0,:);
 scaleFactor=xASL_stat_MedianNan(tmpMask(:));
 tonSigma=tonSigma*scaleFactor;
 disp(['Tonal sigma bilateral filter: ' num2str(tonSigma)]);
-
 %% filter data, unlabeled/labeled separately
 ovol=zeros(size(volIM)); ofilter=ovol;
 for iLabel=1:2
       clear idx tmp sz mtime mspace std_before NaNmask gtmp otmp MeanV
-
       disp(['Label ' num2str(labelIDs(iLabel))]);
       idx=label==labelIDs(iLabel);
       disp(['Selected ' num2str(sum(idx)) ' volumes.'])
@@ -140,7 +131,6 @@ for iLabel=1:2
       %% Avoid NaN-smoothing
       NaNmask           = isnan(tmp);
       tmp(NaNmask)      = 0;
-
       gtmp=zeros(size(tmp));otmp=gtmp;
       fprintf('%s\n','Smoothing dynamics for filter, some patience please...  ');
       for ii=1:size(tmp,4)
@@ -148,25 +138,20 @@ for iLabel=1:2
         gtmp(:,:,:,ii)=dip_array(medif(bilateralf(tmp(:,:,:,ii),spatSigma,tonSigma),2)); %bilateral filter 
         otmp(:,:,:,ii)=tmp(:,:,:,ii)-gtmp(:,:,:,ii);       % subtract
       end
-
       otmp(NaNmask)     = NaN;
-
       otmp=reshape(otmp,[],sz(4));
       std_after=std(otmp(mask,:),[],2);
       otmp=bsxfun(@plus,otmp,mspace); % add mean back
       otmp=otmp+mtime; % add mtime back
       otmp=reshape(otmp,sz);
     %   otmp=otmp.*repmat(mask,[1 1 1 sz(4)]); % re-apply mask
-
      % Re-apply the temporal low-frequency changes
       otmp = otmp + reshape(MeanV,sz);
       
       ovol(:,:,:,idx)=otmp;
       ofilter(:,:,:,idx)=gtmp;
-
       disp(['Std from ' num2str(median(std_before)) ' to ' num2str(median(std_after))]);
 end
-
 if nargout==2
   varargout{1}=ofilter;
 end

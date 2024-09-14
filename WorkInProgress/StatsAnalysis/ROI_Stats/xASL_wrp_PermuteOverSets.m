@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function xASL_wrp_PermuteOverSets( x )
 %xASL_wrp_PermuteOverSets Permute data across sets (e.g. groups, scanners, cohorts, conditions etc)
 % HJMM Mutsaerts, ExploreASL 2016

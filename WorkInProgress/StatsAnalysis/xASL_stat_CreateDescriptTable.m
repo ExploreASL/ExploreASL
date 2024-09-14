@@ -1,10 +1,8 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 % xASL_stat_CreateDescriptTable(x);
 %xASL_stat_CreateDescriptTable Summary of this function goes here
 %   Detailed explanation goes here
-
-
 x.S.StatsDir % folder where we will store the Table
-
 %% Here, there is space to create customary sets/parameters
 %  Create normative WM volumetrics
 WMset   = 0;
@@ -33,14 +31,12 @@ if  (WMset*WMHset)~=0 % we have both sets, so we can calculate NAWM_WMRatio & WM
 end
     
     
-
 %% First, we create a list of data we want to include
 % Here, define the sets that we want to include, in the order of appearance in the Table.
 % A set will only be included if it has more than 1 unique values
 IncludedSets    = {'Age' 'GM_ICVRatio' 'NAWM_WMRatio' 'WMH_WMRatio' 'WMH_count' 'MeanMotion' 'CBF' 'spatial_CoV'};
 StatsSumm       = {'Par' 'Par'         'Par'          'Par'         'Par'       'Par'        'Par' 'Par'};
 TableSets       = [];
-
 for iInc=1:length(IncludedSets)
     for iSet=1:length(x.S.SetsName)
         IsSameSet   = strcmp(lower(IncludedSets{iInc}),lower(x.S.SetsName{iSet}));
@@ -50,7 +46,6 @@ for iInc=1:length(IncludedSets)
         end
     end
 end
-
 %% Set we want to stratify over
 %  If this is empty, it will be ignored
 StratifSet      = 'Cohort';
@@ -59,7 +54,6 @@ for iSet=1:length(x.S.SetsName)
         iStratSet     = iSet;
     end
 end
-
 %% Loop across each set
 clear CurrName MeanSet SDset TableOut StratCurrSetData
 for iT=1:length(TableSets)
@@ -98,7 +92,6 @@ for iT=1:length(TableSets)
                     CurrSetData(CurrSetData==UniqueV(iU)) = str2num(x.S.SetsOptions{iSet}{iU});
                 end
             end
-
             GroupN(1)       = numel(CurrSetData);
             GroupName{1}    = 'All';
             MeanSet(iT,1)   = mean(CurrSetData); % could be replaced by median
@@ -132,7 +125,6 @@ for iT=1:length(TableSets)
         otherwise
     end
 end 
-
 %% Create the Table
 if  exist('iStratSet','var')
     for iT=1:length(CurrName)
@@ -154,4 +146,3 @@ else
         TableOut{iT,2}  = [num2str(round(MeanSet(iT,1),1)) ' ? ' num2str(round(SDset(iT,1),1))];
     end
 end
-

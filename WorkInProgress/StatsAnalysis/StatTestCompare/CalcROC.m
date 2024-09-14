@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 function [TPR FPR] = CalcROC( GoldPos, H)
 %CalcROC Get true positive rate (TPR) & false positive rate (FPR)
 % from GoldTruth & binary statistical result

@@ -1,3 +1,4 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
 clear all; spm('defaults', 'FMRI')
 spm_file = [pwd '\SPM.mat']; load(spm_file);
 for contNum =1:size(SPM.xCon,2)
