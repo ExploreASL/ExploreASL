@@ -44,7 +44,7 @@ function [NiftiPaths, ASLContext] = xASL_bids_MergeNifti(NiftiPaths, seqType, ni
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
 %% Admin
@@ -305,7 +305,7 @@ function pathOut = xASL_bids_MergeNifti_SeriesNumber(NiftiPaths, niiTable)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+
 
 % 0. Admin
 % Nothing merged
@@ -368,7 +368,7 @@ function pathOut = xASL_bids_MergeNifti_Philips(NiftiPaths)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+
 
 pathOut = ''; % Newly assigned path of a concatenated file
 numberTE = 1;
@@ -442,7 +442,7 @@ function pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+
 
 
     %% xASL_bids_MergeNifti_SiemensASLFiles Merge Siemens ASL files with specific filename pattern
@@ -611,7 +611,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+
 
 
     %% Track if all went well
@@ -824,7 +824,7 @@ function xASL_bids_MergeNifti_Delete(NiftiPaths)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+
 
 
     %% Delete NiftiPaths and associated JSONs
@@ -865,7 +865,7 @@ function xASL_bids_MergeNifti_RenameParms(Fpath,Fname)
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+
 
 
     %% Find *_parms.m files in directory and shorten to provided name

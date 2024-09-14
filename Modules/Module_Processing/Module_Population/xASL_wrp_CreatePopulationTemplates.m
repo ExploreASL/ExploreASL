@@ -83,7 +83,7 @@ function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, Spe
 %          xASL_wrp_CreatePopulationTemplates(x, 0, 1, {'qCBF' 'CBF' 1}, 1, 0, {{@xASL_stat_MeanNan} {'mean'}});
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 
 
 % ----------------------------------------------------------------------------------------------------
@@ -585,7 +585,6 @@ function xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutlie
 % 3. Reset SetOptions to inclusion/NaN instead of left/right/NaN
 % 4. iterate over the options/categories of this set, to create parametric maps
 % __________________________________
-% Copyright 2015-2023 ExploreASL
 
 
 % Get CurrentSet
@@ -796,7 +795,6 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
 % 4. Smooth the map (if requested)
 % 5. Save the map as NIfTI
 % __________________________________
-% Copyright 2015-2020 ExploreASL
 
 
     % ----------------------------------------------------------------------------------------------------
