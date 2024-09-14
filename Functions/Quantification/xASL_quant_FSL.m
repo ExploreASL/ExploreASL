@@ -205,7 +205,7 @@ function [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, jsonP
 % EXAMPLE: [FSLOptions] = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, jsonPWI4D, pathFSLInput, pathFSLOutput)
 %
 % __________________________________
-% Copyright 2015-2024 ExploreASL 
+
 
 %% 0. Admin
 if nargin<6 

@@ -30,7 +30,7 @@ function [x] = ExploreASL_Initialize(varargin)
 % Debugging/initialization only:  x = ExploreASL_Initialize;
 %
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 
 
     %% 1. Admin
@@ -486,8 +486,8 @@ end
         % EXAMPLE:     n/a
         %
         % __________________________________
-        % Copyright (c) 2015-2022 ExploreASL
-        
+
+
             %% Check the ExploreASL parameter "DatasetRoot"
             
             % Default
@@ -682,7 +682,7 @@ end
             % EXAMPLE:     n/a
             %
             % __________________________________
-            % Copyright 2015-2021 ExploreASL
+
             
                 %% Check the BIDS dataset root for the metadata JSON files
             
@@ -792,7 +792,7 @@ function xASL_init_BasicFeedback(x)
         % -----------------------------------------------------------------------------------------------------------------------------------------------------
         % REFERENCES:  n/a
         %
-        % Copyright 2015-2021 ExploreASL
+
         
         
         %% --------------------------------------------------------------------------------------------------------------------
@@ -886,7 +886,7 @@ function xASL_init_printSettings(x)
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
     % REFERENCES:  n/a
     %
-    % Copyright 2015-2022 ExploreASL
+
     
         %% Printing
         xASL_adm_BreakString('ExploreASL Settings');

@@ -808,7 +808,7 @@ function [S] = RemoveSuffixes(S)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: S = RemoveSuffixes(S);
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+
 
 % Define here which strings to remove
 StrRemove = {'PVEC0' 'PVEC1' 'PVEC2' 'paired t-test'};
@@ -855,7 +855,7 @@ function [ROI] = xASL_im_CreatePVEcROI(x, ROI, pGM, pWM)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [ROI] = xASL_im_CreatePVEcROI(x, ROI, pGM, pWM);
 % __________________________________
-% Copyright 2017-2019 ExploreASL
+
 
 ROI = ROI>0;
 
@@ -921,7 +921,7 @@ function [ROI] = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, WMdistMax)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 17);
 % __________________________________
-% Copyright 2017-2019 ExploreASL
+
 
 
 %% Admin

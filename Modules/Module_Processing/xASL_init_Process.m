@@ -24,7 +24,7 @@ function x = xASL_init_Process(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 
 
 
@@ -86,7 +86,6 @@ function [x] = xASL_init_DefineDataParDependentSettings(x)
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
     % REFERENCES:  n/a
     %
-    % Copyright 2015-2021 ExploreASL
     
     
     x = xASL_init_DefinePaths(x); % here we define the subfolders of the dataset (mostly of the Population folder)
@@ -210,7 +209,6 @@ function [x] = xASL_init_DefineDataParDependentSettings(x)
             % -----------------------------------------------------------------------------------------------------------------------------------------------------
             % REFERENCES:  n/a
             %
-            % Copyright 2015-2021 ExploreASL
             
             
                 %% General
@@ -287,7 +285,6 @@ function [x] = xASL_init_DefineDataParDependentSettings(x)
         % -----------------------------------------------------------------------------------------------------------------------------------------------------
         % REFERENCES:  n/a
         %
-        % Copyright 2015-2021 ExploreASL
     
     
             x.D.SPMDIR = fullfile(x.opts.MyPath, 'External', 'SPMmodified');
@@ -337,7 +334,6 @@ function x = xASL_init_PrintCheckSettings(x)
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
     % REFERENCES:  n/a
     %
-    % Copyright 2015-2021 ExploreASL
         
     
         %% -----------------------------------------------------------------------
