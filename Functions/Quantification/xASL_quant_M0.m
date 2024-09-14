@@ -287,7 +287,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+
 
     if size(M0IM, 3)<2
 		error('M0 is not an image, but expected as image because of x.Q.M0=UseControlAsM0');

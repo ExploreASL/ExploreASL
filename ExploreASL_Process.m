@@ -68,6 +68,7 @@ function [x] = ExploreASL_Process(x)
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
 
+
     %% 0. Workflow for initialization of data loading and processing
     
     x = xASL_init_DataLoading(x); % this initializes all generic data loading parameters
@@ -183,7 +184,6 @@ function [x] = xASL_init_RemoveLockDirs(x)
     % -----------------------------------------------------------------------------------------------------------------------------------------------------
     % EXAMPLE:        [x] = xASL_init_RemoveLockDirs(x);
     % __________________________________
-    % Copyright 2015-2021 ExploreASL
     
     
     %% LockDir within 2 directories (e.g. T1, FLAIR or ASL)

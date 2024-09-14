@@ -37,7 +37,7 @@ function [bSuccess] = xASL_fsl_TopUp(InDir, ScanType, x, OutputPath)
 %              [Smith 2004] S.M. Smith, M. Jenkinson, M.W. Woolrich, C.F. Beckmann, T.E.J. Behrens, H. Johansen-Berg, P.R. Bannister, M. De Luca, I. Drobnjak, D.E. Flitney, R. Niazy, J. Saunders, J. Vickers, Y. Zhang, N. De Stefano, J.M. Brady, and P.M. Matthews. Advances in functional and structural MR image analysis and implementation as FSL. NeuroImage, 23(S1):208-219, 2004.
 %              https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/topup
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 
 
 
@@ -411,7 +411,6 @@ function RegisterTopUptoOutput(PathNII, InDir, TopUpNIIPath, SameParmsInd, x)
 %
 % EXAMPLE: RegisterTopUptoOutput({'../dwi_NormPE.nii' '../dwi_RevPE.nii' '../dwi_dwi.nii'}, '/analysis/Sub-001/dwi', {'../TopUp1.nii' '../TopUp2.nii'}, 1, x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
 
 
 [~, PrintFile, PrintExt] = xASL_fileparts(PathNII{SameParmsInd});
@@ -501,7 +500,6 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
 %
 % EXAMPLE: AcqParms = ObtainTopUpParms('analysis/Sub-001/dwi/dwi_NormPe.nii');
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
 
 
     %% A) Load the JSON

@@ -65,7 +65,7 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+
 
     %% Check if rawdata exists
     if xASL_exist(x.dir.RawData,'dir')
@@ -104,7 +104,7 @@ function [x] = xASL_imp_DetermineStructureFromTempdata(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+
 
     %% Determine structure from temp data
 
