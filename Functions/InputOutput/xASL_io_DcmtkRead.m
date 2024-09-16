@@ -44,7 +44,7 @@ end
 if bTryDCMTK
 	try
 		% Read using DCMTK
-		header = xASL_mex_DcmtkRead(filepath, bPixel);
+		header = xASL_mex_DcmtkRead(filepath, double(bPixel));
 	catch ME
         fprintf('%s%s\n','Warning, reading a DICOM with DCMTK failed. Will continue with SPM. Warning message: ', ME.message);
 		% Read using SPM routines
