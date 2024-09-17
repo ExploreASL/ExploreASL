@@ -64,7 +64,7 @@ function [Fpath, Ffile, Fext, SuffixSPM] = xASL_fileparts(InputPath)
     [Fpath, Ffile, Fext] = fileparts(InputPath);
     [~, Ffile2, Fext2] = fileparts(Ffile);
     
-    if strcmpi(Fext, '.gz') || strcmpi(Fext, '.mat')  && ~isempty(Fext2)
+    if (strcmpi(Fext, '.gz') || strcmpi(Fext, '.mat'))  && ~isempty(Fext2)
         Ffile = Ffile2;
         Fext = [Fext2 Fext];
     end
