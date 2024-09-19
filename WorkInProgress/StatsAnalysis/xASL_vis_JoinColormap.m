@@ -1,3 +1,9 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 function joinedColormap = xASL_io_joinColormap(blackMiddle,colormap1,colormap2)
 % Take two colormaps and put them together, creating a colormap with 256 values
 % input colormaps 1 and 2 are stacked as colormap1 first, then colormap2

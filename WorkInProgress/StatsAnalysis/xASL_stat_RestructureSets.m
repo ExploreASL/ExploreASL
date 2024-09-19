@@ -1,3 +1,9 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 function DataOut = xASL_stat_RestructureSets( DataIn, IDColumn )
 %xASL_stat_RestructureSets Restructures a 2D data-matrix into multiple cells with populations
 % Data-matrix should be a row for each subject

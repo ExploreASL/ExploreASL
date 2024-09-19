@@ -1,3 +1,9 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %% Single slice exercise for kernel multiplication to get difference
 
 

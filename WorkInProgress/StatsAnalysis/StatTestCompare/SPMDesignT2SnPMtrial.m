@@ -1,3 +1,9 @@
+% Copyright 2015-2024 ExploreASL (Works In Progress code)
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 function SPMDesignT2SnPMtrial( x )
 %SPMDesignT2SnPMtrial = Wrapper for SPM factorial design 2-sample t-test
 %PM: make into 1 or 2 sample t-test, dependent upon groups/conditions

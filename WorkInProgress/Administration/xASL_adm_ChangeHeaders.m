@@ -4,6 +4,11 @@
 % you may only use this file in compliance with the License.
 % __________________________________
 
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %xASL_adm_ChangeHeaders Change the header of each ExploreASL Matlab .m file
 % e.g., to add a license statement
 % Initialize ExploreASL;

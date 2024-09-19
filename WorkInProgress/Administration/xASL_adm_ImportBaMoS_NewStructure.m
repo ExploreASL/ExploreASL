@@ -31,6 +31,11 @@ function xASL_adm_ImportBaMoS_NewStructure(AnalysisDir, BaMoSDir, bPullPush, Reg
 % EXAMPLE for server: xASL_adm_ImportBaMoS('/radshare/SABRE/analysis', '/radshare/SABRE/Carole', false, '\d{5}\d*');
 % __________________________________
 % Copyright 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 if nargin<3 || isempty(bPullPush)
