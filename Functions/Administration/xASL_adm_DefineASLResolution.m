@@ -17,6 +17,11 @@ function x = xASL_adm_DefineASLResolution(x)
 % EXAMPLE: x = xASL_adm_DefineASLResolution(x)
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 if nargin < 1 || isempty(x)
 	error('X-structure needs to be provided on the input');

@@ -26,6 +26,11 @@ function xASL_spm_BiasfieldCorrection(PathIn, SPMdir, Quality, PathMask, PathOut
 % EXAMPLE: xASL_spm_BiasfieldCorrection('/MyStudy/sub-001/T1.nii', x.D.SPMDIR);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 

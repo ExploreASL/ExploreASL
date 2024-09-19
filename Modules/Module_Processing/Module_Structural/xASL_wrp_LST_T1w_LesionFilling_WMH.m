@@ -38,6 +38,11 @@ function xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath)
 % Pareto D, Sastre-Garriga J, Aymerich FX, et al. Lesion filling effect in regional brain volume estimations: a study in multiple sclerosis patients with low lesion load. Neuroradiology. Neuroradiology; 2016;58(5):467?474http://dx.doi.org/10.1007/s00234-016-1654-5.
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 if nargin < 2 || isempty(rWMHPath)
 	error('Requires at least 2 input arguments');

@@ -23,6 +23,11 @@ function [NotOutliers, iOutliers] = xASL_stat_RobustMean(IM, ParameterFunction)
 % EXAMPLE: NotOutliers = xASL_stat_RobustMean(IM);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% Admin

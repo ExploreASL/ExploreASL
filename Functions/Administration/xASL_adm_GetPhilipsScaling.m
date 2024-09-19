@@ -26,6 +26,11 @@ function scaleFactor = xASL_adm_GetPhilipsScaling(parms, header)
 % EXAMPLE: scaleFactor = xASL_adm_GetPhilipsScaling('ASL4D_parms.mat','ASL.json');
 % __________________________________
 % Copyright 2015-2022 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 if nargin < 2 || isempty(parms) || isempty(header)
 	error('Need 2 input parameters');

@@ -20,6 +20,11 @@ function F = xASL_stat_tcdf(T,nu)
 %             http://inspirehep.net/record/1389910/files/suf9601.pdf
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 Tsq = T.^2;
 

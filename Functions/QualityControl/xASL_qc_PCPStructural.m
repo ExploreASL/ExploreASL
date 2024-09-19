@@ -36,6 +36,11 @@ function [anatQA] = xASL_qc_PCPStructural(PathT1, Pathc1T1, Pathc2T1, x, PopPath
 % EXAMPLE: anatQA = xASL_qc_PCPStructural('/analysis/Subj001/T1.nii', '/analysis/Subj001/c1T1.nii', '/analysis/Subj001/c2T1.nii', x, 'analysis/Population/T1.nii');
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% Admin

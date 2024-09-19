@@ -42,6 +42,11 @@ function [result, x] = xASL_module_LongReg(x)
 % Ashburner J. A fast diffeomorphic image registration algorithm. Neuroimage. 2007;38(1):95
 % __________________________________
 % Copyright ? 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 

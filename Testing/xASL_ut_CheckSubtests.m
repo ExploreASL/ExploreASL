@@ -11,6 +11,11 @@ function UnitTest = xASL_ut_CheckSubtests(UnitTest)
 % EXAMPLE:      UnitTest = xASL_ut_CheckSubtests(UnitTest);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
     % Check if an individual subtest failed
     UnitTest.passed = true;

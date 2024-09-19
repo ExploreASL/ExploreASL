@@ -22,6 +22,11 @@ function xASL_adm_SortDicomToFolders(pathDICOM, nDirLayers, bUseDCMTK, bVerbose)
 %     xASL_adm_SortDicomToFolders('tmp/DICOM', [], 0)
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 if nargin<2 || isempty(nDirLayers)
 	nDirLayers = 0;

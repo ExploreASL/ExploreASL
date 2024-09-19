@@ -28,6 +28,11 @@ function [Hematocrit] = xASL_quant_AgeSex2Hct(age, sex)
 % Ser Public Health Serv Publ 1967
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 if nargin < 1
 	age = [];

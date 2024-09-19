@@ -24,6 +24,11 @@ function [MeanAI_PreTopUp_Perc, MeanAI_PostTopUp_Perc] = xASL_vis_VisualQC_TopUp
 %
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% Define images

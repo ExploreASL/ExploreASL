@@ -13,6 +13,11 @@ function [summary, summaryTable] = xASL_test_Summarize(ResultsDir)
 % EXAMPLE:      [summary] = xASL_test_Summarize('/User/ASLTestResults/2022-20-01-results');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 MatFileList = xASL_adm_GetFileList(ResultsDir,'^*.mat$','List',[0 Inf], false);
 TsvFileList = xASL_adm_GetFileList(ResultsDir,'^*.tsv$','List',[0 Inf], false);

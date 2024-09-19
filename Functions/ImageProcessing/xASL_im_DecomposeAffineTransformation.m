@@ -99,6 +99,11 @@ function [M, P] = xASL_im_DecomposeAffineTransformation(Mtransformation)
 %          0         0         0    1.0000
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% 0) Start with an output P and M struct

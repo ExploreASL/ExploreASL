@@ -19,6 +19,11 @@ function [pc, score, eigenvalues, tsquare, loadings, Xmean] = xASL_im_PCA(dataIn
 % EXAMPLE:      ...
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 % Data matrix X, with M rows and N columns. Each row m is a set of measurements with N features.

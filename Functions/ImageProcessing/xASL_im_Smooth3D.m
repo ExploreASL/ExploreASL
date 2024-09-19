@@ -22,6 +22,11 @@ function [imSmo, imGaussX, imGaussY, imGaussZ] = xASL_im_Smooth3D(imIn, sigma, P
 % EXAMPLE: [imSmo,~,~,~] = xASL_im_Smooth3D(imIn, [3 5 4], {'gaussian','gaussian','flat'})
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 %% Admin
 if nargin < 1 || isempty(imIn)

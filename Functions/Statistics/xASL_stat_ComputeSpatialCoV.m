@@ -37,6 +37,11 @@ function sCov = xASL_stat_ComputeSpatialCoV(imCBF, imMask, nMinSize, bPVC, bPara
 %             2017 Sep;37(9):3184-92.
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% 1. Admin

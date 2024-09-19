@@ -29,6 +29,11 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresJSON(difference
 % REFERENCES:       ...
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
     % Ignore Acknowledgements (setting to ignore version differences (ExploreASL v1.x.x) there)

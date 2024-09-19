@@ -40,6 +40,11 @@ function xASL_spm_deformations(x, PathIn, PathOut, Interpolation, InverseSpace, 
 % EXAMPLE: xASL_spm_deformations(x, '/MyStudy/Subject1/T1.nii.gz', '/MyStudy/Population/rT1.nii.gz');
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 

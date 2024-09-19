@@ -18,6 +18,11 @@ function [IsEqualResolution] = xASL_im_CompareNIfTIResolutionXYZ(PathNIfTI1, Pat
 % EXAMPLE: IsEqualResolution = xASL_im_CompareNIfTIResolutionXYZ('/ASL/MyStudyName/Sub-001/c1T1.nii', '/ASL/MyStudyName/Sub-001/c1T1.nii');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 nii1 = xASL_io_ReadNifti(PathNIfTI1);

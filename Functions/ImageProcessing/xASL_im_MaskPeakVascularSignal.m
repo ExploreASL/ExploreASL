@@ -47,6 +47,11 @@ function [MaskIM, TreatedCBF] = xASL_im_MaskPeakVascularSignal(PathPWI, Path_M0,
 % EXAMPLE: MaskIM = xASL_im_MaskPeakVascularSignal('/analysis/Sub-001/ASL_1/CBF.nii','/analysis/Sub-001/ASL_1/rM0.nii');
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 

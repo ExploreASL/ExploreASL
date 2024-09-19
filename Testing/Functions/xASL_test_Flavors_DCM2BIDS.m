@@ -33,6 +33,11 @@ function loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, loggingTable)
 % EXAMPLE: loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, loggingTable);
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
     %% 1. Initialization

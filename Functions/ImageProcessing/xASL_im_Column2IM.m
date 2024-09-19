@@ -24,6 +24,11 @@ function [ImageOut] = xASL_im_Column2IM(ColumnIn, BrainMask)
 % EXAMPLE: ImageOut = xASL_im_Column2IM(ColumnIn, BrainMask);
 % __________________________________
 % Copyright (C) 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 BrainMask = logical(BrainMask);

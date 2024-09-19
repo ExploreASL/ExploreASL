@@ -22,6 +22,11 @@ function [outputString] = xASL_adm_SortStringNumbers(inputString, numberPatternI
 % EXAMPLE: outputString = xASL_adm_SortStringNumbers(inputString);
 % __________________________________
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
     if nargin<2 || isempty(numberPatternInString)

@@ -19,6 +19,11 @@ function xASL_stat_GetVolumeStatistics(x)
 % EXAMPLE: xASL_stat_GetVolumeStatistics(x);
 % __________________________________
 % Copyright 2016-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% -----------------------------------------------------------------------------------------------

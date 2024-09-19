@@ -34,6 +34,11 @@ function xASL_io_CreateNifti(pathNewNifti, imNew, resMat, nBits, bGZip)
 %          xASL_io_CreateNifti('c:\User\path\new.nii', im, [], 32, 0)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% ---------------------------------------------------------------

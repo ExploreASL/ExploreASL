@@ -39,6 +39,11 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
 % EXAMPLE:      xASL_im_ClipExtremes('MyStudy/anat/T1w.nii.gz');
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
     %% 0. Admin

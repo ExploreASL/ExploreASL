@@ -27,6 +27,11 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 %
 % __________________________________
 % Copyright @ 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
     %% 1. Extract parameters from Phoenix - create a list of parameters
 	parIndex = 1;

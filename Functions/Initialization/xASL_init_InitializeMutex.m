@@ -26,6 +26,11 @@ function [x] = xASL_init_InitializeMutex(x, ModuleName)
 % EXAMPLE: [x] = xASL_init_InitializeMutex(x, 'xASL_module_Structural')
 % __________________________________
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 % Check inputs
 if ~isfield(x.settings,'RERUN') || ~isfield(x.settings,'MUTEXID') || ~isfield(x.dir,'LockDir')

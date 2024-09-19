@@ -21,6 +21,11 @@ function jsonOut = xASL_bids_BIDSifyASLNII(jsonIn, bidsPar, pathIn, pathOutPrefi
 %
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 % Remove the AslContext field and save it as a separate file
 filenameTSV = [pathOutPrefix '_' bidsPar.stringAslContext '.tsv'];

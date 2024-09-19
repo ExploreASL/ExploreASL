@@ -16,6 +16,11 @@ function rotated = xASL_im_rotate(im, angle)
 % EXAMPLE:      ...
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 % In case the angle is higher than 360 or smaller than 0
 angle = mod(angle,360);

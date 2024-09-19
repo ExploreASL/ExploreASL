@@ -30,6 +30,11 @@ function xASL_io_MakeNifti4DICOM(PathIn, x, DataType, OrientationPath, ResampleP
 % EXAMPLE: xASL_io_MakeNifti4DICOM(x.P.PathCBF, x);
 % __________________________________
 % Copyright 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% Admin

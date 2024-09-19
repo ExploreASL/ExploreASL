@@ -35,6 +35,11 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % Copyright (c) 2015-2022 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
     if nargin<2 || isempty(bVerbose)

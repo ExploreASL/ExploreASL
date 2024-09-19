@@ -27,6 +27,11 @@ function [PermutationList] = xASL_stat_UniquePairwisePermutations(GroupA, GroupB
 %            TWO SAMPLES: PermutationList = xASL_stat_UniquePairwisePermutations([1 2 3], [4 5 6]);
 % __________________________________
 % Copyright 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 

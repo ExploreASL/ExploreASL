@@ -19,6 +19,11 @@ function mssim=xASL_stat_MeanSSIM(imRef,imSrc,dynRange)
 %            visibility to structural similarity, IEEE Transactions on Image Processing, 13(4):600-612, 2004.
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 %
 % 2019-04-24 JP, HM
 

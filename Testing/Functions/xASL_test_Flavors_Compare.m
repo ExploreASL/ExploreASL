@@ -17,6 +17,11 @@ function [flavors,flavorList] = xASL_test_Flavors_Compare(testConfig,flavors,fol
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
     % List all studies in the import directory
     flavorList = testConfig.flavorList;

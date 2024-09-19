@@ -15,6 +15,11 @@ function UnitTest = xASL_ut_function_xASL_io_ReadJson(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_io_ReadJson(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2023 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% Test run 1

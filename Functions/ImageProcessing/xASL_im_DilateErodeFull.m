@@ -18,6 +18,11 @@ function imOut = xASL_im_DilateErodeFull(imIn, type, kernel)
 % EXAMPLE: imOut = xASL_im_DilateErodeFull(imIn, 'erode', [1 1 1;0 1 0; 1 1 1])
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 %% Admin
 if nargin < 1

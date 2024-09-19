@@ -30,6 +30,11 @@ function [result, x] = xASL_module_Population(x)
 % EXAMPLE: [~, x] = xASL_module_Population(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 %% ------------------------------------------------------------------------------------------------------------
 %% Admin

@@ -23,6 +23,11 @@ function bIsnear = xASL_stat_IsEqualTol(x, y, tol)
 %
 % __________________________________
 % Copyright 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 % Admin

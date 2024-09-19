@@ -43,6 +43,11 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
 % EXAMPLE: NegativeMask = xASL_im_MaskNegativeVascularSignal(x);
 % __________________________________
 % Copyright (c) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
  
     if nargin<2 || isempty(IsSpace)
         warning('Didnt know space to calculate negative mask in, skipping');

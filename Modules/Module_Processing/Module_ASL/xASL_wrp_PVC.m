@@ -39,6 +39,11 @@ function xASL_wrp_PVC(x)
 % EXAMPLE: xASL_wrp_PVC(x);
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 0. Admin and checking values and files

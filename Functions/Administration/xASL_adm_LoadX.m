@@ -30,6 +30,11 @@ function [x, IsLoaded] = xASL_adm_LoadX(x, Path_xASL, bOverwrite)
 %
 % __________________________________
 % Copyright (C) 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 %% 1. Admin
 IsLoaded = false; % default

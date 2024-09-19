@@ -15,6 +15,11 @@ function UnitTest = xASL_ut_function_xASL_imp_StudyParPriority(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_imp(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% Test run 1

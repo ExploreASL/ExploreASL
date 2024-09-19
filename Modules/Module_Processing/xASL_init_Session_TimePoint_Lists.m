@@ -30,6 +30,11 @@ function [x] = xASL_init_Session_TimePoint_Lists(x)
 % EXAMPLE:        [x] = xASL_init_Session_TimePoint_Lists(x);
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 % ------------------------------------------------------------------------------------------------
 %% 1. Manage sessions

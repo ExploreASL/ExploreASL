@@ -25,6 +25,11 @@ function xASL_im_CenterOfMass(PathNIfTI, OtherList, AllowedDistance)
 %               ASL: xASL_im_CenterOfMass('Path2Study/sub-001/ASL_1/ASL4D.nii', {'Path2Study/sub-001/ASL_1/M0.nii'}, 50);
 % __________________________________
 % Copyright (C) 2015-2020 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 

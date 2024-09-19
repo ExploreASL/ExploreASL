@@ -42,6 +42,11 @@ function [x] = xASL_wrp_SegmentT1w(x, bSegmentSPM12)
 % Mendrik AM, Vincken KL, Kuijf HJ, et al. MRBrainS Challenge: Online Evaluation Framework for Brain Image Segmentation in 3T MRI Scans. Comput.Intell.Neurosci. 2015. p. 813696-mrbrains13.isi.uu.nl/results.php.
 % __________________________________
 % Copyright 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 if nargin<2 || isempty(bSegmentSPM12)
     bSegmentSPM12 = false; % by default use CAT12, not SPM12 to segment

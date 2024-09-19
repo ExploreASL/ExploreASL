@@ -17,6 +17,11 @@ function [NewList] = xASL_adm_CompareLists(list1, list2)
 %               [NewList] = xASL_adm_CompareLists(testListA, testListB); 
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
     % Checks
     if  length(size(list1))>2 || length(size(list2))>2

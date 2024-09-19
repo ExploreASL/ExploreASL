@@ -34,6 +34,11 @@ function [x, Result1] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, NicenessVa
 % EXAMPLE: xASL_fsl_RunFSL(FSLCommand, x);
 % __________________________________
 % Copyright (C) 2015-2022 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 
 %% Admin

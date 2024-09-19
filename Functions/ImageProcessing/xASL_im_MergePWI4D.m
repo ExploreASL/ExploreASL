@@ -23,6 +23,11 @@ function [path_PWI4D, path_PWI4D_Pop] = xASL_im_MergePWI4D(x)
 %   [path_PWI4D, path_PWI4D_Pop] = xASL_im_MergePWI4D(x)
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 %% ---------------------------------------------------------------------
 %% 0. Admin

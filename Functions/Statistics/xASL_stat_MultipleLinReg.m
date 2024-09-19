@@ -33,6 +33,11 @@ function [b,CI,pval,stats] = xASL_stat_MultipleLinReg(X,Y,bIntercept)
 %             https://www.wessa.net/rwasp_multipleregression.wasp
 % __________________________________
 % Copyright (C) 2015-2019 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 % 
 
 % Admin

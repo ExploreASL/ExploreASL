@@ -42,6 +42,11 @@ function SliceTiming = xASL_quant_SliceTiming(x, inputIm)
 %            SliceTiming = xASL_quant_SliceTiming(x, 'ASL4D.nii')
 % __________________________________
 % Copyright 2015-2021 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 %% -----------------------------------------------------------------------------------------------------------------------------------------------------
 %% 0.Admin

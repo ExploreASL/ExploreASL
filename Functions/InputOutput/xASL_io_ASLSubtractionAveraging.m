@@ -47,6 +47,11 @@ function xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, bCopyOrigJson, varar
 %     Inside xASL_wrp_RegisterASL: xASL_io_ASLSubtractionAveraging(x, {1, x.P.Path_mean_PWI_Clipped;4, x.P.Path_mean_control}, 0, x.P.Path_despiked_ASL4D);
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
 
 %% ========================================================================================
 %% 1. Admin & checks
