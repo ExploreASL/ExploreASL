@@ -22,7 +22,9 @@ headerText = {
     '% __________________________________';
     '';
 };
+
 count = 0; % count number of files without copyright line
+
 % Loop through each file
 for iFile = 1:length(fileList)
     % Skip 
@@ -32,25 +34,31 @@ for iFile = 1:length(fileList)
         % i.e. subjective to the ExploreASL license
         % Read the existing content of the file into a cell array, one line per cell
         fileContent = fileread(fileList{iFile});
-        fileLines = strsplit(fileContent, '\n')';
+        fileLines = strsplit(fileContent, '\n', 'CollapseDelimiters', false)';
         
         % Find lines that starts with '% Copyright'
-        % copyrightIndex = find(startsWith(strtrim(fileLines), '% Copyright'));
         copyrightIndex = find(~cellfun(@isempty, regexp(fileLines, '^\s*%\s*Copyright')));
+
+        % First we fix the files that don't have a copyright statement
         if length(copyrightIndex)<1
             fprintf('%s\n', ['No copyright line found: ' fileList{iFile}(myPathLength+1:end)]);
             count = count+1;
             % Add the copyright statement at the beginning of the file
             copyrightStatement = '% Copyright 2015-2024 ExploreASL (Works In Progress code)';
             fileLines = [{copyrightStatement}; fileLines];
-        elseif length(copyrightIndex)>1
+        end
+
+        % Now we get the lines with copyright statement again, including the fixed files
+        copyrightIndex = find(~cellfun(@isempty, regexp(fileLines, '^\s*%\s*Copyright')));        
+
+        if length(copyrightIndex)>1
             fprintf('%s\n', [xASL_num2str(length(copyrightIndex)) ' copyright lines found: ' fileList{iFile}(myPathLength+1:end)]);
         else
-    
             % Insert headerText after the first '% Copyright' line
             fileLines = [fileLines(1:copyrightIndex); headerText; fileLines(copyrightIndex+1:end)];
         end
-        % % Rejoin the file lines into a single string
+       
+        % Rejoin the file lines into a single string
         newFileContent = strjoin(fileLines, '\n');
         % Open the file for writing and overwrite with new content
         fid = fopen(fileList{iFile}, 'w');
