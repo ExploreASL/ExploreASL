@@ -103,6 +103,14 @@ for indexCells = 1:numel(listCells)
 	% Replace all cells by a string created by concatenating the strings inside
 	TSV{listCells(indexCells)} = strjoin(TSV{listCells(indexCells)}, '/');
 end
+% Find all columns with struct in it
+listStructs = unique(round(find(cellfun(@isstruct, TSV(:)))./size(TSV,1)));
+
+% Remove all struct columns - going from the back to start
+for indexColumn = numel(listStructs):-1:1
+	TSV = TSV(:,[1:listStructs(indexColumn)-1, listStructs(indexColumn)+1:end]);
+end
+
 %% 2. Write TSV file
 xASL_tsvWrite(TSV, PathTSV, bOverwrite);
 
