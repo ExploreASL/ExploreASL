@@ -27,7 +27,7 @@ function [x] = ExploreASL_Import(x)
     %% Hyperlink
     xASL_adm_BreakString('ExploreASL Import');
     if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
-        disp('<a href="https://exploreasl.github.io/Documentation/latest/Tutorials-Import; ">Click here for the ExploreASL DICOM to BIDS (import) tutorial</a>');
+        disp('<a href="https://exploreasl.github.io/Documentation/latest/Tutorials-Import">Click here for the ExploreASL DICOM to BIDS (import) tutorial</a>');
     else % text only
         fprintf('The ExploreASL DICOM to BIDS (Import) tutorial is available at: https://exploreasl.github.io/Documentation/latest/Tutorials-Import\n');
     end

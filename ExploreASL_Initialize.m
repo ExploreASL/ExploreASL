@@ -60,7 +60,7 @@ function [x] = ExploreASL_Initialize(varargin)
 	fprintf('%s\n', 'Minimal Matlab version required: 9.6 (R2019a)');
 
 	if verLessThan('matlab', '9.6')
-		disp('<a href="https://nl.mathworks.com/support/requirements/previous-releases.html; ">Click here for the Matlab version overview</a>');
+		disp('<a href="https://nl.mathworks.com/support/requirements/previous-releases.html">Click here for the Matlab version overview</a>');
 		error('Too old Matlab version for ExploreASL');
 	end
 
@@ -134,7 +134,7 @@ function [x] = ExploreASL_Initialize(varargin)
     xASL_init_PrintVersion(x.Version);
 
 	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
-        disp('<a href="https://exploreasl.github.io/Documentation; ">Click here for the ExploreASL manual</a>');
+        disp('<a href="https://exploreasl.github.io/Documentation">Click here for the ExploreASL manual</a>');
     else % text only
         fprintf('ExploreASL manual is available at https://exploreasl.github.io/Documentation\n');
     end

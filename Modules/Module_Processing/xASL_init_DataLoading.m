@@ -24,32 +24,26 @@ function [x] = xASL_init_DataLoading(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
 
-
-
-
     %% 1. Print the hyperlink
 	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
-        disp('<a href="https://exploreasl.github.io/Documentation/latest/Tutorials-Processing; ">Click here for the ExploreASL processing tutorial</a>');
-        disp('<a href="https://exploreasl.github.io/Documentation/latest/ProcessingParameters; ">Click here for the ExploreASL processing settings overview</a>');
+        disp('<a href="https://exploreasl.github.io/Documentation/latest/Tutorials-Processing">Click here for the ExploreASL processing tutorial</a>');
+        disp('<a href="https://exploreasl.github.io/Documentation/latest/ProcessingParameters">Click here for the ExploreASL processing settings overview</a>');
 	else % text only
         fprintf('Examples of processing-parameter settings are at: https://exploreasl.github.io/Documentation/latest/Tutorials-Processing\n');
         fprintf('A full explanation of processing parameters is @: https://exploreasl.github.io/Documentation/latest/ProcessingParameters\n');
-	end
-    
+	end  
 
     %% 2. Go to ExploreASL folder
     cd(x.opts.MyPath);
 
-
     %% 3. Initialize x struct
     x = xASL_init_SubStructs(x);
-
     
     %% 4. Which data to read
     if ~isfield(x.opts, 'bReadRawdata') || isempty(x.opts.bReadRawdata)
@@ -89,7 +83,6 @@ function [x] = xASL_init_DataLoading(x)
         error('/derivatives/ExploreASL did not exist, if you want to load BIDS subjects from /rawdata, set x.opts.bReadRawdata to true in dataPar.json');
     end
 
-
     %% 5. Create directories
     xASL_adm_CreateDir(fullfile(x.dir.xASLDerivatives, 'log')); % Create logging directory if it does not exist
     xASL_adm_CreateDir(x.dir.xASLDerivatives); % Create ExploreASL derivatives directory if it does not exist
@@ -97,6 +90,5 @@ function [x] = xASL_init_DataLoading(x)
     
     %% 6. Load BIDS configuration for file renaming
     x.modules.bids2legacy.bidsPar = xASL_bids_Config;
-
     
 end
