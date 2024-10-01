@@ -103,6 +103,12 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
             end
             
             %% 4. Iterate over scans
+			% Safety-check, we can't allow multiple matches for the same sequence
+			if numel(thisRun.scanIDs) ~= numel(unique(thisRun.scanIDs))
+				fprintf('Detected duplicit scans: %s\n',strjoin(thisRun.scanIDs, ', '));
+				error('We do not allow multiple matches per scan for. Please delete some sequences or adjust sourcestructure.json');
+			end
+
             for iScan=1:numel(thisRun.scanIDs)
                 % Get scan ID
                 scanFields.runID = thisRun.ids{iScan};
