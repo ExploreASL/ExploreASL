@@ -45,6 +45,39 @@
       ]
     },
     {
+      "login": "vkeil-tech",
+      "name": "Vera Keil",
+      "avatar_url": "https://avatars.githubusercontent.com/u/65789404?v=4",
+      "profile": "https://github.com/Vkeil-tech",
+      "contributions": [
+      	"ideas",
+        "research",
+        "promotion"
+      ]
+    },
+    {
+      "login": "wadqc",
+      "name": "Joost Kuijer",
+      "avatar_url": "https://amsterdamumc.org/upload_mm/0/0/1/cid3439_1724746398334_pasfoto_vierkant_klein.jpg",
+      "profile": "https://github.com/wadqc",
+      "contributions": [
+      	"ideas",
+        "research",
+        "tool"
+      ]
+    },
+    {
+      "login": "aot",
+      "name": "Aaron Oliver-Taylor",
+      "avatar_url": "https://goldstandardphantoms.com/wp-content/uploads/2023/05/aaron__501x548-274x300.jpg",
+      "profile": "https://github.com/aot",
+      "contributions": [
+      	"data",
+        "tool",
+        "plugin"
+      ]
+    },
+    {
       "login": "MichaelStritt",
       "name": "Michael Stritt",
       "avatar_url": "https://avatars0.githubusercontent.com/u/46593074?v=4",
