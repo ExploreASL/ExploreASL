@@ -81,35 +81,31 @@ for iSubject=1:x.dataset.nSubjects
         nFields = length(jsonFields);
         for iField=1:nFields
             if ~isempty(Parms.(jsonFields{iField}))
+				% Saves the new field for further testing and formatting
+				newField = Parms.(jsonFields{iField});
+
+				if iscell(newField)
+					% Verify that all gathered cells include strings and not cells inside
+					newField = strjoin(newField, '/');
+				elseif isstruct(newField)
+					% Structs are also not allowed
+					newField = 'n/a';
+				end
                 % Check if field already exists as column
                 iColumn = find(strcmp(TSV(1,:), jsonFields{iField}));
                 if isempty(iColumn)
                     TSV{1,end+1} = jsonFields{iField}; % create new column for this parameter
-                    TSV{1+iSubjSess,end} = xASL_num2str(Parms.(jsonFields{iField}), [], [], [], true); % add the value to the new column, and run unique
+                    TSV{1+iSubjSess,end} = xASL_num2str(newField, [], [], [], true); % add the value to the new column, and run unique
                 elseif numel(iColumn)>1
                     error('When making the DICOMparameters.TSV, columns with the same name');
                 else
-                    TSV{1+iSubjSess,iColumn} = xASL_num2str(Parms.(jsonFields{iField}), [], [], [], true); % add the value to the existing column, and run unique
+                    TSV{1+iSubjSess,iColumn} = xASL_num2str(newField, [], [], [], true); % add the value to the existing column, and run unique
                 end
             end
         end
     end
 end
 fprintf('\n');
-
-% Verify that all gathered cells include strings and not cells inside
-listCells = find(cellfun(@iscell, TSV(:)));
-for indexCells = 1:numel(listCells)
-	% Replace all cells by a string created by concatenating the strings inside
-	TSV{listCells(indexCells)} = strjoin(TSV{listCells(indexCells)}, '/');
-end
-% Find all columns with struct in it
-listStructs = unique(round(find(cellfun(@isstruct, TSV(:)))./size(TSV,1)));
-
-% Remove all struct columns - going from the back to start
-for indexColumn = numel(listStructs):-1:1
-	TSV = TSV(:,[1:listStructs(indexColumn)-1, listStructs(indexColumn)+1:end]);
-end
 
 %% 2. Write TSV file
 xASL_tsvWrite(TSV, PathTSV, bOverwrite);
