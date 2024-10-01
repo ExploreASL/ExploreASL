@@ -380,39 +380,54 @@ end
 function [x] = xASL_wrp_Population_PrepareAtlas4ROI(x)
 %xASL_wrp_Population_PrepareAtlas4ROI Parse x.S.Atlases & x.S.TissueMasking
 
-bAtlasTissueMatch = true;
-if isfield(x.S, 'Atlases') && ~isfield(x.S, 'TissueMasking')
-    fprintf('\n%s\n', 'Warning: custom ROI atlas-selection detected in x.S.Atlases without the tissue-types for these ROIs in x.S.TissueMasking');
-    bAtlasTissueMatch = false;
-elseif ~isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking')
-    fprintf('\n%s\n', 'Warning: custom tissue-types (x.S.TissueMasking)  specified without ROI atlas-selection (x.S.Atlases)');
-    bAtlasTissueMatch = false;
-elseif isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking') && length(x.S.Atlases)~=length(x.S.TissueMasking)
-    fprintf('\n%s\n', 'Warning: not the same number of ROI atlases as subject-wise tissue-types provided');
-    fprintf('%s\n', ['x.S.Atlases: ' strjoin(x.S.Atlases)]);
-    fprintf('%s\n', ['x.S.TissueMasking: ' strjoin(x.S.TissueMasking)]);
-    bAtlasTissueMatch = false;
-end
-if ~bAtlasTissueMatch
-    fprintf('\n%s\n', 'ExploreASL''s population module produces ROI values that are obtained by a ');
-    fprintf('%s\n', 'combination of an MNI ROI atlas with subject-specific GM and WM segmentations.');
-    fprintf('%s\n', 'When custom ROI atlases are provided in x.S.Atlases, their tissue types ');
-    fprintf('%s\n', 'need to be provided as well, with either option ''GM'', ''WM'', ''WB'' (GM+WM).');
-    fprintf('%s\n', 'E.g., when not provided, these default to:');
-    fprintf('%s\n', 'x.S.Atlases = {''TotalGM'' ''DeepWM''}');
-    fprintf('%s\n\n', 'x.S.TissueMasking = {''GM'' ''WM''}');
-    
-    error('Not the same number of ROI atlases as subject-wise tissue-types, skipping');
-end
+bPrintInstructions = false; % Suboptimal state, print instructions
+bAtlasTissueMatch = true; % Necessary condition
 
-% Default atlases/ROIs & tissue masks
-if ~isfield(x.S,'Atlases')
+if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking')
+	% Default atlases/ROIs & tissue masks if nothing is provided
 	x.S.Atlases = {'TotalGM','DeepWM'}; % Default
-end
-if ~isfield(x.S, 'TissueMasking')
     x.S.TissueMasking = {'GM' 'WM'}; % GM WM, fits with the TotalGM & DeepWM above
     % Note that this should be in the same order as the atlases/ROIs
     % A mismatch (e.g. TissueMasking=GM for ROI=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
+elseif ~isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking')
+	% Missing Atlases, but provided TissueMasking - cannot continue
+    warning('Custom tissue-types (x.S.TissueMasking) specified without ROI atlas-selection (x.S.Atlases). Atlases need to be provided. See instructions below:');
+    bAtlasTissueMatch = false;
+	bPrintInstructions = true;
+elseif isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking') && length(x.S.Atlases)~=length(x.S.TissueMasking)
+	% Non matching lengths, cannot continue
+    warning('The same number of ROI atlases as subject-wise tissue-types provided does not match:');
+    fprintf('%s\n', ['x.S.Atlases: ' strjoin(x.S.Atlases)]);
+    fprintf('%s\n', ['x.S.TissueMasking: ' strjoin(x.S.TissueMasking)]);
+    bAtlasTissueMatch = false;
+	bPrintInstructions = true;
+elseif 	isfield(x.S, 'Atlases') && ~isfield(x.S, 'TissueMasking')
+	% TissueMasking not provided, so it has to be extracted from Atlases as previously.
+    warning('ROIs provided in x.S.Atlases without the tissue-types for these ROIs in x.S.TissueMasking. This will be fixed automatically, provide x.S.TissueMarking the next time');
+    bAtlasTissueMatch = true;
+	bPrintInstructions = true;
+	% Fill in TissueMasking based on the atlas names and default to GM. The user will see a warning and automatic tissue masks to verify
+	for iAtlas = 1:numel(x.S.Atlases)
+		if ~isempty(regexpi(x.S.Atlases{iAtlas}, 'WM')) || ~isempty(regexpi(x.S.Atlases{iAtlas}, 'whitematter'))
+			x.S.TissueMasking{iAtlas} = 'WM';
+		elseif ~isempty(regexpi(x.S.Atlases{iAtlas}, 'WB')) || ~isempty(regexpi(x.S.Atlases{iAtlas}, 'wholebrain'))
+			x.S.TissueMasking{iAtlas} = 'GM';
+		else
+			x.S.TissueMasking{iAtlas} = 'GM';
+		end
+	end
+end
+if bPrintInstructions
+    fprintf('%s\n', 'When ROI atlases are provided in x.S.Atlases, their tissue types');
+    fprintf('%s\n', 'need to be provided as well in dataPar.json, with either option ''GM'', ''WM'', ''WB'' (GM+WM).');
+    fprintf('%s\n', 'E.g., when not provided, these default to:');
+    fprintf('%s\n', 'x.S.Atlases = [''TotalGM'' ''DeepWM'']');
+    fprintf('%s\n\n', 'x.S.TissueMasking = [''GM'' ''WM'']');
+end
+
+if ~bAtlasTissueMatch
+	% No match means that we have to end it
+    error('Not the same number of ROI atlases as subject-wise tissue-types, skipping');
 end
 
 fprintf('\nThe following ROI atlases have been selected with the following tissue:\n')
@@ -420,6 +435,5 @@ for iAtlas=1:length(x.S.Atlases)
     fprintf('%s\n', [x.S.TissueMasking{iAtlas} ' tissue within ' x.S.Atlases{iAtlas} ' ROIs']);
 end
 fprintf('\n');
-
 
 end
