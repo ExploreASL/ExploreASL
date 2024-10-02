@@ -48,7 +48,17 @@ if x.opts.nWorkers>1 % don't run population module when ExploreASL is paralleliz
     return;
 end
 
-x = xASL_wrp_Population_PrepareAtlas4ROI(x); % Parse x.S.Atlases & x.S.TissueMasking
+% Check again for Atlases (main checking is done when loading dataPar)
+if ~isfield(x.S, 'Atlases') || ~isfield(x.S, 'TissueMasking') || length(x.S.Atlases)~=length(x.S.TissueMasking)
+	error('You need to provide S.Atlases and S.TissueMasking with the same length');
+end
+
+% Print the used atlases	
+fprintf('\nThe following ROI atlases have been selected with the following tissue:\n')
+for iAtlas=1:length(x.S.Atlases)
+    fprintf('%s\n', [x.S.TissueMasking{iAtlas} ' tissue within ' x.S.Atlases{iAtlas} ' ROIs']);
+end
+fprintf('\n');
 
 % Default datatypes
 if ~isfield(x.S,'DataTypes') || isempty(x.S.DataTypes)
@@ -429,11 +439,5 @@ if ~bAtlasTissueMatch
 	% No match means that we have to end it
     error('Not the same number of ROI atlases as subject-wise tissue-types, skipping');
 end
-
-fprintf('\nThe following ROI atlases have been selected with the following tissue:\n')
-for iAtlas=1:length(x.S.Atlases)
-    fprintf('%s\n', [x.S.TissueMasking{iAtlas} ' tissue within ' x.S.Atlases{iAtlas} ' ROIs']);
-end
-fprintf('\n');
 
 end
