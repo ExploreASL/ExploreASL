@@ -73,7 +73,8 @@ function [x] = xASL_io_ReadDataPar(pathDataPar, bStudyPar)
 %
 %   ...
 %   "S":
-%	{"Atlases": ["TotalGM","TotalWM","DeepWM","Mindboggle_OASIS_DKT31_CMA"]}
+%	{"Atlases": ["TotalGM","TotalWM","DeepWM","Mindboggle_OASIS_DKT31_CMA"],
+%    "TissueMasking": ["GM","WM","WM","GM"]}}
 %   ...
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
