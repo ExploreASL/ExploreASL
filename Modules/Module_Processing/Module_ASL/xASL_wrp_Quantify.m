@@ -187,7 +187,7 @@ end
 % when x.Q.BloodT1 exists, otherwise default Blood T1 values are used based
 % on MagneticFieldStrength.
 
-% a. We prioritize x.S.SetsID > x.Hematocrit
+% a. We prioritize participants.tsv>Hematocrit (x.S.SetsID > x.Hematocrit)
 indexSetsName = find(strcmpi(x.S.SetsName, 'hematocrit'));
 if ~isempty(indexSetsName) && isfield(x, 'Hematocrit')
     warning('Found hematocrit values in participants.tsv & in x.Hematocrit, using the first');
@@ -196,13 +196,28 @@ elseif ~isempty(indexSetsName)
     x.Hematocrit = x.S.SetsID(:,indexSetsName);
 end
 
-% b. We prioritze x.Hematocrit > x.hematocrit
+% We convert x.Hematocrit > x.hematocrit 
+% -> this accounts for the (backward compatibility) possibility
+% that the user provides hematocrit in dataPar.json
 if isfield(x, 'hematocrit') && isfield(x, 'Hematocrit')
     warning('Two hematocrit fields, ignoring x.hematocrit');
     x = rmfield(x, 'hematocrit');
 elseif isfield(x, 'hematocrit')
     x.Hematocrit = x.hematocrit;
 	x = rmfield(x, 'hematocrit');
+end
+
+% b. We model the expected hematocrit from age & sex
+% only if the Hematocrit was not specifically provided
+if ~isfield(x, 'Hematocrit')
+    IndexSetsAge = find(strcmpi(x.S.SetsName, 'age'));
+    IndexSetsSex = find(strcmpi(x.S.SetsName, 'sex'));
+    if ~isempty(IndexSetsAge) || ~isempty(IndexSetsSex)
+        age = x.S.SetsID(IndexSetsAge);
+        sex = x.S.SetsID(IndexSetsSex);
+        % CAVE: here sex 1 ==male 2 ==female
+        x.Hematocrit = xASL_quant_AgeSex2Hct(age, sex);
+    end
 end
 
 % c. We convert x.Hematocrit -> x.Q.BloodT1
