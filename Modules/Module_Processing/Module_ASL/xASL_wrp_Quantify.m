@@ -213,14 +213,34 @@ if ~isfield(x, 'Hematocrit')
     IndexSetsAge = find(strcmpi(x.S.SetsName, 'age'));
     IndexSetsSex = find(strcmpi(x.S.SetsName, 'sex'));
     if ~isempty(IndexSetsAge) || ~isempty(IndexSetsSex)
-        age = x.S.SetsID(IndexSetsAge);
-        sex = x.S.SetsID(IndexSetsSex);
+        fprintf('%s\n', 'Trying to infer hematocrit from age & sex');
+        
+        age = x.S.SetsID(:, IndexSetsAge);
+        
+        % Convert sex correctly
+        sex = x.S.SetsID(:, IndexSetsSex);
+        sexOptions = x.S.SetsOptions{:, IndexSetsSex};
+        sexN = zeros(length(sex), 1)
+        for iOption=1:length(sexOptions)
+            if ~isempty(regexpi(sexOptions{iOption}, '^(male|m|man|men)$'))
+                sexN(sex==iOption) = 1;
+            elseif ~isempty(regexpi(sexOptions{iOption}, '^(female|f|woman|women)$'))
+                sexN(sex==iOption) = 2;
+            end
+        end
+        sexN(sexN<1 | sexN>2) = NaN; % currently we can only infer hct from male/female
+        if sum(isnan(sexN))>0
+            warning('Unknown sex detected in participants.tsv, currently we can only infer hematocrit from male or female');
+            fprintf('%s\n', 'So in participants.tsv specify the words "male" and "female" only');
+        end
+
         % CAVE: here sex 1 ==male 2 ==female
         x.Hematocrit = xASL_quant_AgeSex2Hct(age, sex);
     end
 end
 
 % c. We convert x.Hematocrit -> x.Q.BloodT1
+%    And take the current SubjectSession
 if isfield(x,'Hematocrit')
     x.Q.Hematocrit = x.Hematocrit(x.iSubjectSession);
     x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Q.Hematocrit, [], x.MagneticFieldStrength);
