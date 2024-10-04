@@ -519,6 +519,8 @@ for iSubject=1:x.dataset.nSubjects
 		% in case of volume or TT or ATT
 
 		%% 4.c Load data
+        Data3D = []; % initialize empty variable
+
 		if x.S.InputNativeSpace %% PM: we repeat same code here twice
 			FilePath = fullfile(x.dir.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
 			if xASL_exist(FilePath, 'file')
@@ -557,6 +559,10 @@ for iSubject=1:x.dataset.nSubjects
 			DataIm = zeros([sum(x.S.masks.WBmask(:)) 1],'single');
 			VascularMask = logical(DataIm);
 			DataIm(:) = NaN;
+        end
+
+        if isempty(Data3D)
+            warning('Something went wrong loading the data, verify if the data are correctly processed and present in the population folder');
         end
 
 
