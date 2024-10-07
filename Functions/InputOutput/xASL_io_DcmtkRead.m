@@ -232,15 +232,20 @@ end
 %% Philips fields
 if isfield(header, 'PerFrameFunctionalGroupsSequence')
 	privateItem = [];
+    pixelItem = [];
 	if iscell(header.PerFrameFunctionalGroupsSequence)
 		echoItem   = header.PerFrameFunctionalGroupsSequence{1}.MREchoSequence{1};
-		pixelItem  = header.PerFrameFunctionalGroupsSequence{1}.PixelValueTransformationSequence{1};
+		if isfield(header.PerFrameFunctionalGroupsSequence{1}, 'PixelValueTransformationSequence')
+			pixelItem  = header.PerFrameFunctionalGroupsSequence{1}.PixelValueTransformationSequence{1};
+		end
 		if isfield(header.PerFrameFunctionalGroupsSequence{1}, 'Private_2005_140f')
 			privateItem = header.PerFrameFunctionalGroupsSequence{1}.Private_2005_140f{1};
 		end
 	else
 		echoItem   = header.PerFrameFunctionalGroupsSequence.Item_1.MREchoSequence.Item_1;
-		pixelItem  = header.PerFrameFunctionalGroupsSequence.Item_1.PixelValueTransformationSequence.Item_1;
+		if isfield(header.PerFrameFunctionalGroupsSequence{1}, 'PixelValueTransformationSequence.Item_1')
+			pixelItem  = header.PerFrameFunctionalGroupsSequence.Item_1.PixelValueTransformationSequence.Item_1;
+		end
 		if isfield(header.PerFrameFunctionalGroupsSequence.Item_1, 'Private_2005_140f')
 			privateItem = header.PerFrameFunctionalGroupsSequence.Item_1.Private_2005_140f.Item_1;
 		end
