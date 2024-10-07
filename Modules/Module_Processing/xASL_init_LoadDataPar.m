@@ -143,7 +143,7 @@ end
 function [x] = xASL_initLoadDataPar_PrepareAtlas4ROI(x)
 %Check for x.S.Atlases & x.S.TissueMasking and provide default values or print instructions
 
-bAtlasTissueMatch = true; % Necessary condition
+bAtlasTissueMatch = true; % x.S.Atlases & x.S.TissueMasking should match before we can continue (needed for the population module)
 
 if ~isfield(x, 'S') || (~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking'))
 	% Default atlases/ROIs & tissue masks if nothing is provided
@@ -157,7 +157,7 @@ elseif ~isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking')
     bAtlasTissueMatch = false;
 elseif isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking') && length(x.S.Atlases)~=length(x.S.TissueMasking)
 	% Non matching lengths, cannot continue
-    warning('The same number of ROI atlases as subject-wise tissue-types provided does not match:');
+    warning('The number of ROI atlases x.S.Atlases as subject-wise tissue-types x.S.TissueMasking provided does not match:');
     fprintf('%s\n', ['S:{Atlases:["' strjoin(x.S.Atlases, '", "') '"]}']);
     fprintf('%s\n', ['S:{TissueMasking:["' strjoin(x.S.TissueMasking, '", "') '"]}']);
     bAtlasTissueMatch = false;
@@ -184,8 +184,8 @@ elseif 	isfield(x.S, 'Atlases') && ~isfield(x.S, 'TissueMasking')
 end
 if ~bAtlasTissueMatch
     fprintf('%s\n', 'When ROI atlases are provided in S.Atlases, their tissue types');
-    fprintf('%s\n', 'need to be provided as well in dataPar.json as S.TissueMasking, with either option ''GM'', ''WM'', ''WB'' (GM+WM).');
-    fprintf('%s\n', 'When not provided, these default to:');
+    fprintf('%s\n', 'need to be provided as well in dataPar.json as S.TissueMasking, with either option ''GM'', ''WM'', ''WB'' (==GM+WM).');
+    fprintf('%s\n', 'The default values when Atlases and Tissues masking are not provided are:');
     fprintf('%s\n', 'S:{Atlases:["TotalGM", "DeepWM"],');
     fprintf('%s\n\n', '  TissueMasking:["GM", "WM"]}');
 
