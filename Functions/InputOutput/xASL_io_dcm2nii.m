@@ -10,7 +10,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 %      destdir         target destination directory (REQUIRED)
 %	   series_name     target name of the NIfTI file (REQUIRED)
 %      imPar           imPar from x.modules.import.imPar (OPTIONAL, DEFAULT = [])
-%                      'imPar.dcm2nii_version' (DEFAULT 20220720)
+%                      'imPar.dcm2nii_version' (DEFAULT 20240202)
 %                      'imPar.bVerbose'        set to true or false to switch terminal feedback (DEFAULT false)
 %                      'imPar.bOverwrite'      set to true or false to overwrite existing files (DEFAULT false)
 %                      'imPar.dcmExtFilter' regular expression used to find dicom files (DEFAULT '^.+\.dcm$')
@@ -37,7 +37,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      ...
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -55,7 +55,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 	end
 	
 	if ~isfield(imPar,'dcm2nii_version') || isempty(imPar.dcm2nii_version)
-		imPar.dcm2nii_version = '20220720';
+		imPar.dcm2nii_version = '20240202';
 	end
 	
 	if ~isfield(imPar, 'dcmExtFilter') || isempty(imPar.dcmExtFilter)

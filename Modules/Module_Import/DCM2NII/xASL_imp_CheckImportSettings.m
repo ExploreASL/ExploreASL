@@ -22,7 +22,7 @@ function [x] = xASL_imp_CheckImportSettings(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        n/a
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -38,7 +38,7 @@ function [x] = xASL_imp_CheckImportSettings(x)
     
     %% 2. Check dcm2nii version
     if ~isfield(x.modules.import.imPar, 'dcm2nii_version') || isempty(x.modules.import.imPar.dcm2nii_version)
-		x.modules.import.imPar.dcm2nii_version = '20220720';
+		x.modules.import.imPar.dcm2nii_version = '202400202';
     end
     
     %% 3. Check DCM Extension Filter
