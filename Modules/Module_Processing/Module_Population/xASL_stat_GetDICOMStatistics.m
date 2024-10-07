@@ -89,6 +89,7 @@ for iSubject=1:x.dataset.nSubjects
 					newField = strjoin(newField, '/');
 				elseif isstruct(newField)
 					% Structs are also not allowed
+					fprintf('Warning, field %s contains a struct, so we cannot print it in the DICOM tag overview\n', jsonFields{iField});
 					newField = 'n/a';
 				end
                 % Check if field already exists as column
