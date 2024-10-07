@@ -38,7 +38,7 @@ function [x] = xASL_imp_CheckImportSettings(x)
     
     %% 2. Check dcm2nii version
     if ~isfield(x.modules.import.imPar, 'dcm2nii_version') || isempty(x.modules.import.imPar.dcm2nii_version)
-		x.modules.import.imPar.dcm2nii_version = '202400202';
+		x.modules.import.imPar.dcm2nii_version = '20240202';
     end
     
     %% 3. Check DCM Extension Filter
