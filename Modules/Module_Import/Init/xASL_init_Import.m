@@ -65,4 +65,6 @@ function x = xASL_init_Import(x)
     % Create logging directory if it does not exist already
     xASL_adm_CreateDir(fullfile(x.dir.DatasetRoot,'derivatives','ExploreASL','log'));
 
+	x = xASL_init_LoadDataPar(x);
+
 end
