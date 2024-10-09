@@ -711,11 +711,11 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 				bExportVector = 0;
 				% For certain parameters, gather the fields from merged JSONs as a vector rather than a scalar
 				% Here we identify if certain field should be exported as a vector
-				fieldsExportVector = {'PostLabelDelay'};
+				fieldsExportVector = {'PostLabelingDelay'};
 				for iField = 1:length(fieldsExportVector)
 					% The condition is that it's in the list, it exists and that in each JSON, it's given as a scalar
-					if strcmpi(listFieldNames{iFieldName}, fieldsExportVector{iField}) && isfield(currentJSON, listFieldNames{iFieldName})
-						if numel(currentJSON.(fieldsExportVector{iField})) == 1
+					if strcmpi(listFieldNames{iFieldName}, fieldsExportVector{iField})
+						if (isfield(currentJSON, listFieldNames{iFieldName})) && (numel(currentJSON.(fieldsExportVector{iField})) == 1)
 							bExportVector = 1;
 						end
 					end
