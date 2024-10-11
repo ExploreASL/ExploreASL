@@ -117,7 +117,7 @@ for fn = fieldnames(jsonInMerged)'
 					') & studyPar (' xASL_num2str(jsonOut.(fn{1})) '). '];
 
 				% Define the DICOM or studyPar priority
-				if strcmp(fn{1}, 'TotalAcquiredPairs') || strcmp(fn{1}, 'ArterialSpinLabelingType') || strcmp(fn{1}, 'EchoTime') || strcmp(fn{1}, 'VascularCrushing')
+				if strcmp(fn{1}, 'TotalAcquiredPairs') || strcmp(fn{1}, 'ArterialSpinLabelingType') || strcmp(fn{1}, 'EchoTime') || strcmp(fn{1}, 'VascularCrushing') || strcmp(fn{1}, 'PostLabelingDelay') || strcmp(fn{1}, 'LabelingDuration')
 					jsonInMerged.(fn{1}) = jsonOut.(fn{1});
 					warningMessage = [warningMessage 'Using the studyPar value.'];
 				else
