@@ -530,6 +530,7 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
+dataParStruct.x.S.TissueMasking = {'GM','WM','WB','GM','GM','GM'};
 xASL_io_WriteJson(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
 
 % Add studyPar JSON
@@ -608,6 +609,13 @@ if exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'fil
                 end
             else
                 testCondition = false; % Test failed
+			end
+			if isfield(testContent.x.S,'TissueMasking')
+                if ~(numel(testContent.x.S.TissueMasking)==6)
+                    testCondition = false; % Test failed
+                end
+            else
+                testCondition = false; % Test failed
             end
         else
             testCondition = false; % Test failed
@@ -649,6 +657,7 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
+dataParStruct.x.S.TissueMasking = {'GM','WM','GM','GM','GM','GM'};
 xASL_io_WriteJson(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
 
 % Add studyPar JSON
@@ -1037,6 +1046,7 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
+dataParStruct.x.S.TissueMasking = {'GM','WM','GM','GM','GM','GM'};
 xASL_io_WriteJson(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
 
 % Add studyPar JSON
@@ -1100,13 +1110,20 @@ if exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'fil
     testContent = xASL_io_ReadJson(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'));
     if isfield(testContent,'x')
         if isfield(testContent.x,'S')
-            if isfield(testContent.x.S,'Atlases')
-                if ~(numel(testContent.x.S.Atlases)==6)
+			if isfield(testContent.x.S,'Atlases')
+				if ~(numel(testContent.x.S.Atlases)==6)
                     testCondition = false; % Test failed
-                end
-            else
+				end
+			else
                 testCondition = false; % Test failed
-            end
+			end
+			if isfield(testContent.x.S,'TissueMasking')
+				if ~(numel(testContent.x.S.TissueMasking)==6)
+                    testCondition = false; % Test failed
+				end
+			else
+                testCondition = false; % Test failed
+			end
         else
             testCondition = false; % Test failed
         end
