@@ -85,43 +85,47 @@ end
 %     ExistCUDA = false;
 % end
 
+% Setup VABY quantification
+if isfield(x, 'external') && isfield(x.external, 'ExternalQuantificationType') && strcmp(x.external.ExternalQuantificationType, 'VABY')
+	FSLinit = '';
 
-%% Define FSL environment script (only declares variables, OK to repeat)
-FSLinit0 = ['FSLDIR=' FSLdir ';'];
-if exist(fullfile(RootFSLdir,'etc','fslconf','fsl.sh'),'file')
-	FSLinit1 = ['. ' FSLdir '/etc/fslconf/fsl.sh;'];
-elseif exist(fullfile(RootFSLdir,'etc','fsl','fsl.sh'),'file')
-	FSLinit1 = ['. ' FSLdir '/etc/fsl/fsl.sh;'];
 else
-	warning('Cannot locate fsl.sh, skipping FSL function');
-    return;
+	%% Define FSL environment script (only declares variables, OK to repeat)
+	FSLinit0 = ['FSLDIR=' FSLdir ';'];
+	if exist(fullfile(RootFSLdir,'etc','fslconf','fsl.sh'),'file')
+		FSLinit1 = ['. ' FSLdir '/etc/fslconf/fsl.sh;'];
+	elseif exist(fullfile(RootFSLdir,'etc','fsl','fsl.sh'),'file')
+		FSLinit1 = ['. ' FSLdir '/etc/fsl/fsl.sh;'];
+	else
+		warning('Cannot locate fsl.sh, skipping FSL function');
+		return;
+	end
+	FSLinit2 = 'PATH=${FSLDIR}/bin:${PATH};';
+	FSLinit3 = 'export FSLDIR PATH;';
+
+	FSLinit = [FSLinit0 FSLinit1 FSLinit2 FSLinit3];
+
+	if OutputZipping
+		FSLoutput = 'FSLOUTPUTTYPE=NIFTI_GZ; export FSLOUTPUTTYPE; ';
+		OutputString = '.nii.gz';
+	else
+		FSLoutput = 'FSLOUTPUTTYPE=NIFTI; export FSLOUTPUTTYPE; ';
+		OutputString = '.nii';
+	end
+
+
+	%% Check FSL version
+	pathVersion = fullfile(RootFSLdir, 'etc', 'fslversion');
+	if ~exist(pathVersion, 'file')
+		warning('Couldnt detect FSL version');
+	else
+		FSLversion = xASL_str2num(load(pathVersion, '-ascii'));
+		if FSLversion<6
+			warning('FSL version lower than 6 detected, this has not been tested yet');
+			fprintf('Consider updating your FSL version\n');
+		end
+	end
 end
-FSLinit2 = 'PATH=${FSLDIR}/bin:${PATH};';
-FSLinit3 = 'export FSLDIR PATH;';
-
-FSLinit = [FSLinit0 FSLinit1 FSLinit2 FSLinit3];
-
-if OutputZipping
-    FSLoutput = 'FSLOUTPUTTYPE=NIFTI_GZ; export FSLOUTPUTTYPE; ';
-    OutputString = '.nii.gz';
-else
-    FSLoutput = 'FSLOUTPUTTYPE=NIFTI; export FSLOUTPUTTYPE; ';
-    OutputString = '.nii';
-end
-
-
-%% Check FSL version
-pathVersion = fullfile(RootFSLdir, 'etc', 'fslversion');
-if ~exist(pathVersion, 'file')
-    warning('Couldnt detect FSL version');
-else
-    FSLversion = xASL_str2num(load(pathVersion, '-ascii'));
-    if FSLversion<6
-        warning('FSL version lower than 6 detected, this has not been tested yet');
-        fprintf('Consider updating your FSL version\n');
-    end
-end
-
 
 %% Prepend the correct FSL directory if missing
 if length(FSLCommand)>5 && strcmp(FSLCommand(1:5),'/bin/')
@@ -131,7 +135,7 @@ if length(FSLCommand)>5 && strcmp(FSLCommand(1:5),'/bin/')
 		FSLCommand = [FSLdir FSLCommand(5:end)];
 	else
 		warning('Cannot locate the command, skipping');
-        return;
+		return;
 	end
 end
 

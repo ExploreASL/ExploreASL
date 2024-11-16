@@ -108,16 +108,30 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_qua
 
     %% 4. Create option_file that contains options which are passed to the FSL command
     % FSLOptions is a character array containing CLI args for the BASIL/FABBER command
-	% Define if BASIL or FABBER is used - multiTE needs FABBER 
-	if (isfield(x.modules.asl, 'bQuantifyMultiTE') && x.modules.asl.bQuantifyMultiTE) || bQuantifyMultiTE
-		bUseFabber = 1;
-        FSLfunctionName = 'fabber_asl';
+	
+	% Define if BASIL or FABBER is used - multiTE needs FABBER. VABY is an alternative
+	% Allow external input of quantification type
+	if isfield(x, 'external') && isfield(x.external, 'ExternalQuantificationType')
+		strQuantificationType = x.external.ExternalQuantificationType;
 	else
-		bUseFabber = 0;
-        FSLfunctionName = 'basil';
+		if (isfield(x.modules.asl, 'bQuantifyMultiTE') && x.modules.asl.bQuantifyMultiTE) || bQuantifyMultiTE
+			strQuantificationType = 'FABBER';
+		else
+			strQuantificationType = 'BASIL';
+		end
 	end
 
-	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, bUseFabber, PWI4D_json, pathFSLInput, pathFSLOutput);
+	% Define the correct command name
+	switch (lower(strQuantificationType))
+		case 'basil'
+			FSLfunctionName = 'basil';
+		case 'fabber'
+			FSLfunctionName = 'fabber_asl';
+		case 'vaby'
+			FSLfunctionName = 'vaby_asl';
+	end
+
+	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, strQuantificationType, PWI4D_json, pathFSLInput, pathFSLOutput);
 
     %% 5. Run BASIL and retrieve CBF output
     [~, resultFSL] = xASL_fsl_RunFSL([FSLfunctionName ' ' FSLOptions], x);
@@ -132,9 +146,25 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_qua
     fprintf('%s\n', 'The following warning (if mentioned above) can be ignored:');
     fprintf('%s\n', '/.../fsl/bin/basil: line 124: imcp: command not found');
 
-    % CBF/nocalib, mean fit (->> is this what "ftiss" means?)
-    pathBasilCBF = xASL_adm_GetFileList(pathFSLOutput, '^mean_ftiss\.nii$', 'FPListRec');
-    
+
+	% Set the correct paths to the output files based on the Quantification type
+	switch (lower(strQuantificationType))
+		case {'basil', 'fabber'}
+			% CBF/nocalib, mean fit (->> is this what "ftiss" means?)
+			pathBasilCBF = xASL_adm_GetFileList(pathFSLOutput, '^mean_ftiss\.nii$', 'FPListRec');
+			pathBasilATT = xASL_adm_GetFileList(pathFSLOutput, '^mean_delttiss\.nii$', 'FPListRec');
+			pathBasilITT = xASL_adm_GetFileList(pathFSLOutput, '^mean_itt\.nii$', 'FPListRec');
+			pathBasilABV = xASL_adm_GetFileList(pathFSLOutput, '^mean_fblood\.nii$', 'FPListRec');
+			pathFabberTex = xASL_adm_GetFileList(pathFSLOutput, '^mean_T_exch\.nii$', 'FPListRec');
+		case 'vaby'
+			pathBasilCBF = xASL_adm_GetFileList(pathFSLOutput, '^mean_cbf\.nii$', 'FPListRec');
+			pathBasilATT = xASL_adm_GetFileList(pathFSLOutput, '^mean_att\.nii$', 'FPListRec');
+			pathBasilITT = xASL_adm_GetFileList(pathFSLOutput, '^mean_itt\.nii$', 'FPListRec');
+			pathBasilABV = xASL_adm_GetFileList(pathFSLOutput, '^mean_fblood\.nii$', 'FPListRec');
+			pathFabberTex = xASL_adm_GetFileList(pathFSLOutput, '^mean_texch\.nii$', 'FPListRec');
+	end
+
+        % Check and load all output files
 	if isempty(pathBasilCBF)
         error([FSLfunctionName ' failed']);
 	end
@@ -143,19 +173,20 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_qua
     CBF_nocalib = xASL_io_Nifti2Im(pathBasilCBF);
     
     % ATT
-	pathBasilATT = xASL_adm_GetFileList(pathFSLOutput, '^mean_delttiss\.nii$', 'FPListRec');
 	if ~isempty(pathBasilATT)
 		ATT_map = xASL_io_Nifti2Im(pathBasilATT{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
+
+	if ~isempty(pathBasilITT)
+		ITT_map = xASL_io_Nifti2Im(pathBasilITT{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+	end
     
     % ABV
-    pathBasilABV = xASL_adm_GetFileList(pathFSLOutput, '^mean_fblood\.nii$', 'FPListRec');
 	if ~isempty(pathBasilABV)
 		ABV_map = xASL_io_Nifti2Im(pathBasilABV{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
     
     % Tex
-    pathFabberTex = xASL_adm_GetFileList(pathFSLOutput, '^mean_T_exch\.nii$', 'FPListRec');
 	if ~isempty(pathFabberTex)
 		Tex_map = xASL_io_Nifti2Im(pathFabberTex{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
