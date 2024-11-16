@@ -272,7 +272,10 @@ else
 end
 
 if length(unique(jsonPWI4D.Q.EchoTime)) > 1
-	strQuantificationType = 'FABBER';
+	% For multi-echo, allow FABBER or VABY, but switch BASIL to FABBER
+	if strcmpi(strQuantificationType, 'BASIL')
+		strQuantificationType = 'FABBER';
+	end
 end
 
 if ~isempty(regexpi(strQuantificationType, 'basil', 'once'))
@@ -324,6 +327,9 @@ switch (lower(strQuantificationType))
 		FSLOptions = ['-@ ' xASL_adm_UnixPath(pathFSLOptions, ispc)];
 	case 'basil'
 		FSLOptions = ['--optfile ' xASL_adm_UnixPath(pathFSLOptions, ispc)];
+	case 'vaby'
+		% VABY takes no options file
+		FSLOptions = '';
 end
 
 FIDoptionFile = fopen(pathFSLOptions, 'w+');
@@ -332,6 +338,8 @@ switch (lower(strQuantificationType))
 		fprintf(FIDoptionFile, '# FABBER options written by ExploreASL\n');
 	case 'basil'
 		fprintf(FIDoptionFile, '# BASIL options written by ExploreASL\n');
+	case 'vaby'
+		fprintf(FIDoptionFile, '# VABY options written by ExploreASL\n');
 end
 
 % Define basic paths
@@ -341,6 +349,11 @@ switch (lower(strQuantificationType))
 		fprintf(FIDoptionFile, '--data=%s\n', xASL_adm_UnixPath(pathFSLInput, ispc));
 
 	case 'basil'
+		% Path to input and output
+		FSLOptions = [FSLOptions ' -o ' xASL_adm_UnixPath(pathFSLOutput, ispc)];
+		FSLOptions = [FSLOptions ' -i ' xASL_adm_UnixPath(pathFSLInput, ispc)];
+
+	case 'vaby'
 		% Path to input and output
 		FSLOptions = [FSLOptions ' -o ' xASL_adm_UnixPath(pathFSLOutput, ispc)];
 		FSLOptions = [FSLOptions ' -i ' xASL_adm_UnixPath(pathFSLInput, ispc)];
@@ -360,26 +373,39 @@ if x.modules.asl.bMaskingBASIL
 				fprintf(FIDoptionFile, '--mask=%s\n', xASL_adm_UnixPath(x.P.Path_BrainMaskProcessing, ispc));
 			case 'basil'
 				FSLOptions = [FSLOptions ' -m ' xASL_adm_UnixPath(x.P.Path_BrainMaskProcessing, ispc)];
+			case 'vaby'
+				FSLOptions = [FSLOptions ' -m ' xASL_adm_UnixPath(x.P.Path_BrainMaskProcessing, ispc)];				
 		end
 	end
 end
 
 %% 2. Basic model and tissue parameters
 % Basic model options
-if ~isempty(regexpi(strQuantificationType, 'fabber', 'once'))
-    fprintf(FIDoptionFile, '--method=vb\n');
-	fprintf(FIDoptionFile, '--model=asl_multite\n');
-	fprintf(FIDoptionFile, '--infertexch\n'); % Fit Tex
-	fprintf(FIDoptionFile, '--inferitt\n');   % Fit ATT
+switch (lower(strQuantificationType))
+	case 'fabber'
+		fprintf(FIDoptionFile, '--method=vb\n');
+		fprintf(FIDoptionFile, '--model=asl_multite\n');
+		fprintf(FIDoptionFile, '--infertexch\n'); % Fit Tex
+		fprintf(FIDoptionFile, '--inferitt\n');   % Fit ATT
+	case 'vaby'
+		FSLOptions = [FSLOptions ' --infer-itt'];
+		FSLOptions = [FSLOptions ' --infer-texch'];
 end
 
 % Basic fitting and output options
-if ~isempty(regexpi(strQuantificationType, 'fabber', 'once'))
-	fprintf(FIDoptionFile, '--save-var\n');
-	fprintf(FIDoptionFile, '--save-residuals\n');
-	fprintf(FIDoptionFile, '--allow-bad-voxels\n');
-	fprintf(FIDoptionFile, '--save-model-fit\n');
-	fprintf(FIDoptionFile, '--noise=white\n');
+switch (lower(strQuantificationType))
+	case 'fabber'
+		fprintf(FIDoptionFile, '--save-var\n');
+		fprintf(FIDoptionFile, '--save-residuals\n');
+		fprintf(FIDoptionFile, '--allow-bad-voxels\n');
+		fprintf(FIDoptionFile, '--save-model-fit\n');
+		fprintf(FIDoptionFile, '--noise=white\n');
+	case 'vaby'
+		FSLOptions = [FSLOptions ' --save-var'];
+		FSLOptions = [FSLOptions ' --save-residuals'];
+		FSLOptions = [FSLOptions ' --allow-bad-voxels'];
+		FSLOptions = [FSLOptions ' --save-model-fit'];
+		FSLOptions = [FSLOptions ' --max-iterations=100'];
 end
 
 % Basic tissue parameters
@@ -498,6 +524,23 @@ switch lower(x.Q.LabelingType)
 				% Future extension - specify the repetitions explicitly
 				%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
 				%fprintf(FIDoptionFile, '--repeats=1\n');
+			case 'vaby'
+				% Printing the values in the commandline (PLD=plds, LD=taus)
+				for iPLD = 1:length(PLDs)
+					if iPLD == 1
+						FSLOptions = [FSLOptions ' --plds=' fprintf('%.2f', PLDs(iPLD))];
+					else
+						FSLOptions = [FSLOptions ',' fprintf('%.2f', PLDs(iPLD))];
+					end
+				end
+
+				for iTE = 1:length(TEs) %So for each volume, we print a TE value
+					if iTE == 1
+						FSLOptions = [FSLOptions ' --tes=' fprintf('%.2f', TEs(iTE))];
+					else
+						FSLOptions = [FSLOptions ',' fprintf('%.2f', TEs(iTE))];
+					end
+				end
 			case 'basil'
 				% Specify that we run the PCASL/CASL model
 				fprintf(FIDoptionFile, '--casl\n');
@@ -513,13 +556,24 @@ switch lower(x.Q.LabelingType)
 				end
 		end
 
-		% Print labeling durations
-		if bQuantifyMultiPLD
-			for iLabDurs = 1:length(LabDurs)
-				fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
-			end
-		else
-			fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs(1));
+		switch (lower(strQuantificationType))
+			case {'fabber','basil'}
+				% Print labeling durations
+				if bQuantifyMultiPLD
+					for iLabDurs = 1:length(LabDurs)
+						fprintf(FIDoptionFile, '--tau%d=%.2f\n', iLabDurs, LabDurs(iLabDurs));
+					end
+				else
+					fprintf(FIDoptionFile, '--tau=%.2f\n', LabDurs(1));
+				end
+			case 'vaby'
+				for iLD = 1:length(LabDurs) 
+					if iLD == 1
+						FSLOptions = [FSLOptions ' --taus=' fprintf('%.2f', LabDurs(iLD))];
+					else
+						FSLOptions = [FSLOptions ',' fprintf('%.2f', LabDurs(iLD))];
+					end
+				end
 		end
 end
 
