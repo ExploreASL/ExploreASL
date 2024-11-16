@@ -25,13 +25,11 @@ function [FSLdir, x, RootWSLdir] = xASL_fsl_SetFSLdir(x, bAutomaticallyDetectFSL
 % 
 % EXAMPLE: FSLdir = xASL_fsl_SetFSLdir(x);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
-
-
 
 
 %% Admin
@@ -55,7 +53,14 @@ if isfield(x,'FSLdir') && isfield(x,'RootFSLdir') && ~isempty(x.FSLdir) && ~isem
     FSLdir = x.FSLdir;
     RootWSLdir = x.RootFSLdir;
     return;
-elseif isfield(x, 'FSLdir') && ~isfield(x, 'RootFSLdir') && ~ispc
+end
+
+% For VABY quantification, we cannot run automatic detection
+if isfield(x, 'external') && isfield(x.external, 'ExternalQuantificationType') && strcmp(x.external.ExternalQuantificationType, 'VABY')
+	error('External quantification with VABY requested. You need to provide path in x.FSLdir and x.RootFSLdir');
+end
+
+if isfield(x, 'FSLdir') && ~isfield(x, 'RootFSLdir') && ~ispc
 
     FSLdir = x.FSLdir;
 
