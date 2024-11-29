@@ -33,7 +33,7 @@ function [x, Result1] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, NicenessVa
 % 
 % EXAMPLE: xASL_fsl_RunFSL(FSLCommand, x);
 % __________________________________
-% Copyright (C) 2015-2022 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -88,7 +88,11 @@ end
 % Setup VABY quantification
 if isfield(x, 'external') && isfield(x.external, 'ExternalQuantificationType') && strcmp(x.external.ExternalQuantificationType, 'VABY')
 	FSLinit = '';
-
+	FSLoutput = '';
+	OutputString = '.nii';
+	if strcmp(FSLCommand(1:4),'vaby')
+		FSLCommand = fullfile(FSLdir, FSLCommand);
+	end
 else
 	%% Define FSL environment script (only declares variables, OK to repeat)
 	FSLinit0 = ['FSLDIR=' FSLdir ';'];

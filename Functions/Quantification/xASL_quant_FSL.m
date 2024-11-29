@@ -408,14 +408,28 @@ switch (lower(strQuantificationType))
 		FSLOptions = [FSLOptions ' --max-iterations=100'];
 end
 
-% Basic tissue parameters
-fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
-fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
+switch (lower(strQuantificationType))
+	case 'fabber'
+		% Basic tissue parameters
+		fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
+		fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
 
-if ~isempty(regexpi(strQuantificationType, 'fabber', 'once'))
-	% T2-times needed for multi-TE quantification
-	fprintf(FIDoptionFile, '--t2b=%f\n', x.Q.T2art/1000);
-	fprintf(FIDoptionFile, '--t2=%f\n', x.Q.T2/1000);
+		% T2-times needed for multi-TE quantification
+		fprintf(FIDoptionFile, '--t2b=%f\n', x.Q.T2art/1000);
+		fprintf(FIDoptionFile, '--t2=%f\n', x.Q.T2/1000);
+	case 'basil'
+		% Basic tissue parameters
+		fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
+		fprintf(FIDoptionFile, '--t1=%f\n', x.Q.TissueT1/1000);
+
+	case 'vaby'
+		% Basic tissue parameters
+		FSLOptions = [FSLOptions, sprintf(' --t1b=%f', x.Q.BloodT1/1000)];
+		FSLOptions = [FSLOptions, sprintf(' --t1=%f', x.Q.TissueT1/1000)];
+
+		% T2-times needed for multi-TE quantification
+		FSLOptions = [FSLOptions, sprintf(' --t2b=%f', x.Q.T2art/1000)];
+		FSLOptions = [FSLOptions, sprintf(' --t2=%f', x.Q.T2/1000)];
 end
 
 %% 3. Basic acquisition parameters
@@ -458,44 +472,50 @@ switch lower(x.Q.LabelingType)
 		% First create a labeling duration vector of the same length
 		LabDurs = jsonPWI4D.Q.LabelingDuration/1000;
 		PLDs = jsonPWI4D.Q.Initial_PLD/1000;
-		% Normal multi-timepoint without multi-TE
-		TEs = [];
-		nTE = [];
 
-		% For FABBER and multi-TE, we have to group TEs
-		if ~isempty(regexpi(strQuantificationType, 'fabber', 'once'))
-			% Convert Echo Times to seconds and keep 4 decimal digits
-			% TEs are kept fully with the same number as volumes
-			TEs = round(jsonPWI4D.Q.EchoTime'/1000,3); 
+		switch (lower(strQuantificationType))
+			case 'fabber'
+				% For FABBER and multi-TE, we have to group TEs
 
-			% We go through the LabDurs, PLDs, and TEs and keep grouping similar LD+PLD with increasing TE into groups
-			LabDursGrouped = [];
-			PLDsGrouped = [];
-			nTEGrouped = [];
-			iTE = 1;
-			
-			while iTE<=length(TEs)
-				% We define a block
-				iTEstart = iTE;
-				iTEend   = iTE;
+				% Convert Echo Times to seconds and keep 4 decimal digits
+				% TEs are kept fully with the same number as volumes
+				TEs = round(jsonPWI4D.Q.EchoTime'/1000,3);
 
-				% We enlarge the block if PLD and LD are similar, but TE increasing
-				while (iTEend+1 <= length(TEs)) &&... % There are more values
-						(LabDurs(iTEend+1)==LabDurs(iTEstart)) && (PLDs(iTEend+1)==PLDs(iTEstart)) &&... % The further PLDs and LD are matching the block
-						(TEs(iTEend+1)>TEs(iTEend)) % And TE increases
-					% If all fulfilled, then we increase the block
-					iTEend = iTEend+1;
+				% We go through the LabDurs, PLDs, and TEs and keep grouping similar LD+PLD with increasing TE into groups
+				LabDursGrouped = [];
+				PLDsGrouped = [];
+				nTEGrouped = [];
+				iTE = 1;
+
+				while iTE<=length(TEs)
+					% We define a block
+					iTEstart = iTE;
+					iTEend   = iTE;
+
+					% We enlarge the block if PLD and LD are similar, but TE increasing
+					while (iTEend+1 <= length(TEs)) &&... % There are more values
+							(LabDurs(iTEend+1)==LabDurs(iTEstart)) && (PLDs(iTEend+1)==PLDs(iTEstart)) &&... % The further PLDs and LD are matching the block
+							(TEs(iTEend+1)>TEs(iTEend)) % And TE increases
+						% If all fulfilled, then we increase the block
+						iTEend = iTEend+1;
+					end
+					% We add the block to the grouped vector
+					LabDursGrouped = [LabDursGrouped, LabDurs(iTEstart)];
+					PLDsGrouped = [PLDsGrouped, PLDs(iTEstart)];
+					nTEGrouped = [nTEGrouped, iTEend-iTEstart+1];
+					iTE = iTEend+1;
 				end
-				% We add the block to the grouped vector
-				LabDursGrouped = [LabDursGrouped, LabDurs(iTEstart)];
-				PLDsGrouped = [PLDsGrouped, PLDs(iTEstart)];
-				nTEGrouped = [nTEGrouped, iTEend-iTEstart+1];
-				iTE = iTEend+1;
-			end
 
-			LabDurs = LabDursGrouped;
-			PLDs = PLDsGrouped;
-			nTE = nTEGrouped;
+				LabDurs = LabDursGrouped;
+				PLDs = PLDsGrouped;
+				nTE = nTEGrouped;
+			case 'vaby'
+				TEs = round(jsonPWI4D.Q.EchoTime'/1000,3);
+				nTE = length(TEs);
+			case 'basil'
+				% Normal multi-timepoint without multi-TE
+				TEs = [];
+				nTE = [];
 		end
 
 		switch (lower(strQuantificationType))
@@ -528,17 +548,17 @@ switch lower(x.Q.LabelingType)
 				% Printing the values in the commandline (PLD=plds, LD=taus)
 				for iPLD = 1:length(PLDs)
 					if iPLD == 1
-						FSLOptions = [FSLOptions ' --plds=' fprintf('%.2f', PLDs(iPLD))];
+						FSLOptions = [FSLOptions ' --plds=' sprintf('%.2f', PLDs(iPLD))];
 					else
-						FSLOptions = [FSLOptions ',' fprintf('%.2f', PLDs(iPLD))];
+						FSLOptions = [FSLOptions ',' sprintf('%.2f', PLDs(iPLD))];
 					end
 				end
 
 				for iTE = 1:length(TEs) %So for each volume, we print a TE value
 					if iTE == 1
-						FSLOptions = [FSLOptions ' --tes=' fprintf('%.2f', TEs(iTE))];
+						FSLOptions = [FSLOptions ' --tes=' sprintf('%.3f', TEs(iTE))];
 					else
-						FSLOptions = [FSLOptions ',' fprintf('%.2f', TEs(iTE))];
+						FSLOptions = [FSLOptions ',' sprintf('%.3f', TEs(iTE))];
 					end
 				end
 			case 'basil'
@@ -569,9 +589,9 @@ switch lower(x.Q.LabelingType)
 			case 'vaby'
 				for iLD = 1:length(LabDurs) 
 					if iLD == 1
-						FSLOptions = [FSLOptions ' --taus=' fprintf('%.2f', LabDurs(iLD))];
+						FSLOptions = [FSLOptions ' --taus=' sprintf('%.2f', LabDurs(iLD))];
 					else
-						FSLOptions = [FSLOptions ',' fprintf('%.2f', LabDurs(iLD))];
+						FSLOptions = [FSLOptions ',' sprintf('%.2f', LabDurs(iLD))];
 					end
 				end
 		end
