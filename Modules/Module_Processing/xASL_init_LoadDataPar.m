@@ -185,9 +185,6 @@ end
 if ~bAtlasTissueMatch
     fprintf('%s\n', 'When ROI atlases are provided in S.Atlases, their tissue types');
     fprintf('%s\n', 'need to be provided as well in dataPar.json as S.TissueMasking, with either option ''GM'', ''WM'', ''WB'' (==GM+WM).');
-    fprintf('%s\n', 'The default values when Atlases and Tissues masking are not provided are:');
-    fprintf('%s\n', 'S:{Atlases:["TotalGM", "DeepWM"],');
-    fprintf('%s\n\n', '  TissueMasking:["GM", "WM"]}');
 
 	% No match means that we have to end it
     error('Not the same number of ROI atlases as subject-wise tissue-types, skipping');
