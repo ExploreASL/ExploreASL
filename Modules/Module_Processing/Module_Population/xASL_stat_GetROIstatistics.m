@@ -525,15 +525,18 @@ for iSubject=1:x.dataset.nSubjects
         Data3D = []; % initialize empty variable
 		Data4D = []; % initialize empty variable
 
-		if x.S.InputNativeSpace %% PM: we repeat same code here twice
-			FilePath = fullfile(x.dir.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
-			if xASL_exist(FilePath, 'file')
-				Data3D = xASL_io_Nifti2Im(FilePath);
-				DataIm = xASL_im_IM2Column(Data3D, x.S.masks.WBmask, false);
+		% Configure the file names for native/standard space analyzis
+		if x.S.InputNativeSpace 
+			filePathDir = x.dir.SESSIONDIR;
+			% Some DataTypes have a prefix in standard space but not in native space: e.g., qCBF and rc1T1
+			if isempty(regexp(x.S.InputDataStr(1), '(q|r)', 'once'))
+				filePathDataStr = x.S.InputDataStr;
+			else
+				filePathDataStr = x.S.InputDataStr(2:end);
 			end
 
 			% Also load the 4D variant if it exists
-			FilePath = fullfile(x.dir.SESSIONDIR, [x.S.InputDataStrNative '4D.nii']); % We write it general, but it will only exist for CBF
+			FilePath = fullfile(x.dir.SESSIONDIR, [filePathDataStr '4D.nii']); % We write it general, but it will only exist for CBF
 			if xASL_exist(FilePath, 'file')
 				Data4D = xASL_io_Nifti2Im(FilePath);
 				Data4DIm = Data4D(logical(repmat(x.S.masks.WBmask, [1 1 1 size(Data4D, 4)])));
@@ -548,30 +551,35 @@ for iSubject=1:x.dataset.nSubjects
                 end
             else
                 VascularMask = xASL_im_IM2Column(ones(size(x.S.masks.WBmask)), x.S.masks.WBmask);
-            end
-		else
-			FilePath = fullfile(x.D.PopDir, [x.S.InputDataStr '_' x.S.SubjectSessionID{SubjSess,1} '.nii']);
-			if xASL_exist(FilePath, 'file')
-				Data3D = xASL_io_Nifti2Im(FilePath,[121 145 121]);
-				DataIm = xASL_im_IM2Column(Data3D, x.S.masks.WBmask, false);
 			end
+			filePathSubject = '';
+		else
+			filePathDir = x.D.PopDir;
+			filePathDataStr = x.S.InputDataStr;
+			filePathSubject = ['_' x.S.SubjectSessionID{SubjSess,1}];
+		end
 
-            if x.S.bMasking(2)==1
-                % Load vascular mask (this is done subject-wise)
-                FilePath = fullfile(x.D.PopDir, ['MaskVascular_' x.S.SubjectSessionID{SubjSess,1} '.nii']);
-                if xASL_exist(FilePath,'file')
-                    VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.S.masks.WBmask);
-                end
-            else
-                VascularMask = xASL_im_IM2Column(ones(size(x.S.masks.WBmask)), x.S.masks.WBmask);
-            end
+		FilePath = fullfile(filePathDir, [filePathDataStr filePathSubject '.nii']);
+		if xASL_exist(FilePath, 'file')
+			Data3D = xASL_io_Nifti2Im(FilePath,[121 145 121]);
+			DataIm = xASL_im_IM2Column(Data3D, x.S.masks.WBmask, false);
+		end
+
+		if x.S.bMasking(2)==1
+			% Load vascular mask (this is done subject-wise)
+			FilePath = fullfile(filePathDir, ['MaskVascular' filePathSubject '.nii']);
+			if xASL_exist(FilePath,'file')
+				VascularMask = xASL_im_IM2Column(logical(xASL_io_Nifti2Im(FilePath)), x.S.masks.WBmask);
+			end
+		else
+			VascularMask = xASL_im_IM2Column(ones(size(x.S.masks.WBmask)), x.S.masks.WBmask);
 		end
 
 		if numel(DataIm)==1
 			DataIm = zeros([sum(x.S.masks.WBmask(:)) 1],'single');
 			VascularMask = logical(DataIm);
 			DataIm(:) = NaN;
-        end
+		end
 
         if isempty(Data3D)
             warning('Something went wrong loading the data, verify if the data are correctly processed and present in the population folder');

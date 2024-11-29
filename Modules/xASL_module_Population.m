@@ -245,16 +245,6 @@ if ~x.mutex.HasState(StateName{8})
     % Iterate over DataTypes
     for iDataType=1:length(x.S.DataTypes)
         x.S.InputDataStr = x.S.DataTypes{iDataType};
-        
-        if isempty(regexp(x.S.InputDataStr(1), '(q|r)', 'once'))
-            % Some DataTypes have a prefix in standard space but not in
-            % native space: e.g.,
-            % qCBF in standard space is CBF in native space
-            % rc1T1 in standard space is c1T1 in native space
-            x.S.InputDataStrNative = x.S.InputDataStr;
-        else
-            x.S.InputDataStrNative = x.S.InputDataStr(2:end);
-        end
     
         % Iterate over atlases
         x.dir.dirAtlas = fullfile(x.opts.MyPath, 'external', 'Atlases');
@@ -296,12 +286,6 @@ if ~x.mutex.HasState(StateName{8})
                 x.S.InputNativeSpace = 1;
                 x.S.InputAtlasNativeName = [x.S.Atlases{iAtlas} '_Atlas'];
                 xASL_wrp_GetROIstatistics(x);
-                % ROI statistics (optional: native space)
-                if x.modules.population.bNativeSpaceAnalysis
-                    x.S.InputNativeSpace = 1;
-                    x.S.InputAtlasNativeName = [x.S.Atlases{iAtlas} '_Atlas'];
-                    xASL_wrp_GetROIstatistics(x);
-                end
             end
         end
     
