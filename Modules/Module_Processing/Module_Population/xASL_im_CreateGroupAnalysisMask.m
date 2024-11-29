@@ -57,19 +57,19 @@ if x.dataset.nSubjects * x.dataset.nSessions < 16
 end
 
 % Here, we run a subfunction to avoid redundant code repetition
-bSkipStandard = false;
+bCreateStandardSpaceMasks = true;
 
-[PathTemplateSusceptibilityMask, bSkipStandard] = xASL_sub_CheckTemplatePath('^MaskSusceptibility', x, bSkipStandard);
-[PathFoV, bSkipStandard] = xASL_sub_CheckTemplatePath('^FoV', x, bSkipStandard);
-[PathVascularMask, bSkipStandard] = xASL_sub_CheckTemplatePath('^MaskVascular', x, bSkipStandard);
-[PathT1, bSkipStandard] = xASL_sub_CheckTemplatePath('^T1', x, bSkipStandard);
+[PathTemplateSusceptibilityMask, bCreateStandardSpaceMasks] = xASL_sub_CheckTemplatePath('^MaskSusceptibility', x, bCreateStandardSpaceMasks);
+[PathFoV, bCreateStandardSpaceMasks] = xASL_sub_CheckTemplatePath('^FoV', x, bCreateStandardSpaceMasks);
+[PathVascularMask, bCreateStandardSpaceMasks] = xASL_sub_CheckTemplatePath('^MaskVascular', x, bCreateStandardSpaceMasks);
+[PathT1, bCreateStandardSpaceMasks] = xASL_sub_CheckTemplatePath('^T1', x, bCreateStandardSpaceMasks);
 
 % Not sure if this is the same for the NativeSpaceAnalysis, this still has to be fixed by Jan.
-if bSkipStandard && ~x.modules.population.bNativeSpaceAnalysis
+if ~bCreateStandardSpaceMasks && ~x.modules.population.bNativeSpaceAnalysis
     return;
 end
 
-if ~bSkipStandard
+if bCreateStandardSpaceMasks
     % PM: these fallbacks for anatomical templates could be removed,
     % because the ASL modules won't run without anatomical images.
     % If a dataset doesn't have T1w images, these can be supplied using 
@@ -182,7 +182,7 @@ if x.modules.population.bNativeSpaceAnalysis
 	end
 end
 
-if bSkipStandard
+if ~bCreateStandardSpaceMasks
 	return;
 end
 
@@ -240,14 +240,14 @@ end
 %% =================================================================
 %% =================================================================
 
-function [outputPath, bSkipStandard] = xASL_sub_CheckTemplatePath(preFix, x, bSkipStandard)
+function [outputPath, bCreateStandardSpaceMasks] = xASL_sub_CheckTemplatePath(preFix, x, bCreateStandardSpaceMasks)
 %xASL_sub_CheckTemplatePath subfunction for checking & initializing the template path
 
     outputPath = xASL_adm_GetFileList(x.D.TemplatesStudyDir, [preFix x.S.TemplateNumberName '_bs-mean_Unmasked\.nii$'], 'FPList', [1 1]);
     
     if isempty(outputPath)
         warning(['Skipping because of missing template: ' preFix]);
-        bSkipStandard = true;
+        bCreateStandardSpaceMasks = false;
     elseif numel(outputPath)>1
         warning(['Multiple templates found for ' preFix x.S.TemplateNumberName '_bs-mean_Unmasked.nii']);
         % This situation should not occur
