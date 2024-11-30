@@ -257,7 +257,7 @@ if ~x.mutex.HasState(StateName{8})
             % 'GM' = gray matter
             % 'WM' = white matter
             % 'WB' = whole brain (= GM+WM)
-            x.S.TissueMaskingLocal = x.S.TissueMasking(iAtlas);
+            x.S.TissueMaskingLocal = x.S.TissueMasking{iAtlas};
             
             % Find the path of the atlas
             pathAtlas = fullfile(x.dir.dirAtlas, [x.S.Atlases{iAtlas} '.nii']);
@@ -288,10 +288,7 @@ if ~x.mutex.HasState(StateName{8})
                 xASL_wrp_GetROIstatistics(x);
             end
         end
-    
-        % Check if we should do the same for Lesion or ROI masks (i.e. individual "atlases")
-		% PM: not yet developed/tested in native space
-        
+            
 		% Read the names of the lesion files
 		LesionROIList = xASL_adm_GetFileList(x.D.PopDir, '(?i)^r(Lesion|ROI)_(T1|FLAIR|T2)_\d*_.*\.nii', 'List', [0 Inf]);
 		% Go through the lesions and remove the subject names
@@ -306,12 +303,26 @@ if ~x.mutex.HasState(StateName{8})
 		% Obtain a unique list of lesion names without the subject name
 		LesionUniqueROIList = unique(LesionROIList);
 
+		% Standard space analyzis in a specific ROI with no tissue restriction
         x.S.InputNativeSpace = 0;
 		x.S.bSubjectSpecificROI = true;
-        for iROI = 1:length(LesionUniqueROIList)
+		x.S.TissueMaskingLocal = 'WB';
+		for iROI = 1:length(LesionUniqueROIList)
             x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iROI});
             xASL_wrp_GetROIstatistics(x);
-        end
+		end
+
+		% Lesion/ROI statistics in native space
+		if x.modules.population.bNativeSpaceAnalysis
+			x.S.InputNativeSpace = 1;
+			x.S.bSubjectSpecificROI = true;
+			x.S.TissueMaskingLocal = 'WB';
+			for iROI = 1:length(LesionUniqueROIList)
+				% Replace 'r' at the start with 'PV'
+				x.S.InputAtlasNativeName = ['PV' LesionUniqueROIList{iROI}(2:end-1)];
+				xASL_wrp_GetROIstatistics(x);
+			end
+		end
     end
 
     x.mutex.AddState(StateName{8});

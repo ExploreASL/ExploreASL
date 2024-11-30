@@ -186,15 +186,14 @@ fprintf('\n');
 bWarnedPVWMH = false;
 namesROIlocal = x.S.NamesROI;
 
-% Append TissueMasking e.g. GM, WM, CSF to the ROI name
-namesROIlocal = cellfun(@(y) [y x.S.TissueMaskingLocal{1}], namesROIlocal, 'UniformOutput',false);
-
-
 %% 0.b Native space atlas input
 if x.S.InputNativeSpace
 	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
+	if x.S.bSubjectSpecificROI
+		inputAtlasTmp = round(inputAtlasTmp);
+	end
 	atlasN = max(inputAtlasTmp(:));
-	x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
+	x.S.InputMasks = zeros(length(x.LeftMask), atlasN);
 	for kk = 1:atlasN
 		x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp == kk,x.S.masks.WBmask);
 	end
@@ -342,6 +341,9 @@ for iSubject=1:x.dataset.nSubjects
 				x.LeftMask = xASL_im_IM2Column(x.LeftMask, x.S.masks.WBmask);
 
 				inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']));
+				if x.S.bSubjectSpecificROI
+					inputAtlasTmp = round(inputAtlasTmp);
+				end
 				atlasN = max(inputAtlasTmp(:));
 				x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
 				for kk = 1:atlasN
@@ -653,7 +655,7 @@ for iSubject=1:x.dataset.nSubjects
 				pvPrimary = ones(size(DataIm)); % no masking
 				bSkipPVC = 1;
             else
-                switch x.S.TissueMaskingLocal{1}
+                switch x.S.TissueMaskingLocal
                     case 'GM'
                         % we want GM, so keep tissue masks as they are
 				        pvPrimary = pGM;
