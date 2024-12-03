@@ -511,6 +511,11 @@ iState = 9;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-2})
 	xASL_wrp_VisualQC_ASL(x);
 	x.mutex.AddState(StateName{iState});
+	
+	% Delete the temporary CBF4D image unless the option to keep it is on
+	if ~x.modules.asl.SaveCBF4D
+		xASL_delete(x.P.Path_CBF4D);
+	end
 else
 	if  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
 end
