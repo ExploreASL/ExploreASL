@@ -149,6 +149,22 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
 	CBF4DmaskedWM = CBF4Dmasked(repmat(WMmasked > 0.7, [1 1 1 size(imCBF4D, 4)])); % Calculate the value on WM>0.7 mask
 	CBF4DmaskedWM = reshape(CBF4DmaskedWM, [], size(imCBF4D, 4)); 
 
+	% Mean of temporal SD in GM and WM
+	ASL.CBF_GM_Mean_Temporal_SD = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 2), 1);
+	ASL.CBF_WM_Mean_Temporal_SD = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedWM, [], 2), 1);
+
+	ASL.SpatialCoV_GM_Temporal_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 1)./xASL_stat_MeanNan(CBF4DmaskedGM, 1), 2);
+	ASL.SpatialCoV_GM_Temporal_SD = xASL_stat_StdNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 1)./xASL_stat_MeanNan(CBF4DmaskedGM, 1), [], 2);
+
+	% Calculate diffCoV - this has to be done on the non-masked images as it needs the spatial information
+	diffCoV = zeros(1, size(imCBF4D, 4));
+	for iRepetition = 1:size(imCBF4D, 4)
+		diffCoV(iRepetition) = xASL_stat_ComputeDifferCoV(imCBF4D(:, :, :, iRepetition), pGM > 0.7);
+	end
+	ASL.DiffCoV_GM_Temporal_SD = xASL_stat_StdNan(diffCoV);
+	ASL.DiffCoV_GM_Temporal_Mean = xASL_stat_MeanNan(diffCoV);
+	
+
     %% -----------------------------------------------------------------------------------------------
     %% ASL acquisition
     KnownUnits = {'EchoTime' 'RepetitionTime' 'LabelingDuration' 'Initial_PLD'  'TotalReadoutTime' 'AcquisitionTime' 'SliceReadoutTime'};

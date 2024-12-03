@@ -1,10 +1,7 @@
 function diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask,bPVC,imGM,imWM,b3D)
 % Calculates spatial diff coefficient of variation (sCoV) in the image with optional partial volume correction.
 %
-% FORMAT: diffCoV = xASL_stat_ComputeDifferCoV(imCBF)
-%         diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask)
-%         diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask,bPVC,imGM,imWM)
-%         diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask,bPVC,imGM,imWM,b3D)
+% FORMAT: diffCoV = xASL_stat_ComputeDifferCoV(imCBF [,imMask, bPVC, imGM, imWM, b3D])
 %
 % INPUT:
 %   imCBF  - input CBF volume
@@ -130,7 +127,9 @@ if b3D
 end
     
 tempEdge = sqrt(tempEdge);
-pseudoCoV = sqrt(pseudoCoV);
+if bPVC == 2
+	pseudoCoV = sqrt(pseudoCoV);
+end
     
 imMask                  = imMask & isfinite(tempAverage);
     
