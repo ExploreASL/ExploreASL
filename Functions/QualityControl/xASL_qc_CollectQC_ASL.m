@@ -105,6 +105,7 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
     pGM = xASL_io_Nifti2Im(Path_pGM);
     pWM = xASL_io_Nifti2Im(Path_pWM);
     imCBF = xASL_io_Nifti2Im(x.P.Path_CBF);
+	imCBF4D = xASL_io_Nifti2Im(x.P.Path_CBF4D);
         
     if xASL_stat_SumNan(pGM(:))==0
         warning(['Empty image, invalid ' Path_pGM]);
@@ -114,12 +115,15 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
     end
     if xASL_stat_SumNan(imCBF(:))==0
         warning(['Empty image, invalid ' x.P.Path_CBF]);
+	end  
+	if xASL_stat_SumNan(imCBF4D(:))==0
+        warning(['Empty image, invalid ' x.P.Path_CBF4D]);
     end    
     
     imMask = (pGM+pWM)>0.5;
     CBFmasked = imCBF(imMask);
-    GMmasked = pGM(imMask);
-    WMmasked = pWM(imMask);
+	% Mask PWI4D but reshape the vector to have the time information in the 2nd dimension
+	CBF4Dmasked = reshape(imCBF4D(repmat(imMask,[1 1 1 size(imCBF4D, 4)])), length(CBFmasked), size(imCBF4D, 4));
 
     % Including vascular signal
     fprintf('%s\n', 'ASL QC: computing CBF...');
@@ -138,6 +142,12 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
     [ASL.CBF_GM_PVC2_mL100gmin, ASL.CBF_WM_PVC2_mL100gmin] = xASL_stat_ComputeMean(CBFmasked, (GMmasked+WMmasked)>0.5,[],2, 1, GMmasked, WMmasked);
     ASL.CBF_GM_WM_Ratio = ASL.CBF_GM_PVC2_mL100gmin/ASL.CBF_WM_PVC2_mL100gmin;
 
+	% Variation across time in PWI4D
+	CBF4DmaskedGM = CBF4Dmasked(repmat(GMmasked > 0.7, [1 1 1 size(imCBF4D, 4)])); % Calculate the value on GM>0.7 mask
+	CBF4DmaskedGM = reshape(CBF4DmaskedGM, [], size(imCBF4D, 4)); 
+
+	CBF4DmaskedWM = CBF4Dmasked(repmat(WMmasked > 0.7, [1 1 1 size(imCBF4D, 4)])); % Calculate the value on WM>0.7 mask
+	CBF4DmaskedWM = reshape(CBF4DmaskedWM, [], size(imCBF4D, 4)); 
 
     %% -----------------------------------------------------------------------------------------------
     %% ASL acquisition
