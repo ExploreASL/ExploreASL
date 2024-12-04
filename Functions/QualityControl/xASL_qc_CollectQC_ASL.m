@@ -91,7 +91,7 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
 
 
     %% 3. Calculate ASL derivatives
-    x = xASL_qc_CollectQC_ASL_CalculateDerivatives(x);
+    ASL = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL);
     % Here we calculate a lot of native space ASL derivatives that can be used for QC
     % or other analyses without running the Population module
 
@@ -188,7 +188,7 @@ end
 %% ========================================================================================
 
 
-function [x] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x)
+function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
 %xASL_qc_CollectQC_ASL_CalculateDerivatives Calculate ASL parameters
 %
 % With the following steps:
@@ -206,7 +206,7 @@ function [x] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x)
 
 
     %% Get CBF & spatial CoV
-    fprintf('%s\n', 'ASL QC: computing CBF...');
+    fprintf('%s\n', 'ASL QC: computing native space ASL derivatives...');
 
     %% 1. Admin
 	if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
@@ -322,22 +322,19 @@ function [x] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x)
     % Naming: 
     % ASL.<parameter calculated first>_<over which ROI>_temporal<parameter calculated second>
 
-    ASL.SpatialCoV_WB_temporalMean = xASL_stat_MeanNan(CBF.sCoV);
-    ASL.SpatialCoV_WB_temporalSD = xASL_stat_StdNan(CBF.sCoV);
+    ASL.SpatialCoV_WB_temporalMean = 100.*xASL_stat_MeanNan(CBF.sCoV);
+    ASL.SpatialCoV_WB_temporalSD = 100.*xASL_stat_StdNan(CBF.sCoV);
 
     ASL.SpatialSD_WB_temporalMean = xASL_stat_MeanNan(CBF.SD);
     ASL.SpatialSD_WB_temporalSD = xASL_stat_StdNan(CBF.SD);
 
-    ASL.DiffCoV_WB_temporalMean = xASL_stat_MeanNan(CBF.diffCoV);
-    ASL.DiffCoV_WB_temporalSD = xASL_stat_StdNan(CBF.diffCoV);
+    ASL.DiffCoV_WB_temporalMean = 100.*xASL_stat_MeanNan(CBF.diffCoV);
+    ASL.DiffCoV_WB_temporalSD = 100.*xASL_stat_StdNan(CBF.diffCoV);
 	
 	%% VI. Mean of temporal SD
 	ASL.tSD_WB_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedWB, [], 2), 1);
     ASL.tSD_GM_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 2), 1);
 	ASL.tSD_WM_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedWM, [], 2), 1);
-
-	ASL.SpatialCoV_GM_Temporal_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 1)./xASL_stat_MeanNan(CBF4DmaskedGM, 1), 2);
-	ASL.SpatialCoV_GM_Temporal_SD = xASL_stat_StdNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 1)./xASL_stat_MeanNan(CBF4DmaskedGM, 1), [], 2);
 
 
 end
