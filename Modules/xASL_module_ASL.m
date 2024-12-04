@@ -512,7 +512,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-2})
 	xASL_wrp_VisualQC_ASL(x);
 	x.mutex.AddState(StateName{iState});
 	
-	% Delete the temporary CBF4D image unless the option to keep it is on
+	% Delete the temporary CBF4D image unless the option to keep it is enabled
 	if ~x.modules.asl.SaveCBF4D
 		xASL_delete(x.P.Path_CBF4D);
 	end
