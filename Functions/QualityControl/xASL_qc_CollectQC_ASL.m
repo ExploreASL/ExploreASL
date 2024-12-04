@@ -294,7 +294,7 @@ function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
 	% Get all voxels within the mask
     CBF4Dmasked = imCBF4D(repmat(imMaskWB, [1 1 1 nPairs]));
     % Reshape the vector
-    CBF4Dmasked = reshape(CBF4Dmasked, [sum(imMaskWB(:)) size(imCBF4D, 4)]);
+    CBF4Dmasked = reshape(CBF4Dmasked, [], nPairs);
 
 	%% III. Tissue masking of the time-series
 	CBF4DmaskedWB = reshape(CBF4Dmasked(WBmasked4D), [], nPairs);
@@ -306,15 +306,15 @@ function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
     % PM: For now restricted to whole-brain WB only, for simplicity
     % As we need to include both the CoW and distal areas
 
-    for iRepetition=1:nPairs
-        CBF.mean(iRepetition) = xASL_stat_MeanNan(CBF4DmaskedWB(:,iRepetition));
-        CBF.meanGM(iRepetition) = xASL_stat_MeanNan(CBF4DmaskedGM(:,iRepetition));
-        CBF.median(iRepetition) = xASL_stat_MedianNan(CBF4DmaskedWB(:,iRepetition));
-        CBF.SD(iRepetition) = xASL_stat_StdNan(CBF4DmaskedWB(:,iRepetition));
-        CBF.MAD(iRepetition) = xASL_stat_MadNan(CBF4DmaskedWB(:,iRepetition));
-        CBF.sCoV(iRepetition) = CBF.SD/CBF.mean;
+	CBF.mean = xASL_stat_MeanNan(CBF4DmaskedWB, 1);
+	CBF.meanGM = xASL_stat_MeanNan(CBF4DmaskedGM, 1);
+	CBF.median = xASL_stat_MedianNan(CBF4DmaskedWB, 1);
+	CBF.SD = xASL_stat_StdNan(CBF4DmaskedWB, [], 1);
+	CBF.MAD = xASL_stat_MadNan(CBF4DmaskedWB, 1);
+	CBF.sCoV = CBF.SD./CBF.mean;
+	for iRepetition=1:nPairs
         CBF.diffCoV(iRepetition) = xASL_stat_ComputeDifferCoV(imCBF4D(:, :, :, iRepetition), imMaskWB);
-    end
+	end
 
     %% V. Calculate temporal values
 
