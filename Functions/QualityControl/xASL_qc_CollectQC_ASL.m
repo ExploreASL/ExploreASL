@@ -258,7 +258,7 @@ function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
         WMmasked = pWM(imMaskWB);        
     
         % CBF
-        ASL.CBF_GM_Median_mL100gmin = xASL_stat_ComputeMean(CBFmasked, GMmasked>0.5,[], 0, 0);
+        ASL.CBF_GM_Median_mL100gmin = xASL_stat_ComputeMean(CBFmasked, GMmasked>0.7,[], 0, 0);
         % PM: this name should be changed later
 
         [ASL.CBF_GM_PVC2_mL100gmin, ASL.CBF_WM_PVC2_mL100gmin] = xASL_stat_ComputeMean(CBFmasked, (GMmasked+WMmasked)>0.5,[],2, 1, GMmasked, WMmasked);
@@ -283,8 +283,8 @@ function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
     
     imMaskWB = (pGM+pWM)>0.5;
     WBmasked = logical(ones([sum(imMaskWB(:)), 1]));
-    GMmasked = pGM(imMaskWB) > 0.5; % same as used above
-    WMmasked = pWM(imMaskWB) > 0.75; % fits approx. with pGM>0.5
+    GMmasked = pGM(imMaskWB) > 0.7; % same as used above
+    WMmasked = pWM(imMaskWB) > 0.7; % fits approx. with pGM>0.5
 
     WBmasked4D = repmat(WBmasked, [1 nPairs]);
     GMmasked4D = repmat(GMmasked, [1 nPairs]);
