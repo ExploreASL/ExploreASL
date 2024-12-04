@@ -36,9 +36,19 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
 %               VoxelSize Z - slice thickness
 %               RigidBody2Anat_mm - Net Displacement Vector (RMS) from ASL to T1w image (mm) from registration
 %
+% With the following parameters:
+% 0. Admin
+% 1. ASL determinant (left-right flip)
+% 2. ASL motion
+% 3. Calculate ASL derivatives
+% 4. ASL acquisition parameters
+% 5. Compute orientation stuff
+% 6. RMS, AI, etc of ASL data
+% 7. Add data to the QC fields
+%
 % EXAMPLE: x = xASL_qc_CollectQC_ASL(x, 10, 1);
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL
+% Copyright (c) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -46,14 +56,14 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
 
 
 
-    %% Admin
+    %% 0. Admin
     ASL = struct;
     SubjectID = x.SUBJECTS{iSubject};
     SessionID = x.SESSIONS{iSession};
     ASL_ID = [SubjectID '_' SessionID];
 
-    %% -----------------------------------------------------------------------------------------------
-    %% ASL determinant
+
+    %% 1. ASL determinant (left-right flip)
     % The determinant of the current matrix and old matrix should be the same,
     % otherwise this is suspicious of a left-right flip.
     PathOrientationResults = fullfile(x.dir.SESSIONDIR,'xASL_qc_PrintOrientation_RigidRegASL.tsv');
@@ -63,7 +73,8 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
         fprintf(['LR flip found for ' SubjectID '_' SessionID]);
     end
 
-    %% ASL motion
+
+    %% 2. ASL motion
     PathMoCo = fullfile(x.D.MotionDir,['motion_correction_NDV_' ASL_ID '.mat']);
     if exist(PathMoCo,'file')
         MoCo = load(PathMoCo);
@@ -79,8 +90,121 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
     end
 
 
-    %% -----------------------------------------------------------------------------------------------
-    %% ASL CBF values
+    %% 3. Calculate ASL derivatives
+    x = xASL_qc_CollectQC_ASL_CalculateDerivatives(x);
+    % Here we calculate a lot of native space ASL derivatives that can be used for QC
+    % or other analyses without running the Population module
+
+
+    %% 4. ASL acquisition parameters
+    KnownUnits = {'EchoTime' 'RepetitionTime' 'LabelingDuration' 'Initial_PLD'  'TotalReadoutTime' 'AcquisitionTime' 'SliceReadoutTime'};
+    HaveUnits = {'ms'       'ms'             'ms'               'ms'            's'                'hhmmss'          'ms'};
+
+    if isfield(x,'Q')
+        QuantFields = fields(x.Q); % all quantification fields
+        for iField = 1:length(QuantFields) % iterate over fields
+            FieldName = QuantFields{iField};
+            IndexIs = find(cellfun(@(x) strcmp(x,FieldName), KnownUnits)); % check if we know the unit
+            if ~isempty(IndexIs) % do we know the unit?
+                FieldName = [FieldName '_' HaveUnits{IndexIs}]; % then add the unit to the fieldname
+            end
+            ASL.(FieldName) = x.Q.(QuantFields{iField}); % add the field to ASL struct
+        end
+    end
+
+    %% 5. Compute orientation stuff
+    ASL = xASL_qc_ComputeNiftiOrientation(x.P.Path_ASL4D, ASL);
+    
+    %% 6. RMS, AI, etc of ASL data
+    if strcmp(SessionID(1:3), 'ASL')
+        QC_diff_template = xASL_qc_CompareTemplate(x, 'qCBF', iSubject);
+    else
+        QC_diff_template = xASL_qc_CompareTemplate(x, 'mean_control', iSubject);
+    end
+    InputFields = fields(QC_diff_template); % add fields to ASL
+    for iL=1:length(InputFields)
+        if ~isfield(ASL,InputFields{iL})
+            ASL.(InputFields{iL}) = QC_diff_template.(InputFields{iL});
+        end
+    end
+
+    %% 7. Add data to the QC fields
+    % Set ASL fields to 4 decimals
+    FieldNames = fields(ASL);
+    for iN=1:length(FieldNames)
+        V = ASL.(FieldNames{iN});
+        if isnumeric(V)
+            ASL.(FieldNames{iN}) = xASL_round(V, 4);
+        end
+    end
+
+    % Add data to the QC fields
+    Field2Check = fields(ASL);
+    nFields = length(Field2Check);
+    SumData = 0;
+    for iL=1:nFields
+        if ~strcmp(Field2Check{iL},'ID') && ~isstruct( ASL.(Field2Check{iL}) )
+            if isnumeric( ASL.(Field2Check{iL}) )
+                   SumData = SumData+1;
+            elseif isnan( ASL.(Field2Check{iL}) )
+                   SumData = SumData+1;
+            end
+        end
+	end
+
+	% Check for a session subfield and create when necessary
+	if ~isfield(x.Output.ASL, SessionID)
+		x.Output.ASL.(SessionID) = struct;
+	end
+
+    FieldsFilled = SumData/nFields;
+    if FieldsFilled>0.2 % threshold to avoid listing empty values
+        x.Output.ASL.(SessionID) = xASL_qc_FillFields(x.Output.ASL.(SessionID), ASL);
+    end
+
+end
+
+
+%% ========================================================================================
+%% ========================================================================================
+
+
+function [OutputFields] = xASL_qc_FillFields(OutputFields, InputFields)
+%xASL_qc_FillFields Fill fields        
+FieldsI = fields(InputFields);
+
+for iO=1:length(FieldsI)
+    CurrentField = InputFields.(FieldsI{iO});
+    if isnumeric(CurrentField) && length(CurrentField)>1
+        CurrentField = num2str(CurrentField);
+    end
+    OutputFields.(FieldsI{iO}) = CurrentField;
+end    
+
+end
+
+
+%% ========================================================================================
+%% ========================================================================================
+
+
+function [x] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x)
+%xASL_qc_CollectQC_ASL_CalculateDerivatives Calculate ASL parameters
+%
+% With the following steps:
+% 1. Admin
+% 2. Calculations over full time-series, excluding vascular signal
+% 3. Calculations over full time-series, including vascular signal
+% 4. Calculations across time (temporal analyses), including vascular signal
+%   I. Admin
+%   II. Mask CBF4D but reshape the vector to have the time information in the 2nd dimension
+%   III. Tissue masking of the time-series
+%   IV. Get spatial parameters per pair
+%   V. Calculate temporal values
+%   VI. Mean of temporal SD
+
+
+
     %% Get CBF & spatial CoV
     fprintf('%s\n', 'ASL QC: computing CBF...');
 
@@ -145,14 +269,16 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
     end
 
     
-    %% 2.b Calculations over full time-series, including vascular signal
+    %% 3. Calculations over full time-series, including vascular signal
     
     % Spatial CoV
     CBFmasked = imCBF(imMaskWB);
     ASL.SpatialCoV_GM_Perc = 100*xASL_stat_ComputeSpatialCoV(CBFmasked, [], [], 0, 1);
 
 
-    %% 3. Calculations across time, including vascular signal
+    %% 4. Calculations across time, including vascular signal
+    %% I. Admin
+    
     nPairs = size(imCBF4D, 4);
     
     imMaskWB = (pGM+pWM)>0.5;
@@ -164,34 +290,33 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
     GMmasked4D = repmat(GMmasked, [1 nPairs]);
     WMmasked4D = repmat(WMmasked, [1 nPairs]);
 
-
-    % Mask CBF4D but reshape the vector to have the time information in the 2nd dimension
-	% i. Get all voxels within the mask
+    %% II. Mask CBF4D but reshape the vector to have the time information in the 2nd dimension
+	% Get all voxels within the mask
     CBF4Dmasked = imCBF4D(repmat(imMaskWB, [1 1 1 nPairs]));
-    % ii. Reshape the vector
+    % Reshape the vector
     CBF4Dmasked = reshape(CBF4Dmasked, [sum(imMaskWB(:)) size(imCBF4D, 4)]);
 
-	% iii. Tissue masking of the time-series
+	%% III. Tissue masking of the time-series
 	CBF4DmaskedWB = reshape(CBF4Dmasked(WBmasked4D), [], nPairs);
 	CBF4DmaskedGM = reshape(CBF4Dmasked(GMmasked4D), [], nPairs);
 	CBF4DmaskedWM = reshape(CBF4Dmasked(WMmasked4D), [], nPairs);
 
-    % iv. Get spatial parameters per pair
+    %% IV. Get spatial parameters per pair
     
     % PM: For now restricted to whole-brain WB only, for simplicity
     % As we need to include both the CoW and distal areas
 
     for iRepetition=1:nPairs
         CBF.mean(iRepetition) = xASL_stat_MeanNan(CBF4DmaskedWB(:,iRepetition));
-
         CBF.meanGM(iRepetition) = xASL_stat_MeanNan(CBF4DmaskedGM(:,iRepetition));
-
         CBF.median(iRepetition) = xASL_stat_MedianNan(CBF4DmaskedWB(:,iRepetition));
         CBF.SD(iRepetition) = xASL_stat_StdNan(CBF4DmaskedWB(:,iRepetition));
         CBF.MAD(iRepetition) = xASL_stat_MadNan(CBF4DmaskedWB(:,iRepetition));
         CBF.sCoV(iRepetition) = CBF.SD/CBF.mean;
         CBF.diffCoV(iRepetition) = xASL_stat_ComputeDifferCoV(imCBF4D(:, :, :, iRepetition), imMaskWB);
     end
+
+    %% V. Calculate temporal values
 
     % PM: keeping it simple here for now, we can add more parameters later
     % Naming: 
@@ -206,96 +331,13 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
     ASL.DiffCoV_WB_temporalMean = xASL_stat_MeanNan(CBF.diffCoV);
     ASL.DiffCoV_WB_temporalSD = xASL_stat_StdNan(CBF.diffCoV);
 	
-	% Mean of temporal SD
+	%% VI. Mean of temporal SD
 	ASL.tSD_WB_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedWB, [], 2), 1);
     ASL.tSD_GM_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 2), 1);
 	ASL.tSD_WM_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedWM, [], 2), 1);
 
 	ASL.SpatialCoV_GM_Temporal_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 1)./xASL_stat_MeanNan(CBF4DmaskedGM, 1), 2);
-	ASL.SpatialCoV_GM_Temporal_SD = xASL_stat_StdNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 1)./xASL_stat_MeanNan(CBF4DmaskedGM, 1), [], 2);	
-	
+	ASL.SpatialCoV_GM_Temporal_SD = xASL_stat_StdNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 1)./xASL_stat_MeanNan(CBF4DmaskedGM, 1), [], 2);
 
-    %% -----------------------------------------------------------------------------------------------
-    %% ASL acquisition
-    KnownUnits = {'EchoTime' 'RepetitionTime' 'LabelingDuration' 'Initial_PLD'  'TotalReadoutTime' 'AcquisitionTime' 'SliceReadoutTime'};
-    HaveUnits = {'ms'       'ms'             'ms'               'ms'            's'                'hhmmss'          'ms'};
-
-    if isfield(x,'Q')
-        QuantFields = fields(x.Q); % all quantification fields
-        for iField = 1:length(QuantFields) % iterate over fields
-            FieldName = QuantFields{iField};
-            IndexIs = find(cellfun(@(x) strcmp(x,FieldName), KnownUnits)); % check if we know the unit
-            if ~isempty(IndexIs) % do we know the unit?
-                FieldName = [FieldName '_' HaveUnits{IndexIs}]; % then add the unit to the fieldname
-            end
-            ASL.(FieldName) = x.Q.(QuantFields{iField}); % add the field to ASL struct
-        end
-    end
-
-    % compute orientation stuff
-    ASL = xASL_qc_ComputeNiftiOrientation(x.P.Path_ASL4D, ASL);
-    
-    %% RMS, AI, etc of ASL data
-    if strcmp(SessionID(1:3), 'ASL')
-        QC_diff_template = xASL_qc_CompareTemplate(x, 'qCBF', iSubject);
-    else
-        QC_diff_template = xASL_qc_CompareTemplate(x, 'mean_control', iSubject);
-    end
-    InputFields = fields(QC_diff_template); % add fields to ASL
-    for iL=1:length(InputFields)
-        if ~isfield(ASL,InputFields{iL})
-            ASL.(InputFields{iL}) = QC_diff_template.(InputFields{iL});
-        end
-    end
-
-    %% Set ASL fields to 4 decimals
-    FieldNames = fields(ASL);
-    for iN=1:length(FieldNames)
-        V = ASL.(FieldNames{iN});
-        if isnumeric(V)
-            ASL.(FieldNames{iN}) = xASL_round(V, 4);
-        end
-    end
-
-    %% Add data to the QC fields
-    Field2Check = fields(ASL);
-    nFields = length(Field2Check);
-    SumData = 0;
-    for iL=1:nFields
-        if ~strcmp(Field2Check{iL},'ID') && ~isstruct( ASL.(Field2Check{iL}) )
-            if isnumeric( ASL.(Field2Check{iL}) )
-                   SumData = SumData+1;
-            elseif isnan( ASL.(Field2Check{iL}) )
-                   SumData = SumData+1;
-            end
-        end
-	end
-
-	% Check for a session subfield and create when necessary
-	if ~isfield(x.Output.ASL, SessionID)
-		x.Output.ASL.(SessionID) = struct;
-	end
-
-    FieldsFilled = SumData/nFields;
-    if FieldsFilled>0.2 % threshold to avoid listing empty values
-        x.Output.ASL.(SessionID) = xASL_qc_FillFields(x.Output.ASL.(SessionID), ASL);
-    end
 
 end
-
-
-%% Fill fields
-function [OutputFields] = xASL_qc_FillFields(OutputFields, InputFields)
-        
-FieldsI = fields(InputFields);
-
-for iO=1:length(FieldsI)
-    CurrentField = InputFields.(FieldsI{iO});
-    if isnumeric(CurrentField) && length(CurrentField)>1
-        CurrentField = num2str(CurrentField);
-    end
-    OutputFields.(FieldsI{iO}) = CurrentField;
-end    
-
-end
-
