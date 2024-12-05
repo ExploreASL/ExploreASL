@@ -473,16 +473,16 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
         % Quantification in native space:
         xASL_wrp_Quantify(x, x.P.Path_PWI4D_used, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
 
-		% allow 4D quantification as well, storing CBF4D. This is currently not implemented for multi-PLD/multi-TE (BASIL/FABBER)
-		fprintf('%s\n','Quantifying CBF4D in native space');
-		xASL_wrp_Quantify(x, x.P.Path_PWI4D_used, x.P.Path_CBF4D, x.P.Path_rM0, x.P.Path_SliceGradient, true);
-
 		if x.modules.asl.SaveCBF4D
 			if size(xASL_io_Nifti2Im(x.P.Path_PWI4D_used), 4) == 1
 				warning('x.modules.asl.SaveCBF4D was requested but only one volume exists, skipping');
 			else
-				fprintf('%s\n','Quantifying CBF4D in standard space');
-				xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D_used, x.P.Pop_Path_qCBF4D, [], [], true);
+				% allow 4D quantification as well, storing CBF4D. This is currently not implemented for multi-PLD/multi-TE (BASIL/FABBER)
+				fprintf('%s\n','Quantifying CBF4D in native space');
+				xASL_wrp_Quantify(x, x.P.Path_PWI4D_used, x.P.Path_CBF4D, x.P.Path_rM0, x.P.Path_SliceGradient, true);
+
+				%fprintf('%s\n','Quantifying CBF4D in standard space');
+				%xASL_wrp_Quantify(x, x.P.Pop_Path_PWI4D_used, x.P.Pop_Path_qCBF4D, [], [], true);
 			end
 		end
     end
@@ -511,11 +511,6 @@ iState = 9;
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-2})
 	xASL_wrp_VisualQC_ASL(x);
 	x.mutex.AddState(StateName{iState});
-	
-	% Delete the temporary CBF4D image unless the option to keep it is enabled
-	if ~x.modules.asl.SaveCBF4D
-		xASL_delete(x.P.Path_CBF4D);
-	end
 else
 	if  bOutput; fprintf('%s\n',[StateName{iState} ' has already been performed, skipping...']); end
 end

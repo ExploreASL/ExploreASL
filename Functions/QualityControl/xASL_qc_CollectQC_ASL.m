@@ -231,7 +231,16 @@ function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
     pGM = xASL_io_Nifti2Im(Path_pGM);
     pWM = xASL_io_Nifti2Im(Path_pWM);
     imCBF = xASL_io_Nifti2Im(x.P.Path_CBF);
-	imCBF4D = xASL_io_Nifti2Im(x.P.Path_CBF4D);
+	if xASL_exist(x.P.Path_CBF4D, 'file')
+		% If the CBF4D.nii file was created, then we read it and report errors
+		imCBF4D = xASL_io_Nifti2Im(x.P.Path_CBF4D);
+		if xASL_stat_SumNan(imCBF4D(:))==0
+			warning(['Empty image, invalid ' x.P.Path_CBF4D]);
+		end
+	else
+		% If the file was not created - for example, because SaveCBF4D option was not true - then we do not report any warnings
+		imCBF4D = [];
+	end
         
     if xASL_stat_SumNan(pGM(:))==0
         warning(['Empty image, invalid ' Path_pGM]);
@@ -239,13 +248,9 @@ function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
     if xASL_stat_SumNan(pWM(:))==0
         warning(['Empty image, invalid ' Path_pWM]);
     end
-    if xASL_stat_SumNan(imCBF(:))==0
+	if xASL_stat_SumNan(imCBF(:))==0
         warning(['Empty image, invalid ' x.P.Path_CBF]);
-	end  
-	if xASL_stat_SumNan(imCBF4D(:))==0
-        warning(['Empty image, invalid ' x.P.Path_CBF4D]);
-    end    
-    
+	end
 
     %% 2. Calculations over full time-series, excluding vascular signal
     % NB: x.P.Path_MaskVascular needs to be present!
@@ -278,63 +283,79 @@ function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
 
     %% 4. Calculations across time, including vascular signal
     %% I. Admin
-    
-    nPairs = size(imCBF4D, 4);
-    
-    imMaskWB = (pGM+pWM)>0.5;
-    WBmasked = logical(ones([sum(imMaskWB(:)), 1]));
-    GMmasked = pGM(imMaskWB) > 0.7; % same as used above
-    WMmasked = pWM(imMaskWB) > 0.7; % fits approx. with pGM>0.5
+    if ~isempty(imCBF4D)
+		nPairs = size(imCBF4D, 4);
 
-    WBmasked4D = repmat(WBmasked, [1 nPairs]);
-    GMmasked4D = repmat(GMmasked, [1 nPairs]);
-    WMmasked4D = repmat(WMmasked, [1 nPairs]);
+		imMaskWB = (pGM+pWM)>0.5;
+		WBmasked = logical(ones([sum(imMaskWB(:)), 1]));
+		GMmasked = pGM(imMaskWB) > 0.7; % same as used above
+		WMmasked = pWM(imMaskWB) > 0.7; % fits approx. with pGM>0.5
 
-    %% II. Mask CBF4D but reshape the vector to have the time information in the 2nd dimension
-	% Get all voxels within the mask
-    CBF4Dmasked = imCBF4D(repmat(imMaskWB, [1 1 1 nPairs]));
-    % Reshape the vector
-    CBF4Dmasked = reshape(CBF4Dmasked, [], nPairs);
+		WBmasked4D = repmat(WBmasked, [1 nPairs]);
+		GMmasked4D = repmat(GMmasked, [1 nPairs]);
+		WMmasked4D = repmat(WMmasked, [1 nPairs]);
 
-	%% III. Tissue masking of the time-series
-	CBF4DmaskedWB = reshape(CBF4Dmasked(WBmasked4D), [], nPairs);
-	CBF4DmaskedGM = reshape(CBF4Dmasked(GMmasked4D), [], nPairs);
-	CBF4DmaskedWM = reshape(CBF4Dmasked(WMmasked4D), [], nPairs);
+		%% II. Mask CBF4D but reshape the vector to have the time information in the 2nd dimension
+		% Get all voxels within the mask
+		CBF4Dmasked = imCBF4D(repmat(imMaskWB, [1 1 1 nPairs]));
+		% Reshape the vector
+		CBF4Dmasked = reshape(CBF4Dmasked, [], nPairs);
 
-    %% IV. Get spatial parameters per pair
-    
-    % PM: For now restricted to whole-brain WB only, for simplicity
-    % As we need to include both the CoW and distal areas
+		%% III. Tissue masking of the time-series
+		CBF4DmaskedWB = reshape(CBF4Dmasked(WBmasked4D), [], nPairs);
+		CBF4DmaskedGM = reshape(CBF4Dmasked(GMmasked4D), [], nPairs);
+		CBF4DmaskedWM = reshape(CBF4Dmasked(WMmasked4D), [], nPairs);
 
-	CBF.mean = xASL_stat_MeanNan(CBF4DmaskedWB, 1);
-	CBF.meanGM = xASL_stat_MeanNan(CBF4DmaskedGM, 1);
-	CBF.median = xASL_stat_MedianNan(CBF4DmaskedWB, 1);
-	CBF.SD = xASL_stat_StdNan(CBF4DmaskedWB, [], 1);
-	CBF.MAD = xASL_stat_MadNan(CBF4DmaskedWB, [], 1);
-	CBF.sCoV = CBF.SD./CBF.mean;
-	for iRepetition=1:nPairs
-        CBF.diffCoV(iRepetition) = xASL_stat_ComputeDifferCoV(imCBF4D(:, :, :, iRepetition), imMaskWB);
+		%% IV. Get spatial parameters per pair
+
+		% PM: For now restricted to whole-brain WB only, for simplicity
+		% As we need to include both the CoW and distal areas
+
+		CBF.mean = xASL_stat_MeanNan(CBF4DmaskedWB, 1);
+		CBF.meanGM = xASL_stat_MeanNan(CBF4DmaskedGM, 1);
+		CBF.median = xASL_stat_MedianNan(CBF4DmaskedWB, 1);
+		CBF.SD = xASL_stat_StdNan(CBF4DmaskedWB, [], 1);
+		CBF.MAD = xASL_stat_MadNan(CBF4DmaskedWB, [], 1);
+		CBF.sCoV = CBF.SD./CBF.mean;
+		for iRepetition=1:nPairs
+			CBF.diffCoV(iRepetition) = xASL_stat_ComputeDifferCoV(imCBF4D(:, :, :, iRepetition), imMaskWB);
+		end
+
+		%% V. Calculate temporal values
+
+		% PM: keeping it simple here for now, we can add more parameters later
+		% Naming:
+		% ASL.<parameter calculated first>_<over which ROI>_temporal<parameter calculated second>
+
+		ASL.SpatialCoV_WB_temporalMean = 100.*xASL_stat_MeanNan(CBF.sCoV);
+		ASL.SpatialCoV_WB_temporalSD = 100.*xASL_stat_StdNan(CBF.sCoV);
+
+		ASL.SpatialSD_WB_temporalMean = xASL_stat_MeanNan(CBF.SD);
+		ASL.SpatialSD_WB_temporalSD = xASL_stat_StdNan(CBF.SD);
+
+		ASL.DiffCoV_WB_temporalMean = 100.*xASL_stat_MeanNan(CBF.diffCoV);
+		ASL.DiffCoV_WB_temporalSD = 100.*xASL_stat_StdNan(CBF.diffCoV);
+
+		%% VI. Mean of temporal SD
+		ASL.tSD_WB_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedWB, [], 2), 1);
+		ASL.tSD_GM_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 2), 1);
+		ASL.tSD_WM_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedWM, [], 2), 1);
+	else
+		% CBF4D.nii was not loaded, reporting NaNs
+		ASL.SpatialCoV_WB_temporalMean = NaN;
+		ASL.SpatialCoV_WB_temporalSD = NaN;
+
+		ASL.SpatialSD_WB_temporalMean = NaN;
+		ASL.SpatialSD_WB_temporalSD = NaN;
+
+		ASL.DiffCoV_WB_temporalMean = NaN;
+		ASL.DiffCoV_WB_temporalSD = NaN;
+
+		%% VI. Mean of temporal SD
+		ASL.tSD_WB_Mean = NaN;
+		ASL.tSD_GM_Mean = NaN;
+		ASL.tSD_WM_Mean = NaN;
 	end
-
-    %% V. Calculate temporal values
-
-    % PM: keeping it simple here for now, we can add more parameters later
-    % Naming: 
-    % ASL.<parameter calculated first>_<over which ROI>_temporal<parameter calculated second>
-
-    ASL.SpatialCoV_WB_temporalMean = 100.*xASL_stat_MeanNan(CBF.sCoV);
-    ASL.SpatialCoV_WB_temporalSD = 100.*xASL_stat_StdNan(CBF.sCoV);
-
-    ASL.SpatialSD_WB_temporalMean = xASL_stat_MeanNan(CBF.SD);
-    ASL.SpatialSD_WB_temporalSD = xASL_stat_StdNan(CBF.SD);
-
-    ASL.DiffCoV_WB_temporalMean = 100.*xASL_stat_MeanNan(CBF.diffCoV);
-    ASL.DiffCoV_WB_temporalSD = 100.*xASL_stat_StdNan(CBF.diffCoV);
-	
-	%% VI. Mean of temporal SD
-	ASL.tSD_WB_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedWB, [], 2), 1);
-    ASL.tSD_GM_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 2), 1);
-	ASL.tSD_WM_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedWM, [], 2), 1);
 
 
 end
