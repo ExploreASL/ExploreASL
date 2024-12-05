@@ -198,7 +198,6 @@ try
     %% 4) Restore backupped _ORI (original) files
     % Here we search recursively for ORI files, if any found, and the original as well, replace original by ORI
     OriList = {}; % initiate list
-    fprintf('Restoring backupped _ORI (original) files:   ');
 
     if bAllSubjects
         OriList = [OriList;xASL_adm_GetFileList(SubjectDir, '(?i).*_ORI\.nii$', 'FPListRec', [0 Inf])]; % for all subjects/sessions
@@ -212,17 +211,20 @@ try
         end
     end
 
-    for iList=1:length(OriList)
-        xASL_TrackProgress(iList, length(OriList));
-        NonOriPath = strrep(OriList{iList},'_ORI','');
-        xASL_Move(OriList{iList}, NonOriPath, 1, 0); % if the non-ori file existed, overwrite it
+    if ~isempty(OriList)
+        fprintf('Restoring backupped _ORI (original) files:   ');
+        for iList=1:length(OriList)
+            xASL_TrackProgress(iList, length(OriList));
+            NonOriPath = strrep(OriList{iList},'_ORI','');
+            xASL_Move(OriList{iList}, NonOriPath, 1, 0); % if the non-ori file existed, overwrite it
+        end
+        fprintf('\n');
     end
-    fprintf('\n');
 
 
     % ===========================================================================================
     %% 5) Delete native space CAT12 temporary folders (always, independent of iModule)
-    fprintf('Deleting native space CAT12 temporary folders:   ');
+    fprintf('Deleting any residual native space CAT12 temporary folders:   ');
 
     CAT12Folders = {'label' 'mri' 'report'};
     for iFolder=1:length(CAT12Folders)
@@ -259,7 +261,7 @@ try
 
     for iList=iModule
         if iList~=3 % skip population module here
-            fprintf(['Deleting native space files for module ' num2str(iList) ':   ']);
+            fprintf(['Deleting any residual native space files for module ' num2str(iList) ':   ']);
             % We do Structural & ASL modules only, population module doesnt have native space files
             if iList==1 % structural module
                 Dir2Check = SubjectDir;
