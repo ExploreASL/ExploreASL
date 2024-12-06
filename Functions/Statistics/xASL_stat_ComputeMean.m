@@ -48,7 +48,7 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bPVC,
 %             volume errors on the estimation of gray matter cerebral blood flow with arterial spin labeling MRI. Magnetic Resonance Materials in 
 %             Physics, Biology and Medicine. 2018 Dec 1;31(6):725-34.
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -108,7 +108,11 @@ end
 if bPVC == 2
 	% If running PVC, then need imGM and imWM of the same size as imCBF
 	if ~isequal(size(imCBF),size(imGM)) || ~isequal(size(imCBF),size(imWM))
-		warning('When running PVC, need imGM and imWM of the same size as imCBF');
+		warning('When running PVC, the GM and WM maps should have the same size as the CBF image');
+	elseif size(imGM, 2)>2
+        warning('Invalid GM map size');
+    elseif size(imWM, 2)>2
+        warning('Invalid WM map size');
 	end
 end
 
@@ -142,11 +146,11 @@ switch (bPVC)
 	case 0
 		if bParametric
 			%% 3a. No PVC and simple mean
-			CBF_GM = xASL_stat_MeanNan(imCBF);
+			CBF_GM = xASL_stat_MeanNan(imCBF, 1);
 		
 		else
 			%% 3b. No PVC and median
-			CBF_GM = xASL_stat_MedianNan(imCBF); % this is non-parametric
+			CBF_GM = xASL_stat_MedianNan(imCBF, 1); % this is non-parametric
 		end
 
 	case 1
@@ -154,7 +158,7 @@ switch (bPVC)
 		if isempty(imGM)
 			error('imGM needs to be provided for bPVC == 1');
 		end
-		CBF_GM = xASL_stat_SumNan(imCBF)/xASL_stat_SumNan(imGM);
+		CBF_GM = xASL_stat_SumNan(imCBF, 1)/xASL_stat_SumNan(imGM, 1);
 	
 	case 2
 		%% 3d. Full PVC on a region

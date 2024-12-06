@@ -187,8 +187,6 @@ bWarnedPVWMH = false;
 namesROIlocal = x.S.NamesROI;
 
 if x.S.InputNativeSpace
-
-    
 	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
 	atlasN = max(inputAtlasTmp(:));
 	x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
@@ -520,12 +518,21 @@ for iSubject=1:x.dataset.nSubjects
 
 		%% 4.c Load data
         Data3D = []; % initialize empty variable
+		Data4D = []; % initialize empty variable
 
 		if x.S.InputNativeSpace %% PM: we repeat same code here twice
 			FilePath = fullfile(x.dir.SESSIONDIR, [x.S.InputDataStrNative '.nii']);
 			if xASL_exist(FilePath, 'file')
 				Data3D = xASL_io_Nifti2Im(FilePath);
 				DataIm = xASL_im_IM2Column(Data3D, x.S.masks.WBmask, false);
+			end
+
+			% Also load the 4D variant if it exists
+			FilePath = fullfile(x.dir.SESSIONDIR, [x.S.InputDataStrNative '4D.nii']); % We write it general, but it will only exist for CBF
+			if xASL_exist(FilePath, 'file')
+				Data4D = xASL_io_Nifti2Im(FilePath);
+				Data4DIm = xASL_im_IM2Column(Data4D, repmat(x.S.masks.WBmask, [1 1 1 size(data4D, 4)]), false);
+				Data4DIm = reshape(Data4DIm, [], size(data4D, 4));
 			end
 
             if x.S.bMasking(2)==1
@@ -786,7 +793,17 @@ for iSubject=1:x.dataset.nSubjects
 					% x.S.DAT_Diff_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMask, 1, pvPrimary, [], 0);
 					% x.S.DAT_Diff_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMask, 2, pvPrimary, pvSecondary, 0);
 				% end
-
+				%% 4D temporal data calculations - do not always exist
+				if ~isempty(Data4DIm)
+					% Initialize the values - we add here the type of statistics and PVC status, the contrast type (CBF/ATT/Tex) is assigned outside of this function
+					% We already do all the averaging here, so it has to be contained in the name
+					x.S.DAT_SD4D_mean_PVC0(SubjSess,iROI) = NaN;
+					x.S.DAT_SD4D_sd_PVC0(SubjSess,iROI) = NaN;
+					x.S.DAT_CoV4D_mean_PVC0(SubjSess,iROI) = NaN;
+					x.S.DAT_CoV4D_sd_PVC0(SubjSess,iROI) = NaN;
+					x.S.DAT_diffCoV4D_mean_PVC0(SubjSess,iROI) = NaN;
+					x.S.DAT_diffCoV4D_sd_PVC0(SubjSess,iROI) = NaN;
+				end
 			end
 		end % for iROI=1:size(SubjectSpecificMasks,2)
         

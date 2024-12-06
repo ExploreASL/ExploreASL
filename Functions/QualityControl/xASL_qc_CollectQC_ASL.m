@@ -312,10 +312,10 @@ function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
 		% As we need to include both the CoW and distal areas
 
 		CBF.mean = xASL_stat_MeanNan(CBF4DmaskedWB, 1);
-		CBF.meanGM = xASL_stat_MeanNan(CBF4DmaskedGM, 1);
-		CBF.median = xASL_stat_MedianNan(CBF4DmaskedWB, 1);
+		%CBF.meanGM = xASL_stat_MeanNan(CBF4DmaskedGM, 1); % These are calculated but not used and not saved to any output variable.
+		%CBF.median = xASL_stat_MedianNan(CBF4DmaskedWB, 1);
 		CBF.SD = xASL_stat_StdNan(CBF4DmaskedWB, [], 1);
-		CBF.MAD = xASL_stat_MadNan(CBF4DmaskedWB, [], 1);
+		%CBF.MAD = xASL_stat_MadNan(CBF4DmaskedWB, [], 1);
 		CBF.sCoV = CBF.SD./CBF.mean;
 		for iRepetition=1:nPairs
 			CBF.diffCoV(iRepetition) = xASL_stat_ComputeDifferCoV(imCBF4D(:, :, :, iRepetition), imMaskWB);
