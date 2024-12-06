@@ -177,7 +177,7 @@ else
     x.S.unit = 'au';
 end
 
-Statistics = {'median' 'mean' 'CoV' 'CoV' 'sum'};
+Statistics = {'median' 'mean' 'CoV' 'sum' 'CoV4D_mean' 'CoV4D_sd' 'diffCoV4D_mean' 'diffCoV4D_sd'};
 for iStat=1:length(Statistics)
     for iPVC=1:3
         StatField = ['DAT_' Statistics{iStat} '_PVC' num2str(iPVC-1)];
