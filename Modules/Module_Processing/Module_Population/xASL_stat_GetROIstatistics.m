@@ -795,9 +795,15 @@ for iSubject=1:x.dataset.nSubjects
 				% end
 				%% 4D temporal data calculations - do not always exist
 				if ~isempty(Data4D)
-					% Precalculate the temporal values
-					sCoV4D = xASL_stat_ComputeSpatialCoV(Data4DIm, CurrentMask, MinVoxels, 0);
-					diffCoV4D = zeros(size(sCoV4D));
+					% Initialize the precalculated vectors
+					sCoV4D = zeros(1, size(Data4DIm, 2));
+					diffCoV4D = zeros(1, size(Data4DIm, 2));
+
+					% Precalculate the temporal values - use functions that work in 3D only to do it for each temporal point
+					for iRepetition=1:size(Data4DIm, 2)
+						sCoV4D(iRepetition) = xASL_stat_ComputeSpatialCoV(Data4DIm(:, iRepetition), CurrentMask, MinVoxels, 0);
+					end
+
 					if sum(CurrentMask(:)) > MinVoxels
 						CurrentMaskFull = xASL_im_Column2IM(CurrentMask, x.S.masks.WBmask);% We need the full mask for the Diff-CoV calculation
 
@@ -818,7 +824,7 @@ for iSubject=1:x.dataset.nSubjects
 		end % for iROI=1:size(SubjectSpecificMasks,2)
         
         % Create last rows if missing
-		FieldsAre = {'DAT_mean_PVC0' 'DAT_median_PVC0' 'DAT_mean_PVC2' 'DAT_mean_PVC2' 'DAT_CoV_PVC2' 'DAT_SD4D_mean_PVC0' 'DAT_SD4D_sd_PVC0' 'DAT_CoV4D_mean_PVC0' 'DAT_CoV4D_sd_PVC0' 'DAT_diffCoV4D_mean_PVC0' 'DAT_diffCoV4D_sd_PVC0'};
+		FieldsAre = {'DAT_mean_PVC0' 'DAT_median_PVC0' 'DAT_mean_PVC2' 'DAT_mean_PVC2' 'DAT_CoV_PVC2' 'DAT_CoV4D_mean_PVC0' 'DAT_CoV4D_sd_PVC0' 'DAT_diffCoV4D_mean_PVC0' 'DAT_diffCoV4D_sd_PVC0'};
         for iField = 1:length(FieldsAre)
             if isfield(x.S, FieldsAre{iField})
 				% Go through all the missing rows
