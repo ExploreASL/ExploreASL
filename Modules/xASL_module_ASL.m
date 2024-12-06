@@ -357,6 +357,58 @@ else
 	end
 end
 
+%% Average orientations
+if ~isempty(x.modules.asl.sessionsToMerge) && x.modules.asl.bsessionsAverageOrientations
+    % if we will be merging sessions, we want their orientation changes 
+    % (i.e. with respect to their mat0 from the scanner) to be the same
+    
+    % PM: Assuming motion correction is off! We reset all other volumes to the same orientation
+
+    % 1. Find all paths with identical names between the sessions
+    for iSession=1:length(x.modules.asl.sessionsToMerge)
+        sessionDir = fullfile(x.dir.SUBJECTDIR, x.modules.asl.sessionsToMerge{iSession});
+        fileList{iSession} = xASL_adm_GetFileList(sessionDir, '.*\.nii', 'List'); % find all NIfTI files
+        fileList{iSession} = replace(fileList{iSession}, '.gz', ''); % remove any .gz extensions
+    end
+
+    for iSession=1:length(x.modules.asl.sessionsToMerge)-1 % for all session pairs that need merging
+        sameFileNames{iSession} = intersect(fileList{iSession}, fileList{iSession+1}); % for all similar files
+        
+        % 2. Average the orientations
+        for iNifti=1:length(sameFileNames{iSession})
+            if ~contains(sameFileNames{iSession}{iNifti}, 'y_ASL') % we don't need to touch this file, it contains standard space orientations
+                path1 = fullfile(x.dir.SUBJECTDIR, x.modules.asl.sessionsToMerge{iSession}, sameFileNames{iSession}{iNifti});
+                path2 = fullfile(x.dir.SUBJECTDIR, x.modules.asl.sessionsToMerge{iSession+1}, sameFileNames{iSession}{iNifti});
+                nii1 = xASL_io_ReadNifti(path1);
+                nii2 = xASL_io_ReadNifti(path2);
+                
+                % PM: do it here with spm_imatrix(nii1.mat) - spm_imatrix(nii1.mat0) instead
+                % i.e. the changes in orientation with respect to how it came from the scanner (i.e. the applied registration), instead of the current orientation
+
+                imat1 = spm_imatrix(nii1.mat);
+                imat2 = spm_imatrix(nii2.mat);
+                diffMat = imat1-imat2;
+                % Only change rigid-body parameters
+                imat1(1:6) = imat1(1:6) - diffMat(1:6)./2;
+                imat2(1:6) = imat2(1:6) + diffMat(1:6)./2;
+                % Add the averaged orientation matrices to the NIfTI objects
+                nii1.mat = spm_matrix(imat1);
+                nii2.mat = spm_matrix(imat2);
+
+                % Save the NIfTIs
+                create(nii1);
+                create(nii2);
+                
+                % 3. Delete the .mat motion sidecars (assuming no motion correction!)
+                [dirNameHere, fileNameHere] = xASL_fileparts(path1);
+                xASL_delete(fullfile(dirNameHere, [fileNameHere '.mat']));
+                [dirNameHere, fileNameHere] = xASL_fileparts(path2);
+                xASL_delete(fullfile(dirNameHere, [fileNameHere '.mat']));
+            end
+        end
+    end
+end
+
 
 %% ========================================================================================================================
 %% 5    Resolution estimation & prepare partial volume maps
