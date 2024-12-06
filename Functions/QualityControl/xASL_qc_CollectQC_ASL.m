@@ -340,22 +340,6 @@ function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
 		ASL.tSD_WB_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedWB, [], 2), 1);
 		ASL.tSD_GM_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedGM, [], 2), 1);
 		ASL.tSD_WM_Mean = xASL_stat_MeanNan(xASL_stat_StdNan(CBF4DmaskedWM, [], 2), 1);
-	else
-		% CBF4D.nii was not loaded, reporting NaNs
-		ASL.SpatialCoV_WB_temporalMean = NaN;
-		ASL.SpatialCoV_WB_temporalSD = NaN;
-
-		ASL.SpatialSD_WB_temporalMean = NaN;
-		ASL.SpatialSD_WB_temporalSD = NaN;
-
-		ASL.DiffCoV_WB_temporalMean = NaN;
-		ASL.DiffCoV_WB_temporalSD = NaN;
-
-		%% VI. Mean of temporal SD
-		ASL.tSD_WB_Mean = NaN;
-		ASL.tSD_GM_Mean = NaN;
-		ASL.tSD_WM_Mean = NaN;
 	end
-
 
 end
