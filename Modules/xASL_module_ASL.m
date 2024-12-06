@@ -404,6 +404,11 @@ if ~isempty(x.modules.asl.sessionsToMerge) && x.modules.asl.bsessionsAverageOrie
                 xASL_delete(fullfile(dirNameHere, [fileNameHere '.mat']));
                 [dirNameHere, fileNameHere] = xASL_fileparts(path2);
                 xASL_delete(fullfile(dirNameHere, [fileNameHere '.mat']));
+
+                % 4. Report what was done
+                fprintf('\n%s', 'Averaged the orientations for the following files:');
+                fprintf('\n%s', path1);
+                fprintf('\n%s\n', path2);
             end
         end
     end
