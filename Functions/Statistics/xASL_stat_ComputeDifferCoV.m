@@ -1,11 +1,12 @@
-function diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask,bPVC,imGM,imWM,b3D)
+function diffCoV = xASL_stat_ComputeDifferCoV(imCBF, imMask, bPVC, imGM, imWM, b3D)
 % Calculates spatial diff coefficient of variation (sCoV) in the image with optional partial volume correction.
 %
-% FORMAT: diffCoV = xASL_stat_ComputeDifferCoV(imCBF [,imMask, bPVC, imGM, imWM, b3D])
+% FORMAT: diffCoV = xASL_stat_ComputeDifferCoV(imCBF [,imMask, nMinSize, bPVC, imGM, imWM, b3D])
 %
 % INPUT:
 %   imCBF  - input CBF volume
 %   imMask - mask for the calculation (DEFAULT finite part of imCBF)
+%   nMinSize    - minimal size of the ROI in voxels, if not big enough, then return NaN (OPTIONAL, DEFAULT 0)
 %   bPVC   - perform PV-correction (DEFAULT 0)
 %            0 - don't do partial volume correction
 %            2 - partial volume correction by using pseudoCov calculated from imGM, imWM
@@ -13,7 +14,7 @@ function diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask,bPVC,imGM,imWM,b3D)
 %   imWM   - WM partial volume map with the same size as imCBF, mandatory for bPVC==2
 %   b3D    - calculate 2D wise or 3D wise (DEFAULT 0)
 % OUTPUT:
-%   sCov   - calculated spatial coefficient of variation
+%   diffCov   - calculated spatial difference coefficient of variation
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: It calculates the spatial DiffCoV value on finite part of imCBF. Optionally a mask IMMASK is provide, 
 %              and PVC is done for bPVC==2 using imGM and imWM masks and constructing
@@ -23,14 +24,14 @@ function diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask,bPVC,imGM,imWM,b3D)
 %
 % EXAMPLE: diffCoV = xASL_stat_ComputeDifferCoV(imCBF)
 %          diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask)
-%          diffCoV = xASL_stat_ComputeDifferCoV(imCBF,[],0)
-%          diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask,2,imGM,imWM)
-%          diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask,2,imGM,imWM,1)
-%          diffCoV = xASL_stat_ComputeDifferCoV(imCBF,[],0,[],[],1)
+%          diffCoV = xASL_stat_ComputeDifferCoV(imCBF,[],0,0)
+%          diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask,[],2,imGM,imWM)
+%          diffCoV = xASL_stat_ComputeDifferCoV(imCBF,imMask,[],2,imGM,imWM,1)
+%          diffCoV = xASL_stat_ComputeDifferCoV(imCBF,[],0,0,[],[],1)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright © 2015-2019 ExploreASL
+% Copyright © 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -44,20 +45,29 @@ if nargin < 2 || isempty(imMask)
 	imMask = ones(size(imCBF));
 end
 
-if nargin < 3 || isempty(bPVC)
+if nargin < 3 || isempty(nMinSize)
+	nMinSize = 0;
+end
+
+if nargin < 4 || isempty(bPVC)
 	bPVC = 0;
 end
 
-if nargin < 4
+if nargin < 5
 	imGM = [];
 end
 
-if nargin < 5
+if nargin < 6
 	imWM = [];
 end
 
-if nargin < 6 || isempty(b3D)
+if nargin < 7 || isempty(b3D)
 	b3D = 0;
+end
+
+if sum(imMask(:))<nMinSize 
+    diffCov  = NaN;
+    return;
 end
 
 if bPVC < 2
