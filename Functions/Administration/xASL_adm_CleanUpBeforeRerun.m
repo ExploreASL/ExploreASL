@@ -167,12 +167,18 @@ try
         else % remove for specific subject/session
             if ~isempty(regexp(LockDirs2{iDir},'xASL_module_Structural'))
                 % specify subject ID
-                CurrentDir(end+1) = xASL_adm_GetFileList(LockDirs2{iDir}, SubjectID, 'FPList', [0 Inf], true);         
+                addDir = xASL_adm_GetFileList(LockDirs2{iDir}, SubjectID, 'FPList', [0 Inf], true);
+                if ~isempty(addDir)
+                    CurrentDir(end+1) = addDir;
+                end
             elseif ~isempty(regexp(LockDirs2{iDir},'xASL_module_ASL'))
                 % specify session ID
                 if exist(LockDirs2{iDir}, 'dir')
                     for iSession=1:nSessions
-                        CurrentDir(end+1) = xASL_adm_GetFileList(fullfile(LockDirs2{iDir}, SubjectID), ['^xASL_module_ASL_' SessionID{iSession} '$'], 'FPList', [0 Inf], true);
+                        addDir = xASL_adm_GetFileList(fullfile(LockDirs2{iDir}, SubjectID), ['^xASL_module_ASL_' SessionID{iSession} '$'], 'FPList', [0 Inf], true);
+                        if ~isempty(addDir)
+                            CurrentDir(end+1) = addDir;
+                        end
                     end
                 end
             end
