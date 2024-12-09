@@ -1,4 +1,4 @@
-function diffCoV = xASL_stat_ComputeDifferCoV(imCBF, imMask, bPVC, imGM, imWM, b3D)
+function diffCoV = xASL_stat_ComputeDifferCoV(imCBF, imMask, nMinSize, bPVC, imGM, imWM, b3D)
 % Calculates spatial diff coefficient of variation (sCoV) in the image with optional partial volume correction.
 %
 % FORMAT: diffCoV = xASL_stat_ComputeDifferCoV(imCBF [,imMask, nMinSize, bPVC, imGM, imWM, b3D])
