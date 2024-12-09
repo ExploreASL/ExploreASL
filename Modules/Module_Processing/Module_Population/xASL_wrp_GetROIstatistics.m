@@ -171,6 +171,8 @@ elseif ~isempty(strfind(x.S.InputDataStr,'TT'))
     x.S.unit = 's';	
 elseif ~isempty(strfind(x.S.InputDataStr,'ATT'))
     x.S.unit = 's';	
+elseif ~isempty(strfind(x.S.InputDataStr,'ITT'))
+    x.S.unit = 's';		
 else
     x.S.unit = 'au';
 end

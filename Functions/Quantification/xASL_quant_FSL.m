@@ -1,7 +1,7 @@
-function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(path_PWI4D, x)
+function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_quant_FSL(path_PWI4D, x)
 %xASL_quant_FSL Perform quantification using FSL BASIL/FABBER
 %
-% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(path_PWI4D, x)
+% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_quant_FSL(path_PWI4D, x)
 % 
 % INPUT:
 %   path_PWI4D      - path to PWI4D (OPTIONAL, defaults to x.P.Path_PWI4D)
@@ -14,6 +14,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 % ATT_map           - ATT map (if possible to calculate with multi-PLD, otherwise empty)
 % ABV_map           - arterial blood volume map (if possible to calculate with multi-PLD, otherwise empty)
 % Tex_map           - Time of exchange map of transport across BBB (if possible to calculate with multi-TE, otherwise empty)
+% ITT_map           - Intravoxel transit time (if possible to calculate with multi-TE, otherwise empty)
 % resultFSL         - describes if the execution was successful
 %                     (0 = successful, NaN = no FSL/BASIL found, 1 or other = something failed)
 %
@@ -54,6 +55,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 	Tex_map = [];
 	ATT_map = [];
 	ABV_map = [];
+	ITT_map = [];
 
 	if ~isfield(x.modules.asl, 'bCleanUpBASIL') || isempty(x.modules.asl.bCleanUpBASIL)
 		x.modules.asl.bCleanUpBASIL = true;
@@ -158,6 +160,13 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, resultFSL] = xASL_quant_FSL(pa
 		Tex_map = xASL_io_Nifti2Im(pathFabberTex{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
 	
+	% ITT
+	pathBasilITT = xASL_adm_GetFileList(pathFSLOutput, '^mean_ITT\.nii$', 'FPListRec');
+	if ~isempty(pathBasilITT)
+		ITT_map = xASL_io_Nifti2Im(pathBasilITT{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+	end
+    
+
     %% 6. Scaling to physiological units
     % Note different to xASL_quant_ASL since Fabber has T1 in seconds
     % and does not take into account labeling efficiency

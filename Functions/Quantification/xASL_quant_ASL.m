@@ -1,6 +1,6 @@
-function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseBasilQuantification, bSaveCBF4D)
+function [ScaleImage, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseBasilQuantification, bSaveCBF4D)
 %xASL_quant_ASL Perform a multi-step quantification of single or multi-PLD with or without BASIL
-% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex]] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x[, bUseBasilQuantification, bSaveCBF4D])
+% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex, ITT]] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x[, bUseBasilQuantification, bSaveCBF4D])
 %
 % INPUT:
 %   PWI4D           - Path to the 4D timeseries of (control-label subtracted) perfusion-weighted images (REQUIRED)
@@ -18,6 +18,7 @@ function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D_Path, M0_im, im
 % ATT               - Estimated ATT map (if multi-PLD, otherwise empty)
 % ABV               - Estimated arterial blood volume map (if multi-PLD, otherwise empty)
 % Tex               - Estimated map of time of exchange across BBB (if multi-TE is available, otherwise empty)
+% ITT               - Estimated map of intravoxel transit time (if multi-TE is available, otherwise empty)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This script performs a multi-step quantification, by
 %              initializing a ScaleImage that travels through this script & gets changed by the following quantification
@@ -46,7 +47,7 @@ function [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D_Path, M0_im, im
 %              multi-PLD or multi-TE quantifications are performed with BASIL or FABBER here, respectively.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseBasilQuantification);
+% EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseBasilQuantification);
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
@@ -61,6 +62,7 @@ fprintf('%s\n', 'Performing quantification');
 ATT = [];
 Tex = [];
 ABV = [];
+ITT = [];
 
 if nargin < 4
 	error('Four input parameters required');
@@ -189,7 +191,7 @@ else
     if bUseBasilQuantification
         % Here we perform FSL quantification
 		% We pass the path to the image and do all the Image and JSON reading inside the function
-		[PWI, ATT, ABV, Tex] = xASL_quant_FSL(PWI4D_Path, x); 
+		[PWI, ATT, ABV, Tex, ITT] = xASL_quant_FSL(PWI4D_Path, x); 
 		
 		% If resultFSL is not 0, something went wrong
         % This will issue a warning inside xASL_quant_FSL

@@ -254,6 +254,7 @@ function [x] = xASL_init_DefineDataParDependentSettings(x)
                 x.D.TTCheckDir          = fullfile(x.D.PopDir, 'ATT_Check');
                 x.D.ATTCheckDir         = fullfile(x.D.PopDir, 'ATT_Check'); % Putting TT and ATT maps to the same folder
                 x.D.TexCheckDir         = fullfile(x.D.PopDir, 'Tex_Check');
+				x.D.ITTCheckDir         = fullfile(x.D.PopDir, 'ITT_Check');
                 x.D.TemplatesStudyDir   = fullfile(x.D.PopDir, 'Templates');
     
                 % Population module

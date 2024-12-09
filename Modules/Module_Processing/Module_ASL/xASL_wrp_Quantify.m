@@ -65,6 +65,7 @@ iStringCBF = iStringCBF(end);
 pathOutputATT = [pathOutputCBF(1:(iStringCBF-1)) 'ATT' pathOutputCBF((iStringCBF+3):end)];
 pathOutputTex = [pathOutputCBF(1:(iStringCBF-1)) 'Tex' pathOutputCBF((iStringCBF+3):end)];
 pathOutputABV = [pathOutputCBF(1:(iStringCBF-1)) 'ABV' pathOutputCBF((iStringCBF+3):end)];
+pathOutputITT = [pathOutputCBF(1:(iStringCBF-1)) 'ITT' pathOutputCBF((iStringCBF+3):end)];
 
 if nargin<4 || isempty(M0Path)
     M0Path = x.P.Pop_Path_M0;
@@ -106,6 +107,7 @@ xASL_delete(pathOutputCBF);
 xASL_delete(pathOutputATT);
 xASL_delete(pathOutputTex);
 xASL_delete(pathOutputABV);
+xASL_delete(pathOutputITT);
 
 % For BASIL, only native images are processed and standard space images are not directly quantified, but only transformed
 % So that's why we need to delete both the native and standard space images at once for BASIL
@@ -114,6 +116,7 @@ if x.modules.asl.bUseBasilQuantification
     xASL_delete(x.P.Pop_Path_ATT);
     xASL_delete(x.P.Pop_Path_Tex);
     xASL_delete(x.P.Pop_Path_ABV);
+	xASL_delete(x.P.Pop_Path_ITT);
 end
 
 %% ------------------------------------------------------------------------------------------------
@@ -384,7 +387,7 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
 if ~x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bUseBasilQuantification % multi-PLD with BASIL or single-PLD
-    [~, CBF, ATT, ABV, Tex] = xASL_quant_ASL(PWI4D_Path, M0_im, SliceGradient, x, x.modules.asl.bUseBasilQuantification, bSaveCBF4D); % also runs BASIL, but only in native space!
+    [~, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_im, SliceGradient, x, x.modules.asl.bUseBasilQuantification, bSaveCBF4D); % also runs BASIL, but only in native space!
 else
     % multi-PLD quantification without BASIL
     error('Multi PLD quantification without BASIL is not yet implemented.');
@@ -421,6 +424,11 @@ if numel(Tex) > 1
 	xASL_io_SaveNifti(PWI4D_Path, pathOutputTex, Tex, 32, 0);
 end
 
+if numel(ITT) > 1
+	% Save the ATT file
+	xASL_io_SaveNifti(PWI4D_Path, pathOutputITT, ITT, 32, 0);
+end
+
 %% 9.b Save files in standard space for BASIL native space output
 % Transform BASIL CBF to standard space as BASIL only quantifies in native space
 if x.modules.asl.bUseBasilQuantification && strcmp(x.P.Path_CBF, pathOutputCBF)
@@ -441,6 +449,10 @@ if x.modules.asl.bUseBasilQuantification && strcmp(x.P.Path_CBF, pathOutputCBF)
 
 	if xASL_exist(x.P.Path_ABV,'file')
 		xASL_spm_deformations(x, {x.P.Path_ABV}, {x.P.Pop_Path_ABV}, [], [], AffineTransfPath, x.P.Path_y_ASL);
+	end
+
+	if xASL_exist(x.P.Path_ITT,'file')
+		xASL_spm_deformations(x, {x.P.Path_ITT}, {x.P.Pop_Path_ITT}, [], [], AffineTransfPath, x.P.Path_y_ASL);
 	end
 end
 
