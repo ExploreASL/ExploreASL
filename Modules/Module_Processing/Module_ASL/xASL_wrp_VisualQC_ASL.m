@@ -251,7 +251,7 @@ T.ImIn(11:12)  = {x.P.Pop_Path_Tex  {x.P.Pop_Path_Tex PathpWM}};
 T.ImIn(13:14)  = {x.P.Pop_Path_ATT  {x.P.Pop_Path_ATT PathpWM}};
 T.ImIn(15:16)  = {x.P.Pop_Path_ITT  {x.P.Pop_Path_ITT PathpWM}};
 
-T.bContour(1:14) = 0;
+T.bContour(1:16) = 0;
 % If the contour option is activated then draw contour for the GM and WM maps
 if x.vis.bVisualQCCBFvsGMWMContour
 	T.bContour([3,7,10]) = 1;
@@ -275,6 +275,7 @@ T.NameExt( 5: 8) = {[] [] TextpGM []};
 T.NameExt( 9:10) = {[] TextpWM };
 T.NameExt(11:12) = {[] TextpWM };
 T.NameExt(13:14) = {[] TextpWM };
+T.NameExt(15:16) = {[] TextpWM };
 
 % Fill missing cells
 Pars = {'ImIn' 'DirOut' 'ClipZero' 'IntScale' 'NameExt' 'ColorMapIs' 'bContour'}; % default pars
