@@ -815,31 +815,37 @@ for iSubject=1:x.dataset.nSubjects
 					x.S.DAT_diffCoV4D_mean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(diffCoV4D);
 					x.S.DAT_diffCoV4D_sd_PVC0(SubjSess, iROI) = xASL_stat_StdNan(diffCoV4D);
 
-					mean4D = zeros(size(Data4D, 3), size(Data4D, 4));
+                    % Compute average label position stats
+                    % Initialization
+					mean4D_SliceWise = zeros(size(Data4D, 3), size(Data4D, 4));
+                    sCoV4D_SliceWise = zeros(size(Data4D, 3), size(Data4D, 4));
+                    tempSD4D_SliceWise = zeros(1, size(Data4D, 3));
+
 					%diffCoV4DCenter = zeros(1, size(Data4DIm, 2));
 					% Precalculate the temporal values in 2D for each slice and repetition
 					for iSlice=1:size(Data4D, 3)
 						for iRepetition=1:size(Data4DIm, 2)
-							mean4D(iSlice, iRepetition) = xASL_stat_ComputeMean(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
-							sCoV4D(iSlice, iRepetition) = xASL_stat_ComputeSpatialCoV(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0);
+							mean4D_SliceWise(iSlice, iRepetition) = xASL_stat_ComputeMean(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
+							sCoV4D_SliceWise(iSlice, iRepetition) = xASL_stat_ComputeSpatialCoV(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
 						end
 						% First STD across repetitions, the slice-wise mean
-						tempSD4D(iSlice) = xASL_stat_ComputeMean(xASL_stat_StdNan(Data4D(:, :, iSlice, :), [], 4), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
+						tempSD4D_SliceWise(iSlice) = xASL_stat_ComputeMean(xASL_stat_StdNan(Data4D(:, :, iSlice, :), [], 4), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
 					end
 
 					% For each repetition - calculate the best slice
-					vecSlice = repmat((1:size(Data4D, 3))', [1 size(mean4D, 2)]); % Vector with slice numbers
-					mean4D(isnan(mean4D)) = 0; mean4D(mean4D<0) = 0; % Clean NaNs and negative values
-					mean4Dcenter = xASL_stat_SumNan(mean4D.*vecSlice, 1)./xASL_stat_SumNan(mean4D, 1); % Calculate the weighted mean
-					x.S.DAT_LabLoc4D_mean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(mean4Dcenter);
-					x.S.DAT_LabLoc4D_sd_PVC0(SubjSess, iROI) = xASL_stat_StdNan(mean4Dcenter);
+					vectorSlice = repmat((1:size(Data4D, 3))', [1 size(mean4D_SliceWise, 2)]); % Vector with slice numbers
+					mean4D_SliceWise = abs(mean4D_SliceWise); % flip negative values
+					mean4DcenterSlice = xASL_stat_SumNan(mean4D_SliceWise.*vectorSlice, 1)./xASL_stat_SumNan(mean4D_SliceWise, 1); % Calculate the weighted mean
+					x.S.DAT_LabelSliceLocation4D_tMean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(mean4DcenterSlice);
+					x.S.DAT_LabelSliceLocation4D_tSD_PVC0(SubjSess, iROI) = xASL_stat_StdNan(mean4DcenterSlice);
 
-					sCoV4D(isnan(sCoV4D)) = 0; sCoV4D(sCoV4D<0) = 0; % Clean NaNs and negative values
-					sCoV4Dcenter = xASL_stat_SumNan(sCoV4D.*vecSlice, 1)./xASL_stat_SumNan(sCoV4D, 1); % Calculate the weighted mean
-					x.S.DAT_sCoVLoc4D_mean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(sCoV4Dcenter);
-					x.S.DAT_sCoVLoc4D_sd_PVC0(SubjSess, iROI) = xASL_stat_StdNan(sCoV4Dcenter);
+					sCoV4D_SliceWise = abs(sCoV4D_SliceWise); % flip negative values
+                    % Note that sCoV4D is only negative for negative means
+					sCoV4DcenterSlice = xASL_stat_SumNan(sCoV4D_SliceWise.*vectorSlice, 1)./xASL_stat_SumNan(sCoV4D_SliceWise, 1); % Calculate the weighted mean
+					x.S.DAT_LabelsCoV_SliceLocation_tMean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(sCoV4DcenterSlice);
+					x.S.DAT_LabelsCoV_SliceLocation_tSD_PVC0(SubjSess, iROI) = xASL_stat_StdNan(sCoV4DcenterSlice);
 
-					x.S.DAT_StdLoc4D_PVC0(SubjSess, iROI) = xASL_stat_SumNan(tempSD4D.*vecSlice(:,1)', 2)./xASL_stat_SumNan(tempSD4D, 2); % Calculate the weighted mean
+					x.S.DAT_SlicetSD_SliceLocation_PVC0(SubjSess, iROI) = xASL_stat_SumNan(tempSD4D_SliceWise.*vectorSlice(:,1)')./xASL_stat_SumNan(tempSD4D_SliceWise); % Calculate the weighted mean
 				end
 			end
 		end % for iROI=1:size(SubjectSpecificMasks,2)
