@@ -196,6 +196,10 @@ xASL_tsvWrite(ROInames, PathTSV, 1);
 % First create the individual mask overlays with different colors
 for iIm=1:6
     OutIm{iIm} = xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rT1 VisualizeImage==iIm}, [], [0.75 0.35], [], {x.S.gray x.S.colors_ROI{iIm}});
+	if numel(OutIm{iIm}) == 1 && isnan(OutIm{iIm})
+		% In case the lesion did not make it to the visualization, we make an empty visualization with backgorund only
+		OutIm{iIm} = xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rT1 }, [], 0.75, [], {x.S.gray});
+	end
 end
 
 % Initialize final image

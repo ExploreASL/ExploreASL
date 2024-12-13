@@ -318,6 +318,10 @@ function xASL_adm_VisualCheckLesionRemoval(x, Lesion_list)
         
 		ImOut1 = xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rc1T1_ORI x.P.Pop_Path_rc2T1_ORI}, [], [1 0.8], [], []);
 		ImOut2 = xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rT1 LesionIM},[], [1 0.8], [], []);
+		% Since the lesion is really small, it can happen that it's not visible and the visualization will fail. In that case, display rT1 only
+		if numel(ImOut2) == 1 && isnan(ImOut2)
+			ImOut2 = xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rT1},[], 1, [], []);
+		end
 		ImOut3 = xASL_vis_CreateVisualFig( x, {x.P.Pop_Path_rc1T1 x.P.Pop_Path_rc2T1},[], [1 0.8], [], []);
 
         IM = [ImOut1,ImOut2,ImOut3];
