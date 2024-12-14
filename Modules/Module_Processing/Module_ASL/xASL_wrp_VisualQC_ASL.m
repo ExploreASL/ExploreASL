@@ -249,7 +249,8 @@ T.ImIn( 5: 8)  = {x.P.Pop_Path_mean_control x.P.Pop_Path_noSmooth_M0 {x.P.Pop_Pa
 T.ImIn( 9:10)  = {x.P.Pop_Path_TT  {x.P.Pop_Path_TT PathpWM}};
 T.ImIn(11:12)  = {x.P.Pop_Path_Tex  {x.P.Pop_Path_Tex PathpWM}};
 T.ImIn(13:14)  = {x.P.Pop_Path_ATT  {x.P.Pop_Path_ATT PathpWM}};
-T.ImIn(15:16)  = {x.P.Pop_Path_ITT  {x.P.Pop_Path_ITT PathpWM}};
+T.ImIn(15)     = {x.P.Pop_Path_ITT};
+T.ImIn(16)     = {x.P.Pop_Path_ABV};
 
 T.bContour(1:16) = 0;
 % If the contour option is activated then draw contour for the GM and WM maps
@@ -262,7 +263,8 @@ T.DirOut( 5: 8) = {x.D.RawDir      x.D.M0CheckDir  x.D.M0regASLdir       x.D.M0C
 T.DirOut( 9:10) = {x.D.TTCheckDir  x.D.TTCheckDir  };
 T.DirOut(11:12) = {x.D.TexCheckDir  x.D.TexCheckDir};
 T.DirOut(13:14) = {x.D.ATTCheckDir  x.D.ATTCheckDir  };
-T.DirOut(15:16) = {x.D.ITTCheckDir  x.D.ITTCheckDir  };
+T.DirOut(15)    = {x.D.ITTCheckDir};
+T.DirOut(16)    = {x.D.ABVCheckDir};
 
 T.IntScale(2)   = {[1 1]};
 T.IntScale{8}   = [0.75 0.65];
@@ -275,7 +277,9 @@ T.NameExt( 5: 8) = {[] [] TextpGM []};
 T.NameExt( 9:10) = {[] TextpWM };
 T.NameExt(11:12) = {[] TextpWM };
 T.NameExt(13:14) = {[] TextpWM };
-T.NameExt(15:16) = {[] TextpWM };
+T.NameExt(15)    = {[]};
+T.NameExt(16)    = {[]};
+
 
 % Fill missing cells
 Pars = {'ImIn' 'DirOut' 'ClipZero' 'IntScale' 'NameExt' 'ColorMapIs' 'bContour'}; % default pars
