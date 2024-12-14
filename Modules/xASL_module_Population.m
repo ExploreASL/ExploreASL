@@ -229,6 +229,7 @@ end
 
 %% -----------------------------------------------------------------------------
 %% 7    ROI statistics
+%% 7a   Perform statistics for normal atlases
 if ~x.mutex.HasState(StateName{8})
     
     x = xASL_init_LoadMetadata(x); % Add statistical variables, if there are new ones
@@ -288,7 +289,9 @@ if ~x.mutex.HasState(StateName{8})
                 xASL_wrp_GetROIstatistics(x);
             end
         end
-            
+        
+		%% -----------------------------------------------------------------------------
+		%% 7b Perform statistics for Lesion and ROI files
 		% Read the names of the lesion files
 		LesionROIList = xASL_adm_GetFileList(x.D.PopDir, '(?i)^r(Lesion|ROI)_(T1|FLAIR|T2)_\d*_.*\.nii', 'List', [0 Inf]);
 		% Go through the lesions and remove the subject names
@@ -300,10 +303,11 @@ if ~x.mutex.HasState(StateName{8})
 				LesionROIList{iROI} = LesionROIList{iROI}(1:iEnd);
 			end
 		end
+		
 		% Obtain a unique list of lesion names without the subject name
 		LesionUniqueROIList = unique(LesionROIList);
 
-		% Standard space analyzis in a specific ROI with no tissue restriction
+		% Standard space analysis in a specific ROI with no tissue restriction
         x.S.InputNativeSpace = 0;
 		x.S.bSubjectSpecificROI = true;
 		x.S.TissueMaskingLocal = 'WB';
