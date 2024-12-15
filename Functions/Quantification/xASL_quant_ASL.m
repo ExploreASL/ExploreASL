@@ -191,10 +191,10 @@ else
     if bUseBasilQuantification
         % Here we perform FSL quantification
 		% We pass the path to the image and do all the Image and JSON reading inside the function
-		[PWI, ATT, ABV, Tex, ITT] = xASL_quant_FSL(PWI4D_Path, x); 
+		[PWI, ATT, ABV, Tex, ITT] = xASL_quant_External(PWI4D_Path, x); 
 		
 		% If resultFSL is not 0, something went wrong
-        % This will issue a warning inside xASL_quant_FSL
+        % This will issue a warning inside xASL_quant_External
 	else
         % This part should only run when we don't use FSL BASIL/FABBER
         % or as a fallback when FSL BASIL/FABBER crashed

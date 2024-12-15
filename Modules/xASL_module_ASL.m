@@ -263,7 +263,7 @@ if xASL_exist(x.P.Path_M0,'file') && ~isempty(Path_RevPE)
     if ~x.mutex.HasState(StateName{iState}) || ~xASL_exist(fullfile(x.dir.SESSIONDIR, 'TopUp_fieldcoef.nii'),'file')
 
         xASL_adm_DeleteFileList(x.dir.SESSIONDIR,'^(B0|Field|TopUp|Unwarped).*$',[],[0 Inf]); % delete previous TopUp stuff first
-        bSuccess = xASL_fsl_TopUp(x.dir.SESSIONDIR, 'asl', x, x.P.Path_ASL4D);
+        bSuccess = xASL_ext_FSLTopUp(x.dir.SESSIONDIR, 'asl', x, x.P.Path_ASL4D);
 
         if bSuccess
             x.mutex.AddState(StateName{iState});

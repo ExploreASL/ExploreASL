@@ -1,7 +1,7 @@
-function [FSLdir, x, RootWSLdir] = xASL_fsl_SetFSLdir(x, bAutomaticallyDetectFSL)
-%xASL_fsl_SetFSLdir Find the FSLdir from Matlab (ExploreASL)
+function [FSLdir, x, RootWSLdir] = xASL_ext_FSLSetDir(x, bAutomaticallyDetectFSL)
+%xASL_ext_FSLSetDir Find the FSLdir from Matlab (ExploreASL)
 %
-% FORMAT: [FSLdir[, x, RootWSLdir]] = xASL_adm_SetFSLdir(x, bUseLatestVersion)
+% FORMAT: [FSLdir[, x, RootWSLdir]] = xASL_ext_FSLSetDir(x, bUseLatestVersion)
 %
 % INPUT:
 %   x                       - structure containing fields with all information required to run this submodule (OPTIONAL)
@@ -23,7 +23,7 @@ function [FSLdir, x, RootWSLdir] = xASL_fsl_SetFSLdir(x, bAutomaticallyDetectFSL
 %              default installation folders for different Linux
 %              distributions
 % 
-% EXAMPLE: FSLdir = xASL_fsl_SetFSLdir(x);
+% EXAMPLE: FSLdir = xASL_ext_FSLSetDir(x);
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at

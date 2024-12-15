@@ -1,5 +1,5 @@
-function [x, Result1] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, NicenessValue, bVerbose)
-%xASL_fsl_RunFSL Run FSL from Matlab (ExploreASL)
+function [x, Result1] = xASL_ext_FSLRun(FSLCommand, x, OutputZipping, NicenessValue, bVerbose)
+%xASL_ext_FSLRun Run FSL from Matlab (ExploreASL)
 %
 % FORMAT: [x] = xASL_adm_RunFSL(FSLCommand, x[, OutputZipping, NicenessValue, bVerbose])
 %
@@ -31,7 +31,7 @@ function [x, Result1] = xASL_fsl_RunFSL(FSLCommand, x, OutputZipping, NicenessVa
 %
 % Supports .nii & .nii.gz, Linux, MacOS & Windows (WSL)
 % 
-% EXAMPLE: xASL_fsl_RunFSL(FSLCommand, x);
+% EXAMPLE: xASL_ext_FSLRun(FSLCommand, x);
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
@@ -64,7 +64,7 @@ if ~isfield(x.external,'bAutomaticallyDetectFSL')
     x.external.bAutomaticallyDetectFSL = 0;
 end
 
-[FSLdir, x, RootFSLdir] = xASL_fsl_SetFSLdir(x);
+[FSLdir, x, RootFSLdir] = xASL_ext_FSLSetDir(x);
 
 if min(isnan(FSLdir))
     % Script will return Result1=NaN to show that there is no FSL

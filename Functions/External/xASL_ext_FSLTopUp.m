@@ -1,7 +1,7 @@
-function [bSuccess] = xASL_fsl_TopUp(InDir, ScanType, x, OutputPath)
-%xASL_fsl_TopUp Submodule of ExploreASL Structural Module, that performs several visualizations for QC
+function [bSuccess] = xASL_ext_FSLTopUp(InDir, ScanType, x, OutputPath)
+%xASL_ext_FSLTopUp Submodule of ExploreASL Structural Module, that performs several visualizations for QC
 %
-% FORMAT: xASL_fsl_TopUp(InDir[, ScanType], x)
+% FORMAT: xASL_ext_FSLTopUp(InDir[, ScanType], x)
 %
 % INPUT:
 %   InDir       - path to folder containing the input & output NIfTIs of TopUp (REQUIRED)
@@ -29,7 +29,7 @@ function [bSuccess] = xASL_fsl_TopUp(InDir, ScanType, x, OutputPath)
 %                 TopUp is run with default settings
 %              3. Apply TopUp
 %
-% EXAMPLE: xASL_fsl_TopUp('/analysis/Sub-001/dwi', [], x);
+% EXAMPLE: xASL_ext_FSLTopUp('/analysis/Sub-001/dwi', [], x);
 %
 % REFERENCE:   Please reference as:
 %              "Data was collected with reversed phase-encode blips, resulting in pairs of images with distortions going in opposite directions. From these pairs the susceptibility-induced off-resonance field was estimated using a method similar to that described in [Andersson 2003] as implemented in FSL [Smith 2004] and the two images were combined into a single corrected one."
@@ -91,7 +91,7 @@ if ~isfield(x.external,'bAutomaticallyDetectFSL')
     x.external.bAutomaticallyDetectFSL = 0;
 end
 
-[FSLdir, x] = xASL_fsl_SetFSLdir(x, x.external.bAutomaticallyDetectFSL); % Find the FSL directory
+[FSLdir, x] = xASL_ext_FSLSetDir(x, x.external.bAutomaticallyDetectFSL); % Find the FSL directory
 Pathb0cfg = fullfile(x.opts.MyPath, 'External', 'fsl', 'b02b0.cnf'); % use our own one for reproducibility
 PathB0 = fullfile(InDir, 'B0.nii');
 PathLog = fullfile(InDir, 'B0.topup_log'); % path & file must be same as PathB0
@@ -217,7 +217,7 @@ end
 %% 2) Run TopUp Estimate
 % Concatenate the AP and PA NIfTIs to a B0 NIfTI:
 % THIS COMMAND ASSUMES 2 TOPUP FILES ONLY
-% xASL_fsl_RunFSL(['/bin/fslmerge -t ' xASL_adm_UnixPath(PathB0, 1)...
+% xASL_ext_FSLRun(['/bin/fslmerge -t ' xASL_adm_UnixPath(PathB0, 1)...
 %     ' ' xASL_adm_UnixPath(TopUpNIIPath{1}, 1) ' ' xASL_adm_UnixPath(TopUpNIIPath{2}, 1)], x); % direction to concatenate over, t = time, a = auto
 
 % If this NIfTI has multiple volumes, we assume that the first is the B0/M0
@@ -275,7 +275,7 @@ else
         %   Above part was disabled, as it didnt work always
         % HERE WE DISABLE SUBSAMPLING, IT 
         % ActualCommand = [TopUpCommand ' --subsamp=4 --fwhm=8 --miter=1 --splineorder=2 --interp=linear'];
-        % [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
+        % [~, result1] = xASL_ext_FSLRun(ActualCommand, x);
 
         % if result1~=0 % try again without subsampling
             ActualCommand = [TopUpCommand ' --miter=1 --splineorder=3 --interp=linear'];
@@ -285,7 +285,7 @@ else
         % end
     end
 
-    [~, result1] = xASL_fsl_RunFSL(ActualCommand, x);
+    [~, result1] = xASL_ext_FSLRun(ActualCommand, x);
 end
 
 if result1==0 % successfull run
@@ -345,7 +345,7 @@ else
         fprintf('=========================================================================\n')
 
         % Apply TopUp (method: Use jacobian modulation (jac) or least-squares resampling (lsr, default)
-        [~, result1] = xASL_fsl_RunFSL(['/bin/applytopup --imain=' xASL_adm_UnixPath(PathApplyTopUp{iTopUp}, 1) ' --inindex=1'...
+        [~, result1] = xASL_ext_FSLRun(['/bin/applytopup --imain=' xASL_adm_UnixPath(PathApplyTopUp{iTopUp}, 1) ' --inindex=1'...
                  ' --datain=' xASL_adm_UnixPath(PathParms2, 1) ' --topup=' xASL_adm_UnixPath(PathResults, 1)...
                  ' --out=' xASL_adm_UnixPath(PathOutput{iTopUp}, 1) ' --method=jac'], x); %  --verbose=true
 

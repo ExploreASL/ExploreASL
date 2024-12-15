@@ -1,7 +1,7 @@
-function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_quant_FSL(path_PWI4D, x)
-%xASL_quant_FSL Perform quantification using FSL BASIL/FABBER
+function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_quant_External(path_PWI4D, x)
+%xASL_quant_External Perform quantification using BASIL/FABBER/VABY
 %
-% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_quant_FSL(path_PWI4D, x)
+% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_quant_External(path_PWI4D, x)
 % 
 % INPUT:
 %   path_PWI4D      - path to PWI4D (OPTIONAL, defaults to x.P.Path_PWI4D)
@@ -34,7 +34,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_qua
 % 7. Householding
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: CBF_nocalib = xASL_quant_FSL(PWI, x);
+% EXAMPLE: CBF_nocalib = xASL_quant_External(PWI, x);
 %
 % __________________________________
 % Copyright 2015-2024 ExploreASL 
@@ -134,7 +134,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_qua
 	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, strQuantificationType, PWI4D_json, pathFSLInput, pathFSLOutput);
 
     %% 5. Run BASIL and retrieve CBF output
-    [~, resultFSL] = xASL_fsl_RunFSL([FSLfunctionName ' ' FSLOptions], x);
+    [~, resultFSL] = xASL_ext_FSLRun([FSLfunctionName ' ' FSLOptions], x);
     
     % Check if FSL failed
     if isnan(resultFSL)
