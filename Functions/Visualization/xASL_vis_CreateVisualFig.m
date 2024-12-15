@@ -147,7 +147,9 @@ Ffile = '';
 
 % First check file existence (only for input images provided as FilePath)
 for iC=1:length(ImIn)
-    if numel(ImIn{iC})<512 % assume this is a FilePath
+    if isempty(ImIn{iC}) % empty input is replaced by all zeros
+		ImIn{iC} = zeros(121, 145, 121);
+	elseif numel(ImIn{iC})<512 % assume this is a FilePath
         if ~xASL_exist(ImIn{iC}, 'file')
             fprintf('%s\n', ['xASL_vis_CreateVisualFig: detected ' NamePrefix ' FilePath but this file did not exist, skipping figure creation']);
             return;
