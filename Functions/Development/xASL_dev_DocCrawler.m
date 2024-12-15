@@ -37,8 +37,8 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
     isFileList = false;
     
     % Sections for "Functions" folder
-    SECTION = {'adm', 'bids', 'dev', 'fsl', 'im', 'imp', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
-    SECTION_NAMES = {'Administration', 'BIDS', 'Development', 'FSL', 'Image Processing', 'Import', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
+    SECTION = {'adm', 'bids', 'dev', 'ext', 'im', 'imp', 'init', 'io', 'qc', 'quant', 'spm', 'stat', 'vis'}';
+    SECTION_NAMES = {'Administration', 'BIDS', 'Development', 'External', 'Image Processing', 'Import', 'Initialization', 'Input and Output', 'QC', 'Quantization', 'SPM', 'Statistics', 'Visualization'}';
 
     % Input Check
     if nargin < 1 || isempty(inputPath)
@@ -85,7 +85,7 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
     % Workaround for "Functions"
     if strcmp(contentType,'Functions')
         fprintf('Walk through Functions sub-directories...\n');
-        functionPaths = {   'Administration', 'BIDS', 'Development', 'FSL', ...
+        functionPaths = {   'Administration', 'BIDS', 'Development', 'External', ...
                             'ImageProcessing', 'Import', 'Initialization', 'InputOutput', ...
                             'QualityControl', 'Quantification', 'SPM', ...
                             'Statistics', 'Visualization'};
