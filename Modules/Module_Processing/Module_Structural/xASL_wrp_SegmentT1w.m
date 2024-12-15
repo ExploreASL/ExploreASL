@@ -287,7 +287,7 @@ xASL_Move(x.P.Path_y_T1, Path_Transf_SPM, true); % move the flow field back
 rLesionList = xASL_adm_GetFileList(x.D.PopDir, ['(?i)^rLesion.*' x.P.SubjectID '\.nii'], 'FPList', [0 Inf]);
 LesionIM = zeros([121 145 121]); % assuming 1.5 mm MNI
 for iL=1:length(rLesionList)
-    LesionIM(logical(xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(rLesionList{iL})))) = 1;
+    LesionIM(xASL_im_ConvertMap2Mask(xASL_io_Nifti2Im(rLesionList{iL}))) = 1;
     xASL_delete(rLesionList{iL});
 end
 
