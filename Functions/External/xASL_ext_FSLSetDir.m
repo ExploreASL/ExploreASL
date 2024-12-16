@@ -53,14 +53,7 @@ if isfield(x,'FSLdir') && isfield(x,'RootFSLdir') && ~isempty(x.FSLdir) && ~isem
     FSLdir = x.FSLdir;
     RootWSLdir = x.RootFSLdir;
     return;
-end
-
-% For VABY quantification, we cannot run automatic detection
-if isfield(x, 'external') && isfield(x.external, 'ExternalQuantificationType') && strcmp(x.external.ExternalQuantificationType, 'VABY')
-	error('External quantification with VABY requested. You need to provide path in x.FSLdir and x.RootFSLdir');
-end
-
-if isfield(x, 'FSLdir') && ~isfield(x, 'RootFSLdir') && ~ispc
+elseif isfield(x, 'FSLdir') && ~isfield(x, 'RootFSLdir') && ~ispc
 
     FSLdir = x.FSLdir;
 

@@ -121,20 +121,21 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultFSL] = xASL_qua
 		end
 	end
 
+	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, strQuantificationType, PWI4D_json, pathFSLInput, pathFSLOutput);
+
+    %% 5. Run BASIL and retrieve CBF output
 	% Define the correct command name
 	switch (lower(strQuantificationType))
 		case 'basil'
 			FSLfunctionName = 'basil';
+			[~, resultFSL] = xASL_ext_FSLRun([FSLfunctionName ' ' FSLOptions], x);
 		case 'fabber'
 			FSLfunctionName = 'fabber_asl';
+			[~, resultFSL] = xASL_ext_FSLRun([FSLfunctionName ' ' FSLOptions], x);
 		case 'vaby'
 			FSLfunctionName = 'vaby_asl';
+			[~, resultFSL] = xASL_ext_VABYRun([FSLfunctionName ' ' FSLOptions], x);
 	end
-
-	FSLOptions = xASL_sub_FSLOptions(pathFSLOptions, x, strQuantificationType, PWI4D_json, pathFSLInput, pathFSLOutput);
-
-    %% 5. Run BASIL and retrieve CBF output
-    [~, resultFSL] = xASL_ext_FSLRun([FSLfunctionName ' ' FSLOptions], x);
     
     % Check if FSL failed
     if isnan(resultFSL)
