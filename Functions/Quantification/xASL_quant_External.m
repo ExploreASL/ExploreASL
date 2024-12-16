@@ -261,9 +261,9 @@ if nargin<6
 end
 
 % Set BASIL dataPar options and their defaults
-if ~isfield(x.modules.asl,'bMaskingBASIL') || isempty(x.modules.asl.bMaskingBASIL)
-		fprintf('BASIL: Setting default option bMasking = true\n');
-		x.modules.asl.bMaskingBASIL = true;
+if ~isfield(x.modules.asl, 'bMaskingExternal') || isempty(x.modules.asl.bMaskingExternal)
+	fprintf('External quantification: Setting default option bMaskingExternal = true\n');
+	x.modules.asl.bMaskingExternal = true;
 end
 
 % Set basic parameters newly as they might differ in case of a merged sequence
@@ -281,6 +281,7 @@ if length(unique(jsonPWI4D.Q.EchoTime)) > 1
 	end
 end
 
+% Define defaults for BASIL only options
 if ~isempty(regexpi(strQuantificationType, 'basil', 'once'))
 	% On Low quality settings, turn off all extra processing options
 	if isfield(x, 'settings') && isfield(x.settings, 'Quality') && ~x.settings.Quality
@@ -328,21 +329,17 @@ end
 switch (lower(strQuantificationType))
 	case 'fabber'
 		ExternalOptions = ['-@ ' xASL_adm_UnixPath(pathExternalOptions, ispc)];
+		fprintf(FIDoptionFile, '# FABBER options written by ExploreASL\n');
+		FIDoptionFile = fopen(pathExternalOptions, 'w+');
+
 	case 'basil'
 		ExternalOptions = ['--optfile ' xASL_adm_UnixPath(pathExternalOptions, ispc)];
+		fprintf(FIDoptionFile, '# BASIL options written by ExploreASL\n');
+		FIDoptionFile = fopen(pathExternalOptions, 'w+');
+
 	case 'vaby'
 		% VABY takes no options file
 		ExternalOptions = '';
-end
-
-FIDoptionFile = fopen(pathExternalOptions, 'w+');
-switch (lower(strQuantificationType))
-	case 'fabber'
-		fprintf(FIDoptionFile, '# FABBER options written by ExploreASL\n');
-	case 'basil'
-		fprintf(FIDoptionFile, '# BASIL options written by ExploreASL\n');
-	case 'vaby'
-		fprintf(FIDoptionFile, '# VABY options written by ExploreASL\n');
 end
 
 % Define basic paths
@@ -363,7 +360,7 @@ switch (lower(strQuantificationType))
 end
 
 % Define masking
-if x.modules.asl.bMaskingBASIL
+if x.modules.asl.bMaskingExternal
 	% Check for uninitialized Mask variable or file
 	if ~isfield(x.P, 'Path_BrainMaskProcessing')
 		warning('BASIL masking set to TRUE, but the mask variable x.P.Path_BrainMaskProcessing is not initialized.');
@@ -441,6 +438,10 @@ switch lower(x.Q.LabelingType)
 	case 'pasl'
 		% PASL model is assumed by default and does not need to be specified in the config file
 		fprintf('BASIL: PASL model\n');
+		
+		if ~isempty(regexpi(strQuantificationType, '(FABBER|VABY)'))
+			error('PASL is implemented for BASIL only and not for FABBER/VABY');
+		end
 
 		% For PASL, there can be only a single LabelingDuration, so unique PLD+LabDur combinations are uniquely based on PLDs
 		TIs = jsonPWI4D.Q.Initial_PLD'/1000;
