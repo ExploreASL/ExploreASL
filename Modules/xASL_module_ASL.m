@@ -979,18 +979,17 @@ if ~isfield(x.modules.asl, 'bUseExternalQuantification') || isempty(x.modules.as
 	if ~isfield(x.modules.asl, 'ExternalQuantificationType') || ~isempty(regexpi(x.modules.asl.ExternalQuantificationType, '(basil|fabber|vaby)'))
 		% If external quantification type is defined, then define also the boolean
 		x.modules.asl.bUseExternalQuantification = true;
-		warning('bUseExternalQuantification not defined, but ExternalQuantificationType was set correctly. Setting bUseExternalQuantification ==tue. Please verify the settings');
+		warning('bUseExternalQuantification not defined, but ExternalQuantificationType was set correctly. Setting bUseExternalQuantification as true. Please verify the settings');
 	else
 		x.modules.asl.bUseExternalQuantification = false;
 	end
     
     if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
         x.modules.asl.bUseExternalQuantification = true;
-		if ~isfield(x.modules.asl, 'ExternalQuantificationType') || ~isempty(regexpi(x.modules.asl.ExternalQuantificationType, '(basil)'))
+		if ~isfield(x.modules.asl, 'ExternalQuantificationType') || isempty(regexpi(x.modules.asl.ExternalQuantificationType, '(fabber|vaby)'))
 			warning('External quantification for multi-TE or multi-PLD is only possible with FABBER or VABY. Using FABBER');
 			x.modules.asl.ExternalQuantificationType = 'FABBER';
 		end
-
     end
 end
 
@@ -1002,6 +1001,5 @@ elseif x.modules.asl.SaveCBF4D && (x.Q.nUniqueInitial_PLD>1 || x.modules.asl.bQu
 	warning('Saving CBF4D was requested but not implemented yet for multi-PLD or multi-TE, setting SaveCBF4D = false');
 	x.modules.asl.SaveCBF4D = false;
 end
-
 
 end
