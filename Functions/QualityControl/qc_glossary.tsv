@@ -10,7 +10,8 @@ ASL_tSNR_Slope_Corr
 ASL_tSNR_WM_Ratio				
 ASL_tSNR_WMref_Ratio				
 BackgroundSuppressionNumberPulses	Number of Background Suppression Pulses			
-bUseBasilQuantification				
+bUseExternalQuantification				
+ExternalQuantificationType
 CBF_GM_Median_mL100gmin	Median CBF in GM	Median CBF within the pGM>0.5 ROI	ml/100g/min	
 CBF_GM_PVC2_mL100gmin				
 CBF_GM_WM_Ratio	Median CBF  GM WM Ratio	Median CBF of pGM>0.5 / Median CBF of pWM>0.5 		

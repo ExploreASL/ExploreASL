@@ -34,8 +34,8 @@ function xASL_quant_FEAST(x)
 %% 1. Provide feedback
 fprintf('%s\n', 'Running FEAST quantification, assuming single compartment CBF quantification');
 
-if x.modules.asl.bUseBasilQuantification
-    warning('BASIL quantification detected, FEAST ATT computation might be inaccurate');
+if x.modules.asl.bUseExternalQuantification
+    warning('External quantification detected, FEAST ATT computation might be inaccurate');
 end
 if x.Q.nCompartments~=1
     warning('Not a single compartment model used for CBF quantification, FEAST ATT computation might be inaccurate');

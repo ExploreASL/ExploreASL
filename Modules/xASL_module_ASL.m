@@ -474,9 +474,9 @@ x = xASL_module_ASL_MultiParameterQuantificationOptions(x);
 % Including PVC
 if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
     fprintf('%s\n','Quantifying ASL:   ');
-    % If BASIL quantification will be performed, only native space analysis is possible
-    if isfield(x.modules.asl, 'bUseBasilQuantification') && x.modules.asl.bUseBasilQuantification
-        % Quantification in native space only for BASIL
+    % If external quantification will be performed, only native space analysis is possible
+    if isfield(x.modules.asl, 'bUseExternalQuantification') && x.modules.asl.bUseExternalQuantification
+        % Quantification in native space only for external quantification
         xASL_wrp_Quantify(x, x.P.Path_PWI4D_used, x.P.Path_CBF, x.P.Path_rM0, x.P.Path_SliceGradient);
     else
         % Quantification in standard space:
@@ -498,6 +498,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-4})
 		end
     end
     
+
 	if x.modules.asl.bPVCNativeSpace
 		fprintf('%s\n','Partial volume correcting ASL in native space:   ');
 		if xASL_exist(x.P.Path_PVgm,'file') && xASL_exist(x.P.Path_PVwm,'file') && xASL_exist(x.P.Path_CBF,'file')
@@ -928,7 +929,7 @@ function x = xASL_module_ASL_MultiParameterQuantificationOptions(x)
 % The multi-parameter quantification options are either set here based on the data, or we check if the values provided in
 % the dataPar.json are compatible with the data
 % 1. Set the bQuantifyMulti option for TE, PLD, and LD
-% 2. Manage bUseBasilQuantification parameter
+% 2. Manage bUseExternalQuantification parameter
 % 3. Manage parameter SaveCBF4D
 
 parNames = {'EchoTime' 'Initial_PLD' 'LabelingDuration'};
@@ -973,12 +974,23 @@ for iPar=1:length(parNames)
     end
 end
 
-%% 2. Manage bUseBasilQuantification parameter that activates BASIL quantification
-if ~isfield(x.modules.asl, 'bUseBasilQuantification') || isempty(x.modules.asl.bUseBasilQuantification)
-	x.modules.asl.bUseBasilQuantification = false;
+%% 2. Manage bUseExternalQuantification parameter that activates External quantification quantification
+if ~isfield(x.modules.asl, 'bUseExternalQuantification') || isempty(x.modules.asl.bUseExternalQuantification)
+	if ~isfield(x.modules.asl, 'ExternalQuantificationType') || ~isempty(regexpi(x.modules.asl.ExternalQuantificationType, '(basil|fabber|vaby)'))
+		% If external quantification type is defined, then define also the boolean
+		x.modules.asl.bUseExternalQuantification = true;
+		warning('bUseExternalQuantification not defined, but ExternalQuantificationType was set correctly. Setting bUseExternalQuantification ==tue. Please verify the settings');
+	else
+		x.modules.asl.bUseExternalQuantification = false;
+	end
     
     if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
-        x.modules.asl.bUseBasilQuantification = true;
+        x.modules.asl.bUseExternalQuantification = true;
+		if ~isfield(x.modules.asl, 'ExternalQuantificationType') || ~isempty(regexpi(x.modules.asl.ExternalQuantificationType, '(basil)'))
+			warning('External quantification for multi-TE or multi-PLD is only possible with FABBER or VABY. Using FABBER');
+			x.modules.asl.ExternalQuantificationType = 'FABBER';
+		end
+
     end
 end
 

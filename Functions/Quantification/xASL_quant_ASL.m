@@ -1,15 +1,14 @@
-function [ScaleImage, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseBasilQuantification, bSaveCBF4D)
-%xASL_quant_ASL Perform a multi-step quantification of single or multi-PLD with or without BASIL
-% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex, ITT]] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x[, bUseBasilQuantification, bSaveCBF4D])
+function [ScaleImage, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseExternalQuantification, bSaveCBF4D)
+%xASL_quant_ASL Perform a multi-step quantification of single or multi-PLD with or without external quantification
+% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex, ITT]] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x[, bUseExternalQuantification, bSaveCBF4D])
 %
 % INPUT:
 %   PWI4D           - Path to the 4D timeseries of (control-label subtracted) perfusion-weighted images (REQUIRED)
 %   M0_im           - M0 image (can be a single number or image matrix) (REQUIRED)
 %   imSliceNumber   - image matrix showing slice number in current ASL space (REQUIRED for 2D multi-slice)
 %   x               - struct containing pipeline environment parameters (REQUIRED)
-%   bUseBasilQuantification - boolean, true for using FSL BASIL for
-%                             quantification, false for using ExploreASL's
-%                             own quantification (OPTIONAL, DEFAULT = false for singlePLD, true for multiPLD)
+%   bUseExternalQuantification - boolean, true for using external quantification
+%                     and false for using ExploreASL's own quantification (OPTIONAL, DEFAULT = false for singlePLD, true for multiPLD)
 %   bSaveCBF4D      - Boolean to save CBF quantified in 4D (OPTIONAL, default = false)
 %
 % OUTPUT:
@@ -39,15 +38,14 @@ function [ScaleImage, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_i
 %              future this could go to different stages, e.g. dcm2niiX or
 %              PWI stage)
 %
-%              Note that BASIL is also implemented, but it doesn't allow a
-%              standard space quantification yet (it would need to use
-%              imSliceNumber)
+%              Note that external quantification is also implemented, but it doesn't allow a
+%              standard space quantification yet (it would need to use imSliceNumber)
 %
 %              Note that in Matlab we only quantify single-PLD here,
-%              multi-PLD or multi-TE quantifications are performed with BASIL or FABBER here, respectively.
+%              multi-PLD or multi-TE quantifications are performed with BASIL/FABBER/VABY here, respectively.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseBasilQuantification);
+% EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseExternalQuantification);
 % __________________________________
 % Copyright (c) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
@@ -70,11 +68,11 @@ elseif isempty(x) || ~isstruct(x)
     error('Illegal x structure');
 end
 
-if nargin<5 || isempty(bUseBasilQuantification)
+if nargin<5 || isempty(bUseExternalQuantification)
 	if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
-		bUseBasilQuantification = true;
+		bUseExternalQuantification = true;
 	else
-		bUseBasilQuantification = false;
+		bUseExternalQuantification = false;
 	end
 end
 
@@ -90,8 +88,8 @@ if  xASL_stat_SumNan(M0_im(:))==0
 	end
 end
 
-if x.modules.asl.bQuantifyMultiPLD && ~bUseBasilQuantification
-	error('Multi-PLD quantification currently works only with BASIL');
+if x.modules.asl.bQuantifyMultiPLD && ~bUseExternalQuantification
+	error('Multi-PLD quantification currently works only with external quantification');
 end
 
 ScaleImage = 1; % initializing (double data format by default in Matlab)
@@ -137,14 +135,14 @@ else
     
     
     %% 1    PLD scalefactor (gradient if 2D multi-slice)
-    % For BASIL the x.Q.SliceReadoutTime is used internally, otherwise
+    % For BASIL/FABBER/VABY the x.Q.SliceReadoutTime is used internally, otherwise
     % x.Q.SliceReadoutTime is added to ScaleImage
     
     switch lower(x.Q.MRAcquisitionType)
         case '3d'
             fprintf('%s\n','3D sequence, not accounting for SliceReadoutTime (homogeneous PLD for complete volume)');
             x.Q.SliceReadoutTime = 0;
-            if bUseBasilQuantification
+            if bUseExternalQuantification
                 x.Q.BasilSliceReadoutTime = 0;
             else
                 ScaleImage = ScaleImage.*x.Q.uniqueInitial_PLD;
@@ -167,8 +165,8 @@ else
 			imSliceNumber(imSliceNumber<1) = 1;
 			imSliceNumber(imSliceNumber>length(SliceReadoutTime)) = length(SliceReadoutTime);
             
-            % BASIL doesn't use a vector but a difference between slices
-			if bUseBasilQuantification
+            % External quantification doesn't use a vector but a difference between slices
+			if bUseExternalQuantification
 				if max(SliceReadoutTime)>0 && length(SliceReadoutTime) > 1
 					x.Q.BasilSliceReadoutTime = SliceReadoutTime(2)-SliceReadoutTime(1);
 				else
@@ -187,8 +185,8 @@ else
     end
 
 
-    %% 2. Run BASIL quantification
-    if bUseBasilQuantification
+    %% 2. Run external quantification
+    if bUseExternalQuantification
         % Here we perform FSL quantification
 		% We pass the path to the image and do all the Image and JSON reading inside the function
 		[PWI, ATT, ABV, Tex, ITT] = xASL_quant_External(PWI4D_Path, x); 
@@ -196,8 +194,8 @@ else
 		% If resultFSL is not 0, something went wrong
         % This will issue a warning inside xASL_quant_External
 	else
-        % This part should only run when we don't use FSL BASIL/FABBER
-        % or as a fallback when FSL BASIL/FABBER crashed
+        % This part should only run when we don't use FSL BASIL/FABBER/VABY
+        % or as a fallback when BASIL/FABBER/VABY crashed
         
         % First, we average PWI4D into PWI, for single-PLD only
         % (later, when we have multi-PLD, multi-echo, or multi-labeling quantification here as well,
@@ -221,7 +219,7 @@ else
         %% 3    Label decay scale factor for single (blood T1) - or dual-compartment (blood+tissue T1) model, CASL or PASL
         if isfield(x.Q,'LabelingType') && isfield(x.Q,'uniqueLabelingDuration')
 			% Note that this function uses PLD and other parameters from x.Q, but this is fine, because this is only executed for single-PLD.
-			% For multi-parameteric sequences, we have to use BASIL that calculates this ScaleImage internally and doesn't use this ScaleImage
+			% For multi-parameteric sequences, we have to use another external tool that calculates this ScaleImage internally and doesn't use this ScaleImage
             ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage);
 		else
 			if ~isfield(x.Q, 'LabelingType')

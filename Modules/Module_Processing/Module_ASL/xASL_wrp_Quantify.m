@@ -74,16 +74,16 @@ if nargin<5 || isempty(SliceGradientPath)
     SliceGradientPath = x.P.Pop_Path_SliceGradient_extrapolated;
 end
 
-if ~isfield(x.modules.asl,'bUseBasilQuantification') || isempty(x.modules.asl.bUseBasilQuantification)
-   x.modules.asl.bUseBasilQuantification = false;
+if ~isfield(x.modules.asl,'bUseExternalQuantification') || isempty(x.modules.asl.bUseExternalQuantification)
+   x.modules.asl.bUseExternalQuantification = false;
 end
 
 if nargin<6 || isempty(bSaveCBF4D)
 	bSaveCBF4D = false;
 end
 
-if x.modules.asl.bUseBasilQuantification && bSaveCBF4D
-	warning('Cannot save CBF4D when using BASIL');
+if x.modules.asl.bUseExternalQuantification && bSaveCBF4D
+	warning('Cannot save CBF4D when using external quantification');
 end
 
 if ~isfield(x,'Q')
@@ -109,9 +109,9 @@ xASL_delete(pathOutputTex);
 xASL_delete(pathOutputABV);
 xASL_delete(pathOutputITT);
 
-% For BASIL, only native images are processed and standard space images are not directly quantified, but only transformed
-% So that's why we need to delete both the native and standard space images at once for BASIL
-if x.modules.asl.bUseBasilQuantification
+% For external quantification, only native images are processed and standard space images are not directly quantified, but only transformed
+% So that's why we need to delete both the native and standard space images at once
+if x.modules.asl.bUseExternalQuantification
     xASL_delete(x.P.Pop_Path_qCBF);
     xASL_delete(x.P.Pop_Path_ATT);
     xASL_delete(x.P.Pop_Path_Tex);
@@ -386,11 +386,11 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
-if ~x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bUseBasilQuantification % multi-PLD with BASIL or single-PLD
-    [~, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_im, SliceGradient, x, x.modules.asl.bUseBasilQuantification, bSaveCBF4D); % also runs BASIL, but only in native space!
+if ~x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bUseExternalQuantification % multi-PLD with External quantification or single-PLD
+    [~, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_im, SliceGradient, x, x.modules.asl.bUseExternalQuantification, bSaveCBF4D); % also runs external quantification, but only in native space!
 else
-    % multi-PLD quantification without BASIL
-    error('Multi PLD quantification without BASIL is not yet implemented.');
+    % multi-PLD quantification without external quantification
+    error('Multi PLD quantification without external quantification is not yet implemented.');
 end
 
 if x.modules.asl.ApplyQuantification(5)==0
@@ -404,7 +404,7 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 9.	Save files
-% Both ExploreASL and BASIL-quantified maps will be saved similarly here
+% Both ExploreASL and external-quantified maps will be saved similarly here
 fprintf('%s\n','Saving PWI & CBF niftis');
 
 xASL_io_SaveNifti(PWI4D_Path, pathOutputCBF, CBF, 32, 0);
@@ -428,10 +428,9 @@ if numel(ITT) > 1
 	% Save the ATT file
 	xASL_io_SaveNifti(PWI4D_Path, pathOutputITT, ITT, 32, 0);
 end
-
-%% 9.b Save files in standard space for BASIL native space output
-% Transform BASIL CBF to standard space as BASIL only quantifies in native space
-if x.modules.asl.bUseBasilQuantification && strcmp(x.P.Path_CBF, pathOutputCBF)
+%% 9.b Save files in standard space for external-quantification native space output
+% Transform externally-quantified CBF to standard space as external quantification only works in native space
+if x.modules.asl.bUseExternalQuantification && strcmp(x.P.Path_CBF, pathOutputCBF)
     if exist(x.P.Path_mean_PWI_Clipped_sn_mat, 'file') % Backwards compatability, and also needed for the Affine+DCT co-registration of ASL-T1w
         AffineTransfPath = x.P.Path_mean_PWI_Clipped_sn_mat;
     else
@@ -470,11 +469,11 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 11.  Create standard space masked image to visualize masking effect
-if (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.modules.asl.bUseBasilQuantification) && ~bSaveCBF4D
+if (strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) || x.modules.asl.bUseExternalQuantification) && ~bSaveCBF4D
     % we do the masking only for the standard space image, for visualization
     % so here we check:
     % 1. strcmp(pathOutputCBF, x.P.Pop_Path_qCBF) -> if the created output CBF is the standard space NIfTI
-    % 2. || x.modules.asl.bUseBasilQuantification -> for BASIL, the standard space qCBF is a copy of the here created native space CBF NIfTI
+    % 2. || x.modules.asl.bUseExternalQuantification -> for External quantification (e.g., BASIL), the standard space qCBF is a copy of the here created native space CBF NIfTI
     % 3. ~bSaveCBF4D -> we create the masked image only for the single volume CBF
 
     if ~xASL_exist(x.P.Pop_Path_qCBF, 'file')
