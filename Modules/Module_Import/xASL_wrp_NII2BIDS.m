@@ -90,6 +90,19 @@ function x = xASL_wrp_NII2BIDS(x)
 	listSubjectsSessions = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],false,[],true);
     for iSubjectSession = 1:length(listSubjectsSessions)
         % Only run it for the current subject (maybe we can do this more elegantly in the future)
+
+        % In case there were illegal characters in subjectName, we get rid
+        % of them here (because the same was done in DCM2NIIX as well)
+        % And if we run first only DCM2NIIX, and on the next instance only
+        % run NII2BIDS, this name correction will not be transferred here
+        % otherwise
+        subjectName = xASL_adm_CorrectName(subjectName,2);
+        % Alternatively, we don't compare subjectName here and just run
+        % NII2BIDS (and subsequent stuff) on listSubjectsSessions instead
+        % (this would be Henk's preference, since it is less bug-prone)
+        % Note that we already warn the user in DCM2NIIX about the name
+        % change
+        
         if ~isempty(regexpi(listSubjectsSessions{iSubjectSession}, subjectName, 'once'))
             x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, listSubjectsSessions{iSubjectSession});
         end
