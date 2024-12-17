@@ -183,7 +183,10 @@ function [result, x] = xASL_module_Import(x)
     x = xASL_adm_CleanUpX(x);
     
     % We need to terminate the module correctly
-    x.mutex.AddState('999_ready');
+    if x.mutex.HasState(StateName{1}) && x.mutex.HasState(StateName{2})
+        x.mutex.AddState('999_ready');
+    end
+    
     x.mutex.Unlock();
     x.result = true;
     close all;
