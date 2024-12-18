@@ -392,9 +392,9 @@ function subject = parse_perf(subject)
                             m0_basename = bids.internal.file_utils(bids.internal.file_utils(m0_filename, 'basename'), 'basename'); % remove the extension
                             
                             if isempty(m0_filename)
-                                WarningID = ['BIDSLAYOUT:Missing' m0_filename'];
-                                warning(WarningID, ['Missing: ' m0_filename]); % will print this warning unless WarningID has been set OFF
-                                warning('OFF', WarningID); % to print this warning only once
+                                % WarningID = 'BIDSLAYOUT:Missing_M0';
+                                warning(['Missing: M0.nii for ' subject.perf(j).filename]); % will print this warning unless WarningID has been set OFF
+                                % warning('OFF', WarningID); % to print this warning only once
                             else
                                 % subject.perf(j).m0_filename = m0_filename;
                                 % -> this is included in the same structure for the m0scan.nii
