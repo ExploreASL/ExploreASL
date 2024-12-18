@@ -63,12 +63,27 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
             %% Start the conversion. Note that the dicom filter is only in effect when a directory is specified as input.
             try
                 % First we try to see if there are deeper layers
-                [fPath, ~, fExt] = xASL_fileparts(scanpath);
-                if isempty(fExt) % run this part only for folders
-                    filepathsNonRecursive = xASL_adm_GetFileList(fPath, x.modules.import.imPar.dcmExtFilter, 'FPList');
-                    filepathsRecursive = xASL_adm_GetFileList(fPath, x.modules.import.imPar.dcmExtFilter, 'FPListRec');
-                    if isempty(filepathsNonRecursive) && ~isempty(filepathsRecursive)
-                        scanpath = fileparts(filepathsRecursive{1});
+                if xASL_exist(scanpath, 'dir') == 7 % run this part only for folders
+                    filepathsNonRecursive = xASL_adm_GetFileList(scanpath, x.modules.import.imPar.dcmExtFilter, 'FPList'); % List files directly in scanpath
+                    filepathsRecursive = xASL_adm_GetFileList(scanpath, x.modules.import.imPar.dcmExtFilter, 'FPListRec'); % List all files including subdirectories
+                    if isempty(filepathsNonRecursive) && ~isempty(filepathsRecursive) 
+						% There are no files in the directory but there are files in the subdirectories
+						for iFile = 1:length(filepathsRecursive)
+							% Remove the filename and keep only the path
+							filepathsRecursive{iFile} = xASL_fileparts(filepathsRecursive{iFile});
+						end
+						% Find the unique paths
+						filepathsRecursiveUnique = unique(filepathsRecursive);
+						if isempty(filepathsRecursiveUnique)
+							% No files found recursively -> error
+							error(['No files found in ' scanpath]);
+						elseif length(filepathsRecursiveUnique) > 1
+							% Files at multiple directory levels -> error
+							error(['Multiple directory levels with files were found in ' scanpath]);
+						else
+							% Only a single directory level with files found - use that one
+							scanpath = filepathsRecursiveUnique{1};
+						end
                     end
                 end
                 
