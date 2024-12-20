@@ -53,8 +53,9 @@ function x = xASL_wrp_DCM2NII(x)
     iSubject = strcmp(x.SUBJECT,x.SUBJECTS);
     
     % In case there were illegal characters in the subject ID, we get rid of them within x.SUBJECT & x.SUBJECTS here
-    x.SUBJECT = xASL_adm_CorrectName(x.SUBJECTS{iSubject},2);
-    x.SUBJECTS{iSubject} = xASL_adm_CorrectName(x.SUBJECTS{iSubject},2);
+	% This should be now solved already in the first part of the import
+    %x.SUBJECT = xASL_adm_CorrectName(x.SUBJECTS{iSubject},2);
+    %x.SUBJECTS{iSubject} = xASL_adm_CorrectName(x.SUBJECTS{iSubject},2);
     
     %% 4. Create summary file
     overviewSubjects = fieldnames(x.importOverview);

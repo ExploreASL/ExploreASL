@@ -51,6 +51,9 @@ function x = xASL_imp_DetermineSubjectStructure(x)
     
     % SESSIONS DUMMY
     x.SESSIONS = {''};
+	for iSubject = 1:length(x.SUBJECTS)
+		x.SUBJECTS{iSubject} = xASL_adm_CorrectName(x.SUBJECTS{iSubject}, 2);
+	end
 end
 
 function [x] = xASL_imp_DetermineStructureFromRawdata(x)
@@ -89,7 +92,7 @@ function [x] = xASL_imp_DetermineStructureFromRawdata(x)
         % and only runs the ExploreASL workflow on derivatives data.
         % Maybe BIDS2Legacy is turned on, but it actually shouldn't be.
         fprintf(2,'There is no rawdata directory, skipping defacing...\n');
-    end
+	end
 end
 
 function [x] = xASL_imp_DetermineStructureFromTempdata(x)
