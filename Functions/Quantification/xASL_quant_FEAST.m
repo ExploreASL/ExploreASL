@@ -35,10 +35,10 @@ function xASL_quant_FEAST(x)
 fprintf('%s\n', 'Running FEAST quantification, assuming single compartment CBF quantification');
 
 if x.modules.asl.bUseExternalQuantification
-    warning('External quantification detected, FEAST ATT computation might be inaccurate');
+    warning('External quantification detected, FEAST ATT computation is not tested yet with external quantification');
 end
 if x.Q.nCompartments~=1
-    warning('Not a single compartment model used for CBF quantification, FEAST ATT computation might be inaccurate');
+    warning('Not a single compartment model used for CBF quantification, FEAST ATT computation is not tested yet with external quantification');
 end
 
 if x.Q.nUniqueInitial_PLD > 1 || x.Q.nUniqueLabelingDuration > 1

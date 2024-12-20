@@ -597,25 +597,30 @@ switch lower(x.Q.LabelingType)
 		end
 end
 
-if strcmpi(localQuantificationType, 'basil')
-	% Act as if we do not have repeats
-	%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
-	fprintf(FIDoptionFile, '--repeats=1\n');
+switch (lower(localQuantificationType))
+	case {'basil'}
+		% Act as if we do not have repeats
+		%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
+		fprintf(FIDoptionFile, '--repeats=1\n');
 
-	% Slice-timing
-	fprintf(FIDoptionFile, '--slicedt=%f\n', x.Q.SliceReadoutTimeDifference/1000);
+		% Slice-timing
+		fprintf(FIDoptionFile, '--slicedt=%f\n', x.Q.SliceReadoutTimeDifference/1000);
 
-	if isfield(x.Q,'LookLocker') && x.Q.LookLocker
-		if isfield(x.Q,'FlipAngle')
-			if length(unique(x.Q.FlipAngle))>1
-				warning('Look-Locker quantification with multiple flip angles, e.g. QUASAR, is not implemented yet');
+		if isfield(x.Q,'LookLocker') && x.Q.LookLocker
+			if isfield(x.Q,'FlipAngle')
+				if length(unique(x.Q.FlipAngle))>1
+					warning('Look-Locker quantification with multiple flip angles, e.g. QUASAR, is not implemented yet');
+				end
+				fprintf(option_file, '--FA=%f\n', x.Q.FlipAngle(1));
+				fprintf('BASIL: Flip angle for Look-Locker readout: %f\n', x.Q.FlipAngle(1));
+			else
+				warning('BASIL: Unknown flip angle for Look-Locker\n');
 			end
-			fprintf(option_file, '--FA=%f\n', x.Q.FlipAngle(1));
-			fprintf('BASIL: Flip angle for Look-Locker readout: %f\n', x.Q.FlipAngle(1));
-		else
-			warning('BASIL: Unknown flip angle for Look-Locker\n');
 		end
-	end
+	case {'fabber', 'vaby'}
+		if isfield(x.Q,'LookLocker') && x.Q.LookLocker
+			error('Lock-Locker quantification is not implemented for FABBER or VABY');
+		end
 end
 
 %% 4. BASIL fiting parameters
