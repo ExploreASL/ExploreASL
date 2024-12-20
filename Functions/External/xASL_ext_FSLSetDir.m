@@ -1,14 +1,11 @@
-function [FSLdir, x, RootWSLdir] = xASL_ext_FSLSetDir(x, bAutomaticallyDetectFSL)
+function [FSLdir, x, RootWSLdir] = xASL_ext_FSLSetDir(x)
 %xASL_ext_FSLSetDir Find the FSLdir from Matlab (ExploreASL)
 %
-% FORMAT: [FSLdir[, x, RootWSLdir]] = xASL_ext_FSLSetDir(x, bUseLatestVersion)
+% FORMAT: [FSLdir[, x, RootWSLdir]] = xASL_ext_FSLSetDir(x)
 %
 % INPUT:
 %   x                       - structure containing fields with all information required to run this submodule (OPTIONAL)
-%   bAutomaticallyDetectFSL - Boolean to automatically detect the FSL version
-%                             if disabled, this function will try to use the system-initialized FSL 
-%                             and throw an error if FSL is not initialized
-%                             (OPTIONAL, DEFAULT = disabled)
+%
 % OUTPUT:
 %   FSLdir    - path to FSL (REQUIRED)
 %   x         - as input, outputting FSL dir (OPTIONAL)
@@ -36,12 +33,11 @@ function [FSLdir, x, RootWSLdir] = xASL_ext_FSLSetDir(x, bAutomaticallyDetectFSL
 if nargin<1
     x = struct;
 end
-if nargin<2 || isempty(bAutomaticallyDetectFSL)
-    if isfield(x,'external') && isfield(x.external,'bAutomaticallyDetectFSL')
-        bAutomaticallyDetectFSL = x.external.bAutomaticallyDetectFSL;
-    else
-        bAutomaticallyDetectFSL = false;
-    end
+
+if isfield(x,'external') && isfield(x.external,'bAutomaticallyDetectFSL')
+	bAutomaticallyDetectFSL = x.external.bAutomaticallyDetectFSL;
+else
+	bAutomaticallyDetectFSL = false;
 end
 
 FSLdir = NaN;

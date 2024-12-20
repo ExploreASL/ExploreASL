@@ -1,14 +1,11 @@
-function [VABYdir, x] = xASL_ext_VABYSetDir(x, bAutomaticallyDetectVABY)
+function [VABYdir, x] = xASL_ext_VABYSetDir(x)
 %xASL_ext_VABYSetDir Find the VABYdir from Matlab (ExploreASL)
 %
-% FORMAT: [VABYdir[, x]] = xASL_ext_VABYSetDir(x, bAutomaticallyDetectVABY)
+% FORMAT: [VABYdir[, x]] = xASL_ext_VABYSetDir(x)
 %
 % INPUT:
 %   x                        - structure containing fields with all information required to run this submodule (OPTIONAL)
-%   bAutomaticallyDetectVABY - Boolean to automatically detect the VABY version
-%                              if disabled, this function will try to use the system-initialized VABY
-%                              and throw an error if VABY is not initialized
-%                              (OPTIONAL, DEFAULT = disabled)
+%
 % OUTPUT:
 %   VABYdir    - path to VABY (REQUIRED)
 %   x         - as input, outputting VABY dir (OPTIONAL)
@@ -31,12 +28,11 @@ function [VABYdir, x] = xASL_ext_VABYSetDir(x, bAutomaticallyDetectVABY)
 if nargin<1
     x = struct;
 end
-if nargin<2 || isempty(bAutomaticallyDetectVABY)
-    if isfield(x,'external') && isfield(x.external, 'bAutomaticallyDetectVABY')
-        bAutomaticallyDetectVABY = x.external.bAutomaticallyDetectVABY;
-    else
-        bAutomaticallyDetectVABY = false;
-    end
+
+if isfield(x,'external') && isfield(x.external, 'bAutomaticallyDetectVABY')
+	bAutomaticallyDetectVABY = x.external.bAutomaticallyDetectVABY;
+else
+	bAutomaticallyDetectVABY = false;
 end
 
 VABYdir = NaN;
@@ -49,17 +45,7 @@ end
 
 % For VABY quantification, we cannot run automatic detection
 if isfield(x, 'external') && isfield(x.external, 'ExternalQuantificationType') && strcmp(x.external.ExternalQuantificationType, 'VABY')
-	error('External quantification with VABY requested. You need to provide path in x.VABYdir');
-end
-
-
-%% Detect OS
-if ismac
-    fprintf('Running VABY from Matlab on macOS\n');
-elseif isunix % check for linux (also used for macOS)
-    fprintf('Running VABY from Matlab on Linux\n');
-elseif ispc
-    fprintf('Running VABY from Matlab on Linux\n');
+	error('External quantification with VABY requested. You need to provide the path to the VABY command in x.VABYdir');
 end
 
 %% AUTOMATIC DETECTION NOT YET IMPLEMENTED

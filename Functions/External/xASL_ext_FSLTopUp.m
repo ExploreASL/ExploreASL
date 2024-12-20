@@ -91,7 +91,7 @@ if ~isfield(x.external,'bAutomaticallyDetectFSL')
     x.external.bAutomaticallyDetectFSL = 0;
 end
 
-[FSLdir, x] = xASL_ext_FSLSetDir(x, x.external.bAutomaticallyDetectFSL); % Find the FSL directory
+[FSLdir, x] = xASL_ext_FSLSetDir(x); % Find the FSL directory
 Pathb0cfg = fullfile(x.opts.MyPath, 'External', 'fsl', 'b02b0.cnf'); % use our own one for reproducibility
 PathB0 = fullfile(InDir, 'B0.nii');
 PathLog = fullfile(InDir, 'B0.topup_log'); % path & file must be same as PathB0

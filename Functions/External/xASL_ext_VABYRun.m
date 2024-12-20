@@ -5,7 +5,7 @@ function [x, Result1] = xASL_ext_VABYRun(VABYCommand, x, NicenessValue, bVerbose
 %
 % INPUT:
 %   VABYCommand     - Command line job for VABY (REQUIRED)
-%   x               - structure containing fields with all information required to run this submodule (REQUIRED)
+%   x               - structure containing fields with all information required to run this quantification (REQUIRED)
 %   NicenessValue   - the linux nice parameter, a scale with 40 integers 
 %                     as index of the priority granted to a process. Lower
 %                     = higher priority, higher = lower priority. If no
@@ -63,23 +63,21 @@ if min(isnan(VABYdir))
     return;
 end
 
-% Setup VABY quantification
-VABYinit = '';
-VABYoutput = '';
-OutputString = '.nii';
+% Check correct path to the VABY command
 if strcmp(VABYCommand(1:4),'vaby')
+	% Check if the path to the vaby command was provided, if not, add the path
 	VABYCommand = fullfile(VABYdir, VABYCommand);
 end
 
 %% Be nice
 NiceString = ['nice -' num2str(NicenessValue) ' '];
-fprintf('%s\n', ['VABY: NiceNess=' num2str(NicenessValue) ', output=' OutputString]);
+fprintf('%s\n', ['VABY: NiceNess=' num2str(NicenessValue)]);
 
 %% Run VABY
 if bVerbose
-    Result1 = system([VABYinit VABYoutput NiceString VABYCommand], '-echo');
+    Result1 = system([NiceString VABYCommand], '-echo');
 else
-    Result1 = system([VABYinit VABYoutput NiceString VABYCommand]);
+    Result1 = system([NiceString VABYCommand]);
 end
 if Result1~=0
     warning('VABY command didnt work nicely:');
