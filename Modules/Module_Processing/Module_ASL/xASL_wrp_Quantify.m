@@ -223,7 +223,8 @@ if ~isfield(x, 'Hematocrit')
         % Convert sex correctly
         sex = x.S.SetsID(:, IndexSetsSex);
         sexOptions = x.S.SetsOptions{:, IndexSetsSex};
-        sexN = zeros(length(sex), 1)
+        sexN = nan(length(sex), 1); % currently we can only infer hct from male/female
+        % So anything that is not detected, will remain NaNs
         for iOption=1:length(sexOptions)
             if ~isempty(regexpi(sexOptions{iOption}, '^(male|m|man|men)$'))
                 sexN(sex==iOption) = 1;
@@ -231,7 +232,7 @@ if ~isfield(x, 'Hematocrit')
                 sexN(sex==iOption) = 2;
             end
         end
-        sexN(sexN<1 | sexN>2) = NaN; % currently we can only infer hct from male/female
+
         if sum(isnan(sexN))>0
             warning('Unknown sex detected in participants.tsv, currently we can only infer hematocrit from male or female');
             fprintf('%s\n', 'So in participants.tsv specify the words "male" and "female" only');
