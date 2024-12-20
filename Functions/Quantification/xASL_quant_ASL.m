@@ -92,6 +92,10 @@ if x.modules.asl.bQuantifyMultiPLD && ~bUseExternalQuantification
 	error('Multi-PLD quantification currently works only with external quantification');
 end
 
+if x.modules.asl.bQuantifyMultiTE && ~bUseExternalQuantification
+	error('Multi-TE quantification currently works only with external quantification');
+end
+
 ScaleImage = 1; % initializing (double data format by default in Matlab)
 ScaleImageABV = 1;
 
@@ -143,7 +147,7 @@ else
             fprintf('%s\n','3D sequence, not accounting for SliceReadoutTime (homogeneous PLD for complete volume)');
             x.Q.SliceReadoutTime = 0;
             if bUseExternalQuantification
-                x.Q.BasilSliceReadoutTime = 0;
+                x.Q.SliceReadoutTimeDifference = 0;
             else
                 ScaleImage = ScaleImage.*x.Q.uniqueInitial_PLD;
             end
@@ -168,9 +172,9 @@ else
             % External quantification doesn't use a vector but a difference between slices
 			if bUseExternalQuantification
 				if max(SliceReadoutTime)>0 && length(SliceReadoutTime) > 1
-					x.Q.BasilSliceReadoutTime = SliceReadoutTime(2)-SliceReadoutTime(1);
+					x.Q.SliceReadoutTimeDifference = SliceReadoutTime(2)-SliceReadoutTime(1);
 				else
-					x.Q.BasilSliceReadoutTime = 0;
+					x.Q.SliceReadoutTimeDifference = 0;
 				end
 			else
 				ScaleImage = ScaleImage.*(x.Q.uniqueInitial_PLD + SliceReadoutTime(imSliceNumber)); % effective/net PLD            
