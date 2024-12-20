@@ -1,11 +1,11 @@
-The maps in this folder all originate from SPM and/or CAT12, and thus distributed under GNU GPL.
+The *maps* in this folder all originate from SPM and/or CAT12, and thus distributed under GNU GPL.
 They are used for image processing in ExploreASL.
+To differentiate from /External/Atlases4ROIs/LicensePermissive/SPM_CAT_GPL, which have the same license and origin but are *masks* used as atlas/ROI.
 
 brainCentralityMap: created from rbrainmask, using distance transform.
 brainmask.nii: ICBM_152_nonlinear_symm brainmask, resampled to 1.5 mm MNI
-brainmask_supratentorial.nii: same, but without structures outside cerebrum
 CentralWM_QC.nii: ICBM_152_nonlinear_symm pWM eroded to center & resampled to 1.5 mm MNI
-DeepWM.nii: ICBM_152_nonlinear_symm pWM eroded to deep WM & resampled to 1.5 mm MNI
+Dummy_Deformation_y_T1.nii: SPM deformation field used for testing 
 Identity_Deformation_y_T1.nii: SPM deformation field, modified for no displacement, but resample to 1.5 mm MNI
 Identity_sn.mat: SPM affine +DCT uniform deformation parameters, set for zero displacement
 LabelColors.mat: iteration of different colors used to create labels
@@ -17,7 +17,6 @@ rc1T1_ASL_res.nii & rc2T1_ASL_res.nii: same but smoothed to typical ASL resoluti
 rc3T1.nii & rc3T1_ASL_res.nii: created from rc1T1 & rc2T1, see below
 rgrey.nii: SPM OldSeg pGM (ICBM_152_lin) resampled to 1.5 mm MNI
 rT1.nii: ICBM T1 template resampled to 1.5 mm MNI
-TotalGM.nii, TotalWM.nii, WholeBrain.nii: ICBM wholebrain mask, resampled to 1.5 mm MNI
 
 Several of these maps stem from the ICBM_152_linear & the ICBM_152_nonlinear atlas, which is free for all use (see license below):
 
