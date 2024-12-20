@@ -135,6 +135,8 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xAS
 		case 'vaby'
 			ExternalFunctionName = 'vaby_asl';
 			[~, resultExternal] = xASL_ext_VABYRun([ExternalFunctionName ' ' ExternalOptions], x);
+		case other
+			error('Unknown type of external quantification: %s', localQuantificationType);
 	end
     
     % Check if external quantification failed
@@ -246,9 +248,8 @@ function [ExternalOptions] = xASL_sub_ExternalOptions(pathExternalOptions, x, lo
 % 1. Create the options file
 % 2. Basic model and tissue parameters
 % 3. Basic acquisition parameters
-% 4. Model fiting parameters
-% 5. Extra BASIL fitting options
-% 6. Save and close the options file
+% 4. BASIL fiting parameters
+% 5. Save and close the options file
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [ExternalOptions] = xASL_sub_ExternalOptions(pathExternalOptions, x, localQuantificationType, jsonPWI4D, pathExternalInput, pathExternalOutput)
 %
@@ -274,15 +275,8 @@ else
 	bQuantifyMultiPLD = false;
 end
 
-if length(unique(jsonPWI4D.Q.EchoTime)) > 1
-	% For multi-echo, allow FABBER or VABY, but switch BASIL to FABBER
-	if strcmpi(localQuantificationType, 'BASIL')
-		localQuantificationType = 'FABBER';
-	end
-end
-
 % Define defaults for BASIL only options
-if ~isempty(regexpi(localQuantificationType, 'basil', 'once'))
+if strcmpi(localQuantificationType, 'basil')
 	% On Low quality settings, turn off all extra processing options
 	if isfield(x, 'settings') && isfield(x.settings, 'Quality') && ~x.settings.Quality
 		x.modules.asl.bSpatialBASIL = false;
@@ -292,7 +286,6 @@ if ~isempty(regexpi(localQuantificationType, 'basil', 'once'))
 		x.modules.asl.DispBASIL = 'none';
 	end
 
-	% Setting defaults for BASIL specific options
 	if ~isfield(x.modules.asl,'bSpatialBASIL') || isempty(x.modules.asl.bSpatialBASIL)
 		fprintf('BASIL: Setting default option bSpatial = false\n');
 		x.modules.asl.bSpatialBASIL = false;
@@ -324,7 +317,7 @@ if ~isempty(regexpi(localQuantificationType, 'basil', 'once'))
 end
 
 %% 1. Create the options file
-% ExternalOptions is a character array containing CLI args for the Basil command
+% ExternalOptions is a character array containing CLI args for the external command
 % Path to the options file
 switch (lower(localQuantificationType))
 	case 'fabber'
@@ -363,9 +356,9 @@ end
 if x.modules.asl.bMaskingExternal
 	% Check for uninitialized Mask variable or file
 	if ~isfield(x.P, 'Path_BrainMaskProcessing')
-		warning('BASIL masking set to TRUE, but the mask variable x.P.Path_BrainMaskProcessing is not initialized.');
+		warning('Masking in external quantification is set to TRUE, but the mask variable x.P.Path_BrainMaskProcessing is not initialized.');
 	elseif ~xASL_exist(x.P.Path_BrainMaskProcessing, 'file')
-		warning('BASIL masking set to TRUE, but the mask is missing: %s\n', x.P.Path_BrainMaskProcessing);
+		warning('Masking in external quantification is set to TRUE, but the mask is missing: %s\n', x.P.Path_BrainMaskProcessing);
 	else
 		% Add the mask to the options file
 		switch (lower(localQuantificationType))
@@ -439,8 +432,12 @@ switch lower(x.Q.LabelingType)
 		% PASL model is assumed by default and does not need to be specified in the config file
 		fprintf('BASIL: PASL model\n');
 		
-		if ~isempty(regexpi(localQuantificationType, '(FABBER|VABY)'))
+		if ~strcmpi(localQuantificationType, 'basil')
 			error('PASL is implemented for BASIL only and not for FABBER/VABY');
+		end
+
+		if length(unique(PWI4D_json.Q.EchoTime)) > 1
+			error('Multi-TE quantification is not implemented for PASL');
 		end
 
 		% For PASL, there can be only a single LabelingDuration, so unique PLD+LabDur combinations are uniquely based on PLDs
@@ -458,11 +455,11 @@ switch lower(x.Q.LabelingType)
 		% Either print bolus duration or unspecify it
 		if isfield(jsonPWI4D.Q, 'LabelingDuration') && ~isempty(jsonPWI4D.Q.LabelingDuration) 
 			if length(unique(jsonPWI4D.Q.LabelingDuration))>1
-				warning('PASL multi-PLD currently supports only a single Labeling Duration');
+				warning('PASL multi-PLD in BASIL currently supports only a single Labeling Duration');
 			end
 			fprintf(FIDoptionFile, '--tau=%.2f\n', jsonPWI4D.Q.LabelingDuration(1)/1000);
 		else
-			% Bolus duration not know. If multi-TI, then try to infer it
+			% Bolus duration unknow. If multi-TI, then try to infer it
 			if length(TIs) > 1
 				fprintf(FIDoptionFile, '--infertau\n');
 				fprintf('BASIL: Infer bolus duration component\n')
@@ -492,7 +489,7 @@ switch lower(x.Q.LabelingType)
 				iTE = 1;
 
 				while iTE<=length(TEs)
-					% We define a block
+					% We define a block of several TEs for a single given PLD/LD combination
 					iTEstart = iTE;
 					iTEend   = iTE;
 
@@ -517,7 +514,7 @@ switch lower(x.Q.LabelingType)
 				TEs = round(jsonPWI4D.Q.EchoTime'/1000,3);
 				nTE = length(TEs);
 			case 'basil'
-				% Normal multi-timepoint without multi-TE
+				% Normal multi-PLD without multi-TE
 				TEs = [];
 				nTE = [];
 		end
@@ -568,7 +565,6 @@ switch lower(x.Q.LabelingType)
 			case 'basil'
 				% Specify that we run the PCASL/CASL model
 				fprintf(FIDoptionFile, '--casl\n');
-				fprintf('BASIL: (P)CASL model\n');
 
 				% For BASIL, PLDs are specified
 				if bQuantifyMultiPLD
@@ -601,7 +597,7 @@ switch lower(x.Q.LabelingType)
 		end
 end
 
-if ~isempty(regexpi(localQuantificationType, 'basil', 'once'))
+if strcmpi(localQuantificationType, 'basil')
 	% Act as if we do not have repeats
 	%fprintf(FIDoptionFile, '--repeats=%i\n', size(PWI, 4)/PLDAmount);
 	fprintf(FIDoptionFile, '--repeats=1\n');
@@ -622,8 +618,8 @@ if ~isempty(regexpi(localQuantificationType, 'basil', 'once'))
 	end
 end
 
-%% 4. Model fiting parameters
-if ~isempty(regexpi(localQuantificationType, 'basil', 'once'))
+%% 4. BASIL fiting parameters
+if strcmpi(localQuantificationType, 'basil')
 	switch lower(x.Q.LabelingType)
 		case 'pasl'
 			% Default initial ATT for PASL is 0.7
@@ -637,10 +633,7 @@ if ~isempty(regexpi(localQuantificationType, 'basil', 'once'))
 		% Multi-PLD or Time Encoded data allows to fit arrival times
 		fprintf(FIDoptionFile, '--batsd=%f\n', x.modules.asl.ATTSDBASIL);
 	end
-end
 
-%% 5. Extra BASIL fitting options
-if ~isempty(regexpi(localQuantificationType, 'basil', 'once'))
 	if x.modules.asl.bSpatialBASIL
 		fprintf('BASIL: Use automated spatial smoothing\n');
 		ExternalOptions = [ExternalOptions ' --spatial'];
@@ -709,7 +702,7 @@ if ~isempty(regexpi(localQuantificationType, 'basil', 'once'))
 	%
 end
 
-%% 6. Close options file
+%% 5. Close options file
 fclose(FIDoptionFile);
 
 end
