@@ -186,7 +186,7 @@ for ii=1:length(nameTPM)
 	end
 
 	% Copy all the adult masks and transform to pediatric size
-	listMask = {'brainmask' 'TotalGM' 'TotalWM' 'WholeBrain'  'brainmask_supratentorial' 'ParenchymNarrow' 'LeftRight' 'DeepWM' 'CentralWM_QC' 'GhostSignalRatio' 'MNI_Structural'};
+	listMask = {'brainmask' 'WholeBrain'  'Supratentorial_GM_WM' 'ParenchymNarrow' 'LeftRight' 'DeepWM' 'CentralWM_QC' 'MNI_Structural'};
 	matlabbatch = [];
 	matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.def = {fullfile(pathMaps,nameTPM{ii},['y_' nameTPM{ii} '.nii'])};
 	matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {fullfile(pathMaps,nameTPM{ii},[nameTPM{ii} '.nii'])};
