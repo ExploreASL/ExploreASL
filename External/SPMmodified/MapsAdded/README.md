@@ -3,6 +3,7 @@ They are used for image processing in ExploreASL.
 To differentiate from /External/Atlases4ROIs/LicensePermissive/SPM_CAT_GPL, which have the same license and origin but are *masks* used as atlas/ROI.
 
 brainCentralityMap: created from rbrainmask, using distance transform.
+brainmask_2mm.nii: used by CAT12
 brainmask.nii: ICBM_152_nonlinear_symm brainmask, resampled to 1.5 mm MNI
 CentralWM_QC.nii: ICBM_152_nonlinear_symm pWM eroded to center & resampled to 1.5 mm MNI
 Dummy_Deformation_y_T1.nii: SPM deformation field used for testing 
@@ -17,6 +18,7 @@ rc1T1_ASL_res.nii & rc2T1_ASL_res.nii: same but smoothed to typical ASL resoluti
 rc3T1.nii & rc3T1_ASL_res.nii: created from rc1T1 & rc2T1, see below
 rgrey.nii: SPM OldSeg pGM (ICBM_152_lin) resampled to 1.5 mm MNI
 rT1.nii: ICBM T1 template resampled to 1.5 mm MNI
+T1_2mm.nii: used by CAT12
 
 Several of these maps stem from the ICBM_152_linear & the ICBM_152_nonlinear atlas, which is free for all use (see license below):
 
