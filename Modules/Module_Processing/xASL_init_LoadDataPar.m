@@ -183,8 +183,14 @@ elseif 	isfield(x.S, 'Atlases') && ~isfield(x.S, 'TissueMasking')
 	fprintf('Recommended addition to the dataPar.json to match provided Atlases: %s\n\n', textRecommendation);
 end
 if ~bAtlasTissueMatch
-    fprintf('%s\n', 'When ROI atlases are provided in S.Atlases, their tissue types');
-    fprintf('%s\n', 'need to be provided as well in dataPar.json as S.TissueMasking, with either option ''GM'', ''WM'', ''WB'' (==GM+WM).');
+    fprintf('%s\n', 'When ROI atlases are provided in S.Atlases, their tissue types,');
+    fprintf('%s\n', 'you need to be provided as well in dataPar.json as "S":{"TissueMasking"}, with either option "GM", "WM", "WB" (==GM+WM).');
+	warning('x.S.TissueMasking input did not match x.S.Atlases');
+	fprintf('%s\n', 'If you want GM CBF from an atlas ROI, add "GM". If you want WM CBF from an atlas ROI, add "WM"');
+	fprintf('%s\n', 'If you want both GM CBF and WM CBF from an atlas ROI, add the atlas ROI twice and add both "GM" and "WM"');
+	fprintf('%s\n', 'E.g., if you want both GM CBF and WM CBF from the Harvard-Oxford atlas, you would provide the following in dataPar.json:');
+	fprintf('%s\n', '"S":{"Atlases":["HOConn", "HOConn"]}');
+	fprintf('%s\n', '"S":{"TissueMasking":["GM", "WM"]}');
 
 	% No match means that we have to end it
     error('Not the same number of ROI atlases as subject-wise tissue-types, skipping');
