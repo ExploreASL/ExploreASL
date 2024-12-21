@@ -1,0 +1,1 @@
+Anatomical Automatic Labeling (AAL3) is a package for the anatomical labeling of functional brain mapping experiments. It is an in-house package made by the Neurofunctional Imaging Group (GIN, UMR5296, Bordeaux, France), which is available to the scientific community as copyright freeware under the terms of the GNU General Public License.
