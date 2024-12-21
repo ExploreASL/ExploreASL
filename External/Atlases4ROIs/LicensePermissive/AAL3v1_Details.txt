@@ -1,0 +1,12 @@
+This ROI atlas was resampled to the CAT12 1.5x1.5x1.5 mm template resolution, and warped from ICBM to IXI template using DARTEL.
+
+Left-Right ROIs were combined to bilateral ROIs, as ExploreASL divides ROIs in left-right-bilateral automatically. Except for ROIs 113-120 (vermis) and 169-170 (raphe medial and dorsal) which were bilateral already.
+Hence:
+  1:112 -> 1:56
+113:120 -> 57:64
+121:168 -> 65:88
+169:170 -> 89:90
+
+See /ExploreASL/WorkInProgress/Administration/xASL_adm_AtlasConvert_LeftRight2Bilateral
+
+When using this atlas, please cite: https://doi.org/10.1016/j.neuroimage.2019.116189.
