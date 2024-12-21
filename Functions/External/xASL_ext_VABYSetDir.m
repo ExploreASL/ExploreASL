@@ -35,7 +35,7 @@ else
 	bAutomaticallyDetectVABY = false;
 end
 
-VABYdir = NaN;
+VABYdir = ''; % Initialize the output as an empty string
 
 if isfield(x,'VABYdir') && ~isempty(x.VABYdir)
     % if we already have an VABY dir, skip this function

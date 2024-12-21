@@ -106,6 +106,10 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xAS
 		bQuantifyMultiTE = false;
 	end
 
+	if bQuantifyMultiTE && length(unique(PWI4D_json.Q.EchoTime)) < 3
+		error('Multi-TE quantification with less than 3 TEs is not possible');
+	end
+	
     %% 4. Create option_file that contains options which are passed to the FSL command
     % ExternalOptions is a character array containing CLI args for the BASIL/FABBER/VABY command
 	

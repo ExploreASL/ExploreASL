@@ -976,21 +976,22 @@ end
 
 %% 2. Manage bUseExternalQuantification parameter that activates External quantification quantification
 if ~isfield(x.modules.asl, 'bUseExternalQuantification') || isempty(x.modules.asl.bUseExternalQuantification)
-	if ~isfield(x.modules.asl, 'ExternalQuantificationType') || ~isempty(regexpi(x.modules.asl.ExternalQuantificationType, '(basil|fabber|vaby)'))
+	if isfield(x.modules.asl, 'ExternalQuantificationType') && ~isempty(regexpi(x.modules.asl.ExternalQuantificationType, '(basil|fabber|vaby)'))
 		% If external quantification type is defined, then define also the boolean
 		x.modules.asl.bUseExternalQuantification = true;
 		warning('bUseExternalQuantification not defined, but ExternalQuantificationType was set correctly. Setting bUseExternalQuantification as true. Please verify the settings');
+	elseif x.modules.asl.bQuantifyMultiTE
+		warning('bUseExternalQuantification not defined, but multi-TE detected. Using FABBER external quantification');
+		x.modules.asl.bUseExternalQuantification = true;
+		x.modules.asl.ExternalQuantificationType = 'FABBER';
+	elseif x.modules.asl.bQuantifyMultiPLD
+		warning('bUseExternalQuantification not defined, but multi-PLD detected. Using BASIL external quantification');
+		x.modules.asl.bUseExternalQuantification = true;
+		x.modules.asl.ExternalQuantificationType = 'BASIL';
 	else
 		x.modules.asl.bUseExternalQuantification = false;
+		x.modules.asl.ExternalQuantificationType = 'none';
 	end
-    
-    if x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bQuantifyMultiTE
-        x.modules.asl.bUseExternalQuantification = true;
-		if ~isfield(x.modules.asl, 'ExternalQuantificationType') || isempty(regexpi(x.modules.asl.ExternalQuantificationType, '(fabber|vaby)'))
-			warning('External quantification for multi-TE or multi-PLD is only possible with FABBER or VABY. Using FABBER');
-			x.modules.asl.ExternalQuantificationType = 'FABBER';
-		end
-    end
 end
 
 %% 3. Manage parameter SaveCBF4D that saves the entire 4D volume

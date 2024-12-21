@@ -40,8 +40,8 @@ else
 	bAutomaticallyDetectFSL = false;
 end
 
-FSLdir = NaN;
-RootWSLdir = NaN;
+FSLdir = '';
+RootWSLdir = '';
 RootFSLdir = '';
 
 if isfield(x,'FSLdir') && isfield(x,'RootFSLdir') && ~isempty(x.FSLdir) && ~isempty(x.RootFSLdir)
@@ -186,9 +186,9 @@ end
 %% Create new list with valid FSL folders
 FSLdir = '';
 if isempty(RootFSLdir) || isempty(RootFSLdir{end})
-    RootFSLdir = NaN;
-    FSLdir = NaN;
-    RootWSLdir = NaN;
+    RootFSLdir = '';
+    FSLdir = '';
+    RootWSLdir = '';
     fprintf('Warning, FSL folder not found!\n');
     return;
 end
@@ -217,8 +217,8 @@ FSLdir = sort(unique(FSLdir));
 %% Pick FSLdir
 if length(FSLdir)<1
     warning('Cannot find valid FSL installation dir');
-    FSLdir = NaN;
-    RootWSLdir = NaN;
+    FSLdir = '';
+    RootWSLdir = '';
     return;
 elseif length(FSLdir)>1
     fprintf('%s\n','Found more than 1 FSL version, choosing latest');
@@ -255,14 +255,14 @@ FSLdir = strrep(FSLdir,'\','/');
 %         FSLdir = FSLsubdir{DirIndex};
 %     else
 %         warning('Cannot find valid FSL installation dir');
-%         FSLdir = NaN;
+%         FSLdir = '';
 %         return;        
 %     end
 % end        
 
 
 %% Manage RootFSLdir
-if ~exist('RootWSLdir','var') || (isnumeric(RootWSLdir) && isnan(RootWSLdir))
+if ~exist('RootWSLdir','var') || isempty(RootWSLdir)
     RootWSLdir = FSLdir; % default
 else
     RootWSLdir = fullfile(RootWSLdir, FSLdir); % for e.g. WSL

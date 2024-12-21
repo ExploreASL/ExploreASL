@@ -56,14 +56,14 @@ Result1 = NaN;
 %% Find VABY directory
 [VABYdir, x] = xASL_ext_VABYSetDir(x);
 
-if min(isnan(VABYdir))
+if isempty(VABYdir) || ~xASL_exist(VABYdir, 'dir')
     % Script will return Result1=NaN to show that there is no VABY
     % installation found
     warning('No VABY installation found, skipping VABY function');
     return;
 end
 
-% Check correct path to the VABY command
+% Check if VABYcommand contains the command and parameters, or if it also contains the full path to the vaby command
 if strcmp(VABYCommand(1:4),'vaby')
 	% Check if the path to the vaby command was provided, if not, add the path
 	VABYCommand = fullfile(VABYdir, VABYCommand);
