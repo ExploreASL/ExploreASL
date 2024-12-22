@@ -123,9 +123,11 @@ spm_jobman('run',matlabbatch);
 
 % Create MAT file
 IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'oAAL3v1_1mm.nii'));
+IM = uint8(IM);
 save(fullfile(pathTPM, 'oAAL3v1_1mm.nii.mat'),'IM');
 xASL_adm_GzipNifti(fullfile(pathTPM, 'oAAL3v1_1mm.nii'));
 
 IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'oWMPM_Type_III.nii'));
+IM = uint8(IM);
 save(fullfile(pathTPM, 'oWMPM_Type_III.nii.mat'),'IM');
 xASL_adm_GzipNifti(fullfile(pathTPM, 'oWMPM_Type_III.nii'));
