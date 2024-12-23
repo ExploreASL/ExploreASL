@@ -25,12 +25,11 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
-
 
     %% Start the conversion if this scan should not be skipped
     first_match = [];
@@ -69,19 +68,16 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
                     if isempty(filepathsNonRecursive) && ~isempty(filepathsRecursive) 
 						% There are no files in the directory but there are files in the subdirectories
 						for iFile = 1:length(filepathsRecursive)
-							% Remove the filename and keep only the path
+							% Remove the filename and keep only the path to the folder
 							filepathsRecursive{iFile} = xASL_fileparts(filepathsRecursive{iFile});
 						end
-						% Find the unique paths
+						% Find the unique folders
 						filepathsRecursiveUnique = unique(filepathsRecursive);
-						if isempty(filepathsRecursiveUnique)
-							% No files found recursively -> error
-							error(['No files found in ' scanpath]);
-						elseif length(filepathsRecursiveUnique) > 1
+						if length(filepathsRecursiveUnique) > 1
 							% Files at multiple directory levels -> error
-							error(['Multiple directory levels with files were found in ' scanpath]);
+							error(['Multiple subdirectories with (DICOM) files were found in ' scanpath]);
 						else
-							% Only a single directory level with files found - use that one
+							% Only a single subdirectory with files found - use that one
 							scanpath = filepathsRecursiveUnique{1};
 						end
                     end
