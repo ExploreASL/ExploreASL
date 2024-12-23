@@ -1,21 +1,11 @@
 function [IMout] = xASL_im_ConvertMap2Mask(IMin)
-%xASL_im_ConvertMap2Mask Provides a robust way of conversion of 
-% a continuous map to a binary mask, which can be used for lesions, ROIs,
-% or tissue probability maps. Based on the assumption that a map should
-% be thresholded at 50% to form a map, which is often the case for
+%xASL_im_ConvertMap2Mask Provides a robust way of conversion of a continuous map to a binary mask, which can be used for lesions, ROIs,
+% or tissue probability maps. Based on the assumption that a map should be thresholded at 50% to form a map, which is often the case for
 % automatic segmentations
-%
-% Explanation: taking the 0.5 could give a too strict mask, if there are a few high outliers
-%  in case of interpolation overshoots or other causes for extreme values
-%  (vascular peaks?). Masking at 0.5* the 0.95 percentile value instead of 1
-%  (absolute max) helps, but doesn't work if a lot of low values have
-%  occurred through smoothing from interpolation. A pragmatic solution is
-%  too first make the strict mask, take the 0.95 percentile from this and
-%  use half of its value.
 %
 % FORMAT: [IMout] = xASL_im_ConvertMap2Mask(IMin)
 %
-% INPUT: IMin - input image
+% INPUT: IMin - input image (REQUIRED)
 %
 % OUTPUT: IMout - output image
 %
@@ -24,6 +14,15 @@ function [IMout] = xASL_im_ConvertMap2Mask(IMin)
 % or tissue probability maps. Based on the assumption that a map should
 % be thresholded at 50% to form a map, which is often the case for
 % automatic segmentations.
+%
+% Explanation: taking the 0.5 could give a too strict mask, if there are a few high outliers
+%  in case of interpolation overshoots or other causes for extreme values
+%  (vascular peaks?). Masking at 0.5* the 0.95 percentile value instead of 1
+%  (absolute max) helps, but doesn't work if a lot of low values have
+%  occurred through smoothing from interpolation. A pragmatic solution is
+%  too first make the strict mask, take the 0.95 percentile from this and
+%  use half of its value.
+
 %
 % EXAMPLE: n/a
 %
@@ -76,11 +75,8 @@ if  xASL_stat_SumNan(IMin(:))>0
     % Bypassed the previous, to keep fair across all segmentations
     IMout           = IMin>SimpleHalfValue;
 else
-    IMout           = IMin > 0;
+    IMout           = logical(IMin);
 end
-
-
-
 
 end
 
