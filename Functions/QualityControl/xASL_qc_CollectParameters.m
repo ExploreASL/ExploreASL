@@ -96,18 +96,16 @@ end
 x = xASL_qc_CollectSoftwareVersions(x);
 
 % Module-specific software versions:
-switch ScanType
-    case 'Structural'
-        x.Output.(ScanType).Version_CAT12 = x.Output.SoftwareVersion.CAT12;
-        x.Output.(ScanType).Version_LST = x.Output.SoftwareVersion.LST;
-        
-        % General software versions (put this in structural only, to avoid redundant output
-        x.Output.(ScanType).Version_ExploreASL = x.Output.SoftwareVersion.ExploreASL;
-        x.Output.(ScanType).Version_Matlab = x.Output.SoftwareVersion.Matlab;
-        x.Output.(ScanType).Version_SPM12 = x.Output.SoftwareVersion.SPM12;        
-    case {'dwi', 'func', 'ASL'}
-        x.Output.(ScanType).(x.SESSIONS{iSession}).Version_FSL = x.Output.SoftwareVersion.FSL;
-end
+x.Output.(ScanType).Version_CAT12 = x.Output.SoftwareVersion.CAT12; % CAT12
+x.Output.(ScanType).Version_LST = x.Output.SoftwareVersion.LST; % LST
+
+% General software versions (put this in structural only, to avoid redundant output
+x.Output.(ScanType).Version_ExploreASL = x.Output.SoftwareVersion.ExploreASL; % ExploreASL version
+x.Output.(ScanType).Version_ExploreASL_git = x.Output.SoftwareVersion.ExploreASL_git; % ExploreASL git commit tag
+x.Output.(ScanType).Version_Matlab = x.Output.SoftwareVersion.Matlab; % Matlab
+x.Output.(ScanType).Version_SPM12 = x.Output.SoftwareVersion.SPM12; % SPM
+x.Output.(ScanType).(x.SESSIONS{iSession}).Version_FSL = x.Output.SoftwareVersion.FSL; % FSL
+
 % now remove the SoftwareVersion field to avoid redundancy
 x.Output = rmfield(x.Output,'SoftwareVersion');
 
