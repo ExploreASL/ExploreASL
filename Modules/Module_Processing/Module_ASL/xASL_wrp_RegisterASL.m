@@ -129,10 +129,6 @@ if x.modules.asl.bDCTRegistration
 	x.modules.asl.bRegistrationContrast = 3;
 end
 
-% By default, don't use dummy structural even if the structural image is missing
-if ~isfield(x.modules.asl,'bUseMNIasDummyStructural') || isempty(x.modules.asl.bUseMNIasDummyStructural)
-	x.modules.asl.bUseMNIasDummyStructural = false;
-end
 
 %% B. Manage OtherList
 % Define OtherList for registration
@@ -217,10 +213,16 @@ end
 
 
 %% E. Allow registration without structural data
+%% PM: This part is partly equal to part xASL_module_ASL > section A2
 StructuralDerivativesExist = xASL_exist(x.P.Path_y_T1, 'file') && xASL_exist(x.P.Path_c1T1, 'file') && xASL_exist(x.P.Path_c2T1, 'file');
 StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_ORI, 'file');
 
-% In case that we don't have the structural derived data, we need to check the reason
+% By default, don't use dummy structural even if the structural image is missing
+if ~isfield(x.modules.asl,'bUseMNIasDummyStructural') || isempty(x.modules.asl.bUseMNIasDummyStructural)
+	x.modules.asl.bUseMNIasDummyStructural = false;
+end
+
+% In case that we don't have the structural derived data, we need to check the reason and potentially create dummy files
 if ~StructuralDerivativesExist
 	
 	if StructuralRawExist && ~x.modules.asl.bUseMNIasDummyStructural
@@ -232,7 +234,8 @@ if ~StructuralDerivativesExist
     else
         % DummyMNI mode was activated
         if StructuralRawExist
-            warning('Requested to use MNI images as dummy structural images, even though structural rawdata exist');
+            warning('Requested to use MNI images as dummy structural images, even though structural rawdata exists');
+            fprintf('They exist in the /derivatives/ExploreASL folder but were not processed by the structural module\n');
         end
         
 		% No structural data, but the DummyMNI mode was activated
@@ -292,6 +295,9 @@ if ~StructuralDerivativesExist
         x.mutex.Root = oldRoot;
         x.mutex.Lock(oldID);
 	end
+elseif x.modules.asl.bUseMNIasDummyStructural
+	warning('Note that you have processed Structural data, consider disabling x.modules.asl.bUseMNIasDummyStructural');
+	fprintf('This option is only useful if you have no structural data available (for a certain subject) and you want to run the ASL module anyway\n');
 end
 
 %% F. Smooth T1 deformation field into ASL resolution
