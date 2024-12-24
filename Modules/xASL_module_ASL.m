@@ -75,6 +75,7 @@ end
 
 
 %% A2. Check if T1w structural reference exists
+%% PM: This part is partly equal to part xASL_wrp_RegisterASL > section E
 StructuralDerivativesExist = xASL_exist(x.P.Path_y_T1, 'file') && xASL_exist(x.P.Path_c1T1, 'file') && xASL_exist(x.P.Path_c2T1, 'file');
 StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_ORI, 'file');
 
@@ -82,21 +83,30 @@ if ~isfield(x.modules.asl, 'bUseMNIasDummyStructural')
     x.modules.asl.bUseMNIasDummyStructural = false;
 end
 
-% In case that we don't have the structural derived images, we need to check the reason
+% In case that we don't have the structural derived images, we need to check the reason and potentially abort the ASL processing
 if ~StructuralDerivativesExist
 	fprintf('\n\n%s\n', ['Processed structural data are missing: ' x.dir.SUBJECTDIR]);
 
 	if StructuralRawExist && ~x.modules.asl.bUseMNIasDummyStructural
 		% Either the Structural data are there, but the population module wasn't run
-		fprintf('though raw structural scans are present\n');
+		fprintf('though raw structural scans are present in the same derivatives folder\n');
         fprintf('Please run the structural module first\n');
         error('Skipping ASL module');
+	elseif StructuralRawExist && x.modules.asl.bUseMNIasDummyStructural
+			% Either the Structural data are there, but the population module wasn't run
+			fprintf('though raw structural scans are present in the same derivatives folder\n');
+			fprintf('Please run the structural module first\n');
+			fprintf('And consider disabling x.modules.asl.bUseMNIasDummyStructural\n');
+			error('Skipping ASL module');		
 	elseif ~x.modules.asl.bUseMNIasDummyStructural
 		% We don't have the structural data and the DummyMNI mode wasn't activated
-        fprintf('also, there are no raw structural scans present\n');
+        fprintf('also, there are no raw structural scans present in the same derivatives folder\n');
 		fprintf('Consider enabling "x.modules.asl.bUseMNIasDummyStructural" to run the ASL module without structural images\n');
         error('Skipping ASL module');
 	end
+elseif x.modules.asl.bUseMNIasDummyStructural
+	warning('Note that you have processed Structural data, consider disabling x.modules.asl.bUseMNIasDummyStructural');
+	fprintf('This option is only useful if you have no structural data available (for a certain subject) and you want to run the ASL module anyway\n');
 end
 
 
