@@ -11,7 +11,14 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This functions collects software versions for Matlab, SPM, CAT, LST & ExploreASL
 %              If FSL is installed, it will obtain its version as well.
-%              These are stored in x.Output.Software.
+%              These are stored in x.Output.SoftwareVersion:
+%
+%           Software.Matlab
+%           Software.SPM12
+%           Software.CAT12
+%           Software.LST
+%           Software.FSL
+%           Software.ExploreASL_git
 %
 % EXAMPLE: x = xASL_qc_CollectSoftwareVersions(x);
 % __________________________________
