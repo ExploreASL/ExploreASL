@@ -217,11 +217,6 @@ end
 StructuralDerivativesExist = xASL_exist(x.P.Path_y_T1, 'file') && xASL_exist(x.P.Path_c1T1, 'file') && xASL_exist(x.P.Path_c2T1, 'file');
 StructuralRawExist = xASL_exist(x.P.Path_T1, 'file') || xASL_exist(x.P.Path_T1_ORI, 'file');
 
-% By default, don't use dummy structural even if the structural image is missing
-if ~isfield(x.modules.asl,'bUseMNIasDummyStructural') || isempty(x.modules.asl.bUseMNIasDummyStructural)
-	x.modules.asl.bUseMNIasDummyStructural = false;
-end
-
 % In case that we don't have the structural derived data, we need to check the reason and potentially create dummy files
 if ~StructuralDerivativesExist
 	
