@@ -142,33 +142,8 @@ if x.modules.population.bNativeSpaceAnalysis
 						% Derive the name of the mask
 						[~, filenameAtlas, extensionAtlas] = xASL_fileparts(pathMaskInputList{iAtlas});
 						pathMaskOutput = fullfile(x.dir.SESSIONDIR, [filenameAtlas '_Atlas' extensionAtlas]);
-						
-						% Automatically detect mask type
-						% PM:   in the future we can also do option 1 for multi-label
-						%       masks, by splitting them in multiple individual masks and
-						%       treating those separately
-						imMaskTmp = xASL_io_Nifti2Im(pathMaskInput);
-						% Binary file
-						if max(imMaskTmp(:)) == 1
-							% binary masks - presmooth, spline-interpolation, cut at 50%
-							% Pre-smooth the mask before downsampling to native space
-							[tmpPath,tmpFile,tmpExt] = xASL_fileparts(pathMaskOutput);
-							pathTmpPreSmooth = fullfile(tmpPath,['pres_' tmpFile tmpExt]);
-							pathTmpPreSmooth = xASL_im_PreSmooth(x.P.Path_PWI, pathMaskInput, pathTmpPreSmooth, x.S.optimFWHM_mm,[], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-							
-							% Transform the Mask to native space
-							xASL_spm_deformations(x, pathTmpPreSmooth, pathMaskOutput, 2, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
-							xASL_delete(pathTmpPreSmooth);
-							
-							% Threshold at 50%
-							imMaskTmp = xASL_io_Nifti2Im(pathMaskOutput);
-							imMaskTmp = imMaskTmp > 0.5;
-							xASL_io_SaveNifti(pathMaskOutput, pathMaskOutput, imMaskTmp);
-						else % multilabel file
-							% multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding
-							xASL_spm_deformations(x, pathMaskInput, pathMaskOutput, 0, x.P.Path_PWI, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
-							xASL_adm_GzipNifti(pathMaskOutput);
-						end
+						% Run the transformation function
+						xASL_im_CreateGroupAnalysisMask_Transform(pathMaskInput, pathMaskOutput, x.P.Path_PWI, x);
 					end
 				end
 			end
@@ -255,4 +230,38 @@ function [outputPath, bCreateStandardSpaceMasks] = xASL_sub_CheckTemplatePath(pr
     else
         outputPath = outputPath{1};
 	end
+end
+
+function xASL_im_CreateGroupAnalysisMask_Transform(pathMaskInput, pathMaskOutput, pathReference, x)
+% Function that transforms the input mask from standard space to native space
+% pathMaskInput is the input file in standard space
+% pathMaskOutput is the output file name in native space
+% pathReference is the filename of the reference file in native space
+
+% Automatically detect mask type
+% PM:   in the future we can also do option 1 for multi-label
+%       masks, by splitting them in multiple individual masks and
+%       treating those separately
+imMaskTmp = xASL_io_Nifti2Im(pathMaskInput);
+% Binary file
+if max(imMaskTmp(:)) == 1
+	% binary masks - presmooth, spline-interpolation, cut at 50%
+	% Pre-smooth the mask before downsampling to native space
+	[tmpPath,tmpFile,tmpExt] = xASL_fileparts(pathMaskOutput);
+	pathTmpPreSmooth = fullfile(tmpPath,['pres_' tmpFile tmpExt]);
+	pathTmpPreSmooth = xASL_im_PreSmooth(pathReference, pathMaskInput, pathTmpPreSmooth, x.S.optimFWHM_mm,[], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+
+	% Transform the Mask to native space
+	xASL_spm_deformations(x, pathTmpPreSmooth, pathMaskOutput, 2, pathReference, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
+	xASL_delete(pathTmpPreSmooth);
+
+	% Threshold at 50%
+	imMaskTmp = xASL_io_Nifti2Im(pathMaskOutput);
+	imMaskTmp = imMaskTmp > 0.5;
+	xASL_io_SaveNifti(pathMaskOutput, pathMaskOutput, imMaskTmp);
+else % multilabel file
+	% multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding
+	xASL_spm_deformations(x, pathMaskInput, pathMaskOutput, 0, pathReference, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
+	xASL_adm_GzipNifti(pathMaskOutput);
+end
 end
