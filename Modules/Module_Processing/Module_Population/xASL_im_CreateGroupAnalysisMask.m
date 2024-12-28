@@ -146,6 +146,25 @@ if x.modules.population.bNativeSpaceAnalysis
 						xASL_im_CreateGroupAnalysisMask_Transform(pathMaskInput, pathMaskOutput, x.P.Path_PWI, x);
 					end
 				end
+
+				% Load the list of Lesions and ROIs for a given subject and session
+				LesionROIStandardPaths = xASL_adm_GetFileList(x.D.PopDir, ['(?i)^r(Lesion|ROI)_(T1|FLAIR|T2)_\d*_' x.SUBJECTS{iSubject} '.*\.nii'], 'List', [0 Inf]);
+
+				% Go through the lesions and ROIs 
+				for iROI = 1:length(LesionROIStandardPaths)
+					% Remove the subject names
+					[~, iEnd] = regexpi(LesionROIStandardPaths{iROI}, '^r(Lesion|ROI)_(T1|FLAIR|T2)_\d*');
+					if isempty(iEnd)
+						% Cannot properly detect the lesion name
+						LesionROINativePaths{iROI} = '';
+					else
+						LesionROINativePaths{iROI} = fullfile(x.dir.SESSIONDIR, [LesionROIStandardPaths{iROI}(2:iEnd), '.nii']);
+						
+						% Transform the Lesion or ROI to native space
+						xASL_im_CreateGroupAnalysisMask_Transform(fullfile(x.D.PopDir, LesionROIStandardPaths{iROI}), LesionROINativePaths{iROI}, x.P.Path_PWI, x);
+					end
+					
+				end
 			end
 		end
 	end

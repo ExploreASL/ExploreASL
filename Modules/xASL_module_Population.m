@@ -323,8 +323,8 @@ if ~x.mutex.HasState(StateName{8})
 			x.S.TissueMaskingLocal = 'WB';
 			for iROI = 1:length(LesionUniqueROIList)
 				x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iROI});
-				% Replace 'r' at the start with 'PV'
-				x.S.InputAtlasNativeName = ['PV' LesionUniqueROIList{iROI}(2:end-1)];
+				% Remove 'r' at the start
+				x.S.InputAtlasNativeName = LesionUniqueROIList{iROI}(2:end-1);
 				xASL_wrp_GetROIstatistics(x);
 			end
 		end
