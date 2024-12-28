@@ -147,7 +147,7 @@ bAtlasTissueMatch = true; % x.S.Atlases & x.S.TissueMasking should match before 
 
 if ~isfield(x, 'S') || (~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking'))
 	% Default atlases/ROIs & tissue masks if nothing is provided
-	x.S.Atlases = {'TotalGM','DeepWM'}; % Default
+	x.S.Atlases = {'Total','DeepWM'}; % Default
     x.S.TissueMasking = {'GM' 'WM'}; % GM WM, fits with the TotalGM & DeepWM above
     % Note that this should be in the same order as the atlases/ROIs
     % A mismatch (e.g. TissueMasking=GM for Atlases=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
