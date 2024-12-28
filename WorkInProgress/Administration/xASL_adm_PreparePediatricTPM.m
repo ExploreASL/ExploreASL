@@ -219,7 +219,7 @@ for ii=1:length(nameTPM)
 	end	
 	
 	% Copy normal files
-	listFile = {'TotalGM.tsv' 'TotalWM.tsv' 'WholeBrain.tsv' 'MNI_Structural.tsv' 'LeftRight.tsv' 'LabelColors.mat' 'GhostSignalRatio.tsv' 'DeepWM.tsv' 'Identity_sn.mat' 'Identity_Deformation_y_T1.nii.gz'...
+	listFile = {'Total.tsv' 'WholeBrain.tsv' 'MNI_Structural.tsv' 'LeftRight.tsv' 'LabelColors.mat' 'GhostSignalRatio.tsv' 'DeepWM.tsv' 'Identity_sn.mat' 'Identity_Deformation_y_T1.nii.gz'...
 		        fullfile('VascularTerritories','TatuICA_PCA.tsv'),fullfile('VascularTerritories','LabelingTerritories.tsv'),fullfile('VascularTerritories','CortVascTerritoriesTatu.tsv'),fullfile('VascularTerritories','ATTbasedFlowTerritories.tsv')};
 	for jj=1:length(listFile)
 		xASL_Copy(fullfile(pathMaps,listFile{jj}), fullfile(pathMaps,nameTPM{ii},listFile{jj}),true);
