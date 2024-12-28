@@ -182,10 +182,15 @@ end
 fprintf('\n');
 
 
-%% 0.b Native space atlas input
+%% 0.a2 Add TissueMasking to ROI name
 bWarnedPVWMH = false;
 namesROIlocal = x.S.NamesROI;
 
+% Append TissueMasking e.g. GM, WM, CSF to the ROI name
+namesROIlocal = cellfun(@(y) [y x.S.TissueMaskingLocal{1}], namesROIlocal, 'UniformOutput',false);
+
+
+%% 0.b Native space atlas input
 if x.S.InputNativeSpace
 	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
 	atlasN = max(inputAtlasTmp(:));
