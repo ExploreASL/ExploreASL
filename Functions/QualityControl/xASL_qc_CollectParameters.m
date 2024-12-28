@@ -96,8 +96,10 @@ end
 x = xASL_qc_CollectSoftwareVersions(x);
 
 % Module-specific software versions:
-x.Output.(ScanType).Version_CAT12 = x.Output.SoftwareVersion.CAT12; % CAT12
-x.Output.(ScanType).Version_LST = x.Output.SoftwareVersion.LST; % LST
+if strcmpi(ScanType, 'Structural')
+    x.Output.(ScanType).Version_CAT12 = x.Output.SoftwareVersion.CAT12; % CAT12
+    x.Output.(ScanType).Version_LST = x.Output.SoftwareVersion.LST; % LST
+end
 
 % General software versions (put this in structural only, to avoid redundant output
 x.Output.(ScanType).Version_ExploreASL = x.Output.SoftwareVersion.ExploreASL; % ExploreASL version
