@@ -190,69 +190,94 @@ end
 % when x.Q.BloodT1 exists, otherwise default Blood T1 values are used based
 % on MagneticFieldStrength.
 
+x.Q.Hematocrit = []; % defaulting from previous runs. These data should be in x.S.Sets* per participants.tsv
+% We can safely do this, because we didn't use this recently
+
+IndexSetsAge = find(strcmpi(x.S.SetsName, 'age'));
+IndexSetsSex = find(strcmpi(x.S.SetsName, 'sex'));
+indexSetsHct = find(strcmpi(x.S.SetsName, 'hematocrit'));
+
 % a. We prioritize participants.tsv>Hematocrit (x.S.SetsID > x.Hematocrit)
-indexSetsName = find(strcmpi(x.S.SetsName, 'hematocrit'));
-if ~isempty(indexSetsName) && isfield(x, 'Hematocrit')
-    warning('Found hematocrit values in participants.tsv & in x.Hematocrit, using the first');
-    x.Hematocrit = x.S.SetsID(:,indexSetsName);
-elseif ~isempty(indexSetsName)
-    x.Hematocrit = x.S.SetsID(:,indexSetsName);
+if ~isempty(indexSetsHct)
+    x.Q.Hematocrit = x.S.SetsID(x.iSubjectSession, indexSetsHct);
+    fprintf('%s\n', 'Using hematocrit found in participants.tsv for blood T1 correction');
 end
 
-% We convert x.Hematocrit > x.hematocrit 
-% -> this accounts for the (backward compatibility) possibility
-% that the user provides hematocrit in dataPar.json
-if isfield(x, 'hematocrit') && isfield(x, 'Hematocrit')
-    warning('Two hematocrit fields, ignoring x.hematocrit');
-    x = rmfield(x, 'hematocrit');
-elseif isfield(x, 'hematocrit')
-    x.Hematocrit = x.hematocrit;
-	x = rmfield(x, 'hematocrit');
+if isfield(x, 'Hematocrit')
+    warning('x.Hematocrit detected, we ignore this, considering adding hct values to participants.tsv instead');
+end
+if isfield(x, 'hematocrit')
+    warning('x.hematocrit detected, we ignore this, considering adding hct values to participants.tsv instead');
 end
 
-% b. We model the expected hematocrit from age & sex
-% only if the Hematocrit was not specifically provided
-if ~isfield(x, 'Hematocrit')
-    IndexSetsAge = find(strcmpi(x.S.SetsName, 'age'));
-    IndexSetsSex = find(strcmpi(x.S.SetsName, 'sex'));
-    if ~isempty(IndexSetsAge) || ~isempty(IndexSetsSex)
-        fprintf('%s\n', 'Trying to infer hematocrit from age & sex');
-        
-        age = x.S.SetsID(:, IndexSetsAge);
-        
-        % Convert sex correctly
-        sex = x.S.SetsID(:, IndexSetsSex);
-        sexOptions = x.S.SetsOptions{:, IndexSetsSex};
-        sexN = nan(length(sex), 1); % currently we can only infer hct from male/female
-        % So anything that is not detected, will remain NaNs
-        for iOption=1:length(sexOptions)
-            if ~isempty(regexpi(sexOptions{iOption}, '^(male|m|man|men)$'))
-                sexN(sex==iOption) = 1;
-            elseif ~isempty(regexpi(sexOptions{iOption}, '^(female|f|woman|women)$'))
-                sexN(sex==iOption) = 2;
-            end
-        end
 
-        if sum(isnan(sexN))>0
-            warning('Unknown sex detected in participants.tsv, currently we can only infer hematocrit from male or female');
-            fprintf('%s\n', 'So in participants.tsv specify the words "male" and "female" only');
-        end
+% a2. Manage hematocrit usage parameter
+if isfield(x.modules.asl.bHct2BloodT1)
+    if x.modules.asl.bHct2BloodT1 == 2 && isempty(x.Q, 'Hematocrit')
+        warning('Parameter x.modules.asl.bHct2BloodT1 was set to 2: trying to infer hematocrit from age and sex, but hematocrit data were also found');
+        fprintf('%s\n', 'Consider setting x.modules.asl.bHct2BloodT1 to 1 to use the hematocrit data directly');
+    end
+    if x.modules.asl.bHct2BloodT1 == 2 && (isempty(IndexSetsAge) || isempty(IndexSetsSex))
+        warning('Parameter x.modules.asl.bHct2BloodT1 was set to 2: trying to infer hematocrit from age and sex, but age & sex data were incomplete');
+        fprintf('%s\n', 'Consider changing x.modules.asl.bHct2BloodT1 or ensure that age & sex data are present in participants.tsv');
+        x.modules.asl.bHct2BloodT1 = []; % Setting this to empty here, so it will be dealt with below
+    end
 
-        % CAVE: here sex 1 ==male 2 ==female
-        x.Hematocrit = xASL_quant_AgeSex2Hct(age, sex);
+if ~isfield(x.modules.asl.bHct2BloodT1) || isempty(x.modules.asl.bHct2BloodT1)
+    if isfield(x.Q, 'Hematocrit')
+        warning('Parameter x.modules.asl.bHct2BloodT1 was not set but Hematocrit data were found');
+        fprintf('%s\n', 'Setting x.modules.asl.bHct2BloodT1 to 1: converting hematocrit to blood T1 values');
+        fprintf('%s\n', 'Consider setting x.modules.asl.bHct2BloodT1 to avoid this warning');
+        x.modules.asl.bHct2BloodT1 = 1;
+    elseif ~isempty(IndexSetsAge) || ~isempty(IndexSetsSex)
+        warning('Parameter x.modules.asl.bHct2BloodT1 was not set but age & sex data were found');
+        fprintf('%s\n', 'Setting x.modules.asl.bHct2BloodT1 to option 2: trying to infer hematocrit from age & sex');
+        fprintf('%s\n', 'Consider setting x.modules.asl.bHct2BloodT1 to avoid this warning');
+        x.modules.asl.bHct2BloodT1 = 2;
+    else
+        fprintf('\n%s\n', 'No hematocrit data found, disabling x.modules.asl.bHct2BloodT1');
+        x.modules.asl.bHct2BloodT1 = 0;
     end
 end
 
-% c. We convert x.Hematocrit -> x.Q.BloodT1
-%    And take the current SubjectSession
-if isfield(x,'Hematocrit')
-    x.Q.Hematocrit = x.Hematocrit(x.iSubjectSession);
+
+% b. We model the expected hematocrit from age & sex
+if x.modules.asl.bHct2BloodT1 == 2
+    fprintf('%s\n', 'Trying to infer hematocrit from age & sex');
+    
+    age = x.S.SetsID(:, IndexSetsAge);
+    
+    % Convert sex correctly
+    sex = x.S.SetsID(:, IndexSetsSex);
+    sexOptions = x.S.SetsOptions{:, IndexSetsSex};
+    sexN = nan(length(sex), 1); % currently we can only infer hct from male/female
+    % So anything that is not detected, will remain NaNs
+    for iOption=1:length(sexOptions)
+        if ~isempty(regexpi(sexOptions{iOption}, '^(male|m|man|men)$'))
+            sexN(sex==iOption) = 1;
+        elseif ~isempty(regexpi(sexOptions{iOption}, '^(female|f|woman|women)$'))
+            sexN(sex==iOption) = 2;
+        end
+    end
+
+    if sum(isnan(sexN))>0
+        warning('Unknown sex detected in participants.tsv, currently we can only infer hematocrit from male or female');
+        fprintf('%s\n', 'So in participants.tsv specify the words "male" and "female" only');
+    end
+
+    % CAVE: here sex 1 ==male 2 ==female
+    x.Q.Hematocrit = xASL_quant_AgeSex2Hct(age(x.iSubjectSession), sex(x.iSubjectSession));
+end
+
+% c. We convert x.Q.Hematocrit -> x.Q.BloodT1
+if isfield(x.Q,'Hematocrit')
     x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Q.Hematocrit, [], x.MagneticFieldStrength);
 end
 
-% d. If we do not have a x.Q.BloodT1, we use a default value - that is done in xASL_quant_DefineQuantificationParameters called in section 0 here
+% d. If we do not have x.Q.BloodT1, we use a default value - that is done in xASL_quant_DefineQuantificationParameters called in section 0 here
 % PM: model hematocrit based on age, sex, ethnicity
 % See xASL_quant_AgeSex2Hct & improve this function with population-based stats
+
 
 %% ------------------------------------------------------------------------------------------------
 %% 4)   ASL & M0 parameters comparisons (e.g. TE, these should be the same with a separate M0 scan, for similar T2 & T2*-related quantification effects, and for similar geometric distortion)
