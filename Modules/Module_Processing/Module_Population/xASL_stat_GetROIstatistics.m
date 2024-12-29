@@ -246,10 +246,15 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
 	else
 		VoxelSize = [1.5 1.5 1.5];
 	end
-	MinVoxels = 1000/prod(VoxelSize); % 1 mL
+	if x.S.bSubjectSpecificROI
+		MinVoxels = 0; % For Lesions and ROIs we don't set a minimal ROI size
+	else
+		MinVoxels = 1000/prod(VoxelSize); % 1 mL
+	end
+
 	if ~x.S.InputNativeSpace
 		SumList = squeeze(sum(x.S.InputMasks,1));
-		SumList = SumList>MinVoxels;
+		SumList = SumList > MinVoxels;
 		if size(SumList,1)==1
 			SumList = SumList';
 		end
@@ -724,8 +729,8 @@ for iSubject=1:x.dataset.nSubjects
 					bSkipPVC = 1;
 				end
 
-				% Skip tissue masking for Lesions, but apply it for ROIs and Atlases
-				if x.S.bSubjectSpecificROI && ~isempty(strfind(x.S.InputAtlasPath, 'rLesion'))
+				% Skip tissue masking for Lesions or ROIs
+				if x.S.bSubjectSpecificROI 
 					pvPrimary = ones(size(DataIm));
                     pvSecondary = ones(size(DataIm));
 					bSkipPVC = 1;
