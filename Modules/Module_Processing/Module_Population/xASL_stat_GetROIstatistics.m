@@ -189,9 +189,6 @@ namesROIlocal = x.S.NamesROI;
 %% 0.b Native space atlas input
 if x.S.InputNativeSpace
 	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
-	if x.S.bSubjectSpecificROI
-		inputAtlasTmp = round(inputAtlasTmp);
-	end
 	atlasN = max(inputAtlasTmp(:));
 	x.S.InputMasks = zeros(length(x.LeftMask), atlasN);
 	for kk = 1:atlasN
@@ -341,9 +338,6 @@ for iSubject=1:x.dataset.nSubjects
 				x.LeftMask = xASL_im_IM2Column(x.LeftMask, x.S.masks.WBmask);
 
 				inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']));
-				if x.S.bSubjectSpecificROI
-					inputAtlasTmp = round(inputAtlasTmp);
-				end
 				atlasN = max(inputAtlasTmp(:));
 				x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
 				for kk = 1:atlasN
