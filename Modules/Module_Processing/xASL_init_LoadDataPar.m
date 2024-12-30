@@ -141,16 +141,12 @@ end
 %% -----------------------------------------------------------------------------
 %% -----------------------------------------------------------------------------
 function [x] = xASL_initLoadDataPar_PrepareAtlas4ROI(x)
-%Check for x.S.Atlases & x.S.TissueMasking and provide default values or print instructions
+%Check for x.S.Atlases & x.S.TissueMasking validity and print instructions if incorrect values are provided
 
 bAtlasTissueMatch = true; % x.S.Atlases & x.S.TissueMasking should match before we can continue (needed for the population module)
 
 if ~isfield(x, 'S') || (~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking'))
-	% Default atlases/ROIs & tissue masks if nothing is provided
-	x.S.Atlases = {'Total','DeepWM'}; % Default
-    x.S.TissueMasking = {'GM' 'WM'}; % GM WM, fits with the TotalGM & DeepWM above
-    % Note that this should be in the same order as the atlases/ROIs
-    % A mismatch (e.g. TissueMasking=GM for Atlases=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
+	% Default atlases/ROIs & tissue masks if nothing is provided - default values are provided in the population module
 elseif ~isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking')
 	% Missing Atlases, but provided TissueMasking - cannot continue
     warning('Custom tissue-types (x.S.TissueMasking) specified without ROI atlas-selection (x.S.Atlases). Atlases need to be provided. See instructions below:');

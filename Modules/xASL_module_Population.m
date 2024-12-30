@@ -49,7 +49,14 @@ if x.opts.nWorkers>1 % don't run population module when ExploreASL is paralleliz
 end
 
 % Check again for Atlases (main checking is done when loading dataPar)
-if ~isfield(x.S, 'Atlases') || ~isfield(x.S, 'TissueMasking') || length(x.S.Atlases)~=length(x.S.TissueMasking)
+if ~isfield(x, 'S') || (~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking'))
+	% If no values are provided, then we provide the defaults
+	x.S.Atlases = {'Total','DeepWM'}; % Default
+    x.S.TissueMasking = {'GM' 'WM'}; % GM WM, fits with the TotalGM & DeepWM above
+    % Note that this should be in the same order as the atlases/ROIs
+    % A mismatch (e.g. TissueMasking=GM for Atlases=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
+elseif ~isfield(x.S, 'Atlases') || ~isfield(x.S, 'TissueMasking') || length(x.S.Atlases)~=length(x.S.TissueMasking)
+	% Incorrect values are provided
 	error('You need to provide S.Atlases and S.TissueMasking with the same length');
 end
 
