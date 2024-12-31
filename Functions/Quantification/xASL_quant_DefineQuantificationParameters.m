@@ -11,10 +11,11 @@ function [x] = xASL_quant_DefineQuantificationParameters(x)
 %             with the following information:
 %
 % DESCRIPTION: This function defines the following ASL quantification parameters
-% 1. Define arterial blood T1
-% 2. Define arterial blood T2
-% 3. Define tissue T1
-% 4. Define tissue T2(*)
+% 1.   Hematocrit
+% 2.   Arterial blood T1
+% 3.   Arterial blood T2
+% 4.   Tissue T1
+% 5.   Tissue T2(*)
 %
 % REFERENCES: 
 %     Gregori, Johannes et al. “T2-based arterial spin labeling measurements of blood to tissue water transfer 
@@ -52,8 +53,8 @@ function [x] = xASL_quant_DefineQuantificationParameters(x)
 % __________________________________
 
 
-
-%% 0. Admin
+%% ------------------------------------------------------------------------------------------------
+%% 0.   Admin
 if ~isfield(x, 'Q')
     x.Q = struct;
 end
@@ -64,7 +65,102 @@ if ~isfield(x, 'MagneticFieldStrength') || isempty(x.MagneticFieldStrength)
 end
 
 
-%% 1. Define arterial blood T1
+%% ------------------------------------------------------------------------------------------------
+%% 1.   Hematocrit
+% Here, we check if the user has provided a hematocrit value for this
+% subject_session_run. Only then, we create a x.Q.BloodT1.
+% Below, at the quantification section, this is only taken into account
+% when x.Q.BloodT1 exists, otherwise default Blood T1 values are used based
+% on MagneticFieldStrength.
+
+x.Q.Hematocrit = []; % defaulting from previous runs. These data should be in x.S.Sets* per participants.tsv
+% We can safely do this, because we didn't use this recently
+
+IndexSetsAge = find(strcmpi(x.S.SetsName, 'age'));
+IndexSetsSex = find(strcmpi(x.S.SetsName, 'sex'));
+indexSetsHct = find(strcmpi(x.S.SetsName, 'hematocrit'));
+
+% a. We prioritize participants.tsv>Hematocrit (x.S.SetsID > x.Hematocrit)
+if ~isempty(indexSetsHct)
+    x.Q.Hematocrit = x.S.SetsID(x.iSubjectSession, indexSetsHct);
+    fprintf('%s\n', 'Using hematocrit found in participants.tsv for blood T1 correction');
+end
+
+if isfield(x, 'Hematocrit')
+    warning('x.Hematocrit detected, we ignore this, considering adding hct values to participants.tsv instead');
+end
+if isfield(x, 'hematocrit')
+    warning('x.hematocrit detected, we ignore this, considering adding hct values to participants.tsv instead');
+end
+
+
+% a2. Manage hematocrit usage parameter
+if isfield(x.modules.asl.bHct2BloodT1)
+    if x.modules.asl.bHct2BloodT1 == 2 && isempty(x.Q, 'Hematocrit')
+        warning('Parameter x.modules.asl.bHct2BloodT1 was set to 2: trying to infer hematocrit from age and sex, but hematocrit data were also found');
+        fprintf('%s\n', 'Consider setting x.modules.asl.bHct2BloodT1 to 1 to use the hematocrit data directly');
+    end
+    if x.modules.asl.bHct2BloodT1 == 2 && (isempty(IndexSetsAge) || isempty(IndexSetsSex))
+        warning('Parameter x.modules.asl.bHct2BloodT1 was set to 2: trying to infer hematocrit from age and sex, but age & sex data were incomplete');
+        fprintf('%s\n', 'Consider changing x.modules.asl.bHct2BloodT1 or ensure that age & sex data are present in participants.tsv');
+        x.modules.asl.bHct2BloodT1 = []; % Setting this to empty here, so it will be dealt with below
+    end
+
+if ~isfield(x.modules.asl.bHct2BloodT1) || isempty(x.modules.asl.bHct2BloodT1)
+    if isfield(x.Q, 'Hematocrit')
+        warning('Parameter x.modules.asl.bHct2BloodT1 was not set but Hematocrit data were found');
+        fprintf('%s\n', 'Setting x.modules.asl.bHct2BloodT1 to 1: converting hematocrit to blood T1 values');
+        fprintf('%s\n', 'Consider setting x.modules.asl.bHct2BloodT1 to avoid this warning');
+        x.modules.asl.bHct2BloodT1 = 1;
+    elseif ~isempty(IndexSetsAge) || ~isempty(IndexSetsSex)
+        warning('Parameter x.modules.asl.bHct2BloodT1 was not set but age & sex data were found');
+        fprintf('%s\n', 'Setting x.modules.asl.bHct2BloodT1 to option 2: trying to infer hematocrit from age & sex');
+        fprintf('%s\n', 'Consider setting x.modules.asl.bHct2BloodT1 to avoid this warning');
+        x.modules.asl.bHct2BloodT1 = 2;
+    else
+        fprintf('\n%s\n', 'No hematocrit data found, disabling x.modules.asl.bHct2BloodT1');
+        x.modules.asl.bHct2BloodT1 = 0;
+    end
+end
+
+
+% b. We model the expected hematocrit from age & sex
+if x.modules.asl.bHct2BloodT1 == 2
+    fprintf('%s\n', 'Trying to infer hematocrit from age & sex');
+    
+    age = x.S.SetsID(:, IndexSetsAge);
+    
+    % Convert sex correctly
+    sex = x.S.SetsID(:, IndexSetsSex);
+    sexOptions = x.S.SetsOptions{:, IndexSetsSex};
+    sexN = nan(length(sex), 1); % currently we can only infer hct from male/female
+    % So anything that is not detected, will remain NaNs
+    for iOption=1:length(sexOptions)
+        if ~isempty(regexpi(sexOptions{iOption}, '^(male|m|man|men)$'))
+            sexN(sex==iOption) = 1;
+        elseif ~isempty(regexpi(sexOptions{iOption}, '^(female|f|woman|women)$'))
+            sexN(sex==iOption) = 2;
+        end
+    end
+
+    if sum(isnan(sexN))>0
+        warning('Unknown sex detected in participants.tsv, currently we can only infer hematocrit from male or female');
+        fprintf('%s\n', 'So in participants.tsv specify the words "male" and "female" only');
+    end
+
+    % CAVE: here sex 1 ==male 2 ==female
+    x.Q.Hematocrit = xASL_quant_AgeSex2Hct(age(x.iSubjectSession), sex(x.iSubjectSession));
+    % PM: model hematocrit based on age, sex, ethnicity
+end
+
+
+%% ------------------------------------------------------------------------------------------------
+%% 2.   Arterial blood T1
+% We convert x.Q.Hematocrit -> x.Q.BloodT1
+if isfield(x.Q,'Hematocrit')
+    x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Q.Hematocrit, [], x.MagneticFieldStrength);
+end
+
 if ~isfield(x.Q,'BloodT1') || isempty(x.Q.BloodT1)
     % T1 relaxation time of arterial blood
     % There are 3 options for x.Q.BloodT1:
@@ -101,7 +197,8 @@ if ~isfield(x.Q,'BloodT1') || isempty(x.Q.BloodT1)
 end
 
 
-%% 2. Define arterial blood T2
+%% ------------------------------------------------------------------------------------------------
+%% 3.   Arterial blood T2
 if ~isfield(x.Q, 'T2art')
 	if x.MagneticFieldStrength == 3
 		x.Q.T2art = 165; % ms Gregori JMRI 2013; Lee ISMRM 2003
@@ -117,7 +214,8 @@ if ~isfield(x.Q,'Lambda')
 end
 
 
-%% 3. Define tissue T1
+%% ------------------------------------------------------------------------------------------------
+%% 4.   Tissue T1
 if ~isfield(x.Q,'TissueT1')
 	switch(x.MagneticFieldStrength)
 		% T1 GM tissue
@@ -140,7 +238,8 @@ if ~isfield(x.Q,'TissueT1')
 end
 
 
-%% 4. Define tissue T2(*)
+%% ------------------------------------------------------------------------------------------------
+%% 5.   Tissue T2(*)
 if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
     if x.MagneticFieldStrength == 3
 	    x.Q.T2star = 47.3; % default for 3T; Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
