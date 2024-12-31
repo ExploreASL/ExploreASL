@@ -121,7 +121,7 @@ end
 
 function  xASL_qc_ParsePdfConfig_sub_printModule(moduleStruct, x, settingsPDF)
 
-    for page = 1:size(moduleStruct.content)
+    for page = 1:length(moduleStruct.content)
         xASL_qc_ParsePdfConfig_sub_printPage(moduleStruct.content(page), x, settingsPDF);
     end
 end
@@ -660,6 +660,12 @@ function resultText = xASL_qc_ParsePdfConfig_sub_PaddedString(textToPrint, textW
     
     % Get string sizes
     [xSize, ySize] = size(textToPrint);
+
+    % First check if textToPrint is really text
+    if isstruct(textToPrint)
+        nFields = length(fields(textToPrint));
+        error(['textToPrint is a struct with ' num2str(nFields) ' fields']);
+    end
 
     % If a value contains Two (or more) entries, add a space and concatenate them horizontally
     if xSize > 1

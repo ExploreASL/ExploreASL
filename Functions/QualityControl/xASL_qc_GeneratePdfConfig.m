@@ -83,16 +83,17 @@ x = xASL_adm_LoadX(x, PathX, true); % Assume memory x is newer than x.mat
 % Make sure that the directory exists
 PrintDir = fullfile(x.dir.xASLDerivatives);
 xASL_adm_CreateDir(PrintDir);
+PrintFile = fullfile(PrintDir, 'configReportPDF.json');
 
 % Print the title
-fprintf('Creating Default Json in:   \n');
-fprintf([PrintDir '\n']);
+fprintf('Creating default PDF configuration file:   \n');
+fprintf([PrintFile '\n']);
 
 % Parse the entire Json Stack automatically making all the pages.
 config = xASL_sub_createDefaultJson(x);
 
 % Write Pdf configuration
-xASL_io_WriteJson(fullfile(PrintDir, 'configReportPDF.json'), config, bOverwrite);
+xASL_io_WriteJson(PrintFile, config, bOverwrite);
 
 end
 
@@ -109,7 +110,7 @@ function [config] = xASL_sub_createDefaultJson(x)
 
     config.modules = struct();
     modules = fieldnames(x.Output);
-    for module = 1:size(modules)
+    for module = 1:length(modules)
         if strcmp(modules(module), 'Structural')
             config.modules(module).category = 'metadata';
             config.modules(module).type = 'page';
@@ -120,7 +121,7 @@ function [config] = xASL_sub_createDefaultJson(x)
             config.modules(module).type = 'module';
             config.modules(module).identifier = modules{module};
             asl_sessions = fieldnames(x.Output.(modules{module}));
-            for session = 1:size(asl_sessions)
+            for session = 1:length(asl_sessions)
                 config.modules(module).content(session).category = 'metadata';
                 config.modules(module).content(session).type = 'page';
                 config.modules(module).content(session).identifier = asl_sessions{session};
@@ -151,7 +152,7 @@ function content = xASL_sub_createPageContent(module, modulename, sessionname)
 
     content{1} = qc_content;
 
-    for field = 1:size(qc_parameters)
+    for field = 1:length(qc_parameters)
         qc_content = struct();
         qc_content.category = 'content';
         qc_content.type = 'QCValues';

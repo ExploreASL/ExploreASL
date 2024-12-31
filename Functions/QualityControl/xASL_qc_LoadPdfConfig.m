@@ -52,13 +52,13 @@ end
 %% 2. Load JSON file 
 if exist(configPath, 'file')
     if bOverWrite
-        fprintf(['Overwriting old PDF config.\n']);
+        fprintf('Overwriting old PDF configuration file\n');
         xASL_delete(configPath);
         xASL_qc_GeneratePdfConfig(x, x.SUBJECT, true);
     end
     config = xASL_io_ReadJson(configPath);
 else
-    fprintf(['Custom PDF definitions not found, using default configuration for PDF generation.\n']);
+    fprintf('Custom PDF definitions not found, using default configuration for PDF generation.\n');
     xASL_qc_GeneratePdfConfig(x, x.SUBJECT, bOverWrite);
     config = xASL_io_ReadJson(configPath);
 end

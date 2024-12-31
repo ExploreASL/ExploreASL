@@ -33,7 +33,6 @@ function [x] = xASL_qc_GenerateReport(x, subject, bOverWrite)
 
 if ~usejava('jvm') % only if JVM loaded
     fprintf('Warning: skipping PDF report, JVM missing\n');
-    config = NaN;
     return;
 end
 
@@ -105,7 +104,7 @@ xASL_adm_CreateDir(PrintDir);
 % Delete existing xASL report files
 ExistingPrintFiles = xASL_adm_GetFileList(PrintDir, '^xASL_Report_.+$');
 if ~isempty(ExistingPrintFiles)
-    for iFile = 1:size(ExistingPrintFiles)
+    for iFile = 1:length(ExistingPrintFiles)
         xASL_delete(ExistingPrintFiles{iFile});
     end
 end
