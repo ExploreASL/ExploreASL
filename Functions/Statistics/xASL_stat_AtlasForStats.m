@@ -183,7 +183,7 @@ if ~isfield(x.S,'NamesROI')
         maxROI = max(InputAtlasIM(:));
     end
     for iR=1:maxROI
-        x.S.NamesROI{iR} = ['ROI_' num2str(iR)]; % default ROIs
+        x.S.NamesROI{iR,1} = ['ROI_' num2str(iR)]; % default ROIs
     end
 end
 
