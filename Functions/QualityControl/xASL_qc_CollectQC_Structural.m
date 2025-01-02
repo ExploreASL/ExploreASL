@@ -85,10 +85,15 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
     PathIQRresults = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' Struct.ID '.mat']);
     if exist(PathIQRresults,'file')
         curr = load(PathIQRresults);
-        Struct.T1w_IQR_Perc = min(100,max(0,105 - curr.S.qualityratings.IQR*10));
-        Struct.T1w_IQR_Perc = xASL_round(Struct.T1w_IQR_Perc,3);
+        if isempty(curr) || isfield(curr, 'dummyVar')
+            warning(['Didnt find any CAT12 volumetric results, empty file: ' PathIQRresults]);
+            Struct.T1w_IQR_Perc = NaN;
+        else
+            Struct.T1w_IQR_Perc = min(100,max(0,105 - curr.S.qualityratings.IQR*10));
+            Struct.T1w_IQR_Perc = xASL_round(Struct.T1w_IQR_Perc,3);
+        end
     elseif xASL_exist(x.P.Path_T1,'file') && ~x.modules.structural.bSegmentSPM12
-        warning('Didnt find any CAT12 volumetric results');
+        warning(['Didnt find CAT12 volumetric results, file missing: ' PathIQRresults]);
         Struct.T1w_IQR_Perc = NaN;
     end
 
