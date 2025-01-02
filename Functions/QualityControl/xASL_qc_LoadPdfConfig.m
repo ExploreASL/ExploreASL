@@ -42,7 +42,7 @@ if nargin<1 || isempty(x)
 end
 
 if nargin<2 || isempty(configPath)
-    configPath = fullfile(x.dir.xASLDerivatives, 'configReportPDF.json');
+    configPath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, 'configReportPDF.json');
 end
 
 if nargin<3 || isempty(bOverWrite)

@@ -81,7 +81,7 @@ end
 x = xASL_adm_LoadX(x, PathX, true); % Assume memory x is newer than x.mat
 
 % Make sure that the directory exists
-PrintDir = fullfile(x.dir.xASLDerivatives);
+PrintDir = fullfile(x.dir.xASLDerivatives, x.SUBJECT);
 xASL_adm_CreateDir(PrintDir);
 PrintFile = fullfile(PrintDir, 'configReportPDF.json');
 
