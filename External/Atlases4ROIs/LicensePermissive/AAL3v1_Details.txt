@@ -10,3 +10,5 @@ Hence:
 See /ExploreASL/WorkInProgress/Administration/xASL_adm_AtlasConvert_LeftRight2Bilateral
 
 When using this atlas, please cite: https://doi.org/10.1016/j.neuroimage.2019.116189.
+
+The original atlas was aligned with the asymetrical MNI ICBM152 2009c template. We have co-registered the GM/WM map of that template with the IXI512 DARTEL GM/WM map and applied the same transformation to the atlas so that it could be used in combination with DARTEL or GS that are using IXI512. Nearest neighbor interpolation was used. See function WorkInProgress/Administration/xASL_adm_CoregisterAtlas.m

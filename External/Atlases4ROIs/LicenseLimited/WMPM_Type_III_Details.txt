@@ -1,1 +1,3 @@
 Please cite the following when using this atlas: https://pubmed.ncbi.nlm.nih.gov/19385016/
+
+The original atlas was aligned with the asymetrical MNI ICBM152 2009c template. We have co-registered the GM/WM map of that template with the IXI512 DARTEL GM/WM map and applied the same transformation to the atlas so that it could be used in combination with DARTEL or GS that are using IXI512. Nearest neighbor interpolation was used. See function WorkInProgress/Administration/xASL_adm_CoregisterAtlas.m
