@@ -102,7 +102,7 @@ function [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentFi
                 settingsPDF = xASL_qc_ParsePdfConfig_sub_PrintScan(currentField, x, currentFigure, settingsPDF);
             case 'patients' 
                 line = xASL_qc_ParsePdfConfig_sub_PrintPatient(x, currentFigure, line, settingsPDF);
-        end  
+            end  
         case 'metadata'
             switch currentField.type
             case 'module'
@@ -113,7 +113,7 @@ function [settingsPDF, line] = xASL_qc_ParsePdfConfig_sub_parseContent(currentFi
                 xASL_qc_ParsePdfConfig_sub_printBlock(currentField, x, currentFigure, settingsPDF);
             case 'textSettings'
                 settingsPDF = xASL_qc_ParsePdfConfig_sub_loadSettings(currentField, settingsPDF);  
-        end  
+            end  
     end
 end
 
@@ -149,8 +149,9 @@ function  xASL_qc_ParsePdfConfig_sub_printPage(pageStruct, x, settingsPDF)
     xASL_qc_ParsePdfConfig(pageStruct, x, figPrimary, [0 0.93 1 0], settingsPDF);
 
     % Finally it prints the page to a PDF file using the identifier as filename in the subject directory.
-    fileName = ['xASL_Report_', pageStruct.identifier];
-    printPathFile = fullfile(x.dir.xASLDerivatives, x.SUBJECT, fileName); 
+    fileName = ['xASL_Report_' x.SUBJECT '_' pageStruct.identifier];
+    printPathFile = fullfile(x.dir.xASLDerivatives, x.SUBJECT, fileName);
+    fprintf('%s\n', ['Printing ' fileName '.pdf']);
     print(figPrimary, printPathFile, '-dpdf', '-bestfit');
 
 end
