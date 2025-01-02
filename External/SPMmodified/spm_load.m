@@ -288,6 +288,7 @@ if ~hdr && h==1
     % convert numeric data from string to numeric
     xNumeric = xASL_str2num(x);
     indicesNumeric = ~isnan(xNumeric);
+    xNumeric = num2cell(xNumeric);
     x(indicesNumeric) = xNumeric(indicesNumeric);
 elseif ~hdr && allnum
     x = struct2cell(x);
