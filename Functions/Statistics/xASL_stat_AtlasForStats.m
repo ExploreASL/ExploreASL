@@ -106,39 +106,7 @@ if ~exist(x.S.ROInamesPath, 'file') && ~x.S.bSubjectSpecificROI
 end
 
 if isfield(x.S,'ROInamesPath') && exist(x.S.ROInamesPath, 'file') % open TSV file
-    fclose all;
-    FileID = fopen(x.S.ROInamesPath);
-
-    C = textscan(FileID,'%s');
-    C = C{1};
-
-    if ~isempty(C)
-        % Concatenate cells, if multiple cells
-        if length(C)>1
-            Cnew = C{1};
-            for iC=2:length(C)
-                Cnew =[Cnew ' ' C{iC}];
-            end
-        else
-            Cnew = C{1};
-        end
-
-        CommasIndex = strfind(Cnew,' ');
-
-        if isempty(CommasIndex)
-            x.S.NamesROI{1} = Cnew;
-        else
-            x.S.NamesROI{1} = Cnew(1:CommasIndex(1)-1);
-            for iC=2:length(CommasIndex) % work around for missing strsplit in previous matlab versions
-                x.S.NamesROI{iC} = Cnew(CommasIndex(iC-1)+1:CommasIndex(iC)-1);
-            end
-            if ~strcmp(Cnew(end),',')
-                iC = length(CommasIndex);
-                x.S.NamesROI{iC+1} = Cnew(CommasIndex(iC)+1:end);
-            end
-        end
-    end
-    fclose(FileID);
+    x.S.NamesROI = xASL_tsvRead(x.S.ROInamesPath);
 end
 
 
