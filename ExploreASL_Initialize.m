@@ -839,10 +839,6 @@ function xASL_init_BasicFeedback(x)
             x.Version = '0.0.0 VERSION_File_Missing';
         end
                 
-        if ~isfield(x,'Q')
-            x.Q = struct;
-        end
-                
         %% Atlases and templates
         x = xASL_init_MapsAndAtlases(x);
         
