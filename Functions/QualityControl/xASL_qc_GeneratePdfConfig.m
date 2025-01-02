@@ -42,7 +42,7 @@ else
 end
 
 if nargin < 3 || isempty(bOverwrite)
-   bOverwrite = true;
+   bOverwrite = true; % We need to always overwrite, because the numbers of modules can differ between subjects
 end
 
 % Fix <SESSION> not existing
@@ -86,8 +86,10 @@ xASL_adm_CreateDir(PrintDir);
 PrintFile = fullfile(PrintDir, 'configReportPDF.json');
 
 % Print the title
-fprintf('Creating default PDF configuration file:   \n');
-fprintf([PrintFile '\n']);
+% -> we skip this for now, because we need to reprint the configReport for every subject, 
+% because the modules can differ between subjects
+% fprintf('Creating default PDF configuration file:   \n');
+% fprintf([PrintFile '\n']);
 
 % Parse the entire Json Stack automatically making all the pages.
 config = xASL_sub_createDefaultJson(x);
@@ -111,12 +113,14 @@ function [config] = xASL_sub_createDefaultJson(x)
     config.modules = struct();
     modules = fieldnames(x.Output);
     for module = 1:length(modules)
-        if strcmp(modules(module), 'Structural')
+        if strcmpi(modules(module), 'Structural') % for this module, we assume a single session/run
             config.modules(module).category = 'metadata';
             config.modules(module).type = 'page';
             config.modules(module).identifier = modules{module};
             config.modules(module).content = xASL_sub_createPageContent(x.Output.(modules{module}), modules{module});
-        elseif strcmp(modules(module), 'ASL')
+        elseif strcmpi(modules(module), 'Population') % PDF reports are created per subject
+            error('We cannot create a PDF report for the population module, skipping...');
+        else % for all other modules, such as ASL, fMRI, DTI, we allow multiple sessions/runs
             config.modules(module).category = 'metadata';
             config.modules(module).type = 'module';
             config.modules(module).identifier = modules{module};
