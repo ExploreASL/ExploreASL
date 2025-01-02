@@ -73,9 +73,6 @@ end
 % when x.Q.BloodT1 exists, otherwise default Blood T1 values are used based
 % on MagneticFieldStrength.
 
-x.Q.Hematocrit = []; % defaulting from previous runs. These data should be in x.S.Sets* per participants.tsv
-% We can safely do this, because we didn't use this recently
-
 IndexSetsAge = find(strcmpi(x.S.SetsName, 'age'));
 IndexSetsSex = find(strcmpi(x.S.SetsName, 'sex'));
 indexSetsHct = find(strcmpi(x.S.SetsName, 'hematocrit'));
@@ -95,7 +92,7 @@ end
 
 
 % a2. Manage hematocrit usage parameter
-if isfield(x.modules.asl.bHct2BloodT1)
+if isfield(x.modules.asl, 'bHct2BloodT1')
     if x.modules.asl.bHct2BloodT1 == 2 && isempty(x.Q, 'Hematocrit')
         warning('Parameter x.modules.asl.bHct2BloodT1 was set to 2: trying to infer hematocrit from age and sex, but hematocrit data were also found');
         fprintf('%s\n', 'Consider setting x.modules.asl.bHct2BloodT1 to 1 to use the hematocrit data directly');
@@ -105,8 +102,9 @@ if isfield(x.modules.asl.bHct2BloodT1)
         fprintf('%s\n', 'Consider changing x.modules.asl.bHct2BloodT1 or ensure that age & sex data are present in participants.tsv');
         x.modules.asl.bHct2BloodT1 = []; % Setting this to empty here, so it will be dealt with below
     end
+end
 
-if ~isfield(x.modules.asl.bHct2BloodT1) || isempty(x.modules.asl.bHct2BloodT1)
+if ~isfield(x.modules.asl, 'bHct2BloodT1') || isempty(x.modules.asl.bHct2BloodT1)
     if isfield(x.Q, 'Hematocrit')
         warning('Parameter x.modules.asl.bHct2BloodT1 was not set but Hematocrit data were found');
         fprintf('%s\n', 'Setting x.modules.asl.bHct2BloodT1 to 1: converting hematocrit to blood T1 values');
@@ -157,11 +155,11 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 2.   Arterial blood T1
 % We convert x.Q.Hematocrit -> x.Q.BloodT1
-if isfield(x.Q,'Hematocrit')
+if isfield(x.Q, 'Hematocrit')
     x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Q.Hematocrit, [], x.MagneticFieldStrength);
 end
 
-if ~isfield(x.Q,'BloodT1') || isempty(x.Q.BloodT1)
+if ~isfield(x.Q, 'BloodT1') || isempty(x.Q.BloodT1)
     % T1 relaxation time of arterial blood
     % There are 3 options for x.Q.BloodT1:
     % A) users have provided x.Q.BloodT1
