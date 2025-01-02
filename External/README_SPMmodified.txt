@@ -423,13 +423,17 @@ spm_update at line 36
 cat_io_send_to_server at line 19
 ps_LST_update at line 5
 
+DATE+NAME:2025-01-02 HM (#1869)
+DESCRIPTION: manage files without a header
+FILE: spm_load.m, 132, 179, 284
+
 DATE+NAME:2022-08-03 HM (#1140)
 DESCRIPTION: Attempt repairing broken CSV/TSV files by removing empty cells at the end of rows
-FILE: spm_load.m, 102, 162, 191
+FILE: spm_load.m, 105, 172
 
 DATE+NAME:2021-01-20 HM (issue #276)
 DESCRIPTION: Manage trailing \t on header only
-FILE: spm_load.m, 131, 165
+FILE: spm_load.m, 140
 
 DATE+NAME:2020-10-26 HM (issue #190)
 DESCRIPTION: Add atlas ROI creation comments and add creation of catROI_T1.tsv
