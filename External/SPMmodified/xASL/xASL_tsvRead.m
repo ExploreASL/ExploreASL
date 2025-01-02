@@ -66,7 +66,11 @@ else
 			CellContents(2:length(NewContents)+1, iField) = NewContents;
 		end
 	else
-		CellContents = num2cell(ReadCell);
+		if isnumeric(ReadCell)
+            CellContents = num2cell(ReadCell);
+        else
+            CellContents = ReadCell;
+        end
 	end
 end
     
