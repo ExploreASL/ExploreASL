@@ -6,7 +6,7 @@ function [x] = xASL_qc_GenerateReport(x, subject, bOverWrite)
 % INPUT:
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
 %   subject     - subject name (OPTIONAL, default = x.SUBJECT)
-%   bOverWrite  - boolean to determine if current configReportPDF.json should be overwritten with the default one. (OPTIONAL, default == false)
+%   bOverWrite  - boolean for overwriting configReportPDF.json with the default one (OPTIONAL, default == true)
 %
 % OUTPUT: 
 %   x           - x structure containing fields with all information as well as now the quality parameters loaded in
@@ -24,13 +24,13 @@ function [x] = xASL_qc_GenerateReport(x, subject, bOverWrite)
 %          xASL_qc_GenerateReport(x, 'sub-001', true);
 %          xASL_qc_GenerateReport(x, [], false);
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL
+% Copyright (C) 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
 
-
+%% 0. Admin
 if ~usejava('jvm') % only if JVM loaded
     fprintf('Warning: skipping PDF report, JVM missing\n');
     return;
@@ -50,6 +50,9 @@ if nargin < 2 || isempty(subject)
         warning('subject or x.SUBJECT missing, this might go wrong');
     end
 else
+    if ~ischar(subject)
+        error('Subject input should be a string (character array)');
+    end
     if isfield(x, 'SUBJECT')
         subjectOld = x.SUBJECT;
     end
@@ -57,7 +60,7 @@ else
 end
 
 if nargin < 3 || isempty(bOverWrite)
-    bOverWrite = false;
+    bOverWrite = true; % We need to overwrite because different subjects can have different modules
 end
 
 % Fix <SESSION> not existing
@@ -109,9 +112,12 @@ if ~isempty(ExistingPrintFiles)
     end
 end
 
-% Load Pdf configuration
+
+%% 1. Load Pdf configuration
 config = xASL_qc_LoadPdfConfig(x, [], bOverWrite);
 
+
+%% 2. Create the PDF
 % Print the title
 fprintf('Printing ExploreASL PDF report in:   \n');
 fprintf([PrintDir '\n']);
