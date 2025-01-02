@@ -602,6 +602,10 @@ function [x] = xASL_module_ASL_ParseParameters(x, bOutput)
 
 
 %% 1. Load ASL parameters (inheritance principle)
+
+% First ensure that we don't use quantification parameters from other sequences
+x.Q = struct;
+
 [~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bOutput);
 
 
