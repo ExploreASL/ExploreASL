@@ -128,6 +128,12 @@ S   = regexprep(S,{'\r\n','\r','(\n)\1+'},{'\n','\n','$1'});
 %-Get column names from header line (non-numeric first line)
 %--------------------------------------------------------------------------
 h   = find(S == eol,1);
+
+% EXPLOREASL HACK: manage files without a header
+if h==length(S)
+    h = 1;
+end
+
 hdr = S(1:h-1);
 var = regexp(hdr,delim,'split');
 
@@ -169,8 +175,14 @@ indexEol = find(S == eol);
 
 lineNumberEmpty = [];
 lineNumberIncorrectLength = [];
-	
-if length(indexEol)<=1
+
+% EXPLOREASL HACK: fix single-line data without headers
+if length(indexEol)<=1 && N==0
+    % In case the file has no headers and no line ends (i.e. only a single line-end at the end of the file that is inserted automatically)
+    % Then we consider that all data are provided on a single line, and we don't try to reshape
+    d = textscan(S,'%s','Delimiter',delim);
+
+elseif length(indexEol)<=1
 	% In case the file does not have line ends (i.e. only a single line-end at the end of the file that is inserted automatically)
 	% Then we consider that all data are provided on a single line. 
 	% We then have to determine if the total number of cells can be divided by the number of columns
@@ -269,7 +281,15 @@ for i=1:numel(var)
     end
 end
 
-if ~hdr && allnum
+% EXPLOREASL HACK: fix single-line data without headers
+if ~hdr && h==1
+    % We have no header and a single line only
+    x=d{1}';
+    % convert numeric data from string to numeric
+    xNumeric = xASL_str2num(x);
+    indicesNumeric = ~isnan(xNumeric);
+    x(indicesNumeric) = xNumeric(indicesNumeric);
+elseif ~hdr && allnum
     x = struct2cell(x);
     x = [x{:}];
 end
