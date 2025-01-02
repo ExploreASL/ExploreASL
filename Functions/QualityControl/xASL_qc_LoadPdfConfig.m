@@ -1,4 +1,4 @@
-function [config] = xASL_qc_LoadPdfConfig(x, configPath, bOverWrite)
+function [config] = xASL_qc_LoadPdfConfig(x, configPath, bOverWrite, bVerbose)
 % xASL_qc_LoadPdfConfig loads parameters from a .json config file to be used in xASL_qc_GenerateReport.
 % Using the config file, the user can define the parameters of the report.
 % If no config file is given, it will first look in the derivatives folder if configReportPDF.json exists.
@@ -9,7 +9,8 @@ function [config] = xASL_qc_LoadPdfConfig(x, configPath, bOverWrite)
 % INPUT:
 %   x           - Struct containing all ExploreAsl Parameters (REQUIRED)
 %   configPath  - Path to the config file (OPTIONAL)
-%   bOverWrite  - Boolean to determine if current configReportPDF.json should be overwritten. (OPTIONAL, default == false)
+%   bOverWrite  - Boolean for overwriting configReportPDF.json (OPTIONAL, default == true)
+%   bVerbose    - Boolean for providing feedback (OPTIONAL, default == false)
 %
 %   OUTPUT:
 %   config      - Struct containing all parameters of the jsonfile
@@ -45,28 +46,35 @@ if nargin<2 || isempty(configPath)
 end
 
 if nargin<3 || isempty(bOverWrite)
-    bOverWrite = false;
+    bOverWrite = true; % We need to overwrite, because different subjects can have different modules
 end
+
+if nargin<4 || isempty(bVerbose)
+    bVerbose = false; % By default we want to overwrite and not alert the user
+end
+
 
 %% ------------------------------------------------------------------------
 %% 2. Load JSON file 
 if exist(configPath, 'file')
     if bOverWrite
-        fprintf('Overwriting old PDF configuration file\n');
+        if bVerbose; fprintf('Overwriting old PDF configuration file\n'); end
         xASL_delete(configPath);
         xASL_qc_GeneratePdfConfig(x, x.SUBJECT, true);
     end
     config = xASL_io_ReadJson(configPath);
 else
-    fprintf('Custom PDF definitions not found, using default configuration for PDF generation.\n');
+    if bVerbose; fprintf('Custom PDF definitions not found, using default configuration for PDF generation.\n'); end
     xASL_qc_GeneratePdfConfig(x, x.SUBJECT, bOverWrite);
     config = xASL_io_ReadJson(configPath);
 end
+
 
 %% ------------------------------------------------------------------------
 %% 3. Deal with warnings
 if isempty(fields(config))
     warning('Check if configuration JSON for the PDF report is correct, no parameters were loaded.');
 end
+
 
 end
