@@ -94,7 +94,7 @@ PathX = fullfile(x.dir.xASLDerivatives, subject, 'x.mat');
 
 % Check if x.mat file exists already
 if ~exist(PathX, 'file')
-    warning([PathX ' didnt exist, skipping xASL_qc_CreateOutputPDF']);
+    warning([PathX ' didnt exist, skipping xASL_qc_GenerateReport']);
     return;
 end
 
@@ -103,14 +103,6 @@ x = xASL_adm_LoadX(x, PathX, true); % Assume memory x is newer than x.mat
 % Make sure that the directory exists
 PrintDir = fullfile(x.dir.xASLDerivatives, subject);
 xASL_adm_CreateDir(PrintDir);
-
-% Delete existing xASL report files
-ExistingPrintFiles = xASL_adm_GetFileList(PrintDir, '^xASL_Report_.+$');
-if ~isempty(ExistingPrintFiles)
-    for iFile = 1:length(ExistingPrintFiles)
-        xASL_delete(ExistingPrintFiles{iFile});
-    end
-end
 
 
 %% 1. Load Pdf configuration

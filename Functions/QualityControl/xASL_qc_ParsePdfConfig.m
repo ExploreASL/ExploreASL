@@ -151,6 +151,7 @@ function  xASL_qc_ParsePdfConfig_sub_printPage(pageStruct, x, settingsPDF)
     % Finally it prints the page to a PDF file using the identifier as filename in the subject directory.
     fileName = ['xASL_Report_' x.SUBJECT '_' pageStruct.identifier];
     printPathFile = fullfile(x.dir.xASLDerivatives, x.SUBJECT, fileName);
+    xASL_delete(printPathFile);
     fprintf('%s\n', ['Printing ' fileName '.pdf']);
     print(figPrimary, printPathFile, '-dpdf', '-bestfit');
 
