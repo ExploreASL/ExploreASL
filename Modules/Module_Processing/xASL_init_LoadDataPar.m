@@ -20,6 +20,8 @@ function [x] = xASL_init_LoadDataPar(x)
 % 2. Choose the dataPar location
 % 3. Load pre-existing dataPar
 % 4. Populate dataPar with missing parameters
+% 5. Write final dataPar
+% 6. Load dataPar
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:  n/a
@@ -43,7 +45,6 @@ function [x] = xASL_init_LoadDataPar(x)
 
 
     %% 2. Choose the dataPar location
-
     bUseRoot = false;
     bUseRawdata = false;
     bUseDerivatives = false;
@@ -105,48 +106,54 @@ function [x] = xASL_init_LoadDataPar(x)
 
 
     %% 4. Populate dataPar with missing parameters
-
-    % Fills in important information in the dataPar if missing
+    % Fill in important information in the dataPar if missing
     if ~isfield(dataPar, 'x')
         % Add x field
         dataPar.x = struct;
     end
 
     % Check for settings fields
-    if ~isfield(dataPar.x,'settings')
+    if ~isfield(dataPar.x, 'settings')
         dataPar.x.settings = struct;
     end
     % Check for quality field
-    if ~isfield(dataPar.x.settings,'Quality')
+    if ~isfield(dataPar.x.settings, 'Quality')
         dataPar.x.settings.Quality = true;
     end
     % Check for DELETETEMP field
-    if ~isfield(dataPar.x.settings,'DELETETEMP')
+    if ~isfield(dataPar.x.settings, 'DELETETEMP')
         dataPar.x.settings.DELETETEMP = true;
 	end
 
 	% Check for Atlases and TissueMasking parameters
-	dataPar.x = xASL_initLoadDataPar_PrepareAtlas4ROI(dataPar.x);
+	dataPar.x = xASL_init_LoadDataPar_PrepareAtlas4ROI(dataPar.x);
 
-    %% Write final dataPar
+
+    %% 5. Write final dataPar
     x.dir.dataPar = fullfile(x.dir.xASLDerivatives, 'dataPar.json');
     xASL_io_WriteJson(x.dir.dataPar, dataPar);
 
     
-    %% Load dataPar
+    %% 6. Load dataPar
     x = xASL_adm_MergeStructs(dataPar.x, x);
     
+
 end
+
 
 %% -----------------------------------------------------------------------------
 %% -----------------------------------------------------------------------------
-function [x] = xASL_initLoadDataPar_PrepareAtlas4ROI(x)
+function [x] = xASL_init_LoadDataPar_PrepareAtlas4ROI(x)
 %Check for x.S.Atlases & x.S.TissueMasking validity and print instructions if incorrect values are provided
 
 bAtlasTissueMatch = true; % x.S.Atlases & x.S.TissueMasking should match before we can continue (needed for the population module)
 
-if ~isfield(x, 'S') || (~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking'))
-	% Default atlases/ROIs & tissue masks if nothing is provided - default values are provided in the population module
+if ~isfield(x, 'S')
+    x.S = struct;
+end
+
+if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking')
+	% Default atlases/ROIs & tissue masks are provided in the population module
 elseif ~isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking')
 	% Missing Atlases, but provided TissueMasking - cannot continue
     warning('Custom tissue-types (x.S.TissueMasking) specified without ROI atlas-selection (x.S.Atlases). Atlases need to be provided. See instructions below:');
@@ -191,5 +198,6 @@ if ~bAtlasTissueMatch
 	% No match means that we have to end it
     error('Not the same number of ROI atlases as subject-wise tissue-types, skipping');
 end
+
 
 end
