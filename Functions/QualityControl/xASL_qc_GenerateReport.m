@@ -116,7 +116,7 @@ config = xASL_qc_LoadPdfConfig(x, [], bOverWrite, [], modules);
 
 %% 2. Create the PDF
 % Print the title
-fprintf('Printing ExploreASL PDF report in:   \n');
+fprintf('\nPrinting ExploreASL PDF report(s) in:   \n');
 fprintf([PrintDir '\n']);
 
 % Parse the entire Json Stack automatically making all the pages.
@@ -130,6 +130,11 @@ end
 if bRemoveSESSIONfield
     x = rmfield(x, 'SESSION');
 end
-    
+
+
+%% 3. Delete the config file
+configPath = fullfile(x.dir.xASLDerivatives, x.SUBJECT, 'configReportPDF.json');
+xASL_delete(configPath);
+
 
 end
