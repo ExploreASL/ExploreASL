@@ -68,7 +68,7 @@ if exist(configPath, 'file')
     config = xASL_io_ReadJson(configPath);
 else
     if bVerbose; fprintf('Custom PDF definitions not found, using default configuration for PDF generation.\n'); end
-    xASL_qc_GeneratePdfConfig(x, x.SUBJECT, bOverWrite);
+    xASL_qc_GeneratePdfConfig(x, x.SUBJECT, true, modules);
     config = xASL_io_ReadJson(configPath);
 end
 
