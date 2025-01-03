@@ -25,16 +25,10 @@ function xASL_wrp_VisualQC_Structural(x)
 %
 % EXAMPLE: xASL_wrp_VisualQC_Structural(x);
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
-% Licensed under Apache 2.0, see permissions and limitations at
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
-% __________________________________
-
-
+% Copyright (C) 2015-2025 ExploreASL
 
 %% -----------------------------------------------------------------------------------
-%% 1) Admin
+%% 1.   Admin
 PathX = fullfile(x.dir.SUBJECTDIR,'x.mat');
 iSubject = find(strcmp(x.SUBJECTS, x.P.SubjectID)); % Find current subject index
 x = xASL_adm_LoadX(x, PathX, true); % assume x.mat is newer than x
@@ -47,8 +41,9 @@ if isfield(x,'Output') && isfield(x.Output,'Structural')
     x.Output = rmfield(x.Output,'Structural');
 end
 
+
 %% -----------------------------------------------------------------------------------
-%% 2) Run SPM Univariate Plus (UP) QC for T1w (& FLAIR if exists)
+%% 2.   Run SPM Univariate Plus (UP) QC for T1w (& FLAIR if exists)
 % These files need to be inversely transformed from MNI to native space.
 % To speed up, we reslice them instead of transforming from MNI, if they
 % already exist, which is the case when doing this for the FLAIR, after the
@@ -80,13 +75,12 @@ fprintf('%s\n','Saving QC images');
 
 
 %% -----------------------------------------------------------------------------------
-%% 3) Perform several visualizations
+%% 3.   Perform several visualizations
 x = xASL_wrp_VisualCheckCollective_Structural(x);
 
 
-
 %% -----------------------------------------------------------------------------------
-%% 4) Visualize lesions
+%% 4.   Visualize lesions
 Lesion_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['(?i)^Lesion_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.nii$'], 'FPList', [0 Inf]);
 ROI_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['^ROI_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.nii$'], 'FPList', [0 Inf]);
 
@@ -108,8 +102,9 @@ for iROI=1:length(ROI_list)
     xASL_vis_CreateVisualFig(x, {ROIFile}, x.D.ROICheckDir,[0.8 1], 'Lesions'); % Show lesions individually
 end
 
+
 %% -----------------------------------------------------------------------------------
-%% 5) Final QCs
+%% 5.   Final QCs
 xASL_qc_PrintOrientation(x.P.Path_T1, x.dir.SUBJECTDIR, 'RigidRegT1');
 % This function summarizes the T1w orientation. Especially check the determinant, for left-right flips
 
@@ -117,10 +112,16 @@ x = xASL_qc_CollectParameters(x, iSubject, 'Structural');
 xASL_delete(PathX);
 xASL_adm_SaveX(x);
 
-xASL_qc_CreatePDF(x, iSubject);
+xASL_qc_GenerateReport(x, x.SUBJECT, {'Structural'});
 
 
 end
+
+
+
+
+
+
 
 
 
