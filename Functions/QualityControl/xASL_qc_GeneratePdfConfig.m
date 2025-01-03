@@ -1,29 +1,29 @@
-function [config] = xASL_qc_GeneratePdfConfig(x, subject, bOverwrite)
+function [config] = xASL_qc_GeneratePdfConfig(x, subject, bOverwrite, modules)
 % xASL_qc_GeneratePdfConfig Generates a JSON based on all values in x.Output
 %
-% FORMAT: xASL_qc_GeneratePdfConfig(x[, subject, bOverwrite])
+% FORMAT: xASL_qc_GeneratePdfConfig(x[, subject, bOverwrite, modules])
 %
 % INPUT:
-%   x           - structure containing fields with all information required to run this submodule (REQUIRED)
+%   x           - structure containing ExploreASL fields with all information required to run this function (REQUIRED)
 %   subject     - subject name (OPTIONAL, default = x.SUBJECT)
 %   bOverWrite  - boolean to determine if current configReportPDF.json should be overwritten. (OPTIONAL, default == true)
+%   modules     - structure with name(s) of the modules that need to be added to the PDF report (OPTIONAL, default==all modules in x.output)
 %
 % OUTPUT: 
 %   In the ExploreASL Derivatives folder in the subject directory, a configReportPDF.json is generated containing all quality parameters.
 %   Quality parameters are taken from x.Output and x.OutputIm
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  This function dumps all value from x.Output of subject into a configuration file
+% DESCRIPTION:  This function dumps all keys from x.Output of a subject into a configuration file
 %               This configuration can be read by xASL_qc_GeneratePdfConfig to create a pdf that contains all quality values.
 % 
 % EXAMPLE: xASL_qc_GeneratePdfConfig(x, 'sub-001');
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL
+% Copyright (C) 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
-
 
 
 % check input
@@ -43,6 +43,10 @@ end
 
 if nargin < 3 || isempty(bOverwrite)
    bOverwrite = true; % We need to always overwrite, because the numbers of modules can differ between subjects
+end
+
+if nargin < 4
+   modules = []; % By default we use all modules parsed in x.Output, as defined below in xASL_sub_createDefaultJson
 end
 
 % Fix <SESSION> not existing
@@ -74,7 +78,7 @@ PathX = fullfile(x.dir.xASLDerivatives, subject, 'x.mat');
 
 % Check if x.mat file exists already
 if ~exist(PathX, 'file')
-    warning([PathX ' didnt exist, skipping xASL_qc_CreateOutputPDF']);
+    warning([PathX ' didnt exist, skipping xASL_qc_GeneratePdfConfig']);
     return;
 end
 
@@ -92,50 +96,73 @@ PrintFile = fullfile(PrintDir, 'configReportPDF.json');
 % fprintf([PrintFile '\n']);
 
 % Parse the entire Json Stack automatically making all the pages.
-config = xASL_sub_createDefaultJson(x);
+config = xASL_sub_createDefaultJson(x, modules);
 
 % Write Pdf configuration
 xASL_io_WriteJson(PrintFile, config, bOverwrite);
 
 end
 
-function [config] = xASL_sub_createDefaultJson(x)
+
+%% ================================================================================
+%% ================================================================================
+function [config] = xASL_sub_createDefaultJson(x, modules)
+%   x           - structure containing ExploreASL fields with all information required to run this function (REQUIRED)
+%   modules     - structure with name(s) of the modules that need to be added to the PDF report (OPTIONAL, default==all modules in x.output)
+
     config = struct();
     if ~isfield(x, 'Output') || isempty(x.Output) || isempty(fields(x.Output))
-        warning('x.Output didnt exist, skipping xASL_qc_GenerateJsonTemplate');
+        warning('x.Output didnt exist, skipping xASL_qc_GeneratePdfConfig');
         return;
     end
     if ~isfield(x, 'Output_im') || isempty(x.Output_im) || isempty(fields(x.Output_im))
-        warning('x.Output_im didnt exist, skipping xASL_qc_GenerateJsonTemplate');
+        warning('x.Output_im didnt exist, skipping xASL_qc_GeneratePdfConfig');
         return;
     end
 
     config.modules = struct();
-    modules = fieldnames(x.Output);
+
+    if nargin<2 || isempty(modules)
+        modules = fieldnames(x.Output);
+    end
+    
     for module = 1:length(modules)
-        if strcmpi(modules(module), 'Structural') % for this module, we assume a single session/run
+        if strcmpi(modules{module}, 'Structural') % for this module, we assume a single session/run
             config.modules(module).category = 'metadata';
             config.modules(module).type = 'page';
             config.modules(module).identifier = modules{module};
             config.modules(module).content = xASL_sub_createPageContent(x.Output.(modules{module}), modules{module});
-        elseif strcmpi(modules(module), 'Population') % PDF reports are created per subject
+
+        elseif strcmpi(modules{module}, 'Population') % PDF reports are created per subject
             error('We cannot create a PDF report for the population module, skipping...');
+        elseif strcmpi(modules{module}, 'import') % PDF reports are created per subject
+            error('We cannot create a PDF report for the import module, skipping...');
+
         else % for all other modules, such as ASL, fMRI, DTI, we allow multiple sessions/runs
             config.modules(module).category = 'metadata';
-            config.modules(module).type = 'module';
+            config.modules(module).type = 'module'; % here we define a module instead of a page identifier
             config.modules(module).identifier = modules{module};
-            asl_sessions = fieldnames(x.Output.(modules{module}));
-            for session = 1:length(asl_sessions)
-                config.modules(module).content(session).category = 'metadata';
-                config.modules(module).content(session).type = 'page';
-                config.modules(module).content(session).identifier = asl_sessions{session};
-                config.modules(module).content(session).content = xASL_sub_createPageContent(x.Output.ASL.(asl_sessions{session}), modules{module}, asl_sessions{session});
+
+            if isfield(x, 'SESSION') % if we can define a single session/run
+                allSessions = {x.SESSION};
+            else % otherwise, use all sessions/runs
+                allSessions = fieldnames(x.Output.(modules{module}));
+            end            
+
+            for iSession = 1:length(allSessions)
+                config.modules(module).content(iSession).category = 'metadata';
+                config.modules(module).content(iSession).type = 'page'; % now we define pages
+                config.modules(module).content(iSession).identifier = allSessions{iSession};
+                config.modules(module).content(iSession).content = xASL_sub_createPageContent(x.Output.(modules{module}).(allSessions{iSession}), modules{module}, allSessions{iSession});
             end
         end
     end
 
 end
 
+
+%% ============================================================================
+%% ============================================================================
 function content = xASL_sub_createPageContent(module, modulename, sessionname)
     
     if nargin < 3 || isempty(sessionname)

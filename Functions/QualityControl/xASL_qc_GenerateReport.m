@@ -1,11 +1,12 @@
-function [x] = xASL_qc_GenerateReport(x, subject, bOverWrite)
+function [x] = xASL_qc_GenerateReport(x, subject, modules, bOverWrite)
 % xASL_qc_GenerateReport Generates a PDF report based on a predefined Json configuration file
 %
-% FORMAT: xASL_qc_GenerateReport(x [,subject])
+% FORMAT: xASL_qc_GenerateReport(x [,subject, modules, bOverwrite])
 %
 % INPUT:
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
 %   subject     - subject name (OPTIONAL, default = x.SUBJECT)
+%   modules     - structure with name(s) of the modules that need to be added to the PDF report (OPTIONAL, default==all modules in x.output)
 %   bOverWrite  - boolean for overwriting configReportPDF.json with the default one (OPTIONAL, default == true)
 %
 % OUTPUT: 
@@ -59,7 +60,11 @@ else
     x.SUBJECT = subject;
 end
 
-if nargin < 3 || isempty(bOverWrite)
+if nargin < 3 || isempty(modules)
+    modules = []; % This will use all modules in x.Output, in xASL_qc_GeneratePdfConfig>xASL_sub_createDefaultJson
+end
+
+if nargin < 4 || isempty(bOverWrite)
     bOverWrite = true; % We need to overwrite because different subjects can have different modules
 end
 
@@ -106,7 +111,7 @@ xASL_adm_CreateDir(PrintDir);
 
 
 %% 1. Load Pdf configuration
-config = xASL_qc_LoadPdfConfig(x, [], bOverWrite);
+config = xASL_qc_LoadPdfConfig(x, [], bOverWrite, [], modules);
 
 
 %% 2. Create the PDF

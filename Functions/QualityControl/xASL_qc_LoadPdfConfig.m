@@ -1,16 +1,17 @@
-function [config] = xASL_qc_LoadPdfConfig(x, configPath, bOverWrite, bVerbose)
+function [config] = xASL_qc_LoadPdfConfig(x, configPath, bOverWrite, bVerbose, modules)
 % xASL_qc_LoadPdfConfig loads parameters from a .json config file to be used in xASL_qc_GenerateReport.
 % Using the config file, the user can define the parameters of the report.
 % If no config file is given, it will first look in the derivatives folder if configReportPDF.json exists.
 % If nothing exists there a default config file is loaded and used. (source at in the ExploreASL/Functions/QualityControl folder)
 %
-% FORMAT: [config] = xASL_qc_LoadPdfConfig(x[, configPath])
+% FORMAT: [config] = xASL_qc_LoadPdfConfig(x[, configPath, bOverWrite, bVerbose, modules])
 %
 % INPUT:
 %   x           - Struct containing all ExploreAsl Parameters (REQUIRED)
 %   configPath  - Path to the config file (OPTIONAL)
 %   bOverWrite  - Boolean for overwriting configReportPDF.json (OPTIONAL, default == true)
 %   bVerbose    - Boolean for providing feedback (OPTIONAL, default == false)
+%   modules     - structure with name(s) of the modules that need to be added to the PDF report (OPTIONAL, default==all modules in x.output)
 %
 %   OUTPUT:
 %   config      - Struct containing all parameters of the jsonfile
@@ -25,13 +26,11 @@ function [config] = xASL_qc_LoadPdfConfig(x, configPath, bOverWrite, bVerbose)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [config] = xASL_qc_LoadPdfConfig(x);
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
-
-
 
 
 %% ------------------------------------------------------------------------
@@ -53,6 +52,10 @@ if nargin<4 || isempty(bVerbose)
     bVerbose = false; % By default we want to overwrite and not alert the user
 end
 
+if nargin < 5
+   modules = []; % By default we use all modules parsed in x.Output, as defined below in xASL_qc_GeneratePdfConfig>xASL_sub_createDefaultJson
+end
+
 
 %% ------------------------------------------------------------------------
 %% 2. Load JSON file 
@@ -60,7 +63,7 @@ if exist(configPath, 'file')
     if bOverWrite
         if bVerbose; fprintf('Overwriting old PDF configuration file\n'); end
         xASL_delete(configPath);
-        xASL_qc_GeneratePdfConfig(x, x.SUBJECT, true);
+        xASL_qc_GeneratePdfConfig(x, x.SUBJECT, true, modules);
     end
     config = xASL_io_ReadJson(configPath);
 else
