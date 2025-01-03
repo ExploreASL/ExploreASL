@@ -169,7 +169,7 @@ function content = xASL_sub_createPageContent(module, modulename, sessionname)
         sessionname = '';
     end
 
-    qc_parameters = fieldnames(module);
+    qc_parameters = sort(fieldnames(module));
     content = cell(size(qc_parameters,1),1);
 
     % Add the qc_images
