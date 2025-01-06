@@ -73,8 +73,8 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
     end
     
     % Print FSL directory, if used
-    if isfield(x,'FSLdir') && ~min(isnan(x.FSLdir)) && exist(x.FSLdir, 'dir')
-        [Result1, Result2] = system([wslString ' cat ' xASL_adm_UnixPath(fullfile(x.FSLdir,'etc','fslversion'))]);
+    if isfield(x, 'external') && isfield(x.external, 'FSLdir') && ~min(isnan(x.external.FSLdir)) && exist(x.external.FSLdir, 'dir')
+        [Result1, Result2] = system([wslString ' cat ' xASL_adm_UnixPath(fullfile(x.external.FSLdir,'etc','fslversion'))]);
         if Result1==0 && ischar(Result2)
             Software.FSL = Result2;
         end

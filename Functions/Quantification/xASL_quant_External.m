@@ -115,8 +115,8 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xAS
 	
 	% Define if BASIL or FABBER or VABY is used - multiTE needs FABBER. VABY is an alternative
 	% Allow external input of quantification type
-	if isfield(x, 'external') && isfield(x.external, 'ExternalQuantificationType')
-		localQuantificationType = x.external.ExternalQuantificationType;
+	if isfield(x, 'modules') && isfield(x.modules, 'asl') && isfield(x.modules.asl, 'ExternalQuantificationType')
+		localQuantificationType = x.modules.asl.ExternalQuantificationType;
 	else
 		if (isfield(x.modules.asl, 'bQuantifyMultiTE') && x.modules.asl.bQuantifyMultiTE) || bQuantifyMultiTE
 			localQuantificationType = 'FABBER';% Default for multi-TE

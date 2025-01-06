@@ -14,7 +14,7 @@ function [FSLdir, x, RootWSLdir] = xASL_ext_FSLSetDir(x)
 % DESCRIPTION: This function finds the FSLdir & puts it out, also in
 %              x.FSLdir to allow repeating this function without having to repeat
 %              searching.
-%              If the FSLdir & RootFSLdir are already defined in x.FSLdir & x.RootFSLdir, this function
+%              If the FSLdir & RootFSLdir are already defined in x.external.FSLdir & x.external.RootFSLdir, this function
 %              is skipped.
 %              Supports Linux, MacOS & Windows (WSL), & several different
 %              default installation folders for different Linux
@@ -44,14 +44,14 @@ FSLdir = '';
 RootWSLdir = '';
 RootFSLdir = '';
 
-if isfield(x,'FSLdir') && isfield(x,'RootFSLdir') && ~isempty(x.FSLdir) && ~isempty(x.RootFSLdir)
+if isfield(x, 'external') && isfield(x.external,'FSLdir') && isfield(x.external, 'RootFSLdir') && ~isempty(x.external.FSLdir) && ~isempty(x.external.RootFSLdir)
     % if we already have an FSL dir, skip this function
-    FSLdir = x.FSLdir;
-    RootWSLdir = x.RootFSLdir;
+    FSLdir = x.external.FSLdir;
+    RootWSLdir = x.external.RootFSLdir;
     return;
-elseif isfield(x, 'FSLdir') && ~isfield(x, 'RootFSLdir') && ~ispc
+elseif isfield(x, 'external') && isfield(x.external, 'FSLdir') && ~isfield(x.external, 'RootFSLdir') && ~ispc
 
-    FSLdir = x.FSLdir;
+    FSLdir = x.external.FSLdir;
 
     if length(FSLdir)>7 && strcmp(FSLdir(end-6:end), fullfile('bin', 'fsl'))
         FSLdir = fileparts(FSLdir);
@@ -69,10 +69,10 @@ elseif isfield(x, 'FSLdir') && ~isfield(x, 'RootFSLdir') && ~ispc
     return
 else
     % Try getenv
-    x.FSLdir = getenv('FSLDIR');
-    if ~isempty(x.FSLdir)
-        RootWSLdir = x.FSLdir;
-        FSLdir = x.FSLdir;
+    x.external.FSLdir = getenv('FSLDIR');
+    if ~isempty(x.external.FSLdir)
+        RootWSLdir = x.external.FSLdir;
+        FSLdir = x.external.FSLdir;
         return;
     end
 end
@@ -269,8 +269,8 @@ else
 end
 
 %% Add to x
-x.FSLdir = FSLdir;
-x.RootFSLdir = RootWSLdir;
+x.external.FSLdir = FSLdir;
+x.external.RootFSLdir = RootWSLdir;
 
 
 end

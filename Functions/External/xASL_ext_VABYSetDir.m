@@ -37,14 +37,14 @@ end
 
 VABYdir = ''; % Initialize the output as an empty string
 
-if isfield(x,'VABYdir') && ~isempty(x.VABYdir)
+if isfield(x, 'external') && isfield(x.external,'VABYdir') && ~isempty(x.external.VABYdir)
     % if we already have an VABY dir, skip this function
-    VABYdir = x.VABYdir;
+    VABYdir = x.external.VABYdir;
     return;
 end
 
 % For VABY quantification, we cannot run automatic detection
-if isfield(x, 'external') && isfield(x.external, 'ExternalQuantificationType') && strcmp(x.external.ExternalQuantificationType, 'VABY')
+if isfield(x, 'modules') && isfield(x.modules, 'asl') && isfield(x.modules.asl, 'ExternalQuantificationType') && strcmp(x.modules.asl.ExternalQuantificationType, 'VABY')
 	error('External quantification with VABY requested. You need to provide the path to the VABY command in x.VABYdir');
 end
 
