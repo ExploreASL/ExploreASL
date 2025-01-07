@@ -612,7 +612,7 @@ function line = xASL_qc_ParsePdfConfig_sub_PrintQC(qcStruct, x, currentFigure, l
     end
 
     % Generate the string to be written in the pdf Report
-    string = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, settingsPDF);
+    [string, settingsPDF] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, settingsPDF);
 
     % Print the string to the PDF report.
     line = xASL_qc_ParsePdfConfig_sub_PrintText(string, currentFigure, line, settingsPDF);
@@ -621,7 +621,7 @@ end
 
 
 %% ===================================================================================================================================================
-function [string] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, settingsPDF)
+function [string, settingsPDF] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(qcStruct, x, settingsPDF)
 % This function creates QC lines from the key names and values
 
     if ~isfield(qcStruct, 'module') ||  ~isfield(x.Output, (qcStruct.module))
