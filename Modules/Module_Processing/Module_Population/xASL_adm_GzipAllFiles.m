@@ -56,9 +56,10 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal, bVerbose)
     %% ----------------------------------------------------
     %% 1) Faster unix version, using OS file system
     if bUseLinux
-		if exist(ROOT,'dir') % Check if directory exists, otherwise a random current directory would be zipped
+		if exist(ROOT, 'dir') % Check if directory exists, otherwise a random current directory would be zipped
 			PathToSearch = xASL_adm_UnixPath(ROOT);
             oldPath = pwd;
+			fprintf('\n%s\n', 'G-zZzZipping files, this can take a while');
 			if bVerbose
 				[exit_code, system_result] = system(['cd ' PathToSearch '; for i in `find * | grep -E \.nii$`; do gzip -1 -f -q -v "$i"; done'], '-echo');
 			else
@@ -66,7 +67,7 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal, bVerbose)
 			end
         else
             warning(['Non-existing folder:' ROOT]);
-        end
+		end
     else
         %% 2) Otherwise use the multithreaded SuperGzip for Windows
         if ~isempty(pathExternal)
