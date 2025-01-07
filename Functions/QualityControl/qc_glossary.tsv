@@ -4,18 +4,18 @@ ASL_CoveragePerc	FoV coverage (%)
 ASL_tSNR_CSF_Ratio	CSF temporal SNR (ratio)			
 ASL_tSNR_GM_Ratio	GM temporal SNR (ratio)			
 ASL_tSNR_GMWM_Ratio	GM/WM temporal SNR (ratio)			
-ASL_tSNR_GMWM_WMref_Ratio	Parenchyma/Wmref tSNR (ratio)							
+ASL_tSNR_GMWM_WMref_Ratio	Parenchyma/Wmref tSNR (ratio)			
 ASL_tSNR_Physio2Thermal_Ratio	Physiological/thermal tSNR (ratio)			
 ASL_tSNR_Slope_Corr	tSNR/partial volume GM (correlation)			
 ASL_tSNR_WM_Ratio	WM temporal SNR (ratio)			
 ASL_tSNR_WMref_Ratio	Wmref temporal SNR (ratio)			
 BackgroundSuppressionNumberPulses	Number of Background Suppression Pulses			
 ExternalQuantificationType				
-CBF_GM_Median_mL100gmin	Median GM CBF (mL/100g/min)	Median CBF within the pGM>0.5 ROI	
-CBF_GM_PVC2_mL100gmin	Mean GM CBF, PVC (mL/100g/min)
-CBF_GM_WM_Ratio	Median CBF GM/WM (ratio)	Median CBF of pGM>0.5 / Median CBF of pWM>0.5
+CBF_GM_Median_mL100gmin	Median GM CBF (mL/100g/min)	Median CBF within the pGM>0.5 ROI		
+CBF_GM_PVC2_mL100gmin	Mean GM CBF, PVC (mL/100g/min)			
+CBF_GM_WM_Ratio	Median CBF GM/WM (ratio)	Median CBF of pGM>0.5 / Median CBF of pWM>0.5		
 CBF_WM_Median_mL100gmin	Median WM CBF (mL/100g/min)	Median CBF within the pWM>0.5 ROI 		
-CBF_WM_PVC2_mL100gmin	Mean WM CBF, PVC (mL/100g/min)
+CBF_WM_PVC2_mL100gmin	Mean WM CBF, PVC (mL/100g/min)			
 CNR_GM_WM_Ratio	GM-WM contrast-to-noise (ratio)	(Mean GM - Mean WM) / (SD WMref)^2		
 CSF_vol_mL	CSF volume (mL)	CSF Volume		
 EFC_bits	Shannon Entropy (bits)	Shannon entropy of voxel intensities proportional to maximum possible entropy for similar sized image		
@@ -87,7 +87,6 @@ T1w_WMref_vol_mL	T1w WMref volume (mL)
 TC_ASL2T1w_Perc	ASL to T1w alignment Tanimoto coeff (%)			
 TE_ms	Echo time (ms)	Echo Time		
 TR_ms	Repetition time (ms)	Repetition Time		
-<<<<<<< HEAD
 tSNR_CSF_Ratio	CSF temporal SNR (ratio)	Mean / Temporal SD within total CSF		
 tSNR_GM_Ratio	GM temporal tSNR (ratio)	Mean / Temporal SD within total GM		
 tSNR_GMWM_Ratio	Parenchyma temporal SNR (ratio)	Mean / Temporal SD within the parenchyma		
@@ -103,7 +102,7 @@ Version_FSL	Version FSL
 Version_LST	Version LST			
 Version_Matlab	Version Matlab			
 Version_SPM12	Version SPM12			
-VoxelSize_mm	Voxel size (mm)					
+VoxelSize_mm	Voxel size (mm)			
 VoxelSize_X_mm		Voxel size in x dimension	mm	
 VoxelSize_Y_mm		Voxel size in y dimension	mm	
 VoxelSize_Z_mm		Voxel size in z dimension	mm	
