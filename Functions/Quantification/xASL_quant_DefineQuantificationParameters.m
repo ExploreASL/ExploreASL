@@ -83,17 +83,14 @@ if ~isempty(indexSetsHct)
     fprintf('%s\n', 'Using hematocrit found in participants.tsv for blood T1 correction');
 end
 
-if isfield(x, 'Hematocrit')
+if isfield(x, 'Hematocrit') || isfield(x, 'hematocrit')
     warning('x.Hematocrit detected, we ignore this, considering adding hct values to participants.tsv instead');
-end
-if isfield(x, 'hematocrit')
-    warning('x.hematocrit detected, we ignore this, considering adding hct values to participants.tsv instead');
 end
 
 
 % a2. Manage hematocrit usage parameter
 if isfield(x.modules.asl, 'bHct2BloodT1')
-    if x.modules.asl.bHct2BloodT1 == 2 && isempty(x.Q, 'Hematocrit')
+    if x.modules.asl.bHct2BloodT1 == 2 && isfield(x.Q, 'Hematocrit')
         warning('Parameter x.modules.asl.bHct2BloodT1 was set to 2: trying to infer hematocrit from age and sex, but hematocrit data were also found');
         fprintf('%s\n', 'Consider setting x.modules.asl.bHct2BloodT1 to 1 to use the hematocrit data directly');
     end
