@@ -59,11 +59,15 @@ else
 
 			% Check that the header was read and contains the basic tags
 			if isempty(tDcm) || ~isfield(tDcm, 'EchoTime') || ~isfield(tDcm, 'RepetitionTime') ||...
-					~isfield(tDcm, 'ImageType') || isempty(tDcm.ImageType) || ~isfield(tDcm, 'ProtocolName') || isempty(tDcm.ProtocolName)
+					~isfield(tDcm, 'ImageType') || isempty(tDcm.ImageType) || ((~isfield(tDcm, 'ProtocolName') || isempty(tDcm.ProtocolName)) && (~isfield(tDcm, 'SeriesNumber') || isempty(tDcm.SeriesNumber)))
 				warning(['Incomplete DICOM header: ' Flist{iL}]);
 			else
 				% Always add the protocol name to the directory name
-				Fname = tDcm.ProtocolName;
+				if ~isfield(tDcm, 'ProtocolName') || isempty(tDcm.ProtocolName)
+					Fname = num2str(tDcm.SeriesNumber);
+				else
+					Fname = tDcm.ProtocolName;
+				end
 
 				% Add series description if available
 				if isfield(tDcm, 'SeriesDescription') && ~isempty(tDcm.SeriesDescription) && ~strcmp(tDcm.ProtocolName, tDcm.SeriesDescription)
