@@ -149,7 +149,7 @@ if x.S.InputNativeSpace
 else
 	x.S.output_ID = [x.S.output_ID '_StandardSpace'];
 end
-x.S.output_ID = [x.S.output_ID '_' Ffile x.S.TissueMaskingLocal{1} '_n=' num2str(x.dataset.nSubjects) '_' date];
+x.S.output_ID = [x.S.output_ID '_' Ffile x.S.TissueMaskingLocal '_n=' num2str(x.dataset.nSubjects) '_' date];
 
 
 %% ------------------------------------------------------------------------------------------------------------

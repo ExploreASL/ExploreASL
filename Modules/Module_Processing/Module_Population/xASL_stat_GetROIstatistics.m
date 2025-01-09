@@ -756,7 +756,7 @@ for iSubject=1:x.dataset.nSubjects
 
                 % Now check for empty masks
                 if xASL_stat_SumNan(CurrentMaskNotVascular(:)) == 0
-                    fprintf('%s\n', ['* Empty ' x.S.TissueMaskingLocal{1} ' CBF mask for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
+                    fprintf('%s\n', ['* Empty ' x.S.TissueMaskingLocal ' CBF mask for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                 elseif xASL_stat_SumNan(pvPrimary(:)) == 0
                     fprintf('%s\n', ['* Empty pv' pvPrimaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                 elseif xASL_stat_SumNan(pvSecondary(:)) == 0
@@ -784,7 +784,7 @@ for iSubject=1:x.dataset.nSubjects
                         % Now check again for empty mask (as it was
                         % masked now also with a vascular artifact
                         % mask)
-                        fprintf('%s\n', ['* Empty ' x.S.TissueMaskingLocal{1} ' non-vascular CBF mask for subject ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]); % slightly different warning/mask as above for sCoV
+                        fprintf('%s\n', ['* Empty ' x.S.TissueMaskingLocal ' non-vascular CBF mask for subject ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]); % slightly different warning/mask as above for sCoV
                     else
 
                         % Visualization first (this differs from sCoV only by the vascular mask)
