@@ -1,35 +1,35 @@
 parameter	Alias	Description	Unit	Range
-AI_Perc	Asymmetry Index (%)	Mean voxelwise asymmetry index (L-R)/(0.5*(L+R))		
+AI_Perc	Asymmetry Index (%)	Mean voxelwise asymmetry index (L-R)/(0.5*(L+R))		10.3-35.7
 ASL_CoveragePerc	FoV coverage (%)			
-ASL_tSNR_CSF_Ratio	CSF temporal SNR (ratio)			
-ASL_tSNR_GM_Ratio	GM temporal SNR (ratio)			
-ASL_tSNR_GMWM_Ratio	GM/WM temporal SNR (ratio)			
-ASL_tSNR_GMWM_WMref_Ratio	Parenchyma/Wmref tSNR (ratio)			
-ASL_tSNR_Physio2Thermal_Ratio	Physiological/thermal tSNR (ratio)			
-ASL_tSNR_Slope_Corr	tSNR/partial volume GM (correlation)			
-ASL_tSNR_WM_Ratio	WM temporal SNR (ratio)			
-ASL_tSNR_WMref_Ratio	Wmref temporal SNR (ratio)			
-BackgroundSuppressionNumberPulses	Number of Background Suppression Pulses			
+ASL_tSNR_CSF_Ratio	CSF temporal SNR (ratio)	Mean / Temporal SD within total CSF		0.0744-0.419
+ASL_tSNR_GM_Ratio	GM temporal tSNR (ratio)	Mean / Temporal SD within total GM		0.341-1.47
+ASL_tSNR_GMWM_Ratio	Parenchyma temporal SNR (ratio)	Mean / Temporal SD within the parenchyma		0.187-0.767
+ASL_tSNR_GMWM_WMref_Ratio	Parenchyma/WMref tSNR (ratio)	Mean within the parenchyma / tSD within WMref		0.259-1.06
+ASL_tSNR_Physio2Thermal_Ratio	Physiological/thermal tSNR (ratio)	tSNR_GMWM/tSNR_GMWM_WMref		0.68-1.43
+ASL_tSNR_Slope_Corr	tSNR/partial volume GM (corr)	Slope or temporal SNR as function of GM partial volume		0.00025-0.00101
+ASL_tSNR_WM_Ratio	WM temporal SNR (ratio)	Mean / Temporal SD within total  WM		0.17-0.668
+ASL_tSNR_WMref_Ratio	Wmref temporal SNR (ratio)	Mean / Temporal SD within total WMref		0.109-0.484
+BackgroundSuppressionNumberPulses				
 ExternalQuantificationType				
-CBF_GM_Median_mL100gmin	Median GM CBF (mL/100g/min)	Median CBF within the pGM>0.5 ROI		
-CBF_GM_PVC2_mL100gmin	Mean GM CBF, PVC (mL/100g/min)			
-CBF_GM_WM_Ratio	Median CBF GM/WM (ratio)	Median CBF of pGM>0.5 / Median CBF of pWM>0.5		
+CBF_GM_Median_mL100gmin	Median GM CBF (mL/100g/min)	Median CBF within the pGM>0.5 ROI		29.7-54.5
+CBF_GM_PVC2_mL100gmin	Mean GM CBF PVC (mL/100g/min)			42.6-76.7
+CBF_GM_WM_Ratio	Median CBF GM/WM (ratio)	Median CBF of pGM>0.5 / Median CBF of pWM>0.5		1.53-6.24
 CBF_WM_Median_mL100gmin	Median WM CBF (mL/100g/min)	Median CBF within the pWM>0.5 ROI 		
-CBF_WM_PVC2_mL100gmin	Mean WM CBF, PVC (mL/100g/min)			
+CBF_WM_PVC2_mL100gmin	Mean WM CBF PVC (mL/100g/min)			8.69-38
 CNR_GM_WM_Ratio	GM-WM contrast-to-noise (ratio)	(Mean GM - Mean WM) / (SD WMref)^2		
 CSF_vol_mL	CSF volume (mL)	CSF Volume		
 EFC_bits	Shannon Entropy (bits)	Shannon entropy of voxel intensities proportional to maximum possible entropy for similar sized image		
 FBER_Wmref_Ratio		(SD Whole Brain)^2 / (SD WMref)^2		
-FLAIR_CNR_GM_WM_Ratio	FLAIR GM-WM contrast-to-noise (ratio)			
-FLAIR_EFC_bits	FLAIR Shannon Entropy (bits)			
-FLAIR_FBER_WMref_Ratio	FLAIR FBER (ratio)			
-FLAIR_Mean_AI_Perc	FLAIR mean asymmetry index (%)			
-FLAIR_SD_AI_Perc	FLAIR SD asymmetry index (%)			
-FLAIR_SD_WMref	FLAIR WMref SD (au)			
-FLAIR_SNR_GM_Ratio	FLAIR GM SNR (ratio)			
-FLAIR_WMH_n	FLAIR WMH count (n)			
-FLAIR_WMH_vol_mL	FLAIR WMH volume (mL)			
-FLAIR_WMref_vol_mL				
+FLAIR_CNR_GM_WM_Ratio	FLAIR GM-WM CNR (ratio)			0.00103-0.0775
+FLAIR_EFC_bits	FLAIR Shannon Entropy (bits)			15400-18700
+FLAIR_FBER_WMref_Ratio	FLAIR FBER (ratio)			10.3-114
+FLAIR_Mean_AI_Perc	FLAIR mean asymmetry index (%)			2.52-8.22
+FLAIR_SD_AI_Perc	FLAIR SD asymmetry index (%)			2.35-7.79
+FLAIR_SD_WMref	FLAIR WMref SD (au)			30.2-144
+FLAIR_SNR_GM_Ratio	FLAIR GM SNR (ratio)			9.48-45.7
+FLAIR_WMH_n	FLAIR WMH count (n)			0-54
+FLAIR_WMH_vol_mL	FLAIR WMH volume (mL)			0-44.1
+FLAIR_WMref_vol_mL				9.8-29
 GM_ICV_Ratio	GM/ICV volume (ratio)	Ratio of GM volume to ICV volume		
 GM_vol_mL	GM volume (mL)	GM Volume		
 ICV_vol_mL	ICV volume (mL)	ICV Volume		
@@ -37,7 +37,7 @@ ID	subject ID
 Initial_PLD_ms	Initial post-labeling delay (ms)			
 LabelingDuration_ms	Labeling duration (ms)			
 LabelingType	ArterialSpinLabelingType	"Either CASL, PCASL or PASL"		
-LR_flip_YesNo	Left-right orientation flipped	Left-right Orientation flipped during registation		
+LR_flip_YesNo	Left-right orientation flipped	Left-right Orientation flipped during registation		0-0
 M0	M0Type			
 Matrix	FoV Matrix (voxels)			
 Matrix_N		Number of elements in N dimension	#	
@@ -45,19 +45,19 @@ Matrix_X		Number of elements in X dimension	#
 Matrix_Y		Number of elements in Y dimension	#	
 Matrix_Z		Number of elements in Z dimension	#	
 Mean_AI_Perc	Mean asymmetry index (%)	Mean of voxel-wise asymmetry index		
-Mean_SSIM_Perc	Mean structural similarity (%)	Mean Voxel-wise Structural Similarity Index		
-MotionExcl_Perc	Excluded control-label pairs (%)	Percentage of control-label pairs excluded		
-MotionMax_mm	Maximum motion (mm)			
-MotionMean_mm	Mean motion (mm)	Mean Motion		
-MotionSD_mm	SD motion (mm)			
-nRMSE_Perc	norminalized RMS error (%)	nRMSE (normalized Root Mean Square Error) within ASL template	%	
+Mean_SSIM_Perc	Mean structural similarity (%)	Mean Voxel-wise Structural Similarity Index		25.5-100
+MotionExcl_Perc	Excluded control-label pairs (%)	Percentage of control-label pairs excluded		0-16.7
+MotionMax_mm	Maximum motion (mm)			0-1.05
+MotionMean_mm	Mean motion (mm)	Mean Motion		0-0.174
+MotionSD_mm	SD motion (mm)			0-0.177
+nRMSE_Perc	norminalized RMS error (%)	nRMSE (normalized Root Mean Square Error) within ASL template		11-85.9
 nUniqueEchoTime				
 NumberOfAverages	Number of control-label pairs (n)			
-PeakSNR_Ratio	Peak SNR (ratio)	"Assuming an individual ASL image can be interpreted as a noise version of an ASL template, this parameter is the dynamic range compared to the mean squared difference of the individual and template ASL images. Dynamic range is calculate here as MaxIntesity-MinIntensity (higher = better)"		
+PeakSNR_Ratio	Peak SNR (ratio)	"Assuming an individual ASL image can be interpreted as a noise version of an ASL template, this parameter is the dynamic range compared to the mean squared difference of the individual and template ASL images. Dynamic range is calculate here as MaxIntesity-MinIntensity (higher = better)"		797-1130
 MRAcquisitionType	MRAcquisitionType			
 RescaledSlope		Scale factor used by Philips		
-RigidBody2Anat_mm	Alignment offset ASL-T1w (mm)	Registration offset between ASL and 3D-T1W 		
-RMSE_Perc	RMS error with ASL template (%)	RMSE (Root Mean Square Error) with ASL Template		
+RigidBody2Anat_mm	Alignment offset ASL-T1w (mm)	Registration offset between ASL and 3D-T1W 		12.4-101
+RMSE_Perc	RMS error with ASL template (%)	RMSE (Root Mean Square Error) with ASL Template		13.2-67.5
 ScaleSlope		Scale factor used by Philips		
 SD_AI_Perc	SD asymmetry index (%)	SD of voxel-wise asymmetry index		
 SD_Wmref	WMref SD (mL/100g/min)	SD in the WM reference region		
@@ -65,36 +65,28 @@ PulseSequenceType	PulseSequenceType
 SliceReadoutTime_ms	Slice readout time (ms)			
 SNR_GM_Ratio	GM/WMref SNR (ratio)	Mean GM / SD_WMref		
 SoftwareVersions				
-SpatialCoV_GM_Perc	GM spatial CoV (%)	Spatial CoV within the pGM>0.5 ROI	%	
-SpatialCoV_WM_Perc	WM spatial CoV (%)	Spatial CoV within the pWM>0.5 ROI	%	
-T1w_CNR_GM_WM_Ratio	T1w GM/WM CNR (ratio)			
-T1w_CSF_ICV_Ratio	T1w CSF/ICV volume (ratio)			
-T1w_CSF_vol_mL	T1w CSF volume (mL)			
-T1w_EFC_bits	T1w Shannon Entropy (bits)			
-T1w_FBER_WMref_Ratio	T1w WMref FBER (ratio)			
-T1w_GM_ICV_Ratio	T1w GM/ICV volume (ratio)			
-T1w_GM_vol_mL	T1w GM volume (mL)			
-T1w_ICV_vol_mL	T1w ICV volume (mL)			
-T1w_IQR_Perc	T1w IQR (%)			
-T1w_LR_flip_YesNo	"T1w left-right orientation flipped (1=yes,0=no)"			
-T1w_Mean_AI_Perc	T1w mean asymmetry index (%)			
-T1w_SD_AI_Perc	T1w SD asymmetry index (%)			
-T1w_SD_WMref	T1w SD WMref (au)			
-T1w_SNR_GM_Ratio	T1w GM SNR (ratio)			
-T1w_WM_ICV_Ratio	T1w WM/ICV volume (ratio)			
-T1w_WM_vol_mL	T1w WM volume (mL)			
-T1w_WMref_vol_mL	T1w WMref volume (mL)			
-TC_ASL2T1w_Perc	ASL to T1w alignment Tanimoto coeff (%)			
+SpatialCoV_GM_Perc	GM spatial CoV (%)	Spatial CoV within the pGM>0.5 ROI		28.9-87.9
+SpatialCoV_WM_Perc	WM spatial CoV (%)	Spatial CoV within the pWM>0.5 ROI		
+T1w_CNR_GM_WM_Ratio	T1w GM/WM CNR (ratio)			0.113-0.409
+T1w_CSF_ICV_Ratio	T1w CSF/ICV volume (ratio)			0.192-0.327
+T1w_CSF_vol_mL	T1w CSF volume (mL)			239-1100
+T1w_EFC_bits	T1w Shannon Entropy (bits)			11000-13400
+T1w_FBER_WMref_Ratio	T1w WMref FBER (ratio)			108-389
+T1w_GM_ICV_Ratio	T1w GM/ICV volume (ratio)			0.352-0.442
+T1w_GM_vol_mL	T1w GM volume (mL)			511-1310
+T1w_ICV_vol_mL	T1w ICV volume (mL)			1210-3430
+T1w_IQR_Perc	T1w IQR (%)			82.2-100
+T1w_LR_flip_YesNo	T1w LR orientation flip (yes/no)			0-0
+T1w_Mean_AI_Perc	T1w mean asymmetry index (%)			2.65-7.78
+T1w_SD_AI_Perc	T1w SD asymmetry index (%)			2.52-6.72
+T1w_SD_WMref	T1w SD WMref (au)			28.9-78.5
+T1w_SNR_GM_Ratio	T1w GM SNR (ratio)			21.1-57.6
+T1w_WM_ICV_Ratio	T1w WM/ICV volume (ratio)			0.302-0.376
+T1w_WM_vol_mL	T1w WM volume (mL)			415-1180
+T1w_WMref_vol_mL	T1w WMref volume (mL)			10-28.6
+TC_ASL2T1w_Perc	ASL2T1w alignment TC (ratio)			0.68-1
 TE_ms	Echo time (ms)	Echo Time		
 TR_ms	Repetition time (ms)	Repetition Time		
-tSNR_CSF_Ratio	CSF temporal SNR (ratio)	Mean / Temporal SD within total CSF		
-tSNR_GM_Ratio	GM temporal tSNR (ratio)	Mean / Temporal SD within total GM		
-tSNR_GMWM_Ratio	Parenchyma temporal SNR (ratio)	Mean / Temporal SD within the parenchyma		
-tSNR_GMWM_WMref_Ratio	Parenchyma/WMref tSNR (ratio)	Mean within the parenchyma / tSD within WMref		
-tSNR_Physio2Thermal_ratio	Physiological/thermal tSNR (ratio)	tSNR_GMWM/tSNR_GMWM_WMref		
-tSNR_Slope_Corr	tSNR/partial volume GM (correlation)	Slope or temporal SNR as function of GM partial volume		
-tSNR_WM_Ratio	WM temporal SNR (ratio)	Mean / Temporal SD within total  WM		
-tSNR_WMref_ratio	Wmref temporal SNR (ratio)	Mean / Temporal SD within total WMref		
 Vendor	MRI manifacturer			
 Version_CAT12	Version CAT12			
 Version_ExploreASL	Version ExploreASL			
