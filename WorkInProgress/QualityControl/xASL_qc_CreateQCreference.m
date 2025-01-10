@@ -83,16 +83,8 @@ for iField=1:length(fieldsAre)
     
     QCstructuralMin.(fieldsAre{iField}) = sortValues(indexMin);
     QCstructuralMax.(fieldsAre{iField}) = sortValues(indexMax);
-
-    % QCstructuralMin.(fieldsAre{iField}) = QCstructuralMean.(fieldsAre{iField})-1.96.*QCstructuralSD.(fieldsAre{iField});
-    % QCstructuralMax.(fieldsAre{iField}) = QCstructuralMean.(fieldsAre{iField})+1.96.*QCstructuralSD.(fieldsAre{iField});
 end
 
-% Do some specific fixes
-QCstructuralMin.FLAIR_WMH_vol_mL = 0; % Healthy = no lesions
-QCstructuralMin.FLAIR_WMH_n = 0;
-QCstructuralMin.T1w_LR_flip_YesNo = 0;  % we want no flip
-QCstructuralMax.T1w_LR_flip_YesNo = 0;
 
 % Store in JSON
 json.Structural.Mean = QCstructuralMean;
@@ -147,21 +139,9 @@ for iField=1:length(fieldsAre)
     
     QCaslMin.(fieldsAre{iField}) = sortValues(indexMin);
     QCaslMax.(fieldsAre{iField}) = sortValues(indexMax);
-
-        % QCaslMin.(fieldsAre{iField}) = QCaslMean.(fieldsAre{iField})-1.96.*QCaslSD.(fieldsAre{iField});
-        % QCaslMax.(fieldsAre{iField}) = QCaslMean.(fieldsAre{iField})+1.96.*QCaslSD.(fieldsAre{iField});
     end
 end
 
-% Do some specific fixes
-QCaslMin.RMSE_Perc = 0; % zero difference with template is also fine
-QCaslMin.nRMSE_Perc = 0; 
-QCaslMin.MotionExcl_Perc = 0; % zero exclusion is also fine
-QCaslMin.MotionMean_mm = 0; % zero motion is best
-QCaslMin.LR_flip_YesNo = 0; % we want no flip
-QCaslMax.LR_flip_YesNo = 0;
-QCaslMax.TC_CBF2template = 1; % Tanimoto coefficient ranges from 0-1, 1 is optimal
-QCaslMax.TC_M02template = 1;
 
 % Store in JSON
 json.ASL.Mean = QCaslMean;
@@ -193,3 +173,89 @@ x = oldX;
 %% Also dump all in a JSON file
 pathJson = fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'QC_collectionReference.json');
 xASL_io_WriteJson(pathJson, json);
+
+
+%% Add to /Functions/QualityControl/qc_glossary.tsv
+x = ExploreASL;
+pathTSV = fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'qc_glossary.tsv');
+QCglossary = xASL_tsvRead(pathTSV);
+
+pathMatMin = fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'xMinimalReferenceValues.mat');
+pathMatMax = fullfile(x.opts.MyPath, 'Functions', 'QualityControl', 'xMaximalReferenceValues.mat');
+
+MatMin = load(pathMatMin, '-mat');
+MatMax = load(pathMatMax, '-mat');
+
+structsAre = {'Structural' 'ASL'};
+
+for iStruct=1:length(structsAre)
+
+    fieldsMin = fields(MatMin.x.Output.(structsAre{iStruct}) );
+    fieldsMax = fields(MatMax.x.Output.(structsAre{iStruct}) );
+    
+    if ~isequal(fieldsMin, fieldsMax)
+        warning('fieldsMin & fieldsMax are unequal');
+    end
+
+    for iField=1:length(fieldsMin)
+        keyIs = fieldsMin{iField};
+        valueMin = MatMin.x.Output.(structsAre{iStruct}).(fieldsMin{iField});
+        valueMax = MatMax.x.Output.(structsAre{iStruct}).(fieldsMin{iField});
+    
+        % Do some specific fixes for fields where min should be 0
+        zeroFields = {'T1w_LR_flip_YesNo', 'FLAIR_WMH_vol_mL' 'FLAIR_WMH_n' 'MotionExcl_Perc' 'MotionMax_mm' 'MotionMean_mm' 'MotionSD_mm'};
+        % explanation: no left-right flip, no WMH lesions, no WMH lesions zero motion exclusion is best
+        if sum(strcmp(zeroFields, keyIs))>0
+            valueMin = 0;
+        end
+
+        % Do some specific fixes for fields where max should be 1
+        onesFields = {'TC_ASL2T1w_Perc' 'Mean_SSIM_Perc' 'T1w_IQR_Perc' 'TC_CBF2template' 'TC_M02template' 'tSNR_Slope_Corr' 'ASL_tSNR_Slope_Corr'};
+        % explanation: no left-right flip, maximum overlap, perfect similarity, perfect IQR score
+        if sum(strcmp(onesFields, keyIs))>0
+            if valueMax<1
+                valueMax = 1;
+            else
+                valueMax = 100;
+            end
+        end        
+
+        if strcmp(keyIs, 'T1w_LR_flip_YesNo')
+            valueMax = 0; % we don't want a left-right flip
+        end
+
+        % Parameters where higher is better, can have a higher maximum value
+        maxList = {'_vol_' '_tSNR_' '_SNR_' 'CBF_WM_' 'CNR_' 'FBER'};
+
+        bContainsMaxList = sum(cellfun(@(y) contains(keyIs, y), maxList))>0;
+        if bContainsMaxList
+            valueMax = 2 .* valueMax;
+        end
+
+        % Parameters where lower is better, can have a lower minimum value
+        minList = {'AI_' '_SD_' 'tSD_' 'motion' 'SpatialCoV' 'RMSE' 'RigidBody' 'CBF_GM_WM_Ratio'};
+        bContainsMinList = sum(cellfun(@(y) contains(keyIs, y), minList))>0;
+        if bContainsMinList
+            valueMin = 0.5 .* valueMin;
+        end
+
+        % Get the key-index from QCglossary
+        indexGlossary = find(strcmp(QCglossary(:,1), keyIs));
+        if numel(indexGlossary)<1
+            warning(['Key missing: ' keyIs]);
+        elseif numel(indexGlossary)>1
+            warning(['Multiple keys present with the same name in QCglossary: ' keyIs]);
+        else
+    
+            % Convert the numerical values to strings with the correct amount of floating points/depending on the order of magnitude
+            valueMin = xASL_adm_formatWithRoundedMagnitude(valueMin, 3);
+            valueMax = xASL_adm_formatWithRoundedMagnitude(valueMax, 3);
+            
+            rangeString = [valueMin '-' valueMax];
+            QCglossary{indexGlossary, 5} = rangeString;
+        end
+    end
+end      
+
+% Store in new QC glossary
+xASL_tsvWrite(QCglossary, pathTSV, 1);
