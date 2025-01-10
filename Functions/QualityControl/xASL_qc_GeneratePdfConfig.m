@@ -131,14 +131,15 @@ function [config] = xASL_sub_createDefaultJson(x, modules)
             config.modules(module).category = 'metadata';
             config.modules(module).type = 'page';
             config.modules(module).identifier = modules{module};
-            config.modules(module).content = xASL_sub_createPageContent(x.Output.(modules{module}), modules{module});
+            config.modules(module).content = xASL_sub_createPageContent(x.Output.(modules{module}), modules{module}, x.SUBJECT);
 
         elseif strcmpi(modules{module}, 'Population') % PDF reports are created per subject
             error('We cannot create a PDF report for the population module, skipping...');
         elseif strcmpi(modules{module}, 'import') % PDF reports are created per subject
             error('We cannot create a PDF report for the import module, skipping...');
 
-        else % for all other modules, such as ASL, fMRI, DTI, we allow multiple sessions/runs
+        elseif strcmpi(modules{module}, 'ASL') || strcmpi(modules{module}, 'fMRI') || strcmpi(modules{module}, 'DTI')
+            % for all other modules, such as ASL, fMRI, DTI, we allow multiple sessions/runs
             config.modules(module).category = 'metadata';
             config.modules(module).type = 'module'; % here we define a module instead of a page identifier
             config.modules(module).identifier = modules{module};
@@ -153,8 +154,10 @@ function [config] = xASL_sub_createDefaultJson(x, modules)
                 config.modules(module).content(iSession).category = 'metadata';
                 config.modules(module).content(iSession).type = 'page'; % now we define pages
                 config.modules(module).content(iSession).identifier = allSessions{iSession};
-                config.modules(module).content(iSession).content = xASL_sub_createPageContent(x.Output.(modules{module}).(allSessions{iSession}), modules{module}, allSessions{iSession});
+                config.modules(module).content(iSession).content = xASL_sub_createPageContent(x.Output.(modules{module}).(allSessions{iSession}), modules{module}, x.SUBJECT, allSessions{iSession});
             end
+        else
+            error('Unknown module name');
         end
     end
 
@@ -163,9 +166,9 @@ end
 
 %% ============================================================================
 %% ============================================================================
-function content = xASL_sub_createPageContent(module, modulename, sessionname)
+function content = xASL_sub_createPageContent(module, modulename, subjectname, sessionname)
     
-    if nargin < 3 || isempty(sessionname)
+    if nargin < 4 || isempty(sessionname)
         sessionname = '';
     end
 
@@ -176,7 +179,14 @@ function content = xASL_sub_createPageContent(module, modulename, sessionname)
     qc_content = struct();
     qc_content.category = 'content';
     qc_content.type = 'text';
-    qc_content.text = ['Quality parameters for the ' modulename ' module ' sessionname];
+    
+    subjectname = strrep(subjectname, 'sub-', ''); % don't show the prefix
+    if strcmpi(modulename, 'structural') % don't show the sessionname for the structural module
+        qc_content.text = ['Subject: ' subjectname ' module: ' modulename];
+    else
+        qc_content.text = ['Subject: ' subjectname ' module: ' sessionname];
+    end
+    
     qc_content.textSettings = struct();
     qc_content.textSettings.fontSize = '12';
     qc_content.textSettings.fontWeight = 'bold';
@@ -198,8 +208,8 @@ function content = xASL_sub_createPageContent(module, modulename, sessionname)
     qc_content.category = 'content';
     qc_content.type = 'QCValues';
     qc_content.parameter = 'qc_images';
-    qc_content.position = '[0.4 0.25]';
-    qc_content.size = '[0.6 0.6]';
+    qc_content.position = '[0.5 0.42]'; % [0.4 0.25]
+    qc_content.size = '[0.5 0.5]'; % [0.6 0.6]
     qc_content.module = modulename;
     qc_content.session = sessionname;
     content{end+1} = qc_content;
