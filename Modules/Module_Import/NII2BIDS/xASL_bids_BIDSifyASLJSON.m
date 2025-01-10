@@ -198,57 +198,67 @@ if strcmpi(jsonOut.Manufacturer,'Siemens')
 	end
 end
 
-% The Labeling defined in a private GE field has a priority
-if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
-	% Verify if this doesn't differ from the predefined file, but the DICOM field has priority
-	if isfield(jsonOut,'LabelingDuration') && ~isequal(jsonOut.GELabelingDuration,jsonOut.LabelingDuration)
-		% if the DICOM information is reasonable - less LDs than volumes, then we report a warning
-		if dimASL(4)>=numel(jsonOut.GELabelingDuration)
-			warning(['StudyPar Labeling duration (' xASL_num2str(jsonOut.LabelingDuration) ') and GE DICOM private field (' xASL_num2str(jsonOut.GELabelingDuration) ') differ. Using ' xASL_num2str(jsonOut.GELabelingDuration)]);
-			jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
-		elseif dimASL(4)>=numel(unique(jsonOut.GELabelingDuration))
-			tempLabelingDuration = unique(jsonOut.GELabelingDuration);
-			if tempLabelingDuration(1) == 0
-				tempLabelingDuration(1:end-1) = tempLabelingDuration(2:end);
-				tempLabelingDuration(end) = 0;
-			end
-			jsonOut.LabelingDuration = tempLabelingDuration;
-			warning(['StudyPar Labeling duration (' xASL_num2str(jsonOut.LabelingDuration) ') and GE DICOM private field (' xASL_num2str(jsonOut.GELabelingDuration) ') differ. Using ' xASL_num2str(jsonOut.LabelingDuration)]);
-		else
-			% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
-			% and we thus use the provided information. We thus keep the LabelingDuration field untouched.
-			warning(['StudyPar Labeling duration (' xASL_num2str(jsonOut.LabelingDuration) ') and GE DICOM private field (' xASL_num2str(jsonOut.GELabelingDuration) ') differ. Using ' xASL_num2str(jsonOut.LabelingDuration)]);
+%% GE Section
+if ~isempty(regexpi(jsonOut.Manufacturer,'GE'))
+	if isfield(jsonInMerged, 'GESequenceName') && ~isempty(regexpi(jsonInMerged.GESequenceName, 'easl'))
+		% Read parameters for eASL
+		if isfield(jsonInMerged, 'GEPrivateCV4') && ~isempty(jsonInMerged.GEPrivateCV4)
 		end
-	else
-		% All is good and we use the DICOM field
-		jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
 	end
-	
-	% GELabelingDuration comes together with the PostLabelingDelay defined in the standard DICOM field called InversionTime
-	if isfield(jsonOut,'InversionTime') && ~isempty(jsonOut.InversionTime)
+
+	% The Labeling defined in a private GE field has a priority
+	if isfield(jsonOut,'GELabelingDuration') && ~isempty(jsonOut.GELabelingDuration)
 		% Verify if this doesn't differ from the predefined file, but the DICOM field has priority
-		if isfield(jsonOut,'PostLabelingDelay') && ~isequal(jsonOut.PostLabelingDelay,jsonOut.InversionTime)
-			% if the DICOM information is reasonable - less PLDs than volumes, then we report a warning
-			if dimASL(4)>=numel(jsonOut.InversionTime)
-				%warning(['StudyPar PostLabelingDelay (' xASL_num2str(jsonOut.PostLabelingDelay) ') and GE DICOM Inversion time (' xASL_num2str(jsonOut.InversionTime) ') differ. Using ' xASL_num2str(jsonOut.InversionTime)]);
-				%jsonOut.PostLabelingDelay = jsonOut.InversionTime;
-				warning(['StudyPar PostLabelingDelay (' xASL_num2str(jsonOut.PostLabelingDelay) ') and GE DICOM Inversion time (' xASL_num2str(jsonOut.InversionTime) ') differ. Using ' xASL_num2str(jsonOut.PostLabelingDelay)]);
+		if isfield(jsonOut,'LabelingDuration') && ~isequal(jsonOut.GELabelingDuration,jsonOut.LabelingDuration)
+			% if the DICOM information is reasonable - less LDs than volumes, then we report a warning
+			if dimASL(4)>=numel(jsonOut.GELabelingDuration)
+				warning(['StudyPar Labeling duration (' xASL_num2str(jsonOut.LabelingDuration) ') and GE DICOM private field (' xASL_num2str(jsonOut.GELabelingDuration) ') differ. Using ' xASL_num2str(jsonOut.GELabelingDuration)]);
+				jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
+			elseif dimASL(4)>=numel(unique(jsonOut.GELabelingDuration))
+				tempLabelingDuration = unique(jsonOut.GELabelingDuration);
+				if tempLabelingDuration(1) == 0
+					tempLabelingDuration(1:end-1) = tempLabelingDuration(2:end);
+					tempLabelingDuration(end) = 0;
+				end
+				jsonOut.LabelingDuration = tempLabelingDuration;
+				warning(['StudyPar Labeling duration (' xASL_num2str(jsonOut.LabelingDuration) ') and GE DICOM private field (' xASL_num2str(jsonOut.GELabelingDuration) ') differ. Using ' xASL_num2str(jsonOut.LabelingDuration)]);
 			else
 				% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
-				% and we thus use the provided information. We thus keep the PostLabelingDelay field untouched.
+				% and we thus use the provided information. We thus keep the LabelingDuration field untouched.
+				warning(['StudyPar Labeling duration (' xASL_num2str(jsonOut.LabelingDuration) ') and GE DICOM private field (' xASL_num2str(jsonOut.GELabelingDuration) ') differ. Using ' xASL_num2str(jsonOut.LabelingDuration)]);
 			end
 		else
-			jsonOut.PostLabelingDelay = jsonOut.InversionTime;
+			% All is good and we use the DICOM field
+			jsonOut.LabelingDuration = jsonOut.GELabelingDuration;
 		end
+
+		% GELabelingDuration comes together with the PostLabelingDelay defined in the standard DICOM field called InversionTime
+		if isfield(jsonOut,'InversionTime') && ~isempty(jsonOut.InversionTime)
+			% Verify if this doesn't differ from the predefined file, but the DICOM field has priority
+			if isfield(jsonOut,'PostLabelingDelay') && ~isequal(jsonOut.PostLabelingDelay,jsonOut.InversionTime)
+				% if the DICOM information is reasonable - less PLDs than volumes, then we report a warning
+				if dimASL(4)>=numel(jsonOut.InversionTime)
+					%warning(['StudyPar PostLabelingDelay (' xASL_num2str(jsonOut.PostLabelingDelay) ') and GE DICOM Inversion time (' xASL_num2str(jsonOut.InversionTime) ') differ. Using ' xASL_num2str(jsonOut.InversionTime)]);
+					%jsonOut.PostLabelingDelay = jsonOut.InversionTime;
+					warning(['StudyPar PostLabelingDelay (' xASL_num2str(jsonOut.PostLabelingDelay) ') and GE DICOM Inversion time (' xASL_num2str(jsonOut.InversionTime) ') differ. Using ' xASL_num2str(jsonOut.PostLabelingDelay)]);
+				else
+					% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
+					% and we thus use the provided information. We thus keep the PostLabelingDelay field untouched.
+				end
+			else
+				jsonOut.PostLabelingDelay = jsonOut.InversionTime;
+			end
+		end
+	end
+
+	% For GE and multi-PLD or single-PLD not defined in the GELabelingDurationField, we prefer LabelingDuration from study par due to issues with eASL
+	if strcmpi(jsonInMerged.Manufacturer, 'GE') && isfield(studyPar,'LabelingDuration') && ~isequal(studyPar.LabelingDuration, jsonOut.LabelingDuration) &&...
+			( length(jsonOut.LabelingDuration)>1 || ~isfield(jsonInMerged,'GELabelingDuration'))
+		warning(['StudyPar Labeling duration (' xASL_num2str(studyPar.LabelingDuration) ') and DICOM LabelingDuration field (' xASL_num2str(jsonOut.LabelingDuration) ') differ. Using ' xASL_num2str(studyPar.LabelingDuration)]);
+		jsonOut.LabelingDuration = studyPar.LabelingDuration;
 	end
 end
 
-% For GE and multi-PLD or single-PLD not defined in the GELabelingDurationField, we prefer LabelingDuration from study par due to issues with eASL
-if strcmp(jsonInMerged.Manufacturer, 'GE') && isfield(studyPar,'LabelingDuration') && ~isequal(studyPar.LabelingDuration, jsonOut.LabelingDuration) &&...
-	( length(jsonOut.LabelingDuration)>1 || ~isfield(jsonInMerged,'GELabelingDuration'))
-	warning(['StudyPar Labeling duration (' xASL_num2str(studyPar.LabelingDuration) ') and DICOM LabelingDuration field (' xASL_num2str(jsonOut.LabelingDuration) ') differ. Using ' xASL_num2str(studyPar.LabelingDuration)]);
-	jsonOut.LabelingDuration = studyPar.LabelingDuration;
-end
 	
 % Free info about the sequence, now just the scanner type+software
 if isfield(jsonInMerged,'ManufacturersModelName')
