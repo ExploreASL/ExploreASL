@@ -58,27 +58,59 @@ else
 			tDcm = xASL_io_DcmtkRead(Flist{iL}, false, bUseDCMTK, true);
 
 			% Check that the header was read and contains the basic tags
-			if isempty(tDcm) || ~isfield(tDcm, 'EchoTime') || ~isfield(tDcm, 'RepetitionTime') ||...
-					~isfield(tDcm, 'ImageType') || isempty(tDcm.ImageType) || ((~isfield(tDcm, 'ProtocolName') || isempty(tDcm.ProtocolName)) && (~isfield(tDcm, 'SeriesNumber') || isempty(tDcm.SeriesNumber)))
-				warning(['Incomplete DICOM header: ' Flist{iL}]);
-			else
-				% Always add the protocol name to the directory name
-				if ~isfield(tDcm, 'ProtocolName') || isempty(tDcm.ProtocolName)
-					Fname = num2str(tDcm.SeriesNumber);
-				else
-					Fname = tDcm.ProtocolName;
-				end
+			if isempty(tDcm)
+                warning(['Empty DICOM header, skipping: ' Flist{iL}]);
+                hasProtocolName = isfield(tDcm, 'ProtocolName') && ~isempty(tDcm.ProtocolName);
+                hasSeriesDescription = isfield(tDcm, 'SeriesDescription') && ~isempty(tDcm.SeriesDescription);
+                hasSeriesNumber = isfield(tDcm, 'SeriesNumber') && ~isempty(tDcm.SeriesNumber);
+            elseif ~hasProtocolName && ~hasSeriesDescription && ~hasSeriesNumber
+                warning(['DICOM header without ProtocolName, SeriesDescription, or SeriesNumber, skipping: ' Flist{iL}]);
 
+                % Manage directory name
+                % Priority:
+                % 1. ProtocolName
+                % 2. SeriesDescription
+                % 3. SeriesNumber
+
+                Fname = [];
+                foundName = false;
+
+                % Always add the protocol name to the directory name
+                if hasProtocolName
+                    Fname = tDcm.ProtocolName;
+                    foundName = true;
+                end
+                
 				% Add series description if available
-				if isfield(tDcm, 'SeriesDescription') && ~isempty(tDcm.SeriesDescription) && ~strcmp(tDcm.ProtocolName, tDcm.SeriesDescription)
-					Fname = [Fname '_' tDcm.SeriesDescription];
-				end
+				if hasSeriesDescription
+                    if foundName && ~strcmpi(tDcm.ProtocolName, tDcm.SeriesDescription)
+                        % if ProtocolName was available, was append SeriesDescription if it differs from ProtocolName
+					    Fname = [Fname '_' tDcm.SeriesDescription];
+                    else
+                        % Only SeriesDescription is also fine
+                        foundName = true;
+                        Fname = tDcm.SeriesDescription;
+                    end
+				end                
 
-				if isfield(tDcm, 'SeriesNumber') && ~isempty(tDcm.SeriesNumber)
+                if ~foundName
+                    warning(['ProtocolName & SeriesDescription missing: ' Flist{iL}]);
+                end
+
+                % Add SeriesNumber if available
+				if hasSeriesNumber
 					Fname = [Fname '_' xASL_num2str(tDcm.SeriesNumber)];
-				end
+                end
+                
+                %% Potential extra warnings, can disable these to reduce verbosity
+                checkFields = {'EchoTime' 'RepetitionTime' 'ImageType'};
+                for iField=1:length(checkFields)
+                    if ~isfield(tDcm, checkFields{iField}) || isempty(tDcm.(checkFields{iField}))
+                        warning([checkFields{iField} ' missing: ' Flist{iL}]);
+                    end
+                end
 
-				% Remove special characters and create the directory name if needed
+				%% Remove special characters and create the directory name if needed
 				Fname = xASL_adm_CorrectName(Fname);
 				NewDir = fullfile(pathDICOM, Fname);
 				xASL_adm_CreateDir(NewDir);
