@@ -38,6 +38,13 @@
  *    RescaleSlopeOriginal - 0x2005, 0x140a or 0x2005, 0x110a
  *    GELabelingType - 0x0019, 0x109C
  *    GELabelingDuration - 0x0043, 0x10A5
+ *    GESequenceName - 0x0019, 109e
+ *    GEPrivateCV4 - 0x0019, 10ab
+ *    GEPrivateCV5 - 0x0019, 10ac
+ *    GEPrivateCV6 - 0x0019, 10ad
+ *    GEPrivateCV7 - 0x0019, 10ae
+ *    GEPrivateCV8 - 0x0019, 10af
+ *    GEPrivateCV9 - 0x0019, 10b0
  *    PhilipsNumberTemporalScans - 0x2001, 0x1008
  *    PhilipsLabelControl - 0x2005, 0x1429
  *    PhoenixProtocol - 0x0029, 0x1020
@@ -532,6 +539,13 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	// Extra GE and Siemens parameters
 	mxSetField( pmxOutput, 0, "GELabelingType"             , MXAGetString( dataset,           DcmTagKey(0x0019, 0x109C)   ) );
 	mxSetField( pmxOutput, 0, "GELabelingDuration"         , MXAGetLongIntAsDouble( dataset,  DcmTagKey(0x0043, 0x10a5)   ) );
+	mxSetField( pmxOutput, 0, "GESequenceName"             , MXAGetString( dataset,           DcmTagKey(0x0019, 0x109E)   ) );
+	mxSetField( pmxOutput, 0, "GEPrivateCV4"               , MXAGetString( dataset,  DcmTagKey(0x0019, 0x10AB)   ) );
+	mxSetField( pmxOutput, 0, "GEPrivateCV5"               , MXAGetString( dataset,  DcmTagKey(0x0019, 0x10AC)   ) );
+	mxSetField( pmxOutput, 0, "GEPrivateCV6"               , MXAGetString( dataset,  DcmTagKey(0x0019, 0x10AD)   ) );
+	mxSetField( pmxOutput, 0, "GEPrivateCV7"               , MXAGetString( dataset,  DcmTagKey(0x0019, 0x10AE)   ) );
+	mxSetField( pmxOutput, 0, "GEPrivateCV8"               , MXAGetString( dataset,  DcmTagKey(0x0019, 0x10AF)   ) );
+	mxSetField( pmxOutput, 0, "GEPrivateCV9"               , MXAGetString( dataset,  DcmTagKey(0x0019, 0x10B0)   ) );
 	mxSetField( pmxOutput, 0, "PhoenixProtocol"            , MXAGetStringArray(dataset,       DcmTagKey(0x0029, 0x1020)   ) );
 	mxSetField( pmxOutput, 0, "SiemensSliceTime"           , MXAGetFloat64ArrayAsDouble( dataset,    DcmTagKey(0x0019, 0x1029)  ) );
 			
@@ -682,13 +696,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	    "MRSeriesEPIFactor", "BandwidthPerPixelPhaseEncode", "InPlanePhaseEncodingDirection", \
 	    "Rows", "Columns", "RescaleSlopeOriginal", "RWVIntercept", "RWVSlope", \
 	    "AcquisitionContrast", "ComplexImageComponent", "GELabelingType", "PulseSequenceName", \
+		"GESequenceName", "GEPrivateCV4", "GEPrivateCV5", "GEPrivateCV6", "GEPrivateCV7", "GEPrivateCV8", "GEPrivateCV9", \
 		"InversionTime", "GELabelingDuration", "PhilipsNumberTemporalScans", \
 		"PhilipsLabelControl", "TemporalPositionIdentifier", "PhoenixProtocol", "SoftwareVersions", \
 		"SiemensSliceTime", "StudyID", "SeriesNumber", "AcquisitionNumber", "InstanceNumber", \
 		"SequenceName"
     };
 
-    const int inFields = 50;
+    const int inFields = 57;
 	int readPixel;
 	double *tmp;
 

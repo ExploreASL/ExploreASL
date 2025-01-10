@@ -46,6 +46,17 @@ if nargin < 4 || isempty(bSkipNonDicoms)
     bSkipNonDicoms = false;
 end
 
+header = [];
+
+if ~xASL_exist(filepath, 'file') 
+	warning(['Cannot read DICOM file as it does not exist: ' filepath]);
+	return;
+elseif ~isempty(regexp(filepath, '^file:///'))
+	% While Matlab can handle this path format, DCMTK crashes the entire Matlab
+	warning(['Provide filename without the leading "file:///": ' filepath]);
+	return;
+end
+
 if bTryDCMTK
 	try
 		% Read using DCMTK
@@ -172,6 +183,35 @@ if ~isempty(header.AssetRFactor)
 	% Unknown format
 	header.AssetRFactor = str2double(header.AssetRFactor);
 end
+
+% Adapt the field type 
+if isfield(header, 'GESequenceName') && ~isempty(header.GESequenceName) && isnumeric(header.GESequenceName)
+	header.GESequenceName = char(header.GESequenceName);
+end
+
+if isfield(header, 'GEPrivateCV4') && ~isempty(header.GEPrivateCV4) && ischar(header.GEPrivateCV4)
+	header.GEPrivateCV4 = xASL_str2num(header.GEPrivateCV4);
+end	
+
+if isfield(header, 'GEPrivateCV5') && ~isempty(header.GEPrivateCV5) && ischar(header.GEPrivateCV5)
+	header.GEPrivateCV5 = xASL_str2num(header.GEPrivateCV5);
+end	
+
+if isfield(header, 'GEPrivateCV6') && ~isempty(header.GEPrivateCV6) && ischar(header.GEPrivateCV6)
+	header.GEPrivateCV6 = xASL_str2num(header.GEPrivateCV6);
+end	
+
+if isfield(header, 'GEPrivateCV7') && ~isempty(header.GEPrivateCV7) && ischar(header.GEPrivateCV7)
+	header.GEPrivateCV7 = xASL_str2num(header.GEPrivateCV7);
+end	
+
+if isfield(header, 'GEPrivateCV8') && ~isempty(header.GEPrivateCV8) && ischar(header.GEPrivateCV8)
+	header.GEPrivateCV8 = xASL_str2num(header.GEPrivateCV8);
+end	
+
+if isfield(header, 'GEPrivateCV9') && ~isempty(header.GEPrivateCV9) && ischar(header.GEPrivateCV9)
+	header.GEPrivateCV9 = xASL_str2num(header.GEPrivateCV9);
+end	
 
 %% Siemens fields
 
@@ -314,6 +354,7 @@ end
 
 %% GE fields
 
+% Identify Private fields if this wasn't done by our own DCMTK dicom read already
 if isfield(header, 'Private_0043_1083')
 	header.AssetRFactor = header.Private_0043_1083;
 end
@@ -321,6 +362,34 @@ end
 if isfield(header, 'Private_0019_109c')
 	header.GELabelingType = header.Private_0019_109c;
 end
+
+if isfield(header, 'Private_0019_109e')
+	header.GESequenceName = header.Private_0019_109e;
+end
+
+if isfield(header, 'Private_0019_10ab')
+	header.GEPrivateCV4 = header.Private_0019_10ab;
+end	
+
+if isfield(header, 'Private_0019_10ac')
+	header.GEPrivateCV5 = header.Private_0019_10ac;
+end	
+
+if isfield(header, 'Private_0019_10ab')
+	header.GEPrivateCV6 = header.Private_0019_10ad;
+end	
+
+if isfield(header, 'Private_0019_10ab')
+	header.GEPrivateCV7 = header.Private_0019_10ae;
+end	
+
+if isfield(header, 'Private_0019_10ab')
+	header.GEPrivateCV8 = header.Private_0019_10af;
+end	
+
+if isfield(header, 'Private_0019_10b0')
+	header.GEPrivateCV9 = header.Private_0019_10b0;
+end	
 
 if isfield(header, 'Private_0043_10a5')
 	header.GELabelingDuration = header.Private_0043_10a5;
@@ -346,6 +415,7 @@ listFieldsKeep = {'RepetitionTime', 'EchoTime', 'RescaleSlope', 'RescaleIntercep
 	    'MRSeriesEPIFactor', 'BandwidthPerPixelPhaseEncode', 'InPlanePhaseEncodingDirection',...
 	    'Rows', 'Columns', 'RescaleSlopeOriginal', 'RWVIntercept', 'RWVSlope',...
 	    'AcquisitionContrast', 'ComplexImageComponent', 'GELabelingType', 'PulseSequenceName',...
+		'GESequenceName', 'GEPrivateCV4', 'GEPrivateCV5', 'GEPrivateCV6', 'GEPrivateCV7', 'GEPrivateCV8', 'GEPrivateCV9',...
 		'InversionTime', 'GELabelingDuration', 'PhilipsNumberTemporalScans', 'ProtocolName', ...
 		'PhilipsLabelControl', 'TemporalPositionIdentifier', 'PhoenixProtocol', 'SoftwareVersions',...
 		'SiemensSliceTime', 'StudyID', 'SeriesNumber', 'AcquisitionNumber', 'InstanceNumber' };
