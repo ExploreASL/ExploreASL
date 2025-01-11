@@ -90,12 +90,19 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 	DcmParDefaults.TemporalPositionIdentifier   = NaN;
 	DcmParDefaults.PhilipsNumberTemporalScans   = NaN;
 	DcmParDefaults.GELabelingDuration           = NaN;
+	DcmParDefaults.GESequenceName               = NaN;
+	DcmParDefaults.GEPrivateCV4                 = NaN;
+	DcmParDefaults.GEPrivateCV5                 = NaN;
+	DcmParDefaults.GEPrivateCV6                 = NaN;
+	DcmParDefaults.GEPrivateCV7                 = NaN;
+	DcmParDefaults.GEPrivateCV8                 = NaN;
+	DcmParDefaults.GEPrivateCV9                 = NaN;
 	DcmParDefaults.InversionTime                = NaN;
-	
+
 	DcmSkipNan = {'Rows' 'Columns' 'TemporalPositionIdentifier' 'PhilipsNumberTemporalScans' ...
-		          'GELabelingDuration' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
+		          'GELabelingDuration' 'GESequenceName' 'GEPrivateCV4' 'GEPrivateCV5' 'GEPrivateCV6' 'GEPrivateCV7' 'GEPrivateCV8' 'GEPrivateCV9' 'InversionTime' 'RWVIntercept' 'RWVSlope'};
 	
-	DcmComplexFieldFirst = {'PulseSequenceName' 'GELabelingType'  'SiemensSliceTime' 'PhoenixProtocol' 'InPlanePhaseEncodingDirection'};
+	DcmComplexFieldFirst = {'PulseSequenceName' 'GELabelingType'  'GESequenceName' 'GEPrivateCV4' 'GEPrivateCV5' 'GEPrivateCV6' 'GEPrivateCV7' 'GEPrivateCV8' 'GEPrivateCV9' 'SiemensSliceTime' 'PhoenixProtocol' 'InPlanePhaseEncodingDirection'};
 	DcmComplexFieldAll = {'ComplexImageComponent' 'AcquisitionContrast' 'ImageType' 'PhilipsLabelControl'};
 	
 	DcmFieldList = {'NumberOfAverages', 'RescaleSlope', 'RepetitionTime', ...
@@ -405,8 +412,8 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 				
 				switch bManufacturer
 					case 'GE'
-						dcmfields(end+1:end+4) = {'AssetRFactor', 'EffectiveEchoSpacing'...
-							'GELabelingDuration' 'InversionTime' }; % (0043,1083) (0043,102c)
+						dcmfields(end+1:end+11) = {'AssetRFactor', 'EffectiveEchoSpacing'...
+							'GELabelingDuration' 'InversionTime' 'GESequenceName' 'GEPrivateCV4' 'GEPrivateCV5' 'GEPrivateCV6' 'GEPrivateCV7' 'GEPrivateCV8' 'GEPrivateCV9'}; % (0043,1083) (0043,102c)
 					case 'Philips'
 						dcmfields(end+1:end+4) = {'MRSeriesWaterFatShift', 'MRSeriesEPIFactor'...
 							'TemporalPositionIdentifier'  'PhilipsNumberTemporalScans'}; % (2001,1022) (2001,1013)

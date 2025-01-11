@@ -200,7 +200,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
                 warning(['JSON sidecar missing for ' nii_files{iFile}]);
             end
         end
-        if ~isempty(jsonFiles) && isempty(regexp(first_match, '[nii|nii\.gz]$', 'once'))
+        if ~isempty(jsonFiles) && isempty(regexp(first_match, '(nii|nii\.gz)$', 'once'))
             [parms, x.modules.import.pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(...
                 x.modules.import.imPar, jsonFiles, first_match, x.modules.import.settings.bUseDCMTK, x.modules.import.pathDcmDict);
         end

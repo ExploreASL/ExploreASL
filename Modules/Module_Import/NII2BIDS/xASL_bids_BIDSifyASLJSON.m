@@ -104,7 +104,7 @@ if isfield(studyPar,'LookLocker') && ~isempty(studyPar.LookLocker) && studyPar.L
 	end
 end
 
-%% 5. Prioritize DICOM fields over the manually provided studyPar fields
+%% 5. Prioritize studyPar fields over the DICOM fields
 % Overwrite differing fields with those from Dicom, but report all differences
 for fn = fieldnames(jsonInMerged)'
 	if isfield(jsonOut,fn{1})
@@ -116,13 +116,10 @@ for fn = fieldnames(jsonInMerged)'
 				warningMessage = [fn{1} ' differed between DICOM (' xASL_num2str(jsonInMerged.(fn{1}))...
 					') & studyPar (' xASL_num2str(jsonOut.(fn{1})) '). '];
 
-				% Define the DICOM or studyPar priority
-				if strcmp(fn{1}, 'TotalAcquiredPairs') || strcmp(fn{1}, 'ArterialSpinLabelingType') || strcmp(fn{1}, 'EchoTime') || strcmp(fn{1}, 'VascularCrushing') || strcmp(fn{1}, 'PostLabelingDelay') || strcmp(fn{1}, 'LabelingDuration')
-					jsonInMerged.(fn{1}) = jsonOut.(fn{1});
-					warningMessage = [warningMessage 'Using the studyPar value.'];
-				else
-					warningMessage = [warningMessage 'Using the DICOM value.'];
-				end
+				% Define the studyPar priority
+				jsonInMerged.(fn{1}) = jsonOut.(fn{1});
+				warningMessage = [warningMessage 'Using the studyPar value.'];
+				
 				% Print the warning message
 				warning(warningMessage);
 			end
@@ -200,9 +197,104 @@ end
 
 %% GE Section
 if ~isempty(regexpi(jsonOut.Manufacturer,'GE'))
-	if isfield(jsonInMerged, 'GESequenceName') && ~isempty(regexpi(jsonInMerged.GESequenceName, 'easl'))
+	if isfield(jsonOut, 'GESequenceName') && ~isempty(regexpi(jsonOut.GESequenceName, 'easl'))
 		% Read parameters for eASL
-		if isfield(jsonInMerged, 'GEPrivateCV4') && ~isempty(jsonInMerged.GEPrivateCV4)
+		if isfield(jsonOut, 'GEPrivateCV4') && ~isempty(jsonOut.GEPrivateCV4) && isfield(jsonOut, 'GEPrivateCV5') && ~isempty(jsonOut.GEPrivateCV5) &&...
+		   isfield(jsonOut, 'GEPrivateCV6') && ~isempty(jsonOut.GEPrivateCV6) && isfield(jsonOut, 'GEPrivateCV7') && ~isempty(jsonOut.GEPrivateCV7)
+			% We have detected the eASL sequence that saves the PLD and LD parameters in a different way and all private tags are present
+			% We save them to the non-private GE-specific tags and they will be compared with the studyPar entries as program below for all general GE sequences
+			if ~isfield(jsonOut, 'ArterialSpinLabelingType')
+				jsonOut.ArterialSpinLabelingType = 'PCASL';
+			end
+			if jsonOut.GEPrivateCV6 == 1
+				% This is the case of a single-delay sequence - the values are simply taken over
+				jsonOut.GELabelingDuration = jsonOut.GEPrivateCV5;
+				jsonOut.InversionTime = jsonOut.GEPrivateCV4;
+
+				% An extra zero is added for the M0scan
+				if dimASL(4) == 2
+					jsonOut.GELabelingDuration(2) = 0;
+					jsonOut.InversionTime(2) = 0;
+					if ~isfield(jsonOut, 'M0PositionInASL4D')
+						jsonOut.M0PositionInASL4D = 2;
+					end
+
+					if ~isfield(jsonOut, 'ASLContext')
+						jsonOut.ASLContext = 'deltam,m0scan';
+					end
+				end
+			else
+				% For multi-PLD Hadamard encoded eASL, the PLDs and LDs have to be derived in a more complicated way
+
+				% Fully linear timings of PLD and LD are calculated followingly
+				tempLDlin = ones(1,jsonOut.GEPrivateCV6) * jsonOut.GEPrivateCV5/jsonOut.GEPrivateCV6; %LDlin(i) = CV5/CV6
+				tempPLDlin = jsonOut.GEPrivateCV4 + (0:jsonOut.GEPrivateCV6-1).*tempLDlin(1); %PLD_lin(i) = CV4 + (i-1)*LDlin(i)
+
+				% GEPrivateCV7 == 1 means that the LD values are are equal, otherwise we need to calculate them using a specific exponential formula
+				if jsonOut.GEPrivateCV7 < 1
+					% First, we calculate the T1-blood parameter that is used in calculating the LDs for GE. Note that the values from GE formula have to be used, not the proper literature values
+					% as these values are used internally to prepare the LDs on the GE scanner
+					if jsonOut.MagneticFieldStrength == 3
+						tempGET1 = 1.65; % 3T variant
+					elseif jsonOut.MagneticFieldStrength == 1.5
+						tempGET1 = 1.4;
+					else
+						warning(['GE exponential labeling delay duration is used but the T1-blood value is unknown for magnetic field strength: ' xASL_num2str(jsonOut.MagneticFieldStrength)])
+					end
+					
+					tempStarget = 1/jsonOut.GEPrivateCV6*(1-exp(-jsonOut.GEPrivateCV5/tempGET1))*exp(-jsonOut.GEPrivateCV4/tempGET1);
+
+					% LD and PLD when the fully exponential timings are in place
+					for iPLD = 1:jsonOut.GEPrivateCV6
+						if iPLD == 1
+							tempPLDexp  = jsonOut.GEPrivateCV4; % The first PLDexp is same as the linear one
+						else
+							tempPLDexp(iPLD) = tempPLDexp(iPLD-1) + tempLDexp(iPLD-1); % The PLDs cover the entire length of the previous LD and PLD
+						end
+
+						% The LDexp are calculated using the S_target variable
+						tempLDexp(iPLD) = -tempGET1*log(1-tempStarget*exp(tempPLDexp(iPLD)/tempGET1));
+					end
+
+					% The true LD is now calculated as a weighted mixture of Linear and Exponential parameters using CV7
+					jsonOut.GELabelingDuration =  round(tempLDlin*jsonOut.GEPrivateCV7 +  tempLDexp*(1-jsonOut.GEPrivateCV7), 3);
+					jsonOut.InversionTime      = round(tempPLDlin*jsonOut.GEPrivateCV7 + tempPLDexp*(1-jsonOut.GEPrivateCV7), 3);
+				else
+					% Fully linear PLD and LD are used
+					jsonOut.GELabelingDuration = round(tempLDlin, 3);
+					jsonOut.InversionTime = round(tempPLDlin, 3);
+				end
+
+				% There's the control and M0scan
+				if dimASL(4) == jsonOut.GEPrivateCV6+2
+					% We need to an extra PLD for the control image at the end and afterwards a zero for M0scan
+					jsonOut.InversionTime = [jsonOut.InversionTime (jsonOut.InversionTime(end)+jsonOut.GELabelingDuration(end)) 0];
+					jsonOut.GELabelingDuration = [jsonOut.GELabelingDuration 0 0];
+					if ~isfield(jsonOut, 'M0PositionInASL4D')
+						jsonOut.M0PositionInASL4D = jsonOut.GEPrivateCV6 + 2;
+					end
+
+					if ~isfield(jsonOut, 'DummyScanPositionInASL4D')
+						jsonOut.DummyScanPositionInASL4D = jsonOut.GEPrivateCV6 + 1;
+					end
+				end
+
+				if ~isfield(jsonOut, 'ASLContext')
+					jsonOut.ASLContext = [];
+					for i=1:jsonOut.GEPrivateCV6
+						if i>1
+							jsonOut.ASLContext = [jsonOut.ASLContext, ','];
+						end
+						jsonOut.ASLContext = [jsonOut.ASLContext, 'deltam'];
+					end
+					if dimASL(4) == jsonOut.GEPrivateCV6+2
+						jsonOut.ASLContext = [jsonOut.ASLContext, ',deltam,m0scan'];
+					end
+				end
+			end
+		else
+			% eASL detected but the important parameters were missing
+			warning('GE eASL sequence detected, but the relevant DICOM parameters could not be retrieved');
 		end
 	end
 

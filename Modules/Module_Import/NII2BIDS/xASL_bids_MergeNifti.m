@@ -695,7 +695,7 @@ function pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, nameM
 			
 			% Duplicity check 
 			% Goes through several fields and check if they are consistent across the merged JSONs
-			fieldsDuplicityCheck = {'GELabelingDuration','InversionTime','LabelingDuration'};
+			fieldsDuplicityCheck = {'GELabelingDuration','InversionTime','LabelingDuration' 'GESequenceName' 'GEPrivateCV4' 'GEPrivateCV5' 'GEPrivateCV6' 'GEPrivateCV7' 'GEPrivateCV8' 'GEPrivateCV9'};
 			for iField = 1:length(fieldsDuplicityCheck)
 				if isfield(outputJSON, fieldsDuplicityCheck{iField}) && isfield(currentJSON, fieldsDuplicityCheck{iField})
 					if ~isequal(outputJSON.(fieldsDuplicityCheck{iField}), currentJSON.(fieldsDuplicityCheck{iField}))

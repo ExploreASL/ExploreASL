@@ -3671,6 +3671,13 @@ FFFE	E0DD	SequenceDelimitationItem	UN	1
 0043	192C	EffectiveEchoSpacing	SS	1
 0019	1028	BandwidthPerPixelPhaseEncode	SS	1
 0019	109C	GELabelingType	CS	1
+0019	109E	GESequenceName	CS	1
+0019	10AB	GEPrivateCV4	CS	1
+0019	10AC	GEPrivateCV5	CS	1
+0019	10AD	GEPrivateCV6	CS	1
+0019	10AE	GEPrivateCV7	CS	1
+0019	10AF	GEPrivateCV8	CS	1
+0019	10B0	GEPrivateCV9	CS	1
 0043	10A5	GELabelingDuration	IS	1
 0019	1029	SiemensSliceTime	FD	1-n
 2005	100D	MRScaleIntercept	FL	1
