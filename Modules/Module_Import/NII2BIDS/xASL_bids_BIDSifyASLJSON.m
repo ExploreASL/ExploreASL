@@ -188,6 +188,10 @@ if ~isempty(regexpi(jsonInMerged.Manufacturer,'GE'))
 					if ~isfield(jsonInMerged, 'DummyScanPositionInASL4D')
 						jsonInMerged.DummyScanPositionInASL4D = jsonInMerged.GEPrivateCV6 + 1;
 					end
+				elseif dimASL(4) == jsonInMerged.GEPrivateCV6+1
+					% There's only the M0scan
+					jsonInMerged.InversionTime = [jsonInMerged.InversionTime 0];
+					jsonInMerged.GELabelingDuration = [jsonInMerged.GELabelingDuration 0];
 				end
 
 				if ~isfield(jsonInMerged, 'ASLContext')
@@ -200,6 +204,8 @@ if ~isempty(regexpi(jsonInMerged.Manufacturer,'GE'))
 					end
 					if dimASL(4) == jsonInMerged.GEPrivateCV6+2
 						jsonInMerged.ASLContext = [jsonInMerged.ASLContext, ',deltam,m0scan'];
+					elseif dimASL(4) == jsonInMerged.GEPrivateCV6+1
+						jsonInMerged.ASLContext = [jsonInMerged.ASLContext, ',m0scan'];
 					end
 				end
 			end
