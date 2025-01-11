@@ -64,7 +64,6 @@ SD_Wmref	WMref SD (mL/100g/min)	SD in the WM reference region
 PulseSequenceType	PulseSequenceType			
 SliceReadoutTime_ms	Slice readout time (ms)			
 SNR_GM_Ratio	GM/WMref SNR (ratio)	Mean GM / SD_WMref		
-SoftwareVersions				
 SpatialCoV_GM_Perc	GM spatial CoV (%)	Spatial CoV within the pGM>0.5 ROI		28.9-87.9
 SpatialCoV_WM_Perc	WM spatial CoV (%)	Spatial CoV within the pWM>0.5 ROI		
 T1w_CNR_GM_WM_Ratio	T1w GM/WM CNR (ratio)			0.113-0.409
@@ -88,12 +87,6 @@ TC_ASL2T1w_Perc	ASL2T1w alignment TC (ratio)			0.68-1
 TE_ms	Echo time (ms)	Echo Time		
 TR_ms	Repetition time (ms)	Repetition Time		
 Vendor	MRI manifacturer			
-Version_CAT12	Version CAT12			
-Version_ExploreASL	Version ExploreASL			
-Version_FSL	Version FSL			
-Version_LST	Version LST			
-Version_Matlab	Version Matlab			
-Version_SPM12	Version SPM12			
 VoxelSize_mm	Voxel size (mm)			
 VoxelSize_X_mm		Voxel size in x dimension	mm	
 VoxelSize_Y_mm		Voxel size in y dimension	mm	
