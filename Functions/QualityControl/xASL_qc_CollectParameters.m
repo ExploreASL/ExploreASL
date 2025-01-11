@@ -1,4 +1,4 @@
-function x = xASL_qc_CollectParameters(x, iSubject, ScanType, iSession)
+function x = xASL_qc_CollectParameters(x, iSubject, Module, iSession)
 %xASL_qc_CollectParameters Collect all parameters from structural & ASL, spread over the derivative folders
 %
 % FORMAT: x = xASL_qc_CollectParameters(x, iSubject, ScanType, CollectQCFunction [, iSession])
@@ -18,7 +18,7 @@ function x = xASL_qc_CollectParameters(x, iSubject, ScanType, iSession)
 % EXAMPLE: x = xASL_qc_CollectParameters(x, 10, 'func', 1);
 %          x = xASL_qc_CollectParameters(x, 10, 'ASL', 4);
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL
+% Copyright (C) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -32,7 +32,7 @@ fclose all;
 
 fprintf('Collecting QC parameters...\n');
 
-if nargin<3 || isempty(ScanType)
+if nargin<3 || isempty(Module)
     % Run collecting and saving for all
     error('Missing ScanType...');
 end
@@ -44,22 +44,22 @@ end
 % It is recommended to provide session number for ASL
 if nargin<4 || isempty(iSession)
 	iSession = 1;
-	if ~strcmpi(ScanType, 'structural')
-		warning(['Missing iSession for ' ScanType ', setting to 1']);
+	if ~strcmpi(Module, 'structural')
+		warning(['Missing iSession for ' Module ', setting to 1']);
 	end
 end
 
 if ~isfield(x, 'Output')
     x.Output  = struct; 
 end
-if ~isfield(x.Output, ScanType)
-    x.Output.(ScanType) = struct; 
+if ~isfield(x.Output, Module)
+    x.Output.(Module) = struct; 
 end
 
 %% -----------------------------------------------------------------------------------------------
 %% Collect subject-specific (i.e. structural/anatomical) QC results
 
-switch ScanType
+switch Module
     case 'Structural'
         x = xASL_qc_CollectQC_Structural(x, iSubject);
     case 'ASL'
@@ -68,6 +68,10 @@ switch ScanType
 		x = xASL_qc_CollectQC_func(x, iSubject, iSession);
     case 'dwi'
 		warning('QC collection is not yet implemented for DWI');
+    case {'Import' 'Population'}
+        error('This function should only be ran for single-subject modules');
+    otherwise
+        error('Unknown module');
 end
 fprintf('\n');
 
@@ -96,20 +100,32 @@ end
 x = xASL_qc_CollectSoftwareVersions(x);
 
 % Module-specific software versions:
-if strcmpi(ScanType, 'Structural')
-    x.Output.(ScanType).Version_CAT12 = x.Output.SoftwareVersion.CAT12; % CAT12
-    x.Output.(ScanType).Version_LST = x.Output.SoftwareVersion.LST; % LST
+if strcmpi(Module, 'Structural')
+    x.Output.(Module).Version_CAT12 = x.Output.SoftwareVersion.CAT12; % CAT12
+    x.Output.(Module).Version_LST = x.Output.SoftwareVersion.LST; % LST
+elseif ~isfield(x, 'SESSION')
+    error(['No session found for module: ' Module]);
+    % Above, the modules are managed already, so we can assume that anything except Structural has sessions
+else
+    x.Output.(Module).(x.SESSION).Version_FSL = x.Output.SoftwareVersion.FSL; % FSL
 end
 
-% General software versions (put this in structural only, to avoid redundant output
-x.Output.(ScanType).Version_ExploreASL = x.Output.SoftwareVersion.ExploreASL; % ExploreASL version
-x.Output.(ScanType).Version_ExploreASL_git = x.Output.SoftwareVersion.ExploreASL_git; % ExploreASL git commit tag
-x.Output.(ScanType).Version_Matlab = x.Output.SoftwareVersion.Matlab; % Matlab
-x.Output.(ScanType).Version_SPM12 = x.Output.SoftwareVersion.SPM12; % SPM
-x.Output.(ScanType).(x.SESSIONS{iSession}).Version_FSL = x.Output.SoftwareVersion.FSL; % FSL
+% General software versions
+if isfield(x, 'SESSION')
+    x.Output.(Module).(x.SESSION).Version_ExploreASL = x.Output.SoftwareVersion.ExploreASL; % ExploreASL version
+    x.Output.(Module).(x.SESSION).Version_ExploreASL_Git_commit = x.Output.SoftwareVersion.ExploreASL_git; % ExploreASL git commit tag
+    x.Output.(Module).(x.SESSION).Version_Matlab = x.Output.SoftwareVersion.Matlab; % Matlab
+    x.Output.(Module).(x.SESSION).Version_SPM12 = x.Output.SoftwareVersion.SPM12; % SPM
+else
+    x.Output.(Module).Version_ExploreASL = x.Output.SoftwareVersion.ExploreASL; % ExploreASL version
+    x.Output.(Module).Version_ExploreASL_Git_commit = x.Output.SoftwareVersion.ExploreASL_git; % ExploreASL git commit tag
+    x.Output.(Module).Version_Matlab = x.Output.SoftwareVersion.Matlab; % Matlab
+    x.Output.(Module).Version_SPM12 = x.Output.SoftwareVersion.SPM12; % SPM
+end
 
 % now remove the SoftwareVersion field to avoid redundancy
 x.Output = rmfield(x.Output,'SoftwareVersion');
+
 
 %% -----------------------------------------------------------------------------------------------
 %% Save QC output
@@ -120,7 +136,7 @@ xASL_io_WriteJson(QC_Path, x.Output);
 
 % Generate WAD-QC Descriptor 
 % Run once for each subject
-xASL_qc_WADQC_GenerateDescriptor(x, iSubject, ScanType); % skipped when ~x.DoWADQCDC
+xASL_qc_WADQC_GenerateDescriptor(x, iSubject, Module); % skipped when ~x.DoWADQCDC
 
 
 end
