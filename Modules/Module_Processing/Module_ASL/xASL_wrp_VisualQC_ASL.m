@@ -40,7 +40,7 @@ function xASL_wrp_VisualQC_ASL(x)
 % Use either original or motion estimated ASL4D
 % Use despiked ASL only if spikes were detected and new file has been created
 % Otherwise, despiked_raw_asl = same as original file
-if ~xASL_exist(x.P.Path_despiked_ASL4D,'file')
+if ~xASL_exist(x.P.Path_despiked_ASL4D, 'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
 tempnii = xASL_io_ReadNifti(x.P.Path_despiked_ASL4D);
@@ -195,7 +195,7 @@ xASL_qc_PrintOrientation(x.P.Path_ASL4D, x.dir.SESSIONDIR, 'RigidRegASL');
 x = xASL_qc_CollectParameters(x, x.iSubject, 'ASL', x.iSession); % Quick & Dirty solution, 0 == skip structural part
 
 xASL_adm_SaveX(x); % future: do this in each xWrapper
-xASL_qc_GenerateReport(x, x.SUBJECT, {'ASL'})
+xASL_qc_GenerateReport(x, x.SUBJECT, {'ASL'});
 
 
 %% 10. Integrate results as PDF into a DICOM using WAD-QC
@@ -315,6 +315,7 @@ end
 nIms = length(T.(Pars{1}));
 nRows = ceil( nIms/4);
 
+fprintf('%s','Printing images...   ');
 for iN=1:nRows
     T2 = struct;
     ImsI                    = (iN-1)*4+1:min(nIms,iN*4);
@@ -340,9 +341,10 @@ for iN=1:nRows
 % Perhaps at the end of the row we need to generate empty images, as transversal & coronal have different sizes
 % they don't concatenate well horizontally, need to be concatenated vertically
 
-    fprintf('%s','Printing images...  ');
-    for iM=1:length(T2.ImIn)
-        xASL_TrackProgress(iM,length(T2.ImIn)*nRows);
+    nImages = length(T2.ImIn);
+    for iM=1:nImages
+        iTrack = (iN-1)*nImages+iM;
+        xASL_TrackProgress(iTrack, nImages*nRows);
 
         % Manage slices to show
         % Sagittal
@@ -373,7 +375,9 @@ for iN=1:nRows
 
         % add single slice to QC collection
         if sum(~isnan(T2.IM(:)))>0 % if image is not empty
-            x = xASL_vis_AddIM2QC(x,T2);
+            T2.paths = T2.ImIn{iM}; % image filename -> fieldname
+            T2.preFix = T2.NameExt{iM}; % add prefix (e.g. orientation) to fieldname
+            x = xASL_vis_AddIM2QC(x, T2);
         end
     end
 end

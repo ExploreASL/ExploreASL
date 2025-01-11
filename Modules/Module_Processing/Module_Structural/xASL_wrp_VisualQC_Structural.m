@@ -27,6 +27,7 @@ function xASL_wrp_VisualQC_Structural(x)
 % __________________________________
 % Copyright (C) 2015-2025 ExploreASL
 
+
 %% -----------------------------------------------------------------------------------
 %% 1.   Admin
 PathX = fullfile(x.dir.SUBJECTDIR,'x.mat');
@@ -241,6 +242,10 @@ function x = CreateVisual(x, T)
                     warning('Wrong slice choice');
             end
 
+
+            % Store the filename(s)
+            T.paths = T.ImIn{iM};
+
             % Create the image
             T.IM = xASL_vis_CreateVisualFig(x, T.ImIn{iM}, T.DirOut{iM}, T.IntScale{iM}, T.Suffix{iM}, T.ColorMapIs{iM}, T.bClip{iM});
             
@@ -249,9 +254,11 @@ function x = CreateVisual(x, T)
             if strcmp(T.CorSlices{iM},'n/a')
                 % This is a transversal slice
                 T.IM = squeeze(T.IM(ceil(0.33*X)+2:floor(0.67*X)-1,ceil(Y*3/4+1):end,:)); % slice 8
+                T.preFix = 'Tra_';
             elseif strcmp(T.TraSlices{iM},'n/a')
                 % This is a coronal slice
                 T.IM = squeeze(T.IM(ceil(0.33*X)+2:floor(0.67*X)-1,ceil(Y/4+1):floor(Y/2),:)); % slice 6
+                T.preFix = 'Cor_';
             end
 
             x = xASL_vis_AddIM2QC(x,T);
@@ -268,7 +275,7 @@ function [x] = xASL_adm_AddToQC(x, anatQA, Modality)
 %xASL_adm_AddToQC % Add SPM U+ parameters to the QC list
 
     FN = fieldnames(anatQA);
-    FNnew = cellfun(@(x) [Modality '_' x], FN, 'UniformOutput',false);
+    FNnew = cellfun(@(y) [Modality '_' y], FN, 'UniformOutput',false);
 
     for iL=1:length(FN)
         x.Output.Structural.(FNnew{iL}) = anatQA.(FN{iL});
@@ -292,7 +299,7 @@ function xASL_adm_VisualCheckLesionRemoval(x, Lesion_list)
             xASL_spm_deformations(x,{x.P.Path_c1T1_ORI;x.P.Path_c2T1_ORI},{x.P.Pop_Path_rc1T1_ORI;x.P.Pop_Path_rc2T1_ORI}); % no DARTEL yet, no LongReg yet
         end
 
-        LesionIM    = zeros(121,145,121); % assuming 1.5 mm MNI
+        LesionIM = zeros(121,145,121); % assuming 1.5 mm MNI
 
 		% Call this for Lesions only and not ROIs
         [INname,OUTname]     = xASL_adm_LesionResliceList(x,1,1,0,0);
