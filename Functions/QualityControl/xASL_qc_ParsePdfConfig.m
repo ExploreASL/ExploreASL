@@ -314,17 +314,20 @@ end
 function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, currentFigure, settingsPDF)
     % This function prints images using the layout defined in the json file.
 
-    if ~isfield(qcStruct, 'module') ||  ~isfield(x.Output, (qcStruct.module))
+    if ~isfield(qcStruct, 'module') ||  ~isfield(x.Output, (qcStruct.module)) % If the module is missing
+        warning(['Derivatives for PDF missing for module: ' qcStruct.module]);
         return
-    elseif ~isfield(qcStruct, 'session') || qcStruct.session == "" 
+    elseif ~isfield(qcStruct, 'session') || qcStruct.session == "" % If we don't have sessions
         allImages = x.Output_im.(qcStruct.module);
-    elseif isfield(x.Output_im.(qcStruct.module), qcStruct.session) 
+    elseif isfield(x.Output_im.(qcStruct.module), qcStruct.session) % If we have sessions, use the session
         allImages = x.Output_im.(qcStruct.module).(qcStruct.session);
     else
+        warning('No derivatives found for PDF');
         return
     end
 
     if ~isfield(qcStruct, 'position') ||~isfield(qcStruct, 'size')
+        warning('Position and size parameters missing for PDF printing');
         return
     end
     
@@ -333,13 +336,23 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, c
     canvas = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), settingsPDF.canvas);
     
     % Dimensions, at most 16 images will be printed
-    nImages  = min(size(allImages, 2), 16);
+    imageFields = fields(allImages);
+    nImages = length(imageFields);
+    nImages  = min(nImages, 16); % Allow maximum of 16 images to be printed
     imPerRow = ceil(sqrt(nImages));
     imSize   = 1/imPerRow;
 
     % Print images
     for iImage = 1:nImages
-        CurrentIm  = double(allImages{iImage});
+        imageName = imageFields{iImage};
+        CurrentIm = allImages.(imageName);
+        % This should have only a single image per imageName, per xASL_vis_AddIM2QC
+        if isempty(CurrentIm)
+            warning(['Something went wrong in xASL_vis_AddIM2QC, image missing: ' imageFields{iImage}]);
+        elseif length(CurrentIm)>1
+            warning(['Something went wrong in xASL_vis_AddIM2QC, too many images: ' imageFields{iImage}]);
+        end
+        CurrentIm = double(allImages.(imageFields{iImage}){1});
 
         % Convert grayscale images to color
         if  size(CurrentIm,3) == 1 
@@ -701,6 +714,7 @@ function [string, settingsPDF] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(q
     % (previously, this was removed from all strings)
     qcStruct.alias = strrep(qcStruct.alias, '_', ' ');
 
+
     % Ratios -> percentages
     % volumetric ratios or contrast-to-noise (e.g. GM-WM)/SD(WM) ) are usually better represented as percentages
     bRatio2Percentage = contains(qcStruct.alias, 'volume (ratio)') || contains(qcStruct.alias, 'CNR (ratio)');
@@ -746,7 +760,10 @@ function [string, settingsPDF] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(q
     %% 5. Manage values
 
     % Convert the value to a string.
-    TempValue = xASL_num2str(TempValue, settingsPDF.numberFormat);
+    if ~strcmp(qcStruct.alias, 'Version ExploreASL Git commit')
+        % ensure a Git commit is not managed as a number
+        TempValue = xASL_num2str(TempValue, settingsPDF.numberFormat);
+    end
 
     % Manage cells
     if iscell(TempValue)
@@ -761,7 +778,12 @@ function [string, settingsPDF] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(q
     end
 
     numericalValue = xASL_str2num(TempValue); % outputs NaN for strings
-    if ~isnan(numericalValue(1)) % when we have a numeric value
+    if strcmp(qcStruct.alias, 'Version ExploreASL Git commit')
+        % print the abbreviated commit number
+        % & ensure this is not managed as a number
+        TempValue = TempValue(1:7);
+
+    elseif ~isnan(numericalValue(1)) % when we have a numeric value
 
         % 2. Multiple identical values will only be printed once
         uniqueValues = unique(numericalValue);
@@ -786,7 +808,14 @@ function [string, settingsPDF] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(q
 
     %% 6. Equalize string lengths
     qcStruct.alias  = xASL_qc_ParsePdfConfig_sub_PaddedString( qcStruct.alias, 35); % 25 % this is the key
-    TempValue       = xASL_qc_ParsePdfConfig_sub_PaddedString( TempValue, 18, 'right'); % this is the value
+    try
+        TempValue       = xASL_qc_ParsePdfConfig_sub_PaddedString( TempValue, 18, 'right'); % this is the value
+    catch
+
+        disp('piet');
+
+    end
+
     UnitRange       = xASL_qc_ParsePdfConfig_sub_PaddedString( [qcStruct.unit, qcStruct.range], 20);
 
 
