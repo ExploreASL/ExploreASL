@@ -126,9 +126,6 @@ if ~isempty(regexpi(jsonInMerged.Manufacturer,'GE'))
 				if dimASL(4) == 2
 					jsonInMerged.GELabelingDuration(2) = 0;
 					jsonInMerged.InversionTime(2) = 0;
-					if ~isfield(jsonInMerged, 'M0PositionInASL4D')
-						jsonInMerged.M0PositionInASL4D = 2;
-					end
 
 					if ~isfield(jsonInMerged, 'ASLContext')
 						jsonInMerged.ASLContext = 'deltam,m0scan';
@@ -181,9 +178,6 @@ if ~isempty(regexpi(jsonInMerged.Manufacturer,'GE'))
 					% We need to an extra PLD for the control image at the end and afterwards a zero for M0scan
 					jsonInMerged.InversionTime = [jsonInMerged.InversionTime (jsonInMerged.InversionTime(end)+jsonInMerged.GELabelingDuration(end)) 0];
 					jsonInMerged.GELabelingDuration = [jsonInMerged.GELabelingDuration 0 0];
-					if ~isfield(jsonInMerged, 'M0PositionInASL4D')
-						jsonInMerged.M0PositionInASL4D = jsonInMerged.GEPrivateCV6 + 2;
-					end
 
 					if ~isfield(jsonInMerged, 'DummyScanPositionInASL4D')
 						jsonInMerged.DummyScanPositionInASL4D = jsonInMerged.GEPrivateCV6 + 1;
@@ -209,8 +203,8 @@ if ~isempty(regexpi(jsonInMerged.Manufacturer,'GE'))
 					end
 				end
 			end
-			jsonInMerged.LabelingDuration = jsonInMerged.GELabelingDuration;
-			jsonInMerged.PostLabelingDelay = jsonInMerged.InversionTime;
+			jsonInMerged.LabelingDuration = jsonInMerged.GELabelingDuration';
+			jsonInMerged.PostLabelingDelay = jsonInMerged.InversionTime';
 		else
 			% eASL detected but the important parameters were missing
 			warning('GE eASL sequence detected, but the relevant DICOM parameters could not be retrieved');
@@ -240,7 +234,9 @@ if ~isempty(regexpi(jsonInMerged.Manufacturer,'GE'))
 	% GELabelingDuration comes together with the PostLabelingDelay defined in the standard DICOM field called InversionTime
 	if isfield(jsonInMerged,'InversionTime') && ~isempty(jsonInMerged.InversionTime) && isfield(jsonInMerged,'PostLabelingDelay') && ~isequal(jsonInMerged.PostLabelingDelay,jsonInMerged.InversionTime)
 		% if the DICOM information is reasonable - less PLDs than volumes, then we report a warning
-		if dimASL(4)>=numel(jsonInMerged.InversionTime)
+		if dimASL(4) == numel(jsonInMerged.PostLabelingDelay) 
+			% Perfectly fitting lenth of PostLabelingDelay means we use it
+		elseif dimASL(4)>=numel(jsonInMerged.InversionTime)
 			% If there are more volumes that GE-PLDs, we can used GE-PLD (this only backfires for eASL)
 			jsonInMerged.PostLabelingDelay = jsonInMerged.InversionTime;
 		elseif dimASL(4)>=numel(unique(jsonInMerged.InversionTime))
@@ -264,7 +260,7 @@ end
 for fn = fieldnames(jsonInMerged)'
 	if isfield(jsonOut,fn{1})
 		% If the field is there, then report different fields
-		if ~isequal(jsonOut.(fn{1}),jsonInMerged.(fn{1}))
+		if ~isequal(jsonOut.(fn{1})(:),jsonInMerged.(fn{1})(:))
 			% Just if this is not only a different vector orientation
 			if ~isnumeric(jsonOut.(fn{1})) || numel(jsonOut.(fn{1}),1) == 1 || ~isequal((jsonOut.(fn{1}))',jsonInMerged.(fn{1}))
 				% Report that differing values were found
@@ -709,12 +705,12 @@ if ~isfield(jsonOut,'TotalAcquiredPairs') || jsonOut.TotalAcquiredPairs == 1
 		
 		% If only deltaM and no C/L pairs are present
 		if sum(ASLContextControlIndex) == 0 && sum(ASLContextLabelIndex) == 0
-			nPLD = length(unique(jsonOut.PostLabelingDelay(jsonOut.PostLabelingDelay>0)));
+			nPLD = length(unique(jsonOut.PostLabelingDelay(ASLContextDeltaMIndex)));
 			
-			if (nPLD == 3 || nPLD == 7) && mod(sum(ASLContextDeltaMIndex), nPLD + 1) == 0 && regexpi(jsonOut.Manufacturer,'GE')
+			if (nPLD == 3 || nPLD == 7) && mod(sum(ASLContextDeltaMIndex), nPLD) == 0 && regexpi(jsonOut.Manufacturer,'GE')
 				% Multi-PLD GE, with Hadamard encoding
 				% We need to divide the TotalAcquiredPairs by the number of PLDs+1 (the number of Hadamard phases)
-				jsonOut.TotalAcquiredPairs = sum(ASLContextDeltaMIndex) / (nPLD+1);
+				jsonOut.TotalAcquiredPairs = sum(ASLContextDeltaMIndex) / (nPLD);
 			elseif mod(sum(ASLContextDeltaMIndex), nPLD) == 0
 				jsonOut.TotalAcquiredPairs = sum(ASLContextDeltaMIndex) / nPLD;
 			else

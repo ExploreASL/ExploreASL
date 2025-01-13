@@ -148,42 +148,40 @@ function [x] = xASL_init_LoadDataPar_PrepareAtlas4ROI(x)
 
 bAtlasTissueMatch = true; % x.S.Atlases & x.S.TissueMasking should match before we can continue (needed for the population module)
 
-if ~isfield(x, 'S')
-    x.S = struct;
-end
-
-if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking')
-	% Default atlases/ROIs & tissue masks are provided in the population module
-elseif ~isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking')
-	% Missing Atlases, but provided TissueMasking - cannot continue
-    warning('Custom tissue-types (x.S.TissueMasking) specified without ROI atlas-selection (x.S.Atlases). Atlases need to be provided. See instructions below:');
-    bAtlasTissueMatch = false;
-elseif isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking') && length(x.S.Atlases)~=length(x.S.TissueMasking)
-	% Non matching lengths, cannot continue
-    warning('The number of ROI atlases x.S.Atlases as subject-wise tissue-types x.S.TissueMasking provided does not match:');
-    fprintf('%s\n', ['S:{Atlases:["' strjoin(x.S.Atlases, '", "') '"]}']);
-    fprintf('%s\n', ['S:{TissueMasking:["' strjoin(x.S.TissueMasking, '", "') '"]}']);
-    bAtlasTissueMatch = false;
-elseif 	isfield(x.S, 'Atlases') && ~isfield(x.S, 'TissueMasking')
-	% TissueMasking not provided, so it has to be extracted from Atlases as previously.
-    warning('ROIs provided in S.Atlases without the tissue-types for these ROIs in S.TissueMasking.');
-    bAtlasTissueMatch = false;
-	textRecommendation = 'S:{TissueMasking:["';
-	% Fill in TissueMasking based on the atlas names and default to GM. The user will see a warning and automatic tissue masks to verify
-	for iAtlas = 1:numel(x.S.Atlases)
-		if iAtlas > 1
-			textRecommendation = [textRecommendation '", "'];
+if isfield(x, 'S') % Check upfront because we don't want to create a potentially empty S field without subfields
+	if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking')
+		% Default atlases/ROIs & tissue masks are provided in the population module
+	elseif ~isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking')
+		% Missing Atlases, but provided TissueMasking - cannot continue
+		warning('Custom tissue-types (x.S.TissueMasking) specified without ROI atlas-selection (x.S.Atlases). Atlases need to be provided. See instructions below:');
+		bAtlasTissueMatch = false;
+	elseif isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking') && length(x.S.Atlases)~=length(x.S.TissueMasking)
+		% Non matching lengths, cannot continue
+		warning('The number of ROI atlases x.S.Atlases as subject-wise tissue-types x.S.TissueMasking provided does not match:');
+		fprintf('%s\n', ['S:{Atlases:["' strjoin(x.S.Atlases, '", "') '"]}']);
+		fprintf('%s\n', ['S:{TissueMasking:["' strjoin(x.S.TissueMasking, '", "') '"]}']);
+		bAtlasTissueMatch = false;
+	elseif 	isfield(x.S, 'Atlases') && ~isfield(x.S, 'TissueMasking')
+		% TissueMasking not provided, so it has to be extracted from Atlases as previously.
+		warning('ROIs provided in S.Atlases without the tissue-types for these ROIs in S.TissueMasking.');
+		bAtlasTissueMatch = false;
+		textRecommendation = 'S:{TissueMasking:["';
+		% Fill in TissueMasking based on the atlas names and default to GM. The user will see a warning and automatic tissue masks to verify
+		for iAtlas = 1:numel(x.S.Atlases)
+			if iAtlas > 1
+				textRecommendation = [textRecommendation '", "'];
+			end
+			if ~isempty(regexpi(x.S.Atlases{iAtlas}, 'WM')) || ~isempty(regexpi(x.S.Atlases{iAtlas}, 'whitematter'))
+				textRecommendation = [textRecommendation 'WM'];
+			elseif ~isempty(regexpi(x.S.Atlases{iAtlas}, 'WB')) || ~isempty(regexpi(x.S.Atlases{iAtlas}, 'wholebrain'))
+				textRecommendation = [textRecommendation 'WB'];
+			else
+				textRecommendation = [textRecommendation 'GM'];
+			end
 		end
-		if ~isempty(regexpi(x.S.Atlases{iAtlas}, 'WM')) || ~isempty(regexpi(x.S.Atlases{iAtlas}, 'whitematter'))
-			textRecommendation = [textRecommendation 'WM'];
-		elseif ~isempty(regexpi(x.S.Atlases{iAtlas}, 'WB')) || ~isempty(regexpi(x.S.Atlases{iAtlas}, 'wholebrain'))
-			textRecommendation = [textRecommendation 'WB'];
-		else
-			textRecommendation = [textRecommendation 'GM'];
-		end
+		textRecommendation = [textRecommendation '"]}'];
+		fprintf('Recommended addition to the dataPar.json to match provided Atlases: %s\n\n', textRecommendation);
 	end
-	textRecommendation = [textRecommendation '"]}'];
-	fprintf('Recommended addition to the dataPar.json to match provided Atlases: %s\n\n', textRecommendation);
 end
 if ~bAtlasTissueMatch
     fprintf('%s\n', 'When ROI atlases are provided in S.Atlases, their tissue types,');
