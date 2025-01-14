@@ -36,7 +36,7 @@
         MATLABMEX="-DMATLAB_MEX_FILE "
         CFLAGS="-fexceptions -fno-omit-frame-pointer"
         CXXFLAGS="$CFLAGS -std=c++11"
-        INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot; -I&quot;C:\MinGW\msys\1.0\home\hofheinz\usr\include&quot;"
+        INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot; -I&quot;C:\msys64\home\hofheinz\usr\include&quot;"
         CXXOPTIMFLAGS="-O2 -fwrapv -DNDEBUG"
         CXXDEBUGFLAGS="-g"
 
@@ -47,7 +47,7 @@
         LINKEXPORT="-Wl,&quot;$MATLABROOT/extern/lib/win64/mingw64/mexFunction.def&quot;"
         LINKEXPORTVER="-Wl,&quot;$MATLABROOT/extern/lib/win64/mingw64/exportsmexfileversion.def&quot;"
         LIBLOC="$MATLABROOT\extern\lib\win64\mingw64"
-        LINKLIBS="-L&quot;$MATLABROOT\extern\lib\$ARCH\mingw64&quot; -L&quot;C:\MinGW\msys\1.0\home\hofheinz\usr\lib&quot; -ldcmdata -loflog -lofstd -lws2_32 -lWSock32 -llibmx -llibmex -llibmat -lm -llibmwlapack -llibmwblas -llibMatlabDataArray -llibMatlabEngine"
+        LINKLIBS="-L&quot;$MATLABROOT\extern\lib\$ARCH\mingw64&quot; -L&quot;C:\msys64\home\hofheinz\usr\lib&quot; -ldcmdata -loflog -lofstd -lws2_32 -lWSock32 -llibmx -llibmex -llibmat -lm -llibmwlapack -llibmwblas -llibMatlabDataArray -llibMatlabEngine"
         LDOPTIMFLAGS="-s"
         LDDEBUGFLAGS="-g"
 
