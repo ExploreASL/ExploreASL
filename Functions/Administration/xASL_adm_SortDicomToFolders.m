@@ -21,7 +21,7 @@ function xASL_adm_SortDicomToFolders(pathDICOM, nDirLayers, bUseDCMTK, bVerbose)
 % EXAMPLE: 
 %     xASL_adm_SortDicomToFolders('tmp/DICOM', [], 0)
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
+% Copyright (C) 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -63,7 +63,7 @@ else
                 hasProtocolName = isfield(tDcm, 'ProtocolName') && ~isempty(tDcm.ProtocolName);
                 hasSeriesDescription = isfield(tDcm, 'SeriesDescription') && ~isempty(tDcm.SeriesDescription);
                 hasSeriesNumber = isfield(tDcm, 'SeriesNumber') && ~isempty(tDcm.SeriesNumber);
-            elseif ~hasProtocolName && ~hasSeriesDescription && ~hasSeriesNumber
+            elseif ~hasProtocolName || ~hasSeriesDescription || ~hasSeriesNumber
                 warning(['DICOM header without ProtocolName, SeriesDescription, or SeriesNumber, skipping: ' Flist{iL}]);
 
                 % Manage directory name
