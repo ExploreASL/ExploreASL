@@ -186,6 +186,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xAS
 		ATT_map = xASL_io_Nifti2Im(pathExternalATT{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
 
+	% ITT
 	if ~isempty(pathExternalITT)
 		ITT_map = xASL_io_Nifti2Im(pathExternalITT{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
@@ -200,13 +201,6 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xAS
 		Tex_map = xASL_io_Nifti2Im(pathExternalTex{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
 	
-	% ITT
-	pathBasilITT = xASL_adm_GetFileList(pathFSLOutput, '^mean_ITT\.nii$', 'FPListRec');
-	if ~isempty(pathBasilITT)
-		ITT_map = xASL_io_Nifti2Im(pathBasilITT{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
-	end
-    
-
     %% 6. Scaling to physiological units
     % Note different to xASL_quant_ASL since BASIL/FABBER/VABY have T1 in seconds
     % and does not take into account labeling efficiency
