@@ -56,7 +56,7 @@ else
 
 			% Read the DICOM file - all error handling is inside this function
 			tDcm = xASL_io_DcmtkRead(Flist{iL}, false, bUseDCMTK, true);
-			
+
 			hasProtocolName = isfield(tDcm, 'ProtocolName') && ~isempty(tDcm.ProtocolName);
 			hasSeriesDescription = isfield(tDcm, 'SeriesDescription') && ~isempty(tDcm.SeriesDescription);
 			hasSeriesNumber = isfield(tDcm, 'SeriesNumber') && ~isempty(tDcm.SeriesNumber);
@@ -66,7 +66,7 @@ else
                 warning(['Empty DICOM header, skipping: ' Flist{iL}]);
 			elseif ~hasProtocolName || ~hasSeriesDescription || ~hasSeriesNumber
                 warning(['DICOM header without ProtocolName, SeriesDescription, or SeriesNumber, skipping: ' Flist{iL}]);
-
+			else
                 % Manage directory name
                 % Priority:
                 % 1. ProtocolName
@@ -74,34 +74,34 @@ else
                 % 3. SeriesNumber
 
                 Fname = [];
-                foundName = false;
 
                 % Always add the protocol name to the directory name
                 if hasProtocolName
                     Fname = tDcm.ProtocolName;
-                    foundName = true;
                 end
                 
 				% Add series description if available
 				if hasSeriesDescription
-                    if foundName && ~strcmpi(tDcm.ProtocolName, tDcm.SeriesDescription)
+                    if ~isempty(Fname) && ~strcmpi(tDcm.ProtocolName, tDcm.SeriesDescription)
                         % if ProtocolName was available, was append SeriesDescription if it differs from ProtocolName
 					    Fname = [Fname '_' tDcm.SeriesDescription];
                     else
                         % Only SeriesDescription is also fine
-                        foundName = true;
                         Fname = tDcm.SeriesDescription;
                     end
 				end                
 
-                if ~foundName
+                if isempty(Fname)
                     warning(['ProtocolName & SeriesDescription missing: ' Flist{iL}]);
                 end
 
                 % Add SeriesNumber if available
 				if hasSeriesNumber
-					Fname = [Fname '_' xASL_num2str(tDcm.SeriesNumber)];
-                end
+					if ~isempty(Fname)
+						Fname = [Fname '_'];
+					end
+					Fname = [Fname xASL_num2str(tDcm.SeriesNumber)];
+				end
                 
                 %% Potential extra warnings, can disable these to reduce verbosity
                 checkFields = {'EchoTime' 'RepetitionTime' 'ImageType'};
