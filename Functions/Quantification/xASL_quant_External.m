@@ -323,16 +323,17 @@ end
 %% 1. Create the options file
 % ExternalOptions is a character array containing CLI args for the external command
 % Path to the options file
+FIDoptionFile = [];
 switch (lower(localQuantificationType))
 	case 'fabber'
 		ExternalOptions = ['-@ ' xASL_adm_UnixPath(pathExternalOptions, ispc)];
-		fprintf(FIDoptionFile, '# FABBER options written by ExploreASL\n');
 		FIDoptionFile = fopen(pathExternalOptions, 'w+');
+		fprintf(FIDoptionFile, '# FABBER options written by ExploreASL\n');
 
 	case 'basil'
 		ExternalOptions = ['--optfile ' xASL_adm_UnixPath(pathExternalOptions, ispc)];
-		fprintf(FIDoptionFile, '# BASIL options written by ExploreASL\n');
 		FIDoptionFile = fopen(pathExternalOptions, 'w+');
+		fprintf(FIDoptionFile, '# BASIL options written by ExploreASL\n');
 
 	case 'vaby'
 		% VABY takes no options file
@@ -712,6 +713,8 @@ if strcmpi(localQuantificationType, 'basil')
 end
 
 %% 5. Close options file
-fclose(FIDoptionFile);
+if ~isempty(FIDoptionFile)
+	fclose(FIDoptionFile);
+end
 
 end
