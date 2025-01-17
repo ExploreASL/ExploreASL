@@ -56,14 +56,15 @@ else
 
 			% Read the DICOM file - all error handling is inside this function
 			tDcm = xASL_io_DcmtkRead(Flist{iL}, false, bUseDCMTK, true);
+			
+			hasProtocolName = isfield(tDcm, 'ProtocolName') && ~isempty(tDcm.ProtocolName);
+			hasSeriesDescription = isfield(tDcm, 'SeriesDescription') && ~isempty(tDcm.SeriesDescription);
+			hasSeriesNumber = isfield(tDcm, 'SeriesNumber') && ~isempty(tDcm.SeriesNumber);
 
 			% Check that the header was read and contains the basic tags
 			if isempty(tDcm)
                 warning(['Empty DICOM header, skipping: ' Flist{iL}]);
-                hasProtocolName = isfield(tDcm, 'ProtocolName') && ~isempty(tDcm.ProtocolName);
-                hasSeriesDescription = isfield(tDcm, 'SeriesDescription') && ~isempty(tDcm.SeriesDescription);
-                hasSeriesNumber = isfield(tDcm, 'SeriesNumber') && ~isempty(tDcm.SeriesNumber);
-            elseif ~hasProtocolName || ~hasSeriesDescription || ~hasSeriesNumber
+			elseif ~hasProtocolName || ~hasSeriesDescription || ~hasSeriesNumber
                 warning(['DICOM header without ProtocolName, SeriesDescription, or SeriesNumber, skipping: ' Flist{iL}]);
 
                 % Manage directory name
