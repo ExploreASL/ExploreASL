@@ -82,7 +82,7 @@ else
                 
 				% Add series description if available
 				if hasSeriesDescription
-                    if ~isempty(Fname) && ~strcmpi(tDcm.ProtocolName, tDcm.SeriesDescription)
+                    if hasProtocolName && ~strcmpi(tDcm.ProtocolName, tDcm.SeriesDescription)
                         % if ProtocolName was available, was append SeriesDescription if it differs from ProtocolName
 					    Fname = [Fname '_' tDcm.SeriesDescription];
                     else
