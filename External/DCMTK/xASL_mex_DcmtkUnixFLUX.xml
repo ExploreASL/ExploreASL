@@ -32,16 +32,16 @@
         MATLABMEX="-DMATLAB_MEX_FILE "
         CFLAGS="-fexceptions -fPIC -fno-omit-frame-pointer -pthread"
         CXXFLAGS="$CFLAGS -std=c++11"
-        INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot; -I&quot;/usr/local/petlib/include&quot; -I&quot;/home/radv/mshammer/group-scratch/mshammer/DCMTK/dcmtk-install/include&quot;"
+        INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot; -I&quot;/home/radv/jpetr/my-scratch/dcmtkinstall/include&quot;"
         CXXOPTIMFLAGS="-O -DNDEBUG"
         CXXDEBUGFLAGS="-g"
 
         LDXX="$CXX"
-        LDFLAGS="-pthread -static-libstdc++ -static-libgcc -Wl,--no-undefined "
+        LDFLAGS="-pthread -static-libstdc++ -static-libgcc -Wl,--no-undefined"
         LDTYPE="-shared"
         LINKEXPORT="-Wl,--version-script,&quot;$MATLABROOT/extern/lib/$ARCH/mexFunction.map&quot;"
         LINKEXPORTVER="-Wl,--version-script,&quot;$MATLABROOT/extern/lib/$ARCH/c_exportsmexfileversion.map&quot;"
-        LINKLIBS="-L&quot;$MATLABROOT/bin/$ARCH&quot; -L/usr/local/petlib/lib -L/home/radv/mshammer/group-scratch/mshammer/DCMTK/dcmtk-install/lib64 -ldcmdata -lm -loflog -lofstd -lmx -lz -lrt -lssl -lcrypto -lmex -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic"
+        LINKLIBS="-L&quot;$MATLABROOT/bin/$ARCH&quot; -L/home/radv/jpetr/my-scratch/dcmtkinstall/lib64 -L/home/radv/jpetr/my-scratch/icubuild/lib -licudata -licuuc -ldcmdata -lm -loflog -lofstd -lmx -lz -lrt -lssl -lcrypto -lmex -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic"
         LDOPTIMFLAGS="-O"
         LDDEBUGFLAGS="-g"
         MWCPPLIB=""
@@ -57,7 +57,7 @@
                 CDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
                 CXXDEBUGFLAGS=&quot;$CXXDEBUGFLAGS&quot;
                 LD=&quot;gcc&quot;
-                LD_PRELOAD=&quot;/usr/lib/x86_64-linux-gnu/libstdc++.so.6&quot;
+                LD_PRELOAD=&quot;/usr/lib64/libstdc++.so.6&quot;
                 LDXX=&quot;$LDXX&quot;
                 LDFLAGS=&quot;$LDFLAGS $LDTYPE $LINKLIBS $LINKEXPORT&quot;
                 LDDEBUGFLAGS=&quot;$LDDEBUGFLAGS&quot;">
@@ -94,7 +94,7 @@
         </GCC>
 
         <CPPLIB_DIR>
-            <cmdReturns name="g++ -print-file-name=/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
+            <cmdReturns name="g++ -print-file-name=/usr/lib/64/libstdc++.so.6"
                         diagnostic="GCC appears to be installed, but supporting C++ libraries were not found.  You must first install the gcc-c++ packge, or similiar, to complete this action."/>
         </CPPLIB_DIR>
     </locationFinder>
