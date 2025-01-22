@@ -32,7 +32,7 @@
         MATLABMEX="-DMATLAB_MEX_FILE "
         CFLAGS="-fexceptions -fPIC -fno-omit-frame-pointer -pthread"
         CXXFLAGS="$CFLAGS -std=c++11"
-        INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot; -I&quot;/home/radv/jpetr/my-scratch/dcmtkinstall/include&quot;"
+        INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;$MATLABROOT/simulink/include&quot; -I&quot;/home/radv/jpetr/my-scratch/dcmtk3.6.9install/include&quot;"
         CXXOPTIMFLAGS="-O -DNDEBUG"
         CXXDEBUGFLAGS="-g"
 
@@ -41,7 +41,7 @@
         LDTYPE="-shared"
         LINKEXPORT="-Wl,--version-script,&quot;$MATLABROOT/extern/lib/$ARCH/mexFunction.map&quot;"
         LINKEXPORTVER="-Wl,--version-script,&quot;$MATLABROOT/extern/lib/$ARCH/c_exportsmexfileversion.map&quot;"
-        LINKLIBS="-L&quot;$MATLABROOT/bin/$ARCH&quot; -L/home/radv/jpetr/my-scratch/dcmtkinstall/lib64 -L/home/radv/jpetr/my-scratch/icubuild/lib -licudata -licuuc -ldcmdata -lm -loflog -lofstd -lmx -lz -lrt -lssl -lcrypto -lmex -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic"
+        LINKLIBS="-L&quot;$MATLABROOT/bin/$ARCH&quot; -L/home/radv/jpetr/my-scratch/dcmtk3.6.9install/lib64 -ldcmdata -lm -loflog -lmx -lofstd -lz -lrt -lmex -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic"
         LDOPTIMFLAGS="-O"
         LDDEBUGFLAGS="-g"
         MWCPPLIB=""
