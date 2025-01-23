@@ -51,6 +51,8 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal, bVerbose)
 
     exit_code = NaN;
     
+    fprintf('\n%s\n', 'G-zZzZipping .nii files, this can take a while...');
+
     %% ----------------------------------------------------
     %% 1) Faster unix version, using OS file system
     if bUseLinux
@@ -70,7 +72,7 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal, bVerbose)
         if ~isempty(pathExternal)
             PathList = xASL_adm_GetFileList(ROOT, '^.*\.(nii)$', 'FPListRec', [0 Inf], false);
             if ~isempty(PathList)
-                fprintf('\n%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
+                fprintf('%s\n',['G-zZzZipping ' num2str(length(PathList)) ' files']);
                 numCores = feature('numcores');
                 % Get SuperGzip path
                 PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'SuperGZip_Windows.exe');
@@ -88,9 +90,10 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal, bVerbose)
     end
     
     if isnan(exit_code)
+        fprintf('There was nothing to Gzip\n');
         return; % nothing happened, nothing to zip
     elseif exit_code == 0
-        fprintf('Gzipping of NIfTIs successful...\n');
+        fprintf('Gzipping of NIfTIs successful\n');
         return;
     else
         warning('An error occurred trying to zip using the system: %s', system_result);
