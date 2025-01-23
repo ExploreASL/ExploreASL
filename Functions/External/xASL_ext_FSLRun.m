@@ -141,6 +141,17 @@ if ispc
 else
     wslString = '';
 end
+
+% When there are weird symbols in the path, 
+% this cannot be given as options to the "External_ModelOptions.txt" file
+% It does work if the path is ommitted, and only the filenames are added
+
+% Hence, we need to ensure that we are in the ASL SESSION folder when starting this FSL work
+% This shouldn't influence use cases where we don't use the options.txt, because the folderpath
+% is usually included in the FSLCommand
+
+cd(x.P.SessionDir{x.iSession});
+
 if bVerbose
     Result1 = system([wslString FSLinit FSLoutput NiceString FSLCommand], '-echo');
 else
