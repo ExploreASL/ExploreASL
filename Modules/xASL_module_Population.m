@@ -372,7 +372,7 @@ end
 
 %% 10.  xASL_adm_GzipAllFiles
 if ~x.mutex.HasState(StateName{11})
-    xASL_adm_GzipAllFiles(x.dir.xASLDerivatives,[],[],fullfile(x.opts.MyPath,'External'));
+    xASL_adm_GzipAllFiles(x.dir.xASLDerivatives,[],[],fullfile(x.opts.MyPath,'External'), false);
     x.mutex.AddState(StateName{11});
     fprintf('%s\n',[StateName{11} ' was performed']);
 else

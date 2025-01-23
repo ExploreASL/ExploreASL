@@ -1,7 +1,7 @@
-function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
+function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal, bVerbose)
 %xASL_adm_GzipAllFiles Zip files or folders
 %
-% FORMAT: xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
+% FORMAT: xASL_adm_GzipAllFiles(ROOT[, bFolder, bUseLinux, pathExternal, bVerbose])
 %
 % INPUT:
 %   ROOT         - Root path of the folder structure you want to gzip recursively (REQUIRED)
@@ -14,6 +14,7 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
 %                  otherwise (e.g. pc/Windows)
 %   pathExternal - Path to external Gzip tools like SuperGzip, used for Windows (.../ExploreASL/External) 
 %                  (OPTIONAL, DEFAULT = [])
+%   bVerbose     - Turn on verbosity (OPTIONAL, DEFAULT = false)
 % OUTPUT: n/a
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function zips NIfTI files or folders recursively and deletes
@@ -21,12 +22,11 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
 %
 % EXAMPLE: xASL_adm_GzipAllFiles(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
-
 
 
     %% ----------------------------------------------------
@@ -42,9 +42,12 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
     elseif nargin<3 || isempty(bUseLinux)
         bUseLinux = false;
     end
-    if nargin<4 || isempty(pathExternal)
+	if nargin<4 || isempty(pathExternal)
         pathExternal = [];
-    end
+	end
+	if nargin<5 || isempty(bVerbose)
+		bVerbose = false;
+	end
 
     exit_code = NaN;
     
@@ -54,7 +57,11 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
 		if exist(ROOT,'dir') % Check if directory exists, otherwise a random current directory would be zipped
 			PathToSearch = xASL_adm_UnixPath(ROOT);
             oldPath = pwd;
-			[exit_code, system_result] = system(['cd ' PathToSearch '; for i in `find * | grep -E \.nii$`; do gzip -1 -f -q -v "$i"; done'], '-echo');
+			if bVerbose
+				[exit_code, system_result] = system(['cd ' PathToSearch '; for i in `find * | grep -E \.nii$`; do gzip -1 -f -q -v "$i"; done'], '-echo');
+			else
+				[exit_code, system_result] = system(['cd ' PathToSearch '; for i in `find * | grep -E \.nii$`; do gzip -1 -f -q "$i"; done'], '-echo');
+			end
         else
             warning(['Non-existing folder:' ROOT]);
         end
@@ -68,7 +75,11 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal)
                 % Get SuperGzip path
                 PathToSuperGzip = fullfile(pathExternal, 'SuperGZip', 'SuperGZip_Windows.exe');
                 % Define SuperGzip command
-                command = [PathToSuperGzip ' -p 0 -n ' num2str(numCores) ' -v 1 ' ROOT ' *.nii'];
+				if bVerbose
+					command = [PathToSuperGzip ' -p 0 -n ' num2str(numCores) ' -v 1 ' ROOT ' *.nii'];
+				else
+					command = [PathToSuperGzip ' -p 0 -n ' num2str(numCores) ' -v 0 ' ROOT ' *.nii'];
+				end
                 % Run script
                 [exit_code, system_result] = system(command);
                 % Check if SuperGzip was successful
