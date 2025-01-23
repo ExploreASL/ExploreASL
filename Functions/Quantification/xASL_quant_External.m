@@ -320,12 +320,12 @@ end
 FIDoptionFile = [];
 switch (lower(localQuantificationType))
 	case 'fabber'
-		ExternalOptions = ['-@ ' xASL_adm_UnixPath(pathExternalOptions, ispc)];
+		ExternalOptions = ['-@ ' xASL_adm_UnixPath(pathExternalOptions, ispc, true)];
 		FIDoptionFile = fopen(pathExternalOptions, 'w+');
 		fprintf(FIDoptionFile, '# FABBER options written by ExploreASL\n');
 
 	case 'basil'
-		ExternalOptions = ['--optfile ' xASL_adm_UnixPath(pathExternalOptions, ispc)];
+		ExternalOptions = ['--optfile ' xASL_adm_UnixPath(pathExternalOptions, ispc, true)];
 		FIDoptionFile = fopen(pathExternalOptions, 'w+');
 		fprintf(FIDoptionFile, '# BASIL options written by ExploreASL\n');
 
@@ -335,20 +335,26 @@ switch (lower(localQuantificationType))
 end
 
 % Define basic paths
+[~, fFile, fExt] = xASL_fileparts(pathExternalOutput);
+fileExternalOutput = [fFile fExt];
+
+[~, fFile, fExt] = xASL_fileparts(pathExternalInput);
+fileExternalInput = [fFile fExt];
+
 switch (lower(localQuantificationType))
 	case 'fabber'
-		fprintf(FIDoptionFile, '--output=%s\n', xASL_adm_UnixPath(pathExternalOutput, ispc));
-		fprintf(FIDoptionFile, '--data=%s\n', xASL_adm_UnixPath(pathExternalInput, ispc));
+		fprintf(FIDoptionFile, '--output=%s\n', xASL_adm_UnixPath(fileExternalOutput, ispc));
+		fprintf(FIDoptionFile, '--data=%s\n', xASL_adm_UnixPath(fileExternalInput, ispc));
 
 	case 'basil'
 		% Path to input and output
-		ExternalOptions = [ExternalOptions ' -o ' xASL_adm_UnixPath(pathExternalOutput, ispc)];
-		ExternalOptions = [ExternalOptions ' -i ' xASL_adm_UnixPath(pathExternalInput, ispc)];
+		ExternalOptions = [ExternalOptions ' -o ' xASL_adm_UnixPath(fileExternalOutput, ispc)];
+		ExternalOptions = [ExternalOptions ' -i ' xASL_adm_UnixPath(fileExternalInput, ispc)];
 
 	case 'vaby'
 		% Path to input and output
-		ExternalOptions = [ExternalOptions ' -o ' xASL_adm_UnixPath(pathExternalOutput, ispc)];
-		ExternalOptions = [ExternalOptions ' -i ' xASL_adm_UnixPath(pathExternalInput, ispc)];
+		ExternalOptions = [ExternalOptions ' -o ' xASL_adm_UnixPath(fileExternalOutput, ispc)];
+		ExternalOptions = [ExternalOptions ' -i ' xASL_adm_UnixPath(fileExternalInput, ispc)];
 end
 
 % Define masking
@@ -360,13 +366,17 @@ if x.modules.asl.bMaskingExternal
 		warning('Masking in external quantification is set to TRUE, but the mask is missing: %s\n', x.P.Path_BrainMaskProcessing);
 	else
 		% Add the mask to the options file
+
+        [~, fFile, fExt] = xASL_fileparts(x.P.Path_BrainMaskProcessing);
+        fileBrainMaskProcessing = [fFile fExt];
+
 		switch (lower(localQuantificationType))
 			case 'fabber'
-				fprintf(FIDoptionFile, '--mask=%s\n', xASL_adm_UnixPath(x.P.Path_BrainMaskProcessing, ispc));
+				fprintf(FIDoptionFile, '--mask=%s\n', xASL_adm_UnixPath(fileBrainMaskProcessing, ispc));
 			case 'basil'
-				ExternalOptions = [ExternalOptions ' -m ' xASL_adm_UnixPath(x.P.Path_BrainMaskProcessing, ispc)];
+				ExternalOptions = [ExternalOptions ' -m ' xASL_adm_UnixPath(fileBrainMaskProcessing, ispc)];
 			case 'vaby'
-				ExternalOptions = [ExternalOptions ' -m ' xASL_adm_UnixPath(x.P.Path_BrainMaskProcessing, ispc)];				
+				ExternalOptions = [ExternalOptions ' -m ' xASL_adm_UnixPath(fileBrainMaskProcessing, ispc)];
 		end
 	end
 end
