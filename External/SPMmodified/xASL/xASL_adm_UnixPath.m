@@ -1,12 +1,15 @@
-function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL)
+function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL, bUseQuotes)
 %xASL_adm_UnixPath Convert paths to Unix-compatible paths
 %
-% FORMAT: [PathIs] = xASL_adm_UnixPath(PathIs[, bTryWSL])
+% FORMAT: [PathIs] = xASL_adm_UnixPath(PathIs[, bTryWSL, bUseQuotes])
 %
 % INPUT:
-%   PathIs    - string containing a single path to correct (REQUIRED)
-%   bTryWSL   - boolean, test for the presence of Windows Subsystem for Linux (WSL) functionality
-%               and if present, provide a combined path to the mounted drive (OPTIONAL, DEFAULT = false)
+%   PathIs     - string containing a single path to correct (REQUIRED)
+%   bTryWSL    - boolean, test for the presence of Windows Subsystem for Linux (WSL) functionality
+%                and if present, provide a combined path to the mounted drive (OPTIONAL, DEFAULT = false)
+%   bUseQuotes - when adapting the path for unix, 
+%                don't escape symbols but keep path intact, padding " " quotes instead
+%                (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT:
 %   PathIs - corrected path (DEFAULT = uncorrected, same as input path).
@@ -23,14 +26,15 @@ function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL)
 %
 % 1. Skip this function without Unix-filesystem
 % 2. Trim whitespace
-% 3. Selectively convert forward to backward slashes (ignore already escaped whitespace)
-% 4. Escape characters and residual whitespaces (ignore already escaped whitespaces)
-% 5. If WSL: add mounting prefix
+% 3. Use quotes if requested
+% 4. Selectively convert forward to backward slashes (ignore already escaped whitespace)
+% 5. Escape characters and residual whitespaces (ignore already escaped whitespaces)
+% 6. If WSL: add mounting prefix
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_adm_UnixPath('   \Users/User/Google Drive\My      Photos\Name(With)Brackets)  ');
 % This should output '/Users/User/Google\ Drive/My\ \ \ \ \ \ Photos/Name\(With\)Brackets\)'
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% Copyright 2015-2025 ExploreASL
         
     %% ===================================================================================
 	%% Input parameter administration
@@ -40,6 +44,10 @@ function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL)
 		bTryWSL = false;
 	end
 	
+    if nargin < 3 || isempty(bUseQuotes)
+        bUseQuotes = false;
+    end
+
     bWSL = false;
     if bTryWSL && ispc
         % only in cases where bTryWSL is specifically called
@@ -50,8 +58,9 @@ function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL)
         end
     end
 
+
     %% ===================================================================================
-    %% 1) Skip this function without Unix-filesystem
+    %% 1. Skip this function without Unix-filesystem
     % If we don't have a Unix-compatible filesystem, then skip this function
     
     if ~isunix && ~bWSL
@@ -60,16 +69,28 @@ function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL)
         % subsystem for Windows
     end
     
+
     %% ===================================================================================
-    %% 2) Trim leading or trailing whitespace
+    %% 2. Trim leading or trailing whitespace
     PathIs = strtrim(PathIs);
-    
+
+
     %% ===================================================================================
-    %% 3) Replace all \ which are not followed by a space with a /
+    %% 3. Use quotes if requested
+    % if this is requested, we only add quotes and keep the path intact
+    if bUseQuotes
+        PathIs = ['"' PathIs '"'];
+        return;
+    end
+
+
+    %% ===================================================================================
+    %% 4. Replace all \ which are not followed by a space with a /
     PathIs =regexprep(PathIs, '(\\)(?! )', '/');
     
+
     %% ===================================================================================
-    %% 4) Escape characters in file name
+    %% 5. Escape characters in file name
     if ispc
         IllegalCharacters = '(?<!\\)( |\(|\)|[|]|{|}|*|;|+|=|,|<|>|!|~|@|#|%|^|&|*)';
     else
@@ -78,8 +99,9 @@ function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL)
     
     PathIs = regexprep(PathIs, IllegalCharacters, '\\$1');
     
+
     %% ===================================================================================
-    %% 5) If WSL: add mounting prefix
+    %% 6. If WSL: add mounting prefix
     if bWSL % if we have Windows Subsystem for Linux
         if strcmp(PathIs(2), ':')
             PathIs = ['/mnt/' lower(PathIs(1)) '/' PathIs(4:end)];
