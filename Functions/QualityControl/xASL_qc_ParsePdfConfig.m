@@ -331,16 +331,23 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, c
         return
     end
     
-    % First it calculates the size of the canvas for the image to be printed in.
+    % First calculate the size of the canvas for the image to be printed in.
     position = [xASL_str2num(qcStruct.position) xASL_str2num(qcStruct.size)];
     canvas = xASL_qc_ParsePdfConfig_sub_createNewCanvas(position(1:2), position(3:4), settingsPDF.canvas);
     
-    % Dimensions, at most 16 images will be printed
+    % Dimensions, at most 24 images will be printed
     imageFields = fields(allImages);
     nImages = length(imageFields);
-    nImages  = min(nImages, 16); % Allow maximum of 16 images to be printed
+    nImages  = min(nImages, 24); % Allow maximum of 24 images to be printed
     imPerRow = ceil(sqrt(nImages));
     imSize   = 1/imPerRow;
+
+    % Final image position, to be used by headers below
+    canvasHeader = canvas;
+    xPos = mod(nImages - 1, imPerRow) * imSize;
+    yPos = (imPerRow - ceil(nImages / imPerRow)) * imSize;
+    position = xASL_qc_ParsePdfConfig_sub_createNewCanvas([xPos, yPos], [imSize, imSize], canvas);
+    canvasHeader(2) = position(2); % the y-position is needed to print headers right below the QC images
 
     % Print images
     for iImage = 1:nImages
@@ -365,15 +372,59 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, c
         % Determine the position and size of the image
         xPos = mod(iImage - 1, imPerRow) * imSize;
         yPos = (imPerRow - ceil(iImage / imPerRow)) * imSize;
-        [position] = xASL_qc_ParsePdfConfig_sub_createNewCanvas([xPos, yPos], [imSize, imSize], canvas);
+        position = xASL_qc_ParsePdfConfig_sub_createNewCanvas([xPos, yPos], [imSize, imSize], canvas);
 
-        % Finally it prints the image to the current figure, and updates the figure count.
+        % Finally print the image to the current figure, and updates the figure count.
         ax = axes('Position', position , 'Visible', settingsPDF.axesVisible, 'Parent', currentFigure);
         fg = imshow(CurrentIm);
 
         % Print the image header and update the figure count
-        % header = ;
-        % settingsPDF.figureCount = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, settingsPDF, canvas);
+        header = imageName;
+
+        % Add the NIfTI file-name
+        % here, the later the filename to check is placed in the vector, 
+        % the higher its priority to print its NIfTI file.
+        % E.g., For 'rT1_with_rc2T1', it should print rc2T1.nii and not rT1.nii
+        
+        fileName = 'something.nii'; % default for NIfTI files that haven't been added here
+
+        namesToCheck = {'qCBF' 'M0' 'Tex' 'ITT' 'ATT' 'SD' 'SNR' 'mean_control' 'noSmooth_M0' 'rFLAIR'...
+            'rT1' 'rc1T1' 'rc2T1' 'rc3T1' 'PV_pGM' 'PV_pWM' 'PV_pCSF' 'CentralWM_QC'};
+        for iName=1:length(namesToCheck)
+            if contains(imageName, namesToCheck{iName})
+                fileName = [namesToCheck{iName} '.nii'];
+            end
+        end
+
+        % Make the header a bit more human readable
+        header = strrep(header, 'Tra', 'Transversal');
+        header = strrep(header, 'Cor', 'Coronal');
+        header = strrep(header, 'Sag', 'Sagittal');
+
+        header = strrep(header, '_Reg_', ' ');
+        header = strrep(header, '_with_', ' overlaid with ');
+
+        header = strrep(header, '_', ' '); % remove underscores
+
+        header = strrep(header, 'noSmooth M0', 'M0 without smoothing');
+
+        header = strrep(header, 'r12T1', 'GM segmentation');
+        header = strrep(header, 'rc2T1', 'WM segmentation');
+        header = strrep(header, 'rc3T1', 'CSF segmentation');
+
+        header = strrep(header, 'T1', 'T1w');
+        header = strrep(header, 'rT1', 'T1');
+        header = strrep(header, 'rFLAIR', 'FLAIR');
+        header = strrep(header, 'qCBF', 'CBF');
+
+        header = strrep(header, 'CentralWM QC', 'central WM QC region');
+                
+
+        % Add the filename as well
+        header = [header ' (' fileName ')'];
+        header = strrep(header, 'M0 (', 'M0 after smoothing (');
+
+        settingsPDF.figureCount = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, settingsPDF, canvasHeader);
 
     end
 
@@ -447,7 +498,7 @@ end
 
 %% ====================================================================================================================================================
 function [figureCount] = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentFigure, settingsPDF, position)
-% This function prints a header underneath the image to be printed.
+% This function prints a "header" underneath the image to be printed (header == legend for the contents of the image)
 
     % If no header is specified, it will exit and not iterate the figure count.
     if isempty(header) || ~settingsPDF.imageHeaders
@@ -457,9 +508,11 @@ function [figureCount] = xASL_qc_ParsePdfConfig_sub_PrintHeader(header, currentF
         figureCount = settingsPDF.figureCount + 1;
     end
 
+    % position is the canvas obtained from the QC figures to be printed
+    position(2) = position(2) - figureCount*0.01; % this is the y position in the PDF, the legend should be printed right below the image
     position(4) = 0;
     settingsPDF.HorizontalAlignment = 'center';
-    text = ['Fig ' num2str(figureCount) ': ' header];
+    text = ['Figure ' num2str(figureCount) ': ' header];
     xASL_qc_ParsePdfConfig_sub_PrintText(text, currentFigure, position, settingsPDF);
 end
 
