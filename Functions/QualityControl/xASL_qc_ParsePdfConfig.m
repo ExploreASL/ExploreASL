@@ -385,11 +385,10 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, c
         % here, the later the filename to check is placed in the vector, 
         % the higher its priority to print its NIfTI file.
         % E.g., For 'rT1_with_rc2T1', it should print rc2T1.nii and not rT1.nii
-        
         fileName = 'something.nii'; % default for NIfTI files that haven't been added here
 
         namesToCheck = {'qCBF' 'M0' 'Tex' 'ITT' 'ATT' 'SD' 'SNR' 'mean_control' 'noSmooth_M0' 'rFLAIR'...
-            'rT1' 'rc1T1' 'rc2T1' 'rc3T1' 'PV_pGM' 'PV_pWM' 'PV_pCSF' 'CentralWM_QC'};
+            'rT1' 'rT1_ORI' 'rFLAIR_ORI' 'rc1T1' 'rc2T1' 'rc3T1' 'PV_pGM' 'PV_pWM' 'PV_pCSF' 'CentralWM_QC' 'rWMH_SEGM'};
         for iName=1:length(namesToCheck)
             if contains(imageName, namesToCheck{iName})
                 fileName = [namesToCheck{iName} '.nii'];
@@ -401,6 +400,8 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, c
         header = strrep(header, 'Cor', 'Coronal');
         header = strrep(header, 'Sag', 'Sagittal');
 
+        header = strrep(header, '_ORI', '_before lesion filling');
+        header = strrep(header, '_rWMH_SEGM', '_WMH segmentation');
         header = strrep(header, '_Reg_', ' ');
         header = strrep(header, '_with_', ' overlaid with ');
 
@@ -408,7 +409,7 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, c
 
         header = strrep(header, 'noSmooth M0', 'M0 without smoothing');
 
-        header = strrep(header, 'r12T1', 'GM segmentation');
+        header = strrep(header, 'rc1T1', 'GM segmentation');
         header = strrep(header, 'rc2T1', 'WM segmentation');
         header = strrep(header, 'rc3T1', 'CSF segmentation');
 
