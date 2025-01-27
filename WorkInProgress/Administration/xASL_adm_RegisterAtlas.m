@@ -191,10 +191,7 @@ matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = 'o';
 spm_jobman('run',matlabbatch);
 
 % Create MAT file
-IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'oWMPM_Type_III.nii'));
-IM = uint8(ceil(IM/2.0)); % Make sure it's divided by 2 and rounded to deal with the L-R and merge them to bilateral
-save(fullfile(pathTPM, 'oWMPM_Type_III.nii.mat'),'IM');
-xASL_adm_GzipNifti(fullfile(pathTPM, 'oWMPM_Type_III.nii'));
+xASL_adm_AtlasConvert_LeftRight2Bilateral(fullfile(pathTPM, 'oWMPM_Type_III.nii'), fullfile(pathTPM, 'WMPM', 'WMPM.txt'), fullfile(pathTPM, 'oWMPM_Type_III.tsv'), 'WMPM_Type_III');
 %% Transform the atlases from Colin27 to IXI512
 % This has to be done label per label
 
@@ -221,8 +218,11 @@ matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = 'o';
 spm_jobman('run',matlabbatch);
 
 % Create MAT file
-IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'oAAL3v1_1mm.nii'));
-IM = uint8(ceil(IM/2.0));
-save(fullfile(pathTPM, 'oAAL3v1_1mm.nii.mat'),'IM');
-xASL_io_SaveNifti(fullfile(pathTPM, 'oAAL3v1_1mm.nii'), fullfile(pathTPM, 'oAAL3v1_1mm.nii'), IM);
-xASL_adm_GzipNifti(fullfile(pathTPM, 'oAAL3v1_1mm.nii'));
+xASL_adm_AtlasConvert_LeftRight2Bilateral(fullfile(pathTPM, 'oAAL3v1_1mm.nii'), fullfile(pathTPM, 'AAL3', 'AAL3v1.nii.txt'), fullfile(pathTPM, 'oAAL3v1_1mm.tsv'), 'AAL3v1');
+
+
+%IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'oAAL3v1_1mm.nii'));
+%IM = uint8(ceil(IM/2.0));
+%save(fullfile(pathTPM, 'oAAL3v1_1mm.nii.mat'),'IM');
+%xASL_io_SaveNifti(fullfile(pathTPM, 'oAAL3v1_1mm.nii'), fullfile(pathTPM, 'oAAL3v1_1mm.nii'), IM);
+%xASL_adm_GzipNifti(fullfile(pathTPM, 'oAAL3v1_1mm.nii'));
