@@ -18,7 +18,12 @@ switch(atlasType)
 		% 113:120 -> 57:64
 		% 121:168 -> 65:88
 		% 169:170 -> 89:90
-		TSV = TSV(:,2);
+		TSV{1} = '1 Precentral_L 1';% Fix the first entry
+		for i = 1:length(TSV)
+			token = regexp(TSV{i}, '^.\d* (.*) \d*$', 'tokens');
+			TSV{i} = token{1}{1};
+		end
+		
 
 		for iROI = 1:56
 			IM(IM==(iROI*2)-1) = iROI;
@@ -89,7 +94,7 @@ end
 
 % Save the image
 xASL_io_SaveNifti(pathNiftii, pathNiftii, IM, []);
-xASL_tsvWrite(TSV', pathTSVout, 1);
+xASL_tsvWrite(TSV, pathTSVout, 1);
 IM = uint8(IM);
 save([pathNiftii '.mat'],'IM');
 xASL_adm_GzipNifti(pathNiftii);

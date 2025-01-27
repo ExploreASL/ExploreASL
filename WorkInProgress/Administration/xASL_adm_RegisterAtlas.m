@@ -218,7 +218,8 @@ matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = 'o';
 spm_jobman('run',matlabbatch);
 
 % Create MAT file
-xASL_adm_AtlasConvert_LeftRight2Bilateral(fullfile(pathTPM, 'oAAL3v1_1mm.nii'), fullfile(pathTPM, 'AAL3', 'AAL3v1.nii.txt'), fullfile(pathTPM, 'oAAL3v1_1mm.tsv'), 'AAL3v1');
+xASL_Copy(fullfile(pathTPM, 'AAL3', 'AAL3v1.nii.txt'), fullfile(pathTPM, 'oAAL3v1_1mm.tsv'));
+xASL_adm_AtlasConvert_LeftRight2Bilateral(fullfile(pathTPM, 'oAAL3v1_1mm.nii'), fullfile(pathTPM, 'oAAL3v1_1mm.tsv'), fullfile(pathTPM, 'oAAL3v1_1mm.tsv'), 'AAL3v1');
 
 
 %IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'oAAL3v1_1mm.nii'));
