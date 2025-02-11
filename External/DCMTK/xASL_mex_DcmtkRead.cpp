@@ -39,11 +39,11 @@
  *    GELabelingType - 0x0019, 0x109C
  *    GELabelingDuration - 0x0043, 0x10A5
  *    GESequenceName - 0x0019, 109e
- *    GEPrivateCV4 - 0x0019, 10ab
- *    GEPrivateCV5 - 0x0019, 10ac
- *    GEPrivateCV6 - 0x0019, 10ad
- *    GEPrivateCV7 - 0x0019, 10ae
- *    GEPrivateCV8 - 0x0019, 10af
+ *    GEPrivateCV4 - 0x0019, 10ab PLD, or the coefficient for its calculation
+ *    GEPrivateCV5 - 0x0019, 10ac LabDur, or the coefficient for its calculation
+ *    GEPrivateCV6 - 0x0019, 10ad number of PLDs
+ *    GEPrivateCV7 - 0x0019, 10ae linear/exponential mixing coefficient for multi-PLD
+ *    GEPrivateCV8 - 0x0019, 10af 
  *    GEPrivateCV9 - 0x0019, 10b0
  *    PhilipsNumberTemporalScans - 0x2001, 0x1008
  *    PhilipsLabelControl - 0x2005, 0x1429

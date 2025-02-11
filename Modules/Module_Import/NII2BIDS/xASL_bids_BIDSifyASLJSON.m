@@ -106,154 +106,9 @@ if isfield(studyPar,'LookLocker') && ~isempty(studyPar.LookLocker) && studyPar.L
 end
 
 %% 4b. GE parameter parsing
-if ~isempty(regexpi(jsonInMerged.Manufacturer,'GE'))
-	% Conversion of eASL acquisition parameters
-	if isfield(jsonInMerged, 'GESequenceName') && ~isempty(regexpi(jsonInMerged.GESequenceName, 'easl'))
-		% Read parameters for eASL
-		if isfield(jsonInMerged, 'GEPrivateCV4') && ~isempty(jsonInMerged.GEPrivateCV4) && isfield(jsonInMerged, 'GEPrivateCV5') && ~isempty(jsonInMerged.GEPrivateCV5) &&...
-		   isfield(jsonInMerged, 'GEPrivateCV6') && ~isempty(jsonInMerged.GEPrivateCV6) && isfield(jsonInMerged, 'GEPrivateCV7') && ~isempty(jsonInMerged.GEPrivateCV7)
-			% We have detected the eASL sequence that saves the PLD and LD parameters in a different way and all private tags are present
-			% We save them to the non-private GE-specific tags and they will be compared with the studyPar entries as program below for all general GE sequences
-			if ~isfield(jsonInMerged, 'ArterialSpinLabelingType')
-				jsonInMerged.ArterialSpinLabelingType = 'PCASL';
-			end
-			if jsonInMerged.GEPrivateCV6 == 1
-				% This is the case of a single-delay sequence - the values are simply taken over
-				jsonInMerged.GELabelingDuration = jsonInMerged.GEPrivateCV5;
-				jsonInMerged.InversionTime = jsonInMerged.GEPrivateCV4;
-
-				% An extra zero is added for the M0scan
-				if dimASL(4) == 2
-					jsonInMerged.GELabelingDuration(2) = 0;
-					jsonInMerged.InversionTime(2) = 0;
-
-					if ~isfield(jsonInMerged, 'ASLContext')
-						jsonInMerged.ASLContext = 'deltam,m0scan';
-					end
-				end
-			else
-				% For multi-PLD Hadamard encoded eASL, the PLDs and LDs have to be derived in a more complicated way
-
-				% Fully linear timings of PLD and LD are calculated followingly
-				tempLDlin = ones(1,jsonInMerged.GEPrivateCV6) * jsonInMerged.GEPrivateCV5/jsonInMerged.GEPrivateCV6; %LDlin(i) = CV5/CV6
-				tempPLDlin = jsonInMerged.GEPrivateCV4 + (0:jsonInMerged.GEPrivateCV6-1).*tempLDlin(1); %PLD_lin(i) = CV4 + (i-1)*LDlin(i)
-
-				% GEPrivateCV7 == 1 means that the LD values are are equal, otherwise we need to calculate them using a specific exponential formula
-				if jsonInMerged.GEPrivateCV7 < 1
-					% First, we calculate the T1-blood parameter that is used in calculating the LDs for GE. Note that the values from GE formula have to be used, not the proper literature values
-					% as these values are used internally to prepare the LDs on the GE scanner
-					if jsonInMerged.MagneticFieldStrength == 3
-						tempGET1 = 1.65; % 3T variant
-					elseif jsonInMerged.MagneticFieldStrength == 1.5
-						tempGET1 = 1.4;
-					else
-						warning(['GE exponential labeling delay duration is used but the T1-blood value is unknown for magnetic field strength: ' xASL_num2str(jsonInMerged.MagneticFieldStrength)])
-					end
-					
-					tempStarget = 1/jsonInMerged.GEPrivateCV6*(1-exp(-jsonInMerged.GEPrivateCV5/tempGET1))*exp(-jsonInMerged.GEPrivateCV4/tempGET1);
-
-					% LD and PLD when the fully exponential timings are in place
-					for iPLD = 1:jsonInMerged.GEPrivateCV6
-						if iPLD == 1
-							tempPLDexp  = jsonInMerged.GEPrivateCV4; % The first PLDexp is same as the linear one
-						else
-							tempPLDexp(iPLD) = tempPLDexp(iPLD-1) + tempLDexp(iPLD-1); % The PLDs cover the entire length of the previous LD and PLD
-						end
-
-						% The LDexp are calculated using the S_target variable
-						tempLDexp(iPLD) = -tempGET1*log(1-tempStarget*exp(tempPLDexp(iPLD)/tempGET1));
-					end
-
-					% The true LD is now calculated as a weighted mixture of Linear and Exponential parameters using CV7
-					jsonInMerged.GELabelingDuration =  round(tempLDlin*jsonInMerged.GEPrivateCV7 +  tempLDexp*(1-jsonInMerged.GEPrivateCV7), 3);
-					jsonInMerged.InversionTime      = round(tempPLDlin*jsonInMerged.GEPrivateCV7 + tempPLDexp*(1-jsonInMerged.GEPrivateCV7), 3);
-				else
-					% Fully linear PLD and LD are used
-					jsonInMerged.GELabelingDuration = round(tempLDlin, 3);
-					jsonInMerged.InversionTime = round(tempPLDlin, 3);
-				end
-
-				% There's the control and M0scan
-				if dimASL(4) == jsonInMerged.GEPrivateCV6+2
-					% We need to an extra PLD for the control image at the end and afterwards a zero for M0scan
-					jsonInMerged.InversionTime = [jsonInMerged.InversionTime (jsonInMerged.InversionTime(end)+jsonInMerged.GELabelingDuration(end)) 0];
-					jsonInMerged.GELabelingDuration = [jsonInMerged.GELabelingDuration 0 0];
-
-					if ~isfield(jsonInMerged, 'DummyScanPositionInASL4D')
-						jsonInMerged.DummyScanPositionInASL4D = jsonInMerged.GEPrivateCV6 + 1;
-					end
-				elseif dimASL(4) == jsonInMerged.GEPrivateCV6+1
-					% There's only the M0scan
-					jsonInMerged.InversionTime = [jsonInMerged.InversionTime 0];
-					jsonInMerged.GELabelingDuration = [jsonInMerged.GELabelingDuration 0];
-				end
-
-				if ~isfield(jsonInMerged, 'ASLContext')
-					jsonInMerged.ASLContext = [];
-					for i=1:jsonInMerged.GEPrivateCV6
-						if i>1
-							jsonInMerged.ASLContext = [jsonInMerged.ASLContext, ','];
-						end
-						jsonInMerged.ASLContext = [jsonInMerged.ASLContext, 'deltam'];
-					end
-					if dimASL(4) == jsonInMerged.GEPrivateCV6+2
-						jsonInMerged.ASLContext = [jsonInMerged.ASLContext, ',deltam,m0scan'];
-					elseif dimASL(4) == jsonInMerged.GEPrivateCV6+1
-						jsonInMerged.ASLContext = [jsonInMerged.ASLContext, ',m0scan'];
-					end
-				end
-			end
-			jsonInMerged.LabelingDuration = jsonInMerged.GELabelingDuration';
-			jsonInMerged.PostLabelingDelay = jsonInMerged.InversionTime';
-		else
-			% eASL detected but the important parameters were missing
-			warning('GE eASL sequence detected, but the relevant DICOM parameters could not be retrieved');
-		end
-	end
-
-	% In the second step, we merge the DICOM info from GE and select the better of the private and public tags for PLD and LD. We do not care which one was from dcm2nii and which one from the studyPar as this will be check in the next step
-	% Therefore, the best value is chosen and no warnings are issued
-	if isfield(jsonInMerged,'GELabelingDuration') && ~isempty(jsonInMerged.GELabelingDuration) && isfield(jsonInMerged,'LabelingDuration') && ~isequal(jsonInMerged.GELabelingDuration,jsonInMerged.LabelingDuration)
-		if dimASL(4)>=numel(jsonInMerged.GELabelingDuration)
-			% If there are more volumes that GE-LDs, we can used GE-LD (this only backfires for eASL)
-			jsonInMerged.LabelingDuration = jsonInMerged.GELabelingDuration;
-		elseif dimASL(4)>=numel(unique(jsonInMerged.GELabelingDuration))
-			% Or at least unique GE-LDs
-			tempLabelingDuration = unique(jsonInMerged.GELabelingDuration);
-			if tempLabelingDuration(1) == 0
-				tempLabelingDuration(1:end-1) = tempLabelingDuration(2:end);
-				tempLabelingDuration(end) = 0;
-			end
-			jsonInMerged.LabelingDuration = tempLabelingDuration;
-		else
-			% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
-			% and we thus use the LD field untouched.
-		end
-	end
-		
-	% GELabelingDuration comes together with the PostLabelingDelay defined in the standard DICOM field called InversionTime
-	if isfield(jsonInMerged,'InversionTime') && ~isempty(jsonInMerged.InversionTime) && isfield(jsonInMerged,'PostLabelingDelay') && ~isequal(jsonInMerged.PostLabelingDelay,jsonInMerged.InversionTime)
-		% if the DICOM information is reasonable - less PLDs than volumes, then we report a warning
-		if dimASL(4) == numel(jsonInMerged.PostLabelingDelay) 
-			% Perfectly fitting lenth of PostLabelingDelay means we use it
-		elseif dimASL(4)>=numel(jsonInMerged.InversionTime)
-			% If there are more volumes that GE-PLDs, we can used GE-PLD (this only backfires for eASL)
-			jsonInMerged.PostLabelingDelay = jsonInMerged.InversionTime;
-		elseif dimASL(4)>=numel(unique(jsonInMerged.InversionTime))
-			% Or at least unique GE-PLDs
-			tempPLD = unique(jsonInMerged.InversionTime);
-			if tempPLD(1) == 0
-				tempPLD(1:end-1) = tempPLD(2:end);
-				tempPLD(end) = 0;
-			end
-			jsonInMerged.PostLabelingDelay = tempPLD;
-		else
-			% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
-			% and we thus use the PLD field untouched.
-		end
-	end
+if ~isempty(regexpi(jsonInMerged.Manufacturer, 'GE', 'once'))
+	jsonInMerged = xASL_bids_BIDSifyASLJSON_GEPrivate(jsonInMerged, dimASL);
 end
-
 
 %% 5. Prioritize studyPar fields over the DICOM fields
 % Overwrite differing fields with those from Dicom, but report all differences
@@ -739,4 +594,165 @@ end
 
 end
 
+function jsonInMerged = xASL_bids_BIDSifyASLJSON_GEPrivate(jsonInMerged, dimASL)
+% Parse and convert the GE private parameters into the common BIDS representation
+% 1. Conversion of eASL acquisition parameters if the correct sequence name is declared
+% 1.1a Parse single-delay eASL
+% 1.1 Read parameters for eASL
+% 1.1b Parse multi-delay eASL
+% 2. Merge the public and private DICOM tages
 
+%-------------------------------------------------------------------------------------------------------------
+% 1. Conversion of eASL acquisition parameters if the correct sequence name is declared
+if isfield(jsonInMerged, 'GESequenceName') && ~isempty(regexpi(jsonInMerged.GESequenceName, 'easl'))
+	%-------------------------------------------------------------------------------------------------------------
+	% 1.1 Read parameters for eASL
+	if isfield(jsonInMerged, 'GEPrivateCV4') && ~isempty(jsonInMerged.GEPrivateCV4) && isfield(jsonInMerged, 'GEPrivateCV5') && ~isempty(jsonInMerged.GEPrivateCV5) &&...
+			isfield(jsonInMerged, 'GEPrivateCV6') && ~isempty(jsonInMerged.GEPrivateCV6) && isfield(jsonInMerged, 'GEPrivateCV7') && ~isempty(jsonInMerged.GEPrivateCV7)
+		% We have detected the eASL sequence that saves the PLD and LD parameters in a different way and all private tags are present
+		% We save them to the non-private GE-specific tags and they will be compared with the studyPar entries as program below for all general GE sequences
+		if ~isfield(jsonInMerged, 'ArterialSpinLabelingType')
+			jsonInMerged.ArterialSpinLabelingType = 'PCASL';
+		end
+		if jsonInMerged.GEPrivateCV6 == 1
+			%-------------------------------------------------------------------------------------------------------------
+			% 1.1a Parse single-delay eASL
+			% This is the case of a single-delay sequence - the values are simply taken over
+			jsonInMerged.GELabelingDuration = jsonInMerged.GEPrivateCV5;
+			jsonInMerged.InversionTime = jsonInMerged.GEPrivateCV4;
+
+			% An extra zero is added for the M0scan
+			if dimASL(4) == 2
+				jsonInMerged.GELabelingDuration(2) = 0;
+				jsonInMerged.InversionTime(2) = 0;
+
+				if ~isfield(jsonInMerged, 'ASLContext')
+					jsonInMerged.ASLContext = 'deltam,m0scan';
+				end
+			end
+		else
+			%-------------------------------------------------------------------------------------------------------------
+			% 1.1b Parse multi-delay eASL
+			% For multi-PLD Hadamard encoded eASL, the PLDs and LDs have to be derived in a more complicated way
+
+			% Fully linear timings of PLD and LD are calculated followingly
+			tempLDlin = ones(1,jsonInMerged.GEPrivateCV6) * jsonInMerged.GEPrivateCV5/jsonInMerged.GEPrivateCV6; %LDlin(i) = CV5/CV6
+			tempPLDlin = jsonInMerged.GEPrivateCV4 + (0:jsonInMerged.GEPrivateCV6-1).*tempLDlin(1); %PLD_lin(i) = CV4 + (i-1)*LDlin(i)
+
+			% GEPrivateCV7 == 1 means that the LD values are are equal, otherwise we need to calculate them using a specific exponential formula
+			if jsonInMerged.GEPrivateCV7 < 1
+				% First, we calculate the T1-blood parameter that is used in calculating the LDs for GE. Note that the values from GE formula have to be used, not the proper literature values
+				% as these values are used internally to prepare the LDs on the GE scanner
+				if jsonInMerged.MagneticFieldStrength == 3
+					tempGET1 = 1.65; % 3T variant
+				elseif jsonInMerged.MagneticFieldStrength == 1.5
+					tempGET1 = 1.4;
+				else
+					warning(['GE exponential labeling delay duration is used but the T1-blood value is unknown for magnetic field strength: ' xASL_num2str(jsonInMerged.MagneticFieldStrength)])
+				end
+
+				tempStarget = 1/jsonInMerged.GEPrivateCV6*(1-exp(-jsonInMerged.GEPrivateCV5/tempGET1))*exp(-jsonInMerged.GEPrivateCV4/tempGET1);
+
+				% LD and PLD when the fully exponential timings are in place
+				for iPLD = 1:jsonInMerged.GEPrivateCV6
+					if iPLD == 1
+						tempPLDexp  = jsonInMerged.GEPrivateCV4; % The first PLDexp is same as the linear one
+					else
+						tempPLDexp(iPLD) = tempPLDexp(iPLD-1) + tempLDexp(iPLD-1); % The PLDs cover the entire length of the previous LD and PLD
+					end
+
+					% The LDexp are calculated using the S_target variable
+					tempLDexp(iPLD) = -tempGET1*log(1-tempStarget*exp(tempPLDexp(iPLD)/tempGET1));
+				end
+
+				% The true LD is now calculated as a weighted mixture of Linear and Exponential parameters using CV7
+				jsonInMerged.GELabelingDuration =  round(tempLDlin*jsonInMerged.GEPrivateCV7 +  tempLDexp*(1-jsonInMerged.GEPrivateCV7), 3);
+				jsonInMerged.InversionTime      = round(tempPLDlin*jsonInMerged.GEPrivateCV7 + tempPLDexp*(1-jsonInMerged.GEPrivateCV7), 3);
+			else
+				% Fully linear PLD and LD are used
+				jsonInMerged.GELabelingDuration = round(tempLDlin, 3);
+				jsonInMerged.InversionTime = round(tempPLDlin, 3);
+			end
+
+			% There's the control and M0scan
+			if dimASL(4) == jsonInMerged.GEPrivateCV6+2
+				% We need to an extra PLD for the control image at the end and afterwards a zero for M0scan
+				jsonInMerged.InversionTime = [jsonInMerged.InversionTime (jsonInMerged.InversionTime(end)+jsonInMerged.GELabelingDuration(end)) 0];
+				jsonInMerged.GELabelingDuration = [jsonInMerged.GELabelingDuration 0 0];
+
+				if ~isfield(jsonInMerged, 'DummyScanPositionInASL4D')
+					jsonInMerged.DummyScanPositionInASL4D = jsonInMerged.GEPrivateCV6 + 1;
+				end
+			elseif dimASL(4) == jsonInMerged.GEPrivateCV6+1
+				% There's only the M0scan
+				jsonInMerged.InversionTime = [jsonInMerged.InversionTime 0];
+				jsonInMerged.GELabelingDuration = [jsonInMerged.GELabelingDuration 0];
+			end
+
+			if ~isfield(jsonInMerged, 'ASLContext')
+				jsonInMerged.ASLContext = [];
+				for i=1:jsonInMerged.GEPrivateCV6
+					if i>1
+						jsonInMerged.ASLContext = [jsonInMerged.ASLContext, ','];
+					end
+					jsonInMerged.ASLContext = [jsonInMerged.ASLContext, 'deltam'];
+				end
+				if dimASL(4) == jsonInMerged.GEPrivateCV6+2
+					jsonInMerged.ASLContext = [jsonInMerged.ASLContext, ',deltam,m0scan'];
+				elseif dimASL(4) == jsonInMerged.GEPrivateCV6+1
+					jsonInMerged.ASLContext = [jsonInMerged.ASLContext, ',m0scan'];
+				end
+			end
+		end
+		jsonInMerged.LabelingDuration = jsonInMerged.GELabelingDuration';
+		jsonInMerged.PostLabelingDelay = jsonInMerged.InversionTime';
+	else
+		% eASL detected but the important parameters were missing
+		warning('GE eASL sequence detected, but the relevant DICOM parameters could not be retrieved');
+	end
+end
+
+%-------------------------------------------------------------------------------------------------------------
+% 2. Merge the public and private DICOM tages
+% In the second step, we merge the DICOM info from GE and select the better of the private and public tags for PLD and LD. We do not care which one was from dcm2nii and which one from the studyPar as this will be check in the next step
+% Therefore, the best value is chosen and no warnings are issued
+if isfield(jsonInMerged,'GELabelingDuration') && ~isempty(jsonInMerged.GELabelingDuration) && isfield(jsonInMerged,'LabelingDuration') && ~isequal(jsonInMerged.GELabelingDuration,jsonInMerged.LabelingDuration)
+	if dimASL(4)>=numel(jsonInMerged.GELabelingDuration)
+		% If there are more volumes that GE-LDs, we can used GE-LD (this only backfires for eASL)
+		jsonInMerged.LabelingDuration = jsonInMerged.GELabelingDuration;
+	elseif dimASL(4)>=numel(unique(jsonInMerged.GELabelingDuration))
+		% Or at least unique GE-LDs
+		tempLabelingDuration = unique(jsonInMerged.GELabelingDuration);
+		if tempLabelingDuration(1) == 0
+			tempLabelingDuration(1:end-1) = tempLabelingDuration(2:end);
+			tempLabelingDuration(end) = 0;
+		end
+		jsonInMerged.LabelingDuration = tempLabelingDuration;
+	else
+		% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
+		% and we thus use the LD field untouched.
+	end
+end
+
+% GELabelingDuration comes together with the PostLabelingDelay defined in the standard DICOM field called InversionTime
+if isfield(jsonInMerged,'InversionTime') && ~isempty(jsonInMerged.InversionTime) && isfield(jsonInMerged,'PostLabelingDelay') && ~isequal(jsonInMerged.PostLabelingDelay,jsonInMerged.InversionTime)
+	% if the DICOM information is reasonable - less PLDs than volumes, then we report a warning
+	if dimASL(4) == numel(jsonInMerged.PostLabelingDelay)
+		% Perfectly fitting lenth of PostLabelingDelay means we use it
+	elseif dimASL(4)>=numel(jsonInMerged.InversionTime)
+		% If there are more volumes that GE-PLDs, we can used GE-PLD (this only backfires for eASL)
+		jsonInMerged.PostLabelingDelay = jsonInMerged.InversionTime;
+	elseif dimASL(4)>=numel(unique(jsonInMerged.InversionTime))
+		% Or at least unique GE-PLDs
+		tempPLD = unique(jsonInMerged.InversionTime);
+		if tempPLD(1) == 0
+			tempPLD(1:end-1) = tempPLD(2:end);
+			tempPLD(end) = 0;
+		end
+		jsonInMerged.PostLabelingDelay = tempPLD;
+	else
+		% Otherwise, the information from DICOM appears to be wrong (as is often the case for eASL multi-PLD)
+		% and we thus use the PLD field untouched.
+	end
+end
+end

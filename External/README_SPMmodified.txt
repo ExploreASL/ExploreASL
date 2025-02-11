@@ -401,7 +401,11 @@ FILE:
 spm_jsonread.c at line 588 and all lines with mexErrMsgTxt, mexWarnMsgTxt, and mexPrintf.
 NOTE: Since version 1.11.0, spm_jsonwrite and spm_jsonread are not used anymore
 
-
+DATE+NAME:2025_02_11, JP
+DESCRIPTION:
+An entire file was added with extra DICOM tag names useful for ExploreASL
+FILE:
+External/SPMmodified/xASL_DICOMlibrary.txt 
 
 *********************************************************************************************************
 OTHER CODE HACKS
