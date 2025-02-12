@@ -76,6 +76,9 @@ if isfield(jsonInMerged, 'StationName') && ~isfield(jsonInMerged, 'Manufacturer'
     end
 end
 
+if ~isfield(jsonInMerged, 'Manufacturer') || isempty(jsonInMerged.Manufacturer)
+	jsonInMerged.Manufacturer = 'unknown';
+end
 
 if ~isempty(regexpi(jsonInMerged.Manufacturer, 'Philips'))
 	jsonOut.scaleFactor = xASL_adm_GetPhilipsScaling(jsonInMerged, headerASL);
@@ -226,12 +229,14 @@ end
 
 if strcmpi(jsonOut.MRAcquisitionType,'2D')
 	jsonOut.PulseSequenceType = 'EPI';
-else
+elseif strcmpi(jsonOut.MRAcquisitionType,'3D')
 	if strcmpi(jsonOut.Manufacturer,'GE') || strcmpi(jsonOut.Manufacturer,'GE_WIP') || strcmpi(jsonOut.Manufacturer,'GE_product')
 		jsonOut.PulseSequenceType = 'spiral';
 	else
 		jsonOut.PulseSequenceType = 'GRASE';
 	end
+else
+	jsonOut.PulseSequenceType = 'unknown';
 end
     
 %% 7. Check for time encoded sequence

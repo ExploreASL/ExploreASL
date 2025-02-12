@@ -68,7 +68,7 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 			fprintf('File with an incorrect but similar name was found: %s \n',jsonDicom{1});
 		end
 		
-        return;
+        jsonDicom = struct();
     end
     if xASL_exist(fullfile(inSessionPath, [aslLegacyLabel '.nii']),'file')
         headerASL = xASL_io_ReadNifti(fullfile(inSessionPath, [aslLegacyLabel '.nii']));

@@ -44,7 +44,7 @@ function outStruct = xASL_adm_OrderFields(inStruct,orderStruct)
 
 orderArray = fieldnames(orderStruct);
 inArray = fieldnames(inStruct);
-outStruct ='';
+outStruct = struct();
 for ii = 1:length(orderArray)
 	if isfield(inStruct,orderArray{ii})
 		outStruct.(orderArray{ii}) = inStruct.(orderArray{ii});
