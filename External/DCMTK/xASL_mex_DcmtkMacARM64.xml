@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--BUILD static DCMTK with these options 
+    -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DCMAKE_INSTALL_PREFIX=/opt/local/dcmtk-static \
+    -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_CXX_FLAGS="-fPIC" -DBUILD_APPS=OFF -DDCMTK_LINK_STATIC=ON -DDCMTK_WITH_ICONV=OFF \
+    -DDCMTK_WITH_THREADS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DDCMTK_ENABLE_BUILTIN_OFICONV_DATA=OFF \
+    -DDCMTK_WITH_STDLIBC_ICONV=OFF -DDCMTK_ENABLE_CHARSET_CONVERSION=OFF -->
 <config 
 	Name="Xcode Clang++" 
 	ShortName="Clang++" 
@@ -29,10 +34,10 @@
 		CXX="$XCRUN_DIR/xcrun -sdk macosx$SDKVER clang++" 
 		DEFINES="$MATLABMEX" 
 		MATLABMEX="-DMATLAB_MEX_FILE " 
-		MACOSX_DEPLOYMENT_TARGET="13.1" 
-		CFLAGS="-fno-common -arch arm64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -fexceptions -v -isysroot $ISYSROOT" 
-		CXXFLAGS="$CFLAGS -fobjc-arc -std=c++11 -stdlib=libc++ " 
-		INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;/opt/homebrew/Cellar/dcmtk/3.6.7/include/&quot; -I&quot;$MATLABROOT/simulink/include&quot;" 
+		MACOSX_DEPLOYMENT_TARGET="15.2" 
+		CFLAGS="-fno-common -arch arm64 -fPIC -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -fexceptions -v -isysroot $ISYSROOT" 
+		CXXFLAGS="$CFLAGS -fobjc-arc -fPIC -std=c++11 -stdlib=libc++ " 
+		INCLUDE="-I&quot;$MATLABROOT/extern/include&quot; -I&quot;/opt/local/dcmtk-static/include/&quot; -I&quot;$MATLABROOT/simulink/include&quot;" 
 		CXXOPTIMFLAGS="-O2 -fwrapv -DNDEBUG" 
 		CXXDEBUGFLAGS="-g" 
 		LD="$CC" 
@@ -43,8 +48,8 @@
 		LINKEXPORT="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maca64/mexFunction.map&quot;" 
 		LINKEXPORTVER="-Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maca64/c_exportsmexfileversion.map&quot;" 
 		LINKEXPORTCPP="-Wl,-U,_mexCreateMexFunction -Wl,-U,_mexDestroyMexFunction -Wl,-U,_mexFunctionAdapter -Wl,-exported_symbols_list,&quot;$MATLABROOT/extern/lib/maca64/cppMexFunction.map&quot;" 
-		LINKLIBS="-L&quot;$MATLABROOT/bin/maca64&quot; /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libdcmdata.a /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libofstd.a /opt/homebrew/Cellar/dcmtk/3.6.7/lib/liboflog.a /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libiconv.a -lm /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libz.a /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libxml2.a -lpthread -lmx -lmex -Bstatic -lmat -lstdc++ -L&quot;$MATLABROOT/extern/bin/$ARCH&quot;  -lMatlabDataArray -lMatlabEngine" 
-		LDOPTIMFLAGS="-O" 
+		LINKLIBS="-L&quot;$MATLABROOT/bin/maca64&quot; /opt/local/dcmtk-static/lib/libdcmdata.a /opt/local/dcmtk-static/lib/liboflog.a /opt/local/dcmtk-static/lib/libofstd.a -lm -lmx -lz -lmex -Bstatic -lmat -lstdc++ -L&quot;$MATLABROOT/extern/bin/$ARCH&quot;  -lMatlabDataArray -lMatlabEngine" 
+        LDOPTIMFLAGS="-O" 
 		LDDEBUGFLAGS="-g" 
 		OBJEXT=".o" 
 		LDEXT=".mexmaca64" 
@@ -63,13 +68,13 @@
 		DEVELOPER_DIR_CHECK="" 
 		XCODE_DIR="/Applications/Xcode.app/Contents/Developer" 
 		XCRUN_DIR="/usr/bin" 
-		XCODE_AGREED_VERSION="9.4.1" 
-		ISYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk" 
-		SDKVER="13.1" 
-		CLANG_VERSION="9.1.0"/>
+		XCODE_AGREED_VERSION="16.2" 
+		ISYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk" 
+		SDKVER="15.2" 
+		CLANG_VERSION="16.0.0"/>
 	<client>
 		<engine 
-			LINKLIBS="$LINKLIBS -leng -L&quot;$MATLABROOT/extern/bin/$ARCH&quot; -L&quot;/opt/homebrew/Cellar/dcmtk/3.6.7/lib/&quot; /opt/homebrew/Cellar/dcmtk/3.6.7/lib/libdcmdata.a -lMatlabDataArray -lMatlabEngine" 
+			LINKLIBS="$LINKLIBS -leng -L&quot;$MATLABROOT/extern/bin/$ARCH&quot; -L&quot;/opt/local/dcmtk-static/lib/&quot; /opt/local/dcmtk-static/lib/libdcmdata.a -lMatlabDataArray -lMatlabEngine" 
 			LDBUNDLE="" 
 			LINKEXPORT="" 
 			LINKEXPORTVER="" 
@@ -79,7 +84,7 @@
 		<mbuild 
 			CMDLINE150="$MATLABROOT/bin/maca64/macbundle $EXENAME &quot;$EXEDIR&quot;" 
 			CMDLINE200="$LDXX $LDFLAGS $OBJS $LINKOPTIM $LINKEXPORT $CXXLIBS $LINKLIBS -o &quot;$EXEDIR$EXENAME.app/Contents/MacOS/$EXENAME&quot;" 
-			MACOSX_DEPLOYMENT_TARGET="13.1" 
+			MACOSX_DEPLOYMENT_TARGET="15.2" 
 			CXXFLAGS="-fexceptions -fno-common -arch arm64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -isysroot $ISYSROOT " 
 			DEFINES="-DUNIX -DX13 -DMACA64 -UMX_COMPAT_SC" 
 			LDFLAGS="-arch arm64 -mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET -Wl,-syslibroot,$ISYSROOT $LDTYPE $LINKEXPORT -framework CoreFoundation -bind_at_load " 
@@ -150,5 +155,5 @@ agreed=$$
 		</CLANG_VERSION>
 	</locationFinder>
 	<env INCLUDE="$XCODE_DIR/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1;$XCODE_DIR/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/$CLANG_VERSION/include;$XCODE_DIR/Toolchains/XcodeDefault.xctoolchain/usr/include;$ISYSROOT/usr/include;$ISYSROOT/System/Library/Frameworks"/>
-	<MATLAB release="R2018b"/>
+	<MATLAB release="R2024b"/>
 </config>
