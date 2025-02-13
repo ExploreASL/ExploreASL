@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--BUILD static DCMTK with these options 
+<!--BUILD static DCMTK with these options 3.6.9
     -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_OSX_ARCHITECTURES="arm64" -DCMAKE_INSTALL_PREFIX=/opt/local/dcmtk-static \
     -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_CXX_FLAGS="-fPIC" -DBUILD_APPS=OFF -DDCMTK_LINK_STATIC=ON -DDCMTK_WITH_ICONV=OFF \
     -DDCMTK_WITH_THREADS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DDCMTK_ENABLE_BUILTIN_OFICONV_DATA=OFF \
     -DDCMTK_WITH_STDLIBC_ICONV=OFF -DDCMTK_ENABLE_CHARSET_CONVERSION=OFF -->
+<!--extra tags in the dictionary dcmdata/data/dicom.dic
+      (2001,105f)	SQ	PrivatePhilips1	1	DICOM
+      (2005,1083)	SQ	PrivatePhilips2	1	DICOM
+      (2005,1402)	SQ	PrivatePhilips3	1	DICOM-->
 <config 
 	Name="Xcode Clang++" 
 	ShortName="Clang++" 
