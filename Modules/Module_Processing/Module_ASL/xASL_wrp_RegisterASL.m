@@ -424,16 +424,16 @@ if bRegistrationCBF
     if x.modules.asl.bRegistrationContrast==3 || x.modules.asl.bContainsSubtracted
         nIT = 2; % force CBF-pGM
         fprintf('\n%s\n\n','x.modules.asl.bRegistrationContrast==3, forcing CBF-based registration irrespective of sCoV');
-    elseif spatCoVit>0.667
+    elseif spatCoVit>0.667 || min(TanimotoPerc)<0.55
         nIT = 0;
         fprintf('%s\n','High spatial CoV, skipping CBF-based registration');
     elseif ~x.settings.Quality
         nIT = 1; % speed up for low quality
     else
         nIT = 2;
-	end
+    end
 
-	% Create a local instance of the bAffineRegistration (so that any changes in it are not reflected in the x-struct for outside
+    % Create a local instance of the bAffineRegistration (so that any changes in it are not reflected in the x-struct for outside
 	bAffineRegistration = x.modules.asl.bAffineRegistration;
 
     % 2) Repeat CBF registrations, with iteratively better estimate of the
