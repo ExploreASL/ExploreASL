@@ -159,23 +159,20 @@ CountMissing = [0 0 0 0 0 0 0];
 %% -----------------------------------------------------------------------------
 %% Define where to search for
 
-if isfield(x.P,'STRUCT') && isfield(x.P,'ASL4D') && isfield(x.P,'CBF')
-    % 1) Native space subject level
-    NativeRegExp_SubjectLevel = {[x.P.STRUCT '.nii'],['c1' x.P.STRUCT '.nii'],['c2' x.P.STRUCT '.nii']};
-    % 2) Native space session level
-    NativeRegExp_SessionLevel = {[x.P.ASL4D '.nii']};
-    % 3) MNI subject level
-    MNI_subject_prefix = {};
-    % 4) MNI session level
-    MNI_session_prefix = {['q' x.P.CBF]};
-    % 5) LongReg
-else
-    % This will probably only be printed, if something went wrong in the
-    % module that was run before. We need this though, because
-    % CreateFileReport is not run within a try-catch statement.
-    warning('Missing path definitions in x.P struct...');
-    return
-end
+x.P.STRUCT = 'T1';
+x.P.ASL4D = 'ASL4D';
+x.P.CBF = 'CBF';
+x.P.FLAIR = 'FLAIR';
+x.P.WMH_SEGM = 'WMH_SEGM';
+
+% 1) Native space subject level
+NativeRegExp_SubjectLevel = {[x.P.STRUCT '.nii'],['c1' x.P.STRUCT '.nii'],['c2' x.P.STRUCT '.nii']};
+% 2) Native space session level
+NativeRegExp_SessionLevel = {[x.P.ASL4D '.nii']};
+% 3) MNI subject level
+MNI_subject_prefix = {};
+% 4) MNI session level
+MNI_session_prefix = {['q' x.P.CBF]};
 
 
 % 5) Lock dirs
