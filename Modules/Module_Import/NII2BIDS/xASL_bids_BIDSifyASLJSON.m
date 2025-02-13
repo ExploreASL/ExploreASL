@@ -120,7 +120,7 @@ for fn = fieldnames(jsonInMerged)'
 		% If the field is there, then report different fields
 		if ~isequal(jsonOut.(fn{1})(:),jsonInMerged.(fn{1})(:))
 			% Just if this is not only a different vector orientation
-			if ~isnumeric(jsonOut.(fn{1})) || numel(jsonOut.(fn{1}),1) == 1 || ~isequal((jsonOut.(fn{1}))',jsonInMerged.(fn{1}))
+			if (~ischar(jsonOut.(fn{1})(:)) || ~strcmpi(jsonOut.(fn{1})(:),jsonInMerged.(fn{1})(:))) && (~isnumeric(jsonOut.(fn{1})) || numel(jsonOut.(fn{1}),1) == 1 || ~isequal((jsonOut.(fn{1}))',jsonInMerged.(fn{1})))
 				% Report that differing values were found
 				warningMessage = [fn{1} ' differed between DICOM (' xASL_num2str(jsonInMerged.(fn{1}))...
 					') & studyPar (' xASL_num2str(jsonOut.(fn{1})) '). '];
@@ -429,7 +429,7 @@ if dimASL(4) ~= lengthASLContext
         if NumberEchoTimes > 1 && mod(dimASL(4), lengthASLContext * NumberEchoTimes) == 0
 			% For multi-TE acquisition, we check if we can additionally first repeat the echo times
 			% Save the original ASLContext and clean the output
-			ASLContextTemp = jsonOut.ASLContext;
+			ASLContextTemp = lower(jsonOut.ASLContext);
 			jsonOut.ASLContext = [];
 			
 			% Find indices of all the line-ends
@@ -460,7 +460,7 @@ if dimASL(4) ~= lengthASLContext
             end
         else
             numRepeat = dimASL(4)/lengthASLContext;
-            tmpStr = jsonOut.ASLContext;
+            tmpStr = lower(jsonOut.ASLContext);
             for iRepeat = 2:numRepeat
                 jsonOut.ASLContext = sprintf('%s\n%s',jsonOut.ASLContext,tmpStr);
             end
@@ -473,11 +473,19 @@ jsonOut.ASLContext = sprintf('%s\n',jsonOut.ASLContext);
 % If fields have a length higher than 1, but shorter then number of volumes then repeat it to fit
 listFieldsRepeat = {'VascularCrushingVENC', 'FlipAngle', 'RepetitionTimePreparation', 'EchoTime'};
 for iRepeat = 1:length(listFieldsRepeat)
-	if isfield(jsonOut,(listFieldsRepeat{iRepeat})) && (length(jsonOut.(listFieldsRepeat{iRepeat})) > 1) && (dimASL(4) ~= length(jsonOut.(listFieldsRepeat{iRepeat})))
-		if mod(dimASL(4),length(jsonOut.(listFieldsRepeat{iRepeat})))
-			error('The length of the vector %s nor its multiple match the number of the NIFTI volumes: %s\n', listFieldsRepeat{iRepeat}, xASL_num2str(dimASL(4)));
-		else
-			jsonOut.(listFieldsRepeat{iRepeat}) = repmat(jsonOut.(listFieldsRepeat{iRepeat})(:),[dimASL(4)/length(jsonOut.(listFieldsRepeat{iRepeat})) 1]);
+	if isfield(jsonOut,(listFieldsRepeat{iRepeat})) && (length(jsonOut.(listFieldsRepeat{iRepeat})) > 1)
+		if numel(unique(jsonOut.(listFieldsRepeat{iRepeat}))) == 1
+			% First we check if there are different values, if not reduce to a scalar value
+			jsonOut.(listFieldsRepeat{iRepeat}) = jsonOut.(listFieldsRepeat{iRepeat})(1);
+		elseif (dimASL(4) ~= length(jsonOut.(listFieldsRepeat{iRepeat})))
+			% Otherwise we check if the values are different
+			if mod(dimASL(4),length(jsonOut.(listFieldsRepeat{iRepeat})))
+				% We cannot repeat the values to make the length fit
+				error('The length of the vector %s nor its multiple match the number of the NIFTI volumes: %s\n', listFieldsRepeat{iRepeat}, xASL_num2str(dimASL(4)));
+			else
+				% We repeat the values to fit
+				jsonOut.(listFieldsRepeat{iRepeat}) = repmat(jsonOut.(listFieldsRepeat{iRepeat})(:),[dimASL(4)/length(jsonOut.(listFieldsRepeat{iRepeat})) 1]);
+			end
 		end
 	end
 end

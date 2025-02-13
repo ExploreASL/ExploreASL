@@ -134,7 +134,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     if str2num(imPar.dcm2nii_version(1:4))<2014
         dcm2nii_args = sprintf('-b "%s"', IniPath);
     else
-        dcm2nii_args = '-f "%f_%p_%t_%s_%r"';
+        dcm2nii_args = '-b y -f "%f_%p_%t_%s_%r"';
     end
 
     %% 6. Check for existing targets
