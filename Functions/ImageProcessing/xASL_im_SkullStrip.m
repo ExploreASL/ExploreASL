@@ -39,6 +39,12 @@ function xASL_im_SkullStrip(InPath, PathMNIMask, x, OutPath)
     xASL_spm_deformations(x, PathMNIMask, TempPath, 1, InPath); % trilinear interpolation & inverse
 
     %% Image arithmetics (masking)
+    if ~xASL_exist(TempPath, 'file')
+        error(['Missing file: ' TempPath]);
+    elseif ~xASL_exist(InPath, 'file')
+        error(['Missing file: ' InPath]);
+    end
+
     Image = double(xASL_io_Nifti2Im(InPath)).*(xASL_io_Nifti2Im(TempPath)>0);
 
     %% Save the masked image
