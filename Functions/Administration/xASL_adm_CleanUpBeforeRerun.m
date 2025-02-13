@@ -94,14 +94,17 @@ try
         % Obtain ASL session dirs as well
         fprintf('No SessionID provided, finding session dirs automatically:\n');
         SessionID = xASL_adm_GetFileList(SubjectDir, '^ASL_\d+$', 'List', [0 Inf], true);
-    else
-        if ~iscell(SessionID)
-            SessionID = {SessionID};
-        end
+    elseif ~iscell(SessionID)
+        SessionID = {SessionID};
     end
-    if ~bAllSubjects && ~isempty(SessionID)
-        SessionDir = cellfun(@(y) fullfile(SubjectDir, y), SessionID, 'UniformOutput', 0);
-        nSessions = length(SessionDir);
+    if ~bAllSubjects
+        if ~isempty(SessionID)
+            SessionDir = cellfun(@(y) fullfile(SubjectDir, y), SessionID, 'UniformOutput', 0);
+            nSessions = length(SessionDir);
+        else
+            fprintf('%s\n', 'Warning, no sessions found, assuming 1 session');
+            nSessions = 1;
+        end
     end
 
     if any(iModule>3)
