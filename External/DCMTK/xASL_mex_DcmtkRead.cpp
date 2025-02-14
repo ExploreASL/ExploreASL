@@ -522,9 +522,9 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "InversionTime"            , MXAGetFloat64AsDouble( dataset,    DCM_InversionTime           ) );
 	mxSetField( pmxOutput, 0, "SoftwareVersions"         , MXAGetStringArray( dataset,        DCM_SoftwareVersions        ) );
 	mxSetField( pmxOutput, 0, "StudyID"                  , MXAGetString( dataset,             DCM_StudyID                 ) ); // Short string
-	mxSetField( pmxOutput, 0, "SeriesNumber"             , MXAGetLongIntAsDouble( dataset,    DCM_SeriesNumber            ) ); // Integer string
-	mxSetField( pmxOutput, 0, "AcquisitionNumber"        , MXAGetLongIntAsDouble( dataset,    DCM_AcquisitionNumber       ) ); // Integer string
-	mxSetField( pmxOutput, 0, "InstanceNumber"           , MXAGetLongIntAsDouble( dataset,    DCM_InstanceNumber          ) ); // Integer string
+	mxSetField( pmxOutput, 0, "SeriesNumber"             , MXAGetString( dataset,             DCM_SeriesNumber            ) ); // Integer string
+	mxSetField( pmxOutput, 0, "AcquisitionNumber"        , MXAGetString( dataset,             DCM_AcquisitionNumber       ) ); // Integer string
+	mxSetField( pmxOutput, 0, "InstanceNumber"           , MXAGetString( dataset,             DCM_InstanceNumber          ) ); // Integer string
 	
 	
 	// Parameters for EPI readout needed for TopUp

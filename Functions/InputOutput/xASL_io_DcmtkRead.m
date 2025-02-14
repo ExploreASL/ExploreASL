@@ -100,16 +100,27 @@ if ~isempty(header.SeriesTime) && ~isnumeric(header.SeriesTime)
 	header.SeriesTime = str2num(header.SeriesTime);
 end
 
+% Convert certain strings to numbers
+listConversion = {'SeriesNumber', 'AcquisitionNumber', 'Integer string', 'InstanceNumber'};
+for iConv = 1:length(listConversion)
+	% check existence
+	% offer to convert to number
+end
+
 % Convert the MRScaleSlope - i.e. the Private_2005_100e tag
-listConvert = {'MRScaleSlope' 'PhilipsNumberTemporalScans' 'PhilipsLabelControl' 'PhoenixProtocol'};
-typeConvert = {'float' 'decimal' 'char' 'char'};
-endianConvert = [0 1 1 1];
+listConvert = {'MRScaleSlope' 'PhilipsNumberTemporalScans' 'PhilipsLabelControl' 'PhoenixProtocol' 'SeriesNumber' 'AcquisitionNumber' 'InstanceNumber'};
+typeConvert = {'float' 'decimal' 'char' 'char' 'decimal' 'decimal' 'decimal'};
+endianConvert = [0 1 1 1 1 1 1];
 % If the field exists and is still in a string format
 for iField = 1:length(listConvert)
 	if isfield(header,listConvert{iField}) && ~isempty(header.(listConvert{iField})) && ischar(header.(listConvert{iField}))
 		% FL
 		% First try normal conversion to a double precision
-		num = str2double(header.(listConvert{iField}));
+		if strcmpi(typeConvert(iField), 'char')
+			num = NaN;
+		else
+			num = str2double(header.(listConvert{iField}));
+		end
 		if isnan(num)
 			% Conversion failed - it is not a string, but it is probably given in hex
 			num = xASL_adm_Hex2Num(header.(listConvert{iField}),typeConvert{iField},endianConvert(iField));
@@ -429,6 +440,7 @@ for iField=1:length(listFieldsKeep)
 		header.(listFieldsKeep{iField}) = [];
 	end
 end
+
 end
 
 
