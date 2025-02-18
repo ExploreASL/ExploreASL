@@ -134,39 +134,29 @@ switch (lower(type))
 				outBin = dec2bin(hex2dec(outNum),16);
 				
 				% First bit is sign
-				if outBin(1) == '1'
-					outNum = -1;
-				else
-					outNum = 1;
-				end
+				sign = (-1)^(str2double(outBin(1))); % 0 is +1, 1 is -1
 				
 				% Bits 2:9 gives the exponent
-				outNum = outNum * (2^(bin2dec(outBin(2:6))-15));
+				exponent = bin2dec(outBin(2:6))-15;
 				
 				% Bits 10:32 give the mantissa
 				% Converts to binary
 				mantissa = (outBin(7:16) == '1');
 				mantissa = 1+sum(mantissa.* (2.^(-1:-1:-10)));
-				outNum = outNum * mantissa;
 			case 8
 				% It is a single precision - we need to do the conversion ourselves
 				outBin = dec2bin(hex2dec(outNum),32);
 				
 				% First bit is sign
-				if outBin(1) == '1'
-					outNum = -1;
-				else
-					outNum = 1;
-				end
+				sign = (-1)^(str2double(outBin(1))); % 0 is +1, 1 is -1
 				
 				% Bits 2:9 gives the exponent
-				outNum = outNum * (2^(bin2dec(outBin(2:9))-127));
+				exponent = bin2dec(outBin(2:9))-127;
 				
 				% Bits 10:32 give the mantissa
 				% Converts to binary
 				mantissa = (outBin(10:32) == '1');
 				mantissa = 1+sum(mantissa.* (2.^(-1:-1:-23)));
-				outNum = outNum * mantissa;
 			case 16
 				% Otherwise use a double conversion
 				outBin1 = dec2bin(hex2dec(outNum(1:8)),32);
@@ -174,20 +164,15 @@ switch (lower(type))
 				outBin = [outBin1, outBin2];
 				
 				% First bit is sign
-				if outBin(1) == '1'
-					outNum = -1;
-				else
-					outNum = 1;
-				end
+				sign = (-1)^(str2double(outBin(1))); % 0 is +1, 1 is -1
 				
 				% Bits 2:9 gives the exponent
-				outNum = outNum * (2^(bin2dec(outBin(2:12))-1023));
+				exponent = bin2dec(outBin(2:12))-1023;
 				
-				% Bits 10:32 give the mantissa
+				% Bits 13:64 give the mantissa
 				% Converts to binary
 				mantissa = (outBin(13:64) == '1');
-				mantissa = 1+sum(mantissa.* (2.^(-1:-1:-52)));
-				outNum = outNum * mantissa;
+				mantissa = 1+sum(mantissa.* (2.^(-1:-1:-52)));			
 			case 32
 				% 128 bit
 				% Otherwise use a double conversion
@@ -196,23 +181,19 @@ switch (lower(type))
 				outBin = [outBin1, outBin2];
 				
 				% First bit is sign
-				if outBin(1) == '1'
-					outNum = -1;
-				else
-					outNum = 1;
-				end
+				sign = (-1)^(str2double(outBin(1))); % 0 is +1, 1 is -1
 				
 				% 15 Bits gives the exponent
-				outNum = outNum * (2^(bin2dec(outBin(2:16))-16383));
+				exponent = bin2dec(outBin(2:16))-16383;
 				
 				% Bits 17:128 give the mantissa
 				% Converts to binary
 				mantissa = (outBin(17:128) == '1');
 				mantissa = 1+sum(mantissa.* (2.^(-1:-1:-112)));
-				outNum = outNum * mantissa;
 			otherwise
 				error('xASL_adm_Hex2Num: Floating point conversion done only for 16,32,64,128-bit.');
 		end
+		outNum = sign * (2^exponent) * mantissa;
 	case 'sint'
 		outBin = dec2bin(hex2dec(outNum),64);
 		% First bit is sign
