@@ -501,11 +501,12 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	
 	// Obtain these parameters always from normal DICOM
 	mxSetField( pmxOutput, 0, "AcquisitionTime"          , MXAGetStringArray( dataset,        DCM_AcquisitionTime         ) );
-	mxSetField( pmxOutput, 0, "Manufacturer"             , MXAGetString( dataset,             DCM_Manufacturer            ) );
-	mxSetField( pmxOutput, 0, "ManufacturersModelName"   , MXAGetString( dataset,             DcmTagKey(0x0008, 0x1090)   ) );
-	mxSetField( pmxOutput, 0, "SeriesDescription"        , MXAGetString( dataset,             DCM_SeriesDescription       ) );
-	mxSetField( pmxOutput, 0, "ProtocolName"             , MXAGetString( dataset,             DCM_ProtocolName            ) );
-	mxSetField( pmxOutput, 0, "SequenceName"             , MXAGetString( dataset,             DCM_SequenceName            ) );
+	mxSetField( pmxOutput, 0, "SpecificCharacterSet"     , MXAGetStringArray( dataset,        DCM_SpecificCharacterSet    ) );
+	mxSetField( pmxOutput, 0, "Manufacturer"             , MXAGetStringArray( dataset,        DCM_Manufacturer            ) );
+	mxSetField( pmxOutput, 0, "ManufacturersModelName"   , MXAGetStringArray( dataset,        DcmTagKey(0x0008, 0x1090)   ) );
+	mxSetField( pmxOutput, 0, "SeriesDescription"        , MXAGetStringArray( dataset,        DCM_SeriesDescription       ) );
+	mxSetField( pmxOutput, 0, "ProtocolName"             , MXAGetStringArray( dataset,        DCM_ProtocolName            ) );
+	mxSetField( pmxOutput, 0, "SequenceName"             , MXAGetStringArray( dataset,        DCM_SequenceName            ) );
 	mxSetField( pmxOutput, 0, "SeriesTime"               , MXAGetStringArray( dataset,        DCM_SeriesTime              ) );
 	mxSetField( pmxOutput, 0, "StudyInstanceUID"         , MXAGetString( dataset,             DCM_StudyInstanceUID        ) );	
 	mxSetField( pmxOutput, 0, "SeriesInstanceUID"        , MXAGetString( dataset,             DCM_SeriesInstanceUID       ) );	
@@ -522,9 +523,9 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "InversionTime"            , MXAGetFloat64AsDouble( dataset,    DCM_InversionTime           ) );
 	mxSetField( pmxOutput, 0, "SoftwareVersions"         , MXAGetStringArray( dataset,        DCM_SoftwareVersions        ) );
 	mxSetField( pmxOutput, 0, "StudyID"                  , MXAGetString( dataset,             DCM_StudyID                 ) ); // Short string
-	mxSetField( pmxOutput, 0, "SeriesNumber"             , MXAGetString( dataset,             DCM_SeriesNumber            ) ); // Integer string
-	mxSetField( pmxOutput, 0, "AcquisitionNumber"        , MXAGetString( dataset,             DCM_AcquisitionNumber       ) ); // Integer string
-	mxSetField( pmxOutput, 0, "InstanceNumber"           , MXAGetString( dataset,             DCM_InstanceNumber          ) ); // Integer string
+	mxSetField( pmxOutput, 0, "SeriesNumber"             , MXAGetStringArray( dataset,        DCM_SeriesNumber            ) ); // Integer string
+	mxSetField( pmxOutput, 0, "AcquisitionNumber"        , MXAGetStringArray( dataset,        DCM_AcquisitionNumber       ) ); // Integer string
+	mxSetField( pmxOutput, 0, "InstanceNumber"           , MXAGetStringArray( dataset,        DCM_InstanceNumber          ) ); // Integer string
 	
 	
 	// Parameters for EPI readout needed for TopUp
@@ -700,10 +701,10 @@ void mexFunction( int nlhs, mxArray *plhs[],
 		"InversionTime", "GELabelingDuration", "PhilipsNumberTemporalScans", \
 		"PhilipsLabelControl", "TemporalPositionIdentifier", "PhoenixProtocol", "SoftwareVersions", \
 		"SiemensSliceTime", "StudyID", "SeriesNumber", "AcquisitionNumber", "InstanceNumber", \
-		"SequenceName"
+		"SequenceName", "SpecificCharacterSet"
     };
 
-    const int inFields = 57;
+    const int inFields = 58;
 	int readPixel;
 	double *tmp;
 

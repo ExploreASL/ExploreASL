@@ -41,7 +41,7 @@
         LDTYPE="-shared"
         LINKEXPORT="-Wl,--version-script,&quot;$MATLABROOT/extern/lib/$ARCH/mexFunction.map&quot;"
         LINKEXPORTVER="-Wl,--version-script,&quot;$MATLABROOT/extern/lib/$ARCH/c_exportsmexfileversion.map&quot;"
-        LINKLIBS="-L&quot;$MATLABROOT/bin/$ARCH&quot; -L/home/radv/jpetr/my-scratch/dcmtk3.6.9install/lib64 -ldcmdata -lm -loflog -lmx -lofstd -lz -lrt -lmex -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic"
+        LINKLIBS="-L&quot;$MATLABROOT/bin/$ARCH&quot; -L/home/radv/jpetr/my-scratch/dcmtk3.6.9install/lib64 -ldcmdata -lm -loflog -lmx -lofstd /home/radv/jpetr/my-scratch/zlibbuild/lib/libz.a  -lmex -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic"
         LDOPTIMFLAGS="-O"
         LDDEBUGFLAGS="-g"
         MWCPPLIB=""
