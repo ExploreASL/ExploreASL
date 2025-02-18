@@ -60,7 +60,7 @@
  * REFERENCES:
  * OFFIS DCMTK https://support.dcmtk.org/redmine/projects/dcmtk/wiki/Overview
  * __________________________________
- * Copyright © 2015-2023 ExploreASL
+ * Copyright © 2015-2025 ExploreASL
  * 
  * 2010-07-30 Joost Kuijer - VUmc - original version
  * 2018-12-17 Jan Petr - adapted for xASL use
@@ -179,6 +179,91 @@ mxArray *MXAGetFloat64AsDouble( DcmItem * dcmItem, const DcmTagKey &theTagKey )
 	}
 	return pmxNumMat;
 }
+
+///////////////////////////////////////////////////////////////////
+// Get a field from the DICOM header: Decimal string
+///////////////////////////////////////////////////////////////////
+mxArray *MXAGetDecimalString( DcmItem * dcmItem, const DcmTagKey &theTagKey )
+{
+    static char	szModule[] = "MXAGetDecimalString";
+    char        szErrMsgTxt[2048];
+    mxArray 	*pmxNumMat;
+    double 	*pdmxData;
+    Float32    f32Data = 0;
+	OFString strData;
+    
+	// Check if the tag exists and is filled, otherwise issue a warning
+	if ( dcmItem->tagExistsWithValue( theTagKey ) == OFTrue )
+	{
+		// get data
+		if ( dcmItem->findAndGetOFString( theTagKey, strData ).bad() )
+		{
+			/* error getting the element */
+			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
+			mexWarnMsgTxt(szErrMsgTxt);
+			//mexErrMsgTxt(szErrMsgTxt);
+			pmxNumMat = NULL;
+		}
+		else
+		{
+			// assign value
+			pmxNumMat = mxCreateNumericMatrix( 1, 1, mxDOUBLE_CLASS, mxREAL );
+			pdmxData = (double*) mxGetData( pmxNumMat );
+			*pdmxData = (double) atof(strData.c_str());
+		}
+	}
+	else
+	{
+		/* Warning element missing */
+		//snprintf( szErrMsgTxt, 2048*sizeof(char), "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
+		//mexWarnMsgTxt( szErrMsgTxt );
+		pmxNumMat = NULL;//mxCreateNumericMatrix( 0, 0, mxDOUBLE_CLASS, mxREAL );
+	}
+	return pmxNumMat;
+}
+
+///////////////////////////////////////////////////////////////////
+// Get a field from the DICOM header: Integer string
+///////////////////////////////////////////////////////////////////
+mxArray *MXAGetIntegerString( DcmItem * dcmItem, const DcmTagKey &theTagKey )
+{
+    static char	szModule[] = "MXAGetIntegerString";
+    char        szErrMsgTxt[2048];
+    mxArray 	*pmxNumMat;
+    double 	*pdmxData;
+    Float32    f32Data = 0;
+	OFString strData;
+    
+	// Check if the tag exists and is filled, otherwise issue a warning
+	if ( dcmItem->tagExistsWithValue( theTagKey ) == OFTrue )
+	{
+		// get data
+		if ( dcmItem->findAndGetOFString( theTagKey, strData ).bad() )
+		{
+			/* error getting the element */
+			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
+			mexWarnMsgTxt(szErrMsgTxt);
+			//mexErrMsgTxt(szErrMsgTxt);
+			pmxNumMat = NULL;
+		}
+		else
+		{
+			// assign value
+			pmxNumMat = mxCreateNumericMatrix( 1, 1, mxDOUBLE_CLASS, mxREAL );
+			pdmxData = (double*) mxGetData( pmxNumMat );
+			*pdmxData = (double) atoi(strData.c_str());
+		}
+	}
+	else
+	{
+		/* Warning element missing */
+		//snprintf( szErrMsgTxt, 2048*sizeof(char), "xASL_mex_DcmtkRead:%s: element does not exist %s\n", szModule, theTagKey.toString().c_str() );
+		//mexWarnMsgTxt( szErrMsgTxt );
+		pmxNumMat = NULL;//mxCreateNumericMatrix( 0, 0, mxDOUBLE_CLASS, mxREAL );
+	}
+	return pmxNumMat;
+}
+
 
 ///////////////////////////////////////////////////////////////////
 // Get a field from the DICOM header: Float32 --> double
@@ -515,12 +600,12 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "MediaStorageSOPClassUID"  , MXAGetString( metaInfo,            DCM_MediaStorageSOPClassUID ) );	
 	mxSetField( pmxOutput, 0, "AcquisitionDate"          , MXAGetStringArray( dataset,        DCM_AcquisitionDate         ) );
 	mxSetField( pmxOutput, 0, "SeriesDate"               , MXAGetStringArray( dataset,        DCM_SeriesDate              ) );
-	mxSetField( pmxOutput, 0, "Rows"                     , MXAGetInt16Array(  dataset,        DCM_Rows                    ) );
-	mxSetField( pmxOutput, 0, "Columns"                  , MXAGetInt16Array(  dataset,        DCM_Columns                 ) );
+	mxSetField( pmxOutput, 0, "Rows"                     , MXAGetStringArray( dataset,        DCM_Rows                    ) );
+	mxSetField( pmxOutput, 0, "Columns"                  , MXAGetStringArray( dataset,        DCM_Columns                 ) );
 	mxSetField( pmxOutput, 0, "AcquisitionContrast"      , MXAGetString( dataset,             DCM_AcquisitionContrast     ) );	
 	mxSetField( pmxOutput, 0, "ComplexImageComponent"    , MXAGetString( dataset,             DCM_ComplexImageComponent   ) );	
 	mxSetField( pmxOutput, 0, "PulseSequenceName"        , MXAGetString( dataset,             DCM_PulseSequenceName       ) );	
-	mxSetField( pmxOutput, 0, "InversionTime"            , MXAGetFloat64AsDouble( dataset,    DCM_InversionTime           ) );
+	mxSetField( pmxOutput, 0, "InversionTime"            , MXAGetStringArray( dataset,    DCM_InversionTime           ) );
 	mxSetField( pmxOutput, 0, "SoftwareVersions"         , MXAGetStringArray( dataset,        DCM_SoftwareVersions        ) );
 	mxSetField( pmxOutput, 0, "StudyID"                  , MXAGetString( dataset,             DCM_StudyID                 ) ); // Short string
 	mxSetField( pmxOutput, 0, "SeriesNumber"             , MXAGetStringArray( dataset,        DCM_SeriesNumber            ) ); // Integer string
@@ -531,7 +616,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	// Parameters for EPI readout needed for TopUp
 	mxSetField( pmxOutput, 0, "AssetRFactor"                , MXAGetStringArray(dataset,      DcmTagKey(0x0043, 0x1083)   ) );
 	mxSetField( pmxOutput, 0, "EffectiveEchoSpacing"        , MXAGetStringArray(dataset,      DcmTagKey(0x0043, 0x192c)   ) );
-	mxSetField( pmxOutput, 0, "AcquisitionMatrix"           , MXAGetInt16Array(dataset,       DCM_AcquisitionMatrix       ) );
+	mxSetField( pmxOutput, 0, "AcquisitionMatrix"           , MXAGetStringArray(dataset,      DCM_AcquisitionMatrix       ) );
 	mxSetField( pmxOutput, 0, "MRSeriesWaterFatShift"       , MXAGetStringArray(dataset,      DcmTagKey(0x2001, 0x1022)   ) );
 	mxSetField( pmxOutput, 0, "MRSeriesEPIFactor"           , MXAGetStringArray(dataset,      DcmTagKey(0x2001, 0x1013)   ) );
 	mxSetField( pmxOutput, 0, "BandwidthPerPixelPhaseEncode", MXAGetStringArray(dataset,      DcmTagKey(0x0019, 0x1028)   ) );
@@ -551,22 +636,22 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "SiemensSliceTime"           , MXAGetFloat64ArrayAsDouble( dataset,    DcmTagKey(0x0019, 0x1029)  ) );
 			
 	if ((rwItem) && (rwItem->tagExistsWithValue(DCM_RealWorldValueIntercept) == OFTrue))
-		mxSetField( pmxOutput, 0, "RWVIntercept"         , MXAGetFloat64AsDouble( rwItem,    DCM_RealWorldValueIntercept       ) );
+		mxSetField( pmxOutput, 0, "RWVIntercept"         , MXAGetStringArray( rwItem,    DCM_RealWorldValueIntercept       ) );
 	if ((rwItem) && (rwItem->tagExistsWithValue(DCM_RealWorldValueSlope) == OFTrue))
-		mxSetField( pmxOutput, 0, "RWVSlope"             , MXAGetFloat64AsDouble( rwItem,    DCM_RealWorldValueSlope       ) );
+		mxSetField( pmxOutput, 0, "RWVSlope"             , MXAGetStringArray( rwItem,    DCM_RealWorldValueSlope       ) );
 	
 	// Read the Repetition time from either the enhanced or normal DICOM
 	if ( ( timingItem ) && ( timingItem->tagExistsWithValue( DCM_RepetitionTime ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "RepetitionTime"       , MXAGetFloat64AsDouble( timingItem, DCM_RepetitionTime ) );
+		mxSetField( pmxOutput, 0, "RepetitionTime"       , MXAGetStringArray( timingItem, DCM_RepetitionTime ) );
 	else
-		mxSetField( pmxOutput, 0, "RepetitionTime"       , MXAGetFloat64AsDouble( dataset,    DCM_RepetitionTime ) );
+		mxSetField( pmxOutput, 0, "RepetitionTime"       , MXAGetStringArray( dataset,    DCM_RepetitionTime ) );
 	
 	
 	// Read the Echo time from either the enhanced or normal DICOM
 	if ( ( echoItem ) && ( echoItem->tagExistsWithValue( DCM_EffectiveEchoTime ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "EchoTime"             , MXAGetFloat64AsDouble( echoItem,   DCM_EffectiveEchoTime) );
+		mxSetField( pmxOutput, 0, "EchoTime"             , MXAGetStringArray( echoItem,   DCM_EffectiveEchoTime) );
 	else
-		mxSetField( pmxOutput, 0, "EchoTime"             , MXAGetFloat64AsDouble( dataset,    DCM_EchoTime       ) );
+		mxSetField( pmxOutput, 0, "EchoTime"             , MXAGetStringArray( dataset,    DCM_EchoTime       ) );
 	
 	// Read the rescale slopes and intercept from normal/enhanced DICOM
 	if ( ( pixelItem ) && ( pixelItem->tagExistsWithValue( DCM_RescaleSlope ) == OFTrue ) )
@@ -582,13 +667,13 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	
 	// Read the temporalpositions and private rescale tags from Philips private tags
 	if ( ( privateItem ) && ( privateItem->tagExistsWithValue( DCM_NumberOfTemporalPositions ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "NumberOfTemporalPositions", MXAGetLongIntAsDouble( privateItem,    DCM_NumberOfTemporalPositions) );
+		mxSetField( pmxOutput, 0, "NumberOfTemporalPositions", MXAGetStringArray( privateItem,    DCM_NumberOfTemporalPositions) );
 	else
-		mxSetField( pmxOutput, 0, "NumberOfTemporalPositions", MXAGetLongIntAsDouble( dataset,    DCM_NumberOfTemporalPositions) );
+		mxSetField( pmxOutput, 0, "NumberOfTemporalPositions", MXAGetStringArray( dataset,    DCM_NumberOfTemporalPositions) );
 	if ( ( privateItem ) && ( privateItem->tagExistsWithValue( DCM_TemporalPositionIdentifier ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "TemporalPositionIdentifier", MXAGetLongIntAsDouble( privateItem,    DCM_TemporalPositionIdentifier) );
+		mxSetField( pmxOutput, 0, "TemporalPositionIdentifier", MXAGetStringArray( privateItem,    DCM_TemporalPositionIdentifier) );
 	else
-		mxSetField( pmxOutput, 0, "TemporalPositionIdentifier", MXAGetLongIntAsDouble( dataset,    DCM_TemporalPositionIdentifier) );
+		mxSetField( pmxOutput, 0, "TemporalPositionIdentifier", MXAGetStringArray( dataset,    DCM_TemporalPositionIdentifier) );
 	
 	if ( ( privateItem ) && ( privateItem->tagExistsWithValue( DcmTagKey(0x2001, 0x1008) ) == OFTrue ) )
 		mxSetField( pmxOutput, 0, "PhilipsNumberTemporalScans", MXAGetStringArray( privateItem,    DcmTagKey(0x2001, 0x1008)) );
@@ -640,9 +725,9 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	}
 		
 	if ( ( privateItem ) && ( privateItem->tagExistsWithValue( DCM_NumberOfAverages ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "NumberOfAverages"         , MXAGetFloat64AsDouble( privateItem,    DCM_NumberOfAverages ) );
+		mxSetField( pmxOutput, 0, "NumberOfAverages"         , MXAGetStringArray( privateItem,    DCM_NumberOfAverages ) );
 	else
-		mxSetField( pmxOutput, 0, "NumberOfAverages"         , MXAGetFloat64AsDouble( dataset,    DCM_NumberOfAverages ) );
+		mxSetField( pmxOutput, 0, "NumberOfAverages"         , MXAGetStringArray( dataset,    DCM_NumberOfAverages ) );
 	
     // Note: inconsistent naming between Matlab and DCMTK: EchoNumber and DCM_EchoNumbers
     //mxSetField( pmxOutput, 0, "EchoNumber",      MXAGetLongIntAsDouble( DCM_EchoNumbers    ) );

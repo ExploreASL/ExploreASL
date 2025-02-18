@@ -27,7 +27,7 @@ function header = xASL_io_DcmtkRead(filepath, bPixel, bTryDCMTK, bSkipNonDicoms)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+% Copyright 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -100,17 +100,14 @@ if ~isempty(header.SeriesTime) && ~isnumeric(header.SeriesTime)
 	header.SeriesTime = str2num(header.SeriesTime);
 end
 
-% Convert certain strings to numbers
-listConversion = {'SeriesNumber', 'AcquisitionNumber', 'Integer string', 'InstanceNumber'};
-for iConv = 1:length(listConversion)
-	% check existence
-	% offer to convert to number
-end
-
-% Convert the MRScaleSlope - i.e. the Private_2005_100e tag
-listConvert = {'MRScaleSlope' 'PhilipsNumberTemporalScans' 'PhilipsLabelControl' 'PhoenixProtocol' 'SeriesNumber' 'AcquisitionNumber' 'InstanceNumber'};
-typeConvert = {'float' 'decimal' 'char' 'char' 'decimal' 'decimal' 'decimal'};
-endianConvert = [0 1 1 1 1 1 1];
+% Convert tags from string, hex or different formats to a proper char, float or decimal representation if needed
+listConvert = {'MRScaleSlope' 'PhilipsNumberTemporalScans' 'PhilipsLabelControl' 'PhoenixProtocol' 'SeriesNumber' 'AcquisitionNumber' 'InstanceNumber' 'SoftwareVersions' 'SequenceName' 'SpecificCharacterSet' 'InPlanePhaseEncodingDirection' 'SeriesDate' 'AcquisitionDate'...
+	           'SeriesDescription' 'ImageType' 'StudyDate' 'ManufacturersModelName' 'Manufacturer' 'EchoTime' 'NumberOfTemporalPositions' 'TemporalPositionIdentifier' 'NumberOfAverages' 'ProtocolName' 'RepetitionTime' 'Rows' 'Columns' 'RWVSlope' 'RWVIntercept'...
+			   'InversionTime'};
+typeConvert = {'float'        'decimal'                    'char'                'char'            'decimal'      'decimal'           'decimal'        'char'             'char'         'char'                 'char'                          'char'       'char'...
+	           'char'              'char'      'char'      'char'                   'char'         'decimal'  'decimal'                   'decimal'                    'decimal'          'char'         'decimal'        'uint' 'uint'    'float'    'float'...
+			   'decimal'};
+endianConvert = [0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 1];
 % If the field exists and is still in a string format
 for iField = 1:length(listConvert)
 	if isfield(header,listConvert{iField}) && ~isempty(header.(listConvert{iField})) && ischar(header.(listConvert{iField}))
@@ -123,13 +120,31 @@ for iField = 1:length(listConvert)
 		end
 		if isnan(num)
 			% Conversion failed - it is not a string, but it is probably given in hex
-			num = xASL_adm_Hex2Num(header.(listConvert{iField}),typeConvert{iField},endianConvert(iField));
+			num = xASL_adm_Hex2Num(header.(listConvert{iField}), typeConvert{iField}, endianConvert(iField));
 			if ~isnan(num)
 				header.(listConvert{iField}) = num;
 			end
 		else
 			% Conversion went fine, convert to single
 			header.(listConvert{iField}) = single(num);
+		end
+	end
+end
+
+% Convert Acquisition matrix
+% Either given in a string with 4 numbers separated by slashes
+if isfield(header, 'AcquisitionMatrix')
+	if length(strfind(header.AcquisitionMatrix, '\')) == 3
+		header.AcquisitionMatrix = xASL_str2num(strrep(header.AcquisitionMatrix, '\', ' '));
+	else
+		tempNum = strrep(header.AcquisitionMatrix, '\', '');
+		if length(tempNum) == 16
+			header.AcquisitionMatrix = [0 0 0 0];
+			for i=1:4
+				header.AcquisitionMatrix(i) = xASL_adm_Hex2Num(tempNum((1:4)+(i-1)*4), 'uint', 0);
+			end
+		else
+			header.AcquisitionMatrix = [];
 		end
 	end
 end

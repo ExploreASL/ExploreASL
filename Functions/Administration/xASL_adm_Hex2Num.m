@@ -26,14 +26,11 @@ function outNum = xASL_adm_Hex2Num(inStr, type, endian)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright � 2015-2020 ExploreASL
+% Copyright (C) 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
-
-%
-% 2019-03-29 JP
 
 % Not enough input parameters
 if (nargin<1) || isempty(inStr)
@@ -172,7 +169,9 @@ switch (lower(type))
 				outNum = outNum * mantissa;
 			case 16
 				% Otherwise use a double conversion
-				outBin = dec2bin(hex2dec(outNum),64);
+				outBin1 = dec2bin(hex2dec(outNum(1:8)),32);
+				outBin2 = dec2bin(hex2dec(outNum(9:16)),32);
+				outBin = [outBin1, outBin2];
 				
 				% First bit is sign
 				if outBin(1) == '1'
@@ -192,7 +191,9 @@ switch (lower(type))
 			case 32
 				% 128 bit
 				% Otherwise use a double conversion
-				outBin = dec2bin(hex2dec(outNum),64);
+				outBin1 = dec2bin(hex2dec(outNum(1:8)),32);
+				outBin2 = dec2bin(hex2dec(outNum(9:16)),32);
+				outBin = [outBin1, outBin2];
 				
 				% First bit is sign
 				if outBin(1) == '1'
