@@ -59,7 +59,7 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
         bProcess = true;        
     elseif isempty(PathLST)
         bProcess = false;
-        if xASL_exist(x.P.Path_FLAIR,'file')
+        if xASL_exist(x.P.Path_FLAIR, 'file')
             warning('Didnt find any LST volumetric results');
             Struct.FLAIR_WMH_vol_mL = NaN;
             Struct.FLAIR_WMH_n = NaN;
@@ -88,7 +88,8 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
         if isempty(curr) || isfield(curr, 'dummyVar')
             warning(['Didnt find any CAT12 volumetric results, empty file: ' PathIQRresults]);
             Struct.T1w_IQR_Perc = NaN;
-        else
+        elseif ~isfield(curr, 'S') || ~isfield(curr.S, 'qualityratings') || ~isfield(curr.S.qualityratings, 'IQR')
+            warning(['Incomplete CAT12 volumetric results, something went wrong, consider rerunning structural module: ' PathIQRresults]);
             Struct.T1w_IQR_Perc = min(100,max(0,105 - curr.S.qualityratings.IQR*10));
             Struct.T1w_IQR_Perc = xASL_round(Struct.T1w_IQR_Perc,3);
         end
@@ -101,7 +102,7 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
     %% -----------------------------------------------------------------------------------------------
     %% CAT12 volumetric output
     PathCAT12Results = fullfile(x.D.TissueVolumeDir,['TissueVolume_' Struct.ID '.tsv']);
-    if exist(PathCAT12Results,'file')
+    if exist(PathCAT12Results, 'file')
         [~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathCAT12Results);
 
         for iC=1:size(CellTSV,1)
@@ -130,7 +131,7 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
 
     %% -----------------------------------------------------------------------------------------------    
     %% Set struct fields to 4 decimals
-    FieldNames  = fields(Struct);
+    FieldNames = fields(Struct);
     for iN=1:length(FieldNames)
         V = Struct.(FieldNames{iN});
         if isnumeric(V)
