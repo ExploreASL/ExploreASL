@@ -11,9 +11,14 @@ function x = xASL_wrp_RegisterASL(x)
 %             and the registration also changes the NIfTI orientation header
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
+%
+%
 % DEVELOPER:
 % PM: the vascular template registration may need some improvement
 % PM: this function can be divided into subfunctions for readability and to be less bug-prone
+% PM: failsafe: if a transformation matrix contains a flip, 90-degree rotation, or any other major change, ignore it
+% PM: instead of always comparing the TC [PWI| pseudoCBF], compare the TC [meanControl | T1w] with the TC [PWI | pseudoCBF]; see #1893
+%
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule registers ASL images to T1w space, by using a
 % combination of the registration techniques below. Note that in the
@@ -385,7 +390,8 @@ if bRegistrationControl
         SourcePath = x.P.Path_M0;
         OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_M0});
     elseif ~xASL_exist(x.P.Path_mean_control,'file')
-        warning('Skipping control-T1w or M0-T1w registration, couldnt find images');
+        warning('Skipping control-T1w or M0-T1w registration, couldnt find images, trying PWI->T1w registration instead');
+        bRegistrationCBF = true;
         SourcePath = NaN;
     else
         fprintf('Running Control-T1w registration\n');
