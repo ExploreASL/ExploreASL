@@ -58,7 +58,8 @@ end
 
 % If the output is supposed to be char, then check if the input is not char already
 if strcmpi(type,'char')
-	if sum((inStr>'f' & inStr<'z')+(inStr>'F' & inStr<'Z'))
+	if sum((inStr>='a' & inStr<='e')+(inStr>='A' & inStr<='F')+(inStr=='\')+(inStr>='0' & inStr<='9')) ~= numel(inStr)
+		% Check if this is a Hex
 		outNum = inStr;
 		return
 	end
