@@ -81,6 +81,7 @@
 #include <iostream>
 // DCMTK dicom library
 #include "dcmtk/config/osconfig.h"
+#include "dcmtk/oflog/oflog.h"
 #include "dcmtk/dcmdata/dctk.h"
 
 
@@ -225,7 +226,7 @@ mxArray *MXAGetDecimalString( DcmItem * dcmItem, const DcmTagKey &theTagKey )
 ///////////////////////////////////////////////////////////////////
 // Get a field from the DICOM header: Integer string
 ///////////////////////////////////////////////////////////////////
-mxArray *MXAGetIntegerString( DcmItem * dcmItem, const DcmTagKey &theTagKey )
+mxArray *MXAGetIntegerString( DcmItem * dcmItem, const DcmTag &theTag )
 {
     static char	szModule[] = "MXAGetIntegerString";
     char        szErrMsgTxt[2048];
@@ -233,15 +234,16 @@ mxArray *MXAGetIntegerString( DcmItem * dcmItem, const DcmTagKey &theTagKey )
     double 	*pdmxData;
     Float32    f32Data = 0;
 	OFString strData;
+	std::string tempStr;
     
 	// Check if the tag exists and is filled, otherwise issue a warning
-	if ( dcmItem->tagExistsWithValue( theTagKey ) == OFTrue )
+	if ( dcmItem->tagExistsWithValue( theTag ) == OFTrue )
 	{
 		// get data
-		if ( dcmItem->findAndGetOFString( theTagKey, strData ).bad() )
+		if ( dcmItem->findAndGetOFString( theTag, strData ).bad() )
 		{
 			/* error getting the element */
-			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTagKey.toString().c_str() );
+			snprintf( szErrMsgTxt, 2048*sizeof(char), "%s: cannot get element %s\n", szModule, theTag.toString().c_str() );
 			mexWarnMsgTxt(szErrMsgTxt);
 			//mexErrMsgTxt(szErrMsgTxt);
 			pmxNumMat = NULL;
@@ -251,7 +253,11 @@ mxArray *MXAGetIntegerString( DcmItem * dcmItem, const DcmTagKey &theTagKey )
 			// assign value
 			pmxNumMat = mxCreateNumericMatrix( 1, 1, mxDOUBLE_CLASS, mxREAL );
 			pdmxData = (double*) mxGetData( pmxNumMat );
-			*pdmxData = (double) atoi(strData.c_str());
+			tempStr = strData.c_str();
+			if ((!tempStr.empty()) && tempStr[0] != '\\' && tempStr.length()>2 && tempStr[2] == '\\'){
+				tempStr = "\\" + tempStr;
+			}
+			*pdmxData = (double) atoi(tempStr.c_str());
 		}
 	}
 	else
@@ -544,6 +550,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	DcmItem *   pixelItem  = NULL;
 	DcmItem * 	privateItem = NULL;
         
+	OFLog::configure(OFLogger::FATAL_LOG_LEVEL);
 	// Load the file
 	dcmStatus = DcmMyFile->loadFile( pchFileName );
     if ( dcmStatus.bad() )
@@ -608,7 +615,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "InversionTime"            , MXAGetStringArray( dataset,        DCM_InversionTime           ) );
 	mxSetField( pmxOutput, 0, "SoftwareVersions"         , MXAGetStringArray( dataset,        DCM_SoftwareVersions        ) );
 	mxSetField( pmxOutput, 0, "StudyID"                  , MXAGetString( dataset,             DCM_StudyID                 ) ); // Short string
-	mxSetField( pmxOutput, 0, "SeriesNumber"             , MXAGetStringArray( dataset,        DCM_SeriesNumber            ) ); // Integer string
+	mxSetField( pmxOutput, 0, "SeriesNumber"             , MXAGetStringArray( dataset,        DcmTag(0x0020, 0x0011, EVR_IS))); // Integer string
 	mxSetField( pmxOutput, 0, "AcquisitionNumber"        , MXAGetStringArray( dataset,        DCM_AcquisitionNumber       ) ); // Integer string
 	mxSetField( pmxOutput, 0, "InstanceNumber"           , MXAGetStringArray( dataset,        DCM_InstanceNumber          ) ); // Integer string
 	
