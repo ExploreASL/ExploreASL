@@ -103,11 +103,11 @@ end
 % Convert tags from string, hex or different formats to a proper char, float or decimal representation if needed
 listConvert = {'MRScaleSlope' 'PhilipsNumberTemporalScans' 'PhilipsLabelControl' 'PhoenixProtocol' 'SeriesNumber' 'AcquisitionNumber' 'InstanceNumber' 'SoftwareVersions' 'SequenceName' 'SpecificCharacterSet' 'InPlanePhaseEncodingDirection' 'SeriesDate' 'AcquisitionDate'...
 	           'SeriesDescription' 'ImageType' 'StudyDate' 'ManufacturersModelName' 'Manufacturer' 'EchoTime' 'NumberOfTemporalPositions' 'TemporalPositionIdentifier' 'NumberOfAverages' 'ProtocolName' 'RepetitionTime' 'Rows' 'Columns' 'RWVSlope' 'RWVIntercept'...
-			   'InversionTime'};
+			   'InversionTime' 'RescaleSlope' 'RescaleIntercept'};
 typeConvert = {'float'        'decimal'                    'char'                'char'            'decimal'      'decimal'           'decimal'        'char'             'char'         'char'                 'char'                          'char'       'char'...
 	           'char'              'char'      'char'      'char'                   'char'         'decimal'  'decimal'                   'decimal'                    'decimal'          'char'         'decimal'        'uint' 'uint'    'float'    'float'...
-			   'decimal'};
-endianConvert = [0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 1];
+			   'decimal'       'decimal'      'decimal'};
+endianConvert = [0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 1 1 1];
 % If the field exists and is still in a string format
 for iField = 1:length(listConvert)
 	if isfield(header,listConvert{iField}) && ~isempty(header.(listConvert{iField})) && ischar(header.(listConvert{iField}))

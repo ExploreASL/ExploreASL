@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--extra tags in the dictionary dcmdata/data/dicom.dic
+      (2001,105f)	SQ	PrivatePhilips1	1	DICOM
+      (2005,1083)	SQ	PrivatePhilips2	1	DICOM
+      (2005,1402)	SQ	PrivatePhilips3	1	DICOM
+      (0008,1250)	SQ	RelatedSeriesSequence	1	DICOM
+      (0008,1140)	SQ	ReferencedImageSequence	1	DICOM
+      (0040,a170)	SQ	PurposeOfReferenceCodeSequence	1	DICOM
+      (0020,9172)	SQ	ConversionSourceAttributesSequence	1	DICOM-->
 <config
     Name="g++"
     ShortName="g++"

@@ -605,7 +605,7 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	mxSetField( pmxOutput, 0, "AcquisitionContrast"      , MXAGetString( dataset,             DCM_AcquisitionContrast     ) );	
 	mxSetField( pmxOutput, 0, "ComplexImageComponent"    , MXAGetString( dataset,             DCM_ComplexImageComponent   ) );	
 	mxSetField( pmxOutput, 0, "PulseSequenceName"        , MXAGetString( dataset,             DCM_PulseSequenceName       ) );	
-	mxSetField( pmxOutput, 0, "InversionTime"            , MXAGetStringArray( dataset,    DCM_InversionTime           ) );
+	mxSetField( pmxOutput, 0, "InversionTime"            , MXAGetStringArray( dataset,        DCM_InversionTime           ) );
 	mxSetField( pmxOutput, 0, "SoftwareVersions"         , MXAGetStringArray( dataset,        DCM_SoftwareVersions        ) );
 	mxSetField( pmxOutput, 0, "StudyID"                  , MXAGetString( dataset,             DCM_StudyID                 ) ); // Short string
 	mxSetField( pmxOutput, 0, "SeriesNumber"             , MXAGetStringArray( dataset,        DCM_SeriesNumber            ) ); // Integer string
@@ -655,14 +655,14 @@ void VMatDcmtkRead( DcmFileFormat * DcmMyFile, char *pchFileName, mxArray *pmxOu
 	
 	// Read the rescale slopes and intercept from normal/enhanced DICOM
 	if ( ( pixelItem ) && ( pixelItem->tagExistsWithValue( DCM_RescaleSlope ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "RescaleSlope"             , MXAGetFloat64AsDouble( pixelItem,    DCM_RescaleSlope       ) );
+		mxSetField( pmxOutput, 0, "RescaleSlope"             , MXAGetStringArray( pixelItem,    DCM_RescaleSlope       ) );
 	else
-		mxSetField( pmxOutput, 0, "RescaleSlope"             , MXAGetFloat64AsDouble( dataset,    DCM_RescaleSlope       ) );
+		mxSetField( pmxOutput, 0, "RescaleSlope"             , MXAGetStringArray( dataset,    DCM_RescaleSlope       ) );
 	
 	if ( ( pixelItem ) && ( pixelItem->tagExistsWithValue( DCM_RescaleIntercept ) == OFTrue ) )
-		mxSetField( pmxOutput, 0, "RescaleIntercept"         , MXAGetFloat64AsDouble( pixelItem,    DCM_RescaleIntercept       ) );
+		mxSetField( pmxOutput, 0, "RescaleIntercept"         , MXAGetStringArray( pixelItem,    DCM_RescaleIntercept       ) );
 	else
-		mxSetField( pmxOutput, 0, "RescaleIntercept"         , MXAGetFloat64AsDouble( dataset,    DCM_RescaleIntercept       ) );
+		mxSetField( pmxOutput, 0, "RescaleIntercept"         , MXAGetStringArray( dataset,    DCM_RescaleIntercept       ) );
 
 	
 	// Read the temporalpositions and private rescale tags from Philips private tags
