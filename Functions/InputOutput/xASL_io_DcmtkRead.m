@@ -133,7 +133,7 @@ end
 
 % Convert Acquisition matrix
 % Either given in a string with 4 numbers separated by slashes
-if isfield(header, 'AcquisitionMatrix')
+if isfield(header, 'AcquisitionMatrix') && ~isempty(header.AcquisitionMatrix)
 	if length(strfind(header.AcquisitionMatrix, '\')) == 3
 		header.AcquisitionMatrix = xASL_str2num(strrep(header.AcquisitionMatrix, '\', ' '));
 	else
