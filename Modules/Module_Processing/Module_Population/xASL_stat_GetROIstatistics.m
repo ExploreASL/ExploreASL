@@ -246,10 +246,10 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
 	else
 		VoxelSize = [1.5 1.5 1.5];
 	end
-	if x.S.bSubjectSpecificROI
+	if x.S.bSubjectSpecificROI || x.S.bEnableSmallROIs
 		MinVoxels = 0; % For Lesions and ROIs we don't set a minimal ROI size
 	else
-		MinVoxels = 1000/prod(VoxelSize); % 1 mL
+		MinVoxels = 1000/prod(VoxelSize); % 1 mL (e.g., 296 voxels @ 1.5x1.5x1.5 mm)
 	end
 
 	if ~x.S.InputNativeSpace
@@ -378,6 +378,8 @@ for iSubject=1:x.dataset.nSubjects
 					for iMask=1:size(x.S.InputMasks,3)
 						if sum(SumList(iROI,iMask))~=0 % skip empty ROIs
 							x.S.InputMasks(:,iROI,iMask) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,iROI,iMask), pGM_MNI, pWM_MNI);
+                        else
+                            warning('ROIs smaller than 1 mL are not calculated, to avoid spurious findings');
 						end
 					end
 				end
@@ -392,6 +394,8 @@ for iSubject=1:x.dataset.nSubjects
 						for iMask=1:size(x.S.InputMasks,3)
 							if sum(SumList(iROI,iMask))~=0 % skip empty ROIs
 								x.S.InputMasks(:,iROI,iMask) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,iROI,iMask), pGM_MNI, pWM_MNI);
+                            else
+                                warning('ROIs smaller than 1 mL are not calculated, to avoid spurious findings');
 							end
 						end
                     end
