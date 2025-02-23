@@ -240,17 +240,27 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
 %if x.S.IsASL
     %% ------------------------------------------------------------------------------------------------------------
     %% 1. For all ROIs, skip ROIs smaller than 1 mL (296 voxels @ 1.5x1.5x1.5 mm)
-	if x.S.InputNativeSpace
+	if ~isfield(x.S, 'MinimalROIVolume') % We use this user-specific field by default
+        x.S.MinimalROIVolume = 1; % 1 mL
+    end
+    
+    if x.S.InputNativeSpace
 		VoxelSize = xASL_io_ReadNifti(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
 		VoxelSize = [norm(VoxelSize.mat(1:3,1)), norm(VoxelSize.mat(1:3,2)), norm(VoxelSize.mat(1:3,3))];
 	else
 		VoxelSize = [1.5 1.5 1.5];
 	end
-	if x.S.bSubjectSpecificROI || x.S.bEnableSmallROIs
+	if x.S.bSubjectSpecificROI
 		MinVoxels = 0; % For Lesions and ROIs we don't set a minimal ROI size
-	else
-		MinVoxels = 1000/prod(VoxelSize); % 1 mL (e.g., 296 voxels @ 1.5x1.5x1.5 mm)
+    else
+
+		MinVoxels = round(1000*x.S.MinimalROIVolume/prod(VoxelSize)); % 1 mL (e.g., 296 voxels @ 1.5x1.5x1.5 mm)
 	end
+
+    fprintf('\n\n');
+    fprintf('%s\n', ['Assuming voxel size [' num2str(VoxelSize(1)) ' ' num2str(VoxelSize(2)) ' ' num2str(VoxelSize(3)) '] mm']);
+    fprintf('%s\n', ['Using a minimal ROI volume of ' num2str(x.S.MinimalROIVolume) ' mL, or a minimal number of ' xASL_num2str(MinVoxels) ' voxels']);
+
 
 	if ~x.S.InputNativeSpace
 		SumList = squeeze(sum(x.S.InputMasks,1));
@@ -379,7 +389,10 @@ for iSubject=1:x.dataset.nSubjects
 						if sum(SumList(iROI,iMask))~=0 % skip empty ROIs
 							x.S.InputMasks(:,iROI,iMask) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,iROI,iMask), pGM_MNI, pWM_MNI);
                         else
-                            warning('ROIs smaller than 1 mL are not calculated, to avoid spurious findings');
+                            numVoxels = sum(x.S.InputMasks(:,iROI,iMask));
+                            fprintf('\n');
+                            warning('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
+                            fprintf('%s\n\n', 'Consider reducing the minimal ROI volume setting x.S.MinimalROIVolume to also calculate this ROI');
 						end
 					end
 				end
@@ -395,7 +408,10 @@ for iSubject=1:x.dataset.nSubjects
 							if sum(SumList(iROI,iMask))~=0 % skip empty ROIs
 								x.S.InputMasks(:,iROI,iMask) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,iROI,iMask), pGM_MNI, pWM_MNI);
                             else
-                                warning('ROIs smaller than 1 mL are not calculated, to avoid spurious findings');
+                                fprintf('\n');
+                                numVoxels = sum(x.S.InputMasks(:,iROI,iMask));
+                                warning('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
+                                fprintf('%s\n\n', 'Consider reducing the minimal ROI volume setting x.S.MinimalROIVolume to also calculate this ROI');
 							end
 						end
                     end
@@ -766,6 +782,17 @@ for iSubject=1:x.dataset.nSubjects
                 elseif xASL_stat_SumNan(pvSecondary(:)) == 0
                     fprintf('%s\n', ['* Empty pv' pvSecondaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                 else                    
+                    % Check if the ROI size is large enough
+                    imMask = CurrentMaskNotVascular;
+                    imMask = (imMask>0) & isfinite(DataIm);
+                    imMask = imMask & (DataIm~=0); % Exclude zero values as well
+
+                    if sum(imMask)<MinVoxels
+                        fprintf('\n');
+                        warning('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in sCoV calculations']);
+                        fprintf('%s\n\n', 'Consider reducing the minimal ROI volume setting x.S.MinimalROIVolume to also calculate this ROI');
+                    end
+
 
                     %% CoV
                     % Visualization first
@@ -794,6 +821,17 @@ for iSubject=1:x.dataset.nSubjects
                         % Visualization first (this differs from sCoV only by the vascular mask)
 		                fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_CBF'];
                         [pathOutput_CBF] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMaskVascular, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_CBF);
+
+                        % Check if the ROI size is large enough
+                        imMask = CurrentMaskVascular;
+                        imMask = (imMask>0) & isfinite(DataIm);
+                        imMask = imMask & (DataIm~=0); % Exclude zero values as well
+    
+                        if sum(imMask)<MinVoxels
+                            fprintf('\n');
+                            warning('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in CBF calculations']);
+                            fprintf('%s\n\n', 'Consider reducing the minimal ROI volume setting x.S.MinimalROIVolume to also calculate this ROI');
+                        end
 
                         x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 1);
                         x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 0);
