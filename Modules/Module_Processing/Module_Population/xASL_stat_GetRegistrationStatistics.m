@@ -62,7 +62,7 @@ for iSubject=1:x.dataset.nSubjects
         iSubjSess = (iSubject-1)*x.dataset.nSessions+iSession;
 		
 		% Track progress
-        xASL_TrackProgress(iSubjSess, x.dataset.nSubjects * x.dataset.nSessions);        
+        xASL_TrackProgress(iSubjSess, x.dataset.nSubjects * x.dataset.nSessions);
         
         % Write the subject and session name in the TSV table
         TSV{1+iSubjSess,1} = x.SUBJECTS{iSubject};
@@ -78,7 +78,7 @@ for iSubject=1:x.dataset.nSubjects
 			% Load the file
             Parms = xASL_io_ReadJson(PathJSON);
             if isfield(Parms,'ASL')
-                Parms = Parms.ASL;
+                Parms = Parms.ASL.(x.SESSIONS{iSession});
     
 			    % print all fields for subject_session into the TSV array
 			    for iField=1:nFields
