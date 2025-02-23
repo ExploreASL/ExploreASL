@@ -149,7 +149,15 @@ function [x] = xASL_init_LoadDataPar_PrepareAtlas4ROI(x)
 bAtlasTissueMatch = true; % x.S.Atlases & x.S.TissueMasking should match before we can continue (needed for the population module)
 
 if isfield(x, 'S') % Check upfront because we don't want to create a potentially empty S field without subfields
-	if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking')
+	% First ensure that these fields are cells
+    if isfield(x.S, 'Atlases') && ~iscell(x.S.Atlases)
+        x.S.Atlases = {x.S.Atlases};
+    end
+    if isfield(x.S, 'TissueMasking') && ~iscell(x.S.TissueMasking)
+        x.S.TissueMasking = {x.S.TissueMasking};
+    end
+    
+    if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking')
 		% Default atlases/ROIs & tissue masks are provided in the population module
 	elseif ~isfield(x.S, 'Atlases') && isfield(x.S, 'TissueMasking')
 		% Missing Atlases, but provided TissueMasking - cannot continue
