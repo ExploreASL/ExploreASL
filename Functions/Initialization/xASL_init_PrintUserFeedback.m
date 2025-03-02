@@ -42,18 +42,23 @@ function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
         end
     else % End of the pipeline
 
-        % If the population module was performed, print atlas notes
+        % If the population module was performed, print specific notes
         if x.opts.bProcessData && x.opts.bProcess(3)
             fprintf('\n====================================================================================\n');
             fprintf('%s\n', 'Please cite any atlases that you used to create ROI-wise derivatives');
             fprintf('%s\n', 'Most atlases provided with ExploreASL do not fall under the ExploreASL license');
             fprintf('%s\n', 'If you use ExploreASL for commercial purposes, some atlases may require a license');
+            fprintf('%s\n', 'The same is valid for the use of FSL tools, such as TopUp, BASIL, and FABBER');
             fprintf('\n');
+            fprintf('%s\n', 'Note that too small ROIs (by default <1 mL) are not processed and assigned NaNs');
+            fprintf('\n');
+            
         % Only print final feedback if data import or processing was performed
         if x.opts.bImportData || x.opts.bProcessData
             fprintf('%s\n', 'Many thanks for using <a href="https://github.com/ExploreASL" rel="nofollow">ExploreASL</a>');
             fprintf('please don''t forget to cite <a href="https://pubmed.ncbi.nlm.nih.gov/32526385/" rel="nofollow">https://pubmed.ncbi.nlm.nih.gov/32526385/</a>\n');
-            fprintf('Note that ExploreASL is a collaborative effort.\n');
+            fprintf('Please carefully check your results, the ExploreASL team is not liable for processing errors or incorrect interpretation of results.\n');
+            fprintf('You can always reach out to us if you want help. Please note that ExploreASL is a collaborative effort;\n');
             fprintf('Do not hesitate to contribute by feedback, code snippets, or (clinical) experience!\n');
             fprintf('====================================================================================\n');
         end
