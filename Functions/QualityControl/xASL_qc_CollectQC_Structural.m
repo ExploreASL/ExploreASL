@@ -24,7 +24,7 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
 % 
 % EXAMPLE: x = xASL_qc_CollectQC_Structural(x, 10);
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% Copyright (C) 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -83,19 +83,19 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
     %% -----------------------------------------------------------------------------------------------
     %% CAT12 QC output
     PathIQRresults = fullfile(x.D.TissueVolumeDir,['cat_' x.P.STRUCT '_' Struct.ID '.mat']);
+	Struct.T1w_IQR_Perc = NaN;
     if exist(PathIQRresults,'file')
         curr = load(PathIQRresults);
         if isempty(curr) || isfield(curr, 'dummyVar')
             warning(['Didnt find any CAT12 volumetric results, empty file: ' PathIQRresults]);
-            Struct.T1w_IQR_Perc = NaN;
         elseif ~isfield(curr, 'S') || ~isfield(curr.S, 'qualityratings') || ~isfield(curr.S.qualityratings, 'IQR')
             warning(['Incomplete CAT12 volumetric results, something went wrong, consider rerunning structural module: ' PathIQRresults]);
+		else
             Struct.T1w_IQR_Perc = min(100,max(0,105 - curr.S.qualityratings.IQR*10));
             Struct.T1w_IQR_Perc = xASL_round(Struct.T1w_IQR_Perc,3);
         end
     elseif xASL_exist(x.P.Path_T1,'file') && ~x.modules.structural.bSegmentSPM12
-        warning(['Didnt find CAT12 volumetric results, file missing: ' PathIQRresults]);
-        Struct.T1w_IQR_Perc = NaN;
+        warning(['Did not find CAT12 volumetric results, file missing: ' PathIQRresults]);
     end
 
 
