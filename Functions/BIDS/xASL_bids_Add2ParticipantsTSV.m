@@ -5,9 +5,9 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 %
 % INPUT:
 %   DataIn      - cell array with data to be added to participants.tsv, (REQUIRED)
-%                 preferably with subjects/sessions (runs) as first & aecond columns, but
+%                 preferably with subjects/sessions (runs) as first & second columns, but
 %                 this is not required. Number of datapoints should equal nSubjects * nSessions.
-%   DataName    - Name of the added variable/parameter (REQUIRED)
+%   DataName    - single string containing name (key) of the added variable/parameter (REQUIRED)
 %   x           - struct containing the ExploreASL environment parameters
 %                 (REQUIRED)
 %   bOverwrite  - boolean specifying to overwrite pre-existing data values for subject/session with
