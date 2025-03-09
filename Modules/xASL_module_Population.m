@@ -51,8 +51,8 @@ end
 % Check again for Atlases (main checking is done when loading dataPar)
 if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking')
 	% If no values are provided, then we provide the defaults
-	x.S.Atlases = {'Total','DeepWM'}; % Default
-    x.S.TissueMasking = {'GM' 'WM'}; % GM WM, fits with the TotalGM & DeepWM above
+	x.S.Atlases = {'Total','DeepWM','Tatu_ACA_MCA_PCA'}; % Default
+    x.S.TissueMasking = {'GM' 'WM','GM'}; % GM WM, fits with the TotalGM & DeepWM above
     % Note that this should be in the same order as the atlases/ROIs
     % A mismatch (e.g. TissueMasking=GM for Atlases=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
 elseif ~isfield(x.S, 'Atlases') || ~isfield(x.S, 'TissueMasking') || length(x.S.Atlases)~=length(x.S.TissueMasking)
@@ -333,8 +333,10 @@ if ~x.mutex.HasState(StateName{8})
 				x.S.InputAtlasNativeName = LesionUniqueROIList{iROI}(2:end-1);
 				xASL_wrp_GetROIstatistics(x);
 			end
-		end
+        end
     end
+
+
 
     x.mutex.AddState(StateName{8});
     fprintf('%s\n',[StateName{8} ' was performed']);
