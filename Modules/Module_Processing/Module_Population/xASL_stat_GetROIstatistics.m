@@ -428,9 +428,9 @@ for iSubject=1:x.dataset.nSubjects
 		if bDoOnceROILR
 			namesROIuse = {''};
 			for iR=1:length(namesROIlocal)
-				namesROIuse{iR*3-2} = [namesROIlocal{iR} '_B'];
-				namesROIuse{iR*3-1} = [namesROIlocal{iR} '_L'];
-				namesROIuse{iR*3-0} = [namesROIlocal{iR} '_R'];
+				namesROIuse{iR*3-2} = [namesROIlocal{iR} '_' x.S.TissueMaskingLocal '_B'];
+				namesROIuse{iR*3-1} = [namesROIlocal{iR} '_' x.S.TissueMaskingLocal '_L'];
+				namesROIuse{iR*3-0} = [namesROIlocal{iR} '_' x.S.TissueMaskingLocal '_R'];
 			end
 		end
 		if x.S.InputNativeSpace || bDoOnceROILR
