@@ -121,10 +121,12 @@ end
 %% 5. Create single site dummy, if there were no sites specified
 if isfield(x.S, 'SetsName')
     % Search for a Site variable
-    for iS=1:length(x.S.SetsName)
-        if  strcmp(x.S.SetsName{iS},'Site')
-            x.S.iSetSite=iS;
-        end
+    indexSite = find(cellfun(@(y) ~isempty(regexpi(y, 'site')), x.S.SetsName));
+    if length(indexSite)>1
+        warning('Multiple site columns found in participants.tsv, using the first found');
+    end
+    if ~isempty(indexSite)
+        x.S.iSetSite = indexSite(1);
     end
 end
 if ~isfield(x.S,'iSetSite')
@@ -141,9 +143,12 @@ end
 % Search for a variable specifying longitudinal time points
 if isfield(x.S, 'SetsName')
     % Search for a variable specifying age at scanning
-    iS = find(strcmp(x.S.SetsName,'Age'));
-    if ~isempty(iS)
-        x.S.iSetAge=iS;
+    iAge = find(strcmpi(x.S.SetsName, 'age'));
+    if length(iAge)>1
+        warning('Multiple age columns found in participants.tsv, using the first found');
+    end
+    if ~isempty(iAge)
+        x.S.iSetAge=iAge(1);
     end
 end
 
