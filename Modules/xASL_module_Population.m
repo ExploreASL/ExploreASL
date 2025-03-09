@@ -23,6 +23,10 @@ function [result, x] = xASL_module_Population(x)
 % - `060_GetMotionStatistics`       - Create TSV file with overview of motion parameters
 % - `065_GetRegistrationStatistics` - Create TSV file with overview of the registration statistics
 % - `070_GetROIstatistics`          - Create TSV file with overview of regional values (e.g. qCBF, mean control, pGM etc)
+%                                   7.a Perform statistics for normal atlases
+%                                   7.b Perform statistics for Lesion and ROI files
+%                                   7.c Parse TSVs & add to participants.tsv
+%                                   7.d Generate the participants.json sidecar of participants.tsv
 % - `080_SortBySpatialCoV`          - Sort ASL_Check QC images by their spatial CoV in quality bins
 % - `090_DeleteTempFiles`           - Delete temporary files
 % - `100_GZipAllFiles`              - Zip files to reduce disc space usage of temporary and non-temporay NIfTI files
@@ -336,7 +340,50 @@ if ~x.mutex.HasState(StateName{8})
         end
     end
 
+    %% -----------------------------------------------------------------------------
+    %% 7.c Parse TSVs & add to participants.tsv
+    regExp_Type = {'qCBF' 'ATT' 'M0' 'meanControl' 'ITT' 'Tex'};
+    key_Type = {'cbf' 'att' 'm0' 'control' 'itt' 'tex'};
+    regExp_Stats = {'mean' 'CoV'};
+    regExp_Atlas = {'Total' 'DeepWM' 'Tatu_ACA_MCA_PCA'};
+    regExp_Tissue = {'GM' 'WM' 'GM'};
+    regExp_PVC = {'PVC0' 'PVC2'};
 
+    for iType=1:length(regExp_Type)
+        for iStat=1:length(regExp_Stats)
+            for iAtlas=1:length(regExp_Atlas)
+                for iPVC=1:length(regExp_PVC)
+                    regExp = [regExp_Stats{iStat} '_' regExp_Type{iType} '.*StandardSpace_' regExp_Atlas{iAtlas} regExp_Tissue{iAtlas} '_n=' num2str(x.dataset.nSubjects) '_' date '_' regExp_PVC{iPVC} '\.tsv'];
+                    fList = xASL_adm_GetFileList(fullfile(x.D.PopDir, 'Stats'), regExp, 'FPList');
+                    if length(fList)>1
+                        warning('Multiple stats files found to be added to participants.tsv, using the first only');
+                    end
+                    if ~isempty(fList)
+                        % Addition to participants.tsv
+                        tableIs = xASL_tsvRead(fList{1});
+                        
+                        % filter the bilateral values
+                        iBilateral = find(cellfun(@(y) strcmp(y(end-1:end),'_B'), tableIs(1,:)));
+                        tableROI = tableIs(1,iBilateral);
+                        
+                        tableSubjRuns = tableIs(3:end,1:2);
+                        tableValues = tableIs(3:end,iBilateral);
+                        
+                        for iKey=1:length(tableROI)
+                            dataIn = [tableSubjRuns tableValues(:, iKey)];
+                            keyBIDS = [regExp_Stats{iStat} '_' key_Type{iType} '_' tableROI{iKey} '_' regExp_PVC{iPVC}];
+                            xASL_bids_Add2ParticipantsTSV(dataIn, keyBIDS, x);
+                        end
+                    end
+                        
+                end
+            end
+        end
+    end
+
+    %% -----------------------------------------------------------------------------    
+    %% 7.d Generate the participants.json sidecar of participants.tsv
+    xASL_bids_GenerateParticipantsJSON(x);
 
     x.mutex.AddState(StateName{8});
     fprintf('%s\n',[StateName{8} ' was performed']);
