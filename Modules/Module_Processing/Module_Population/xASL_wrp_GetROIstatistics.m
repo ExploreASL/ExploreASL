@@ -96,7 +96,7 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------------------
-%% 1) Load the atlas
+%% 1. Load the atlas
 
     %% =======================================================================================================
     %% PM QUICK AND DIRTY SOLUTION TO LOAD SUBJECT-WISE ATLASES, THIS GOES OUT OF THIS CODE IN THE NEAR FUTURE
@@ -132,7 +132,7 @@ end
 
 
 %% ------------------------------------------------------------------------------------------------------------
-%% 2) Organize TSV output name
+%% 2. Organize TSV output name
 [~, Ffile] = xASL_fileparts(x.S.InputAtlasPath);
 if ~isfield(x.S,'output_ID'); x.S.output_ID  = ''; 
 elseif isempty(x.S.output_ID)
@@ -153,12 +153,12 @@ x.S.output_ID = [x.S.output_ID '_' Ffile x.S.TissueMaskingLocal '_n=' num2str(x.
 
 
 %% ------------------------------------------------------------------------------------------------------------
-%% 3) Obtain the ROI statistics
+%% 3. Obtain the ROI statistics
 x = xASL_stat_GetROIstatistics(x); % calculate median CBF/spatial CoV etc per ROI
 
 
 %% ------------------------------------------------------------------------------------------------------------
-%% 4)  Print statistics in TSV files
+%% 4.  Print statistics in TSV files
 if ~isempty(strfind(x.S.InputDataStr,'CBF'))
     x.S.unit = 'mL/100g/min';
 elseif ~isempty(strfind(x.S.InputDataStr,'T1'))
