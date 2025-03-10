@@ -258,8 +258,8 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
 	end
 
     fprintf('\n\n');
-    fprintf('%s\n', ['Assuming voxel size [' num2str(VoxelSize(1)) ' ' num2str(VoxelSize(2)) ' ' num2str(VoxelSize(3)) '] mm']);
-    fprintf('%s\n', ['Using a minimal ROI volume of ' num2str(x.S.MinimalROIVolume) ' mL, or a minimal number of ' xASL_num2str(MinVoxels) ' voxels']);
+    fprintf('%s\n', ['Assuming voxel size ' num2str(VoxelSize(1)) 'x' num2str(VoxelSize(2)) 'x' num2str(VoxelSize(3)) ' mm^3']);
+    fprintf('%s\n', ['Using a minimal ROI volume of ' num2str(x.S.MinimalROIVolume) ' mL, which is a minimal number of ' xASL_num2str(MinVoxels) ' voxels']);
 
 
 	if ~x.S.InputNativeSpace
@@ -392,7 +392,7 @@ for iSubject=1:x.dataset.nSubjects
                             numVoxels = sum(x.S.InputMasks(:,iROI,iMask));
                             fprintf('\n');
                             warning('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
-                            fprintf('%s\n\n', 'Consider reducing the minimal ROI volume setting x.S.MinimalROIVolume to also calculate this ROI');
+                            fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
 						end
 					end
 				end
@@ -411,7 +411,7 @@ for iSubject=1:x.dataset.nSubjects
                                 fprintf('\n');
                                 numVoxels = sum(x.S.InputMasks(:,iROI,iMask));
                                 warning('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
-                                fprintf('%s\n\n', 'Consider reducing the minimal ROI volume setting x.S.MinimalROIVolume to also calculate this ROI');
+                                fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
 							end
 						end
                     end
@@ -790,7 +790,7 @@ for iSubject=1:x.dataset.nSubjects
                     if sum(imMask)<MinVoxels
                         fprintf('\n');
                         warning('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in sCoV calculations']);
-                        fprintf('%s\n\n', 'Consider reducing the minimal ROI volume setting x.S.MinimalROIVolume to also calculate this ROI');
+                        fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
                     end
 
 
@@ -830,7 +830,7 @@ for iSubject=1:x.dataset.nSubjects
                         if sum(imMask)<MinVoxels
                             fprintf('\n');
                             warning('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in CBF calculations']);
-                            fprintf('%s\n\n', 'Consider reducing the minimal ROI volume setting x.S.MinimalROIVolume to also calculate this ROI');
+                            fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
                         end
 
                         x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 1);
