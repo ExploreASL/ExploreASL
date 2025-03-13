@@ -101,6 +101,7 @@ end
 % between nii.mat0 (original orientation from the scanner)
 % and nii.mat (potential new orientation after registration)
 % If no registration happened, these are equal
+matEqual = [];
 for iCheck=1:length(checkList)
     nii = xASL_io_ReadNifti(checkList{iCheck});
     matEqual(iCheck) = isequal(nii.mat, nii.mat0);
