@@ -33,7 +33,7 @@ function [result, x] = xASL_module_Population(x)
 %
 % EXAMPLE: [~, x] = xASL_module_Population(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2024 ExploreASL
+% Copyright 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -56,7 +56,7 @@ end
 if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking')
 	% If no values are provided, then we provide the defaults
 	x.S.Atlases = {'Total','DeepWM','Tatu_ACA_MCA_PCA'}; % Default
-    x.S.TissueMasking = {'GM' 'WM','GM'}; % GM WM, fits with the TotalGM & DeepWM above
+    x.S.TissueMasking = {'GM' 'WM','GM'}; % GM WM GM, fits with the Total & DeepWM & Tatu_ACA_MCA_PCA above
     % Note that this should be in the same order as the atlases/ROIs
     % A mismatch (e.g. TissueMasking=GM for Atlases=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
 elseif ~isfield(x.S, 'Atlases') || ~isfield(x.S, 'TissueMasking') || length(x.S.Atlases)~=length(x.S.TissueMasking)
