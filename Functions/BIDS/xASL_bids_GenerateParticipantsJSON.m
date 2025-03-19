@@ -36,11 +36,17 @@ pathTSV = fullfile(x.dir.xASLDerivatives, 'participants.tsv');
 if exist(pathJson, 'file')
     % Load the JSON, but note that we will overwrite it if fields already exist
     jsonParticipants = xASL_io_ReadJson(pathJson);
+else
+    jsonParticipants = struct();
 end
 
 
 %% 2. Parse participants.tsv
-jsonParticipants = struct();
+if ~exist(pathTSV, 'file')
+    warning(['Skipping, file missing: ' pathTSV]);
+    return;
+end
+
 tableParticipants = xASL_tsvRead(pathTSV);
 listKeys = tableParticipants(1,:);
 
@@ -89,7 +95,7 @@ for iList=1:length(listKeys)
             jsonParticipants.wmh_count.Units = 'integer';
         case 'meanmotion'
             jsonParticipants.motion.Description = 'Mean net displacement vector difference (head motion) of this ASL scan';
-            jsonParticipants.wmh_count.Units = 'mm RMS';
+            jsonParticipants.motion.Units = 'mm RMS';
         otherwise
 
 
