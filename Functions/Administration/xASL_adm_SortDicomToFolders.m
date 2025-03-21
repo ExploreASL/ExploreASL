@@ -60,18 +60,20 @@ else
 			hasProtocolName = isfield(tDcm, 'ProtocolName') && ~isempty(tDcm.ProtocolName);
 			hasSeriesDescription = isfield(tDcm, 'SeriesDescription') && ~isempty(tDcm.SeriesDescription);
 			hasSeriesNumber = isfield(tDcm, 'SeriesNumber') && ~isempty(tDcm.SeriesNumber);
+			hasSequenceName = isfield(tDcm, 'SequenceName') && ~isempty(tDcm.SequenceName);
 
 			% Check that the header was read and contains the basic tags
 			if isempty(tDcm)
                 warning(['Empty DICOM header, skipping: ' Flist{iL}]);
-			elseif ~hasProtocolName || ~hasSeriesDescription || ~hasSeriesNumber
-                warning(['DICOM header without ProtocolName, SeriesDescription, or SeriesNumber, skipping: ' Flist{iL}]);
+			elseif ~hasProtocolName && ~hasSeriesDescription && ~hasSeriesNumber && ~hasSequenceName
+                warning(['DICOM header without ProtocolName, SeriesDescription, SeriesNumber, or SequenceName. Skipping: ' Flist{iL}]);
 			else
                 % Manage directory name
                 % Priority:
                 % 1. ProtocolName
-                % 2. SeriesDescription
-                % 3. SeriesNumber
+				% 2. SequenceName
+                % 3. SeriesDescription
+                % 4. SeriesNumber
 
                 Fname = [];
 
@@ -80,6 +82,17 @@ else
                     Fname = tDcm.ProtocolName;
                 end
                 
+				% Add sequence name if available
+				if hasSequenceName
+                    if ~isempty(Fname)
+                        % if ProtocolName was available, was append SeriesDescription if it differs from ProtocolName
+					    Fname = [Fname '_' tDcm.SequenceName];
+                    else
+                        % Only SeriesDescription is also fine
+                        Fname = tDcm.SequenceName;
+                    end
+				end
+
 				% Add series description if available
 				if hasSeriesDescription
                     if hasProtocolName && ~strcmpi(tDcm.ProtocolName, tDcm.SeriesDescription)
