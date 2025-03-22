@@ -105,7 +105,7 @@ else
 				end                
 
                 if isempty(Fname)
-                    warning(['ProtocolName & SeriesDescription missing: ' Flist{iL}]);
+                    warning(['ProtocolName, SeriesDescription, and SequenceName missing: ' Flist{iL}]);
                 end
 
                 % Add SeriesNumber if available
