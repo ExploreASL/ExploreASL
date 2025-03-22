@@ -1,4 +1,4 @@
-function xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, SpecificScantype, bSkipWhenMissingScans, bRemoveOutliers, FunctionsAre, bUpdateMetadata, SmoothingFWHM, bSaveMasks4QC)
+function RMS = xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, SpecificScantype, bSkipWhenMissingScans, bRemoveOutliers, FunctionsAre, bUpdateMetadata, SmoothingFWHM, bSaveMasks4QC)
 %xASL_wrp_CreatePopulationTemplates ExploreASL Population module wrapper,
 %creates population parametric images for each ScanType
 %
@@ -458,18 +458,23 @@ for iScanType=1:length(PreFixList)
                         CurrentSetsID = x.S.SetsID(LoadSetsID, :);
                     end
                     
+
                     if bProceedComputationMaps
                         % initialize image indices that will be included
                         NotOutliers = true(1, size(IM{1}, 2));
                         
                         % ----------------------------------------------------------------------------------------------------
+                        %% 4. Compute difference with averate template
+                        % PM: this assumes bilateral images, not left-right splits, hence it only takes IM{1}
+                        [theseAreNotOutliers, ~, RMS_output] = xASL_stat_RobustMean(IM{1});
+                        RMS.(PreFixList{iScanType}) = RMS_output;
+
+
+                        % ----------------------------------------------------------------------------------------------------
                         %% 5. Remove outliers
                         if bRemoveOutliers
                             % Exclude outliers
-                            for iCell=1:length(IM)
-                                NotOutliersThisCell = xASL_stat_RobustMean(IM{iCell})';
-                                NotOutliers = NotOutliers & NotOutliersThisCell;
-                            end
+                            NotOutliers = theseAreNotOutliers;
                         end
                         TempOutliers = 1:size(IM{1}, 2);
                         NotOutliers = TempOutliers(NotOutliers);
