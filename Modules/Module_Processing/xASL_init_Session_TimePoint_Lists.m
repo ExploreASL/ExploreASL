@@ -50,9 +50,14 @@ if isfield(x,'SESSIONS') && ~isempty(x.SESSIONS)
     warning('Using predefined x.SESSIONS');
 else
     x.SESSIONS = [];
-    SessionPathList = xASL_adm_GetFileList(x.dir.xASLDerivatives, '^(ASL|func)_\d+$', 'FPListRec', [0 Inf],1);
-    for iSess=1:length(SessionPathList)
-        [~, x.SESSIONS{end+1}]  = fileparts(SessionPathList{iSess});
+    
+    % For all subjects, check how many sessions they have
+    SessionPathList = cellfun(@(y) xASL_adm_GetFileList(fullfile(x.dir.xASLDerivatives, y), '^(ASL|func)_\d+$', 'FPListRec', [0 Inf], 1), x.dataset.TotalSubjects, 'UniformOutput',false);
+
+    for iPath=1:length(SessionPathList)
+        for iSess=1:length(SessionPathList{iPath})
+            [~, x.SESSIONS{end+1}] = fileparts(SessionPathList{iPath}{iSess});
+        end
     end
 
     if isempty(x.SESSIONS)
