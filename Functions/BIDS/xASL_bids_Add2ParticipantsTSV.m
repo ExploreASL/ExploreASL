@@ -63,7 +63,7 @@ end
 % This part checks if the DataIn has an invalid size.
 % After this part, the columns should be 1) subject, 2) session/run, 3)
 % data value
-if size(DataIn, 1) == (x.dataset.nSubjects * x.dataset.nSessions) && size(DataIn, 1) ~= x.dataset.nSubjects
+if x.dataset.nSessions>1
     % Sessions found
     if size(DataIn,2)<3 % A session column should exist
         warning('Session column missing, too few columns, skipping');
@@ -81,7 +81,7 @@ if size(DataIn, 1) == (x.dataset.nSubjects * x.dataset.nSessions) && size(DataIn
             warning('Not the same sessions, might go wrong');
         end
     end
-elseif size(DataIn, 1)==x.dataset.nSubjects
+else
     % No sessions found
     % Add session column
     if size(DataIn, 2)==2
@@ -94,9 +94,6 @@ elseif size(DataIn, 1)==x.dataset.nSubjects
         warning('Too many or few columns, something went wrong, skipping');
         return;
     end
-else
-    warning('Incorrect nDatapoints, needs to be either nSubjects or nSubjects * nSessions, skipping');
-    return;
 end
 
 %% 3) Admin - Load pre-existing participants.tsv or create one
