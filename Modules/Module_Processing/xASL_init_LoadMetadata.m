@@ -405,11 +405,11 @@ warning('on', 'MATLAB:strrep:InvalidInputType');
 % We work here with xASL_str2num, which returns NaN for string input
 % (or for what was already NaN, which in that case doesn't need converting)
 % so only the nonnans from xASL_str2num need converting from string to numeric here
-NumericalVarContent = xASL_str2num(VarContent);
-NaNVarContent = isnan(NumericalVarContent);
+NumericalVarContent = VarContent(:,DataColumn);
+NumericalVarContent = xASL_str2num(NumericalVarContent);
 NumericalVarContent = num2cell(NumericalVarContent);
 
-VarContent(~NaNVarContent) = NumericalVarContent(~NaNVarContent);
+VarContent(:,DataColumn) = NumericalVarContent;
 
 
 %% ------------------------------------------------------------------------------------------------------------
