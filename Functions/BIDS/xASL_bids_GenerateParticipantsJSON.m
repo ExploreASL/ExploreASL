@@ -105,6 +105,7 @@ for iList=1:length(listKeys)
 
 
                 %% 4a. Replace key abbreviations with verbose description
+                descriptionBIDS = strrep(descriptionBIDS, 'qcbf', 'cerebral blood flow');
                 descriptionBIDS = strrep(descriptionBIDS, 'cbf', 'cerebral blood flow');
                 descriptionBIDS = strrep(descriptionBIDS, 'att', 'arterial transit time');
                 descriptionBIDS = strrep(descriptionBIDS, 'm0', 'M0 reference intensity');
@@ -130,13 +131,13 @@ for iList=1:length(listKeys)
                 
 
                 %% 4b. Manage units
-                if contains(descriptionBIDS, 'cbf')
+                if ~isempty(regexpi(descriptionBIDS, '(cbf|cerebral blood flow)'))
                     jsonParticipants.(lower(listKeys{iList})).Units = 'mL/100g/min';
-                elseif contains(descriptionBIDS, 'abv')
+                elseif ~isempty(regexpi(descriptionBIDS, ('abv|arterial blood volume)')))
                     jsonParticipants.(lower(listKeys{iList})).Units = '%';
-                elseif ~isempty(regexp(descriptionBIDS, '(att|tt|itt|tex)'))
+                elseif ~isempty(regexpi(descriptionBIDS, '(att|tt|itt|tex|arterial transit time|intravoxel transit time|time of exchange)'))
                     jsonParticipants.(lower(listKeys{iList})).Units = 's';
-                elseif ~isempty(regexp(descriptionBIDS, '(m0|control)'))
+                elseif ~isempty(regexpi(descriptionBIDS, '(m0|control)'))
                     jsonParticipants.(lower(listKeys{iList})).Units = 'a.u.';
                 else
                     warning(['Unknown type, cannot establish the unit for ' listKeys{iList}]);
