@@ -122,7 +122,7 @@ x.S.TemplateNumberName = ['_n' xASL_num2str(x.dataset.nSubjects)];
 %% ------------------------------------------------------------------------------------------------------------
 %% 1.   Create template images
 if ~x.mutex.HasState(StateName{1})
-    RMS = xASL_wrp_CreatePopulationTemplates(x);  % this doesn't work nicely yet with sessions, should be changed after new BIDS is implemented
+    xASL_wrp_CreatePopulationTemplates(x);  % this doesn't work nicely yet with sessions, should be changed after new BIDS is implemented
 
     % Save FoV mask as susceptibility mask for 3D spiral
     % as 3D spiral doesnt have a susceptibility artifact (or negligible)
