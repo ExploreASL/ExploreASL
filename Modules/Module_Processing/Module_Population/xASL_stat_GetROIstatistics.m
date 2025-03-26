@@ -808,7 +808,9 @@ for iSubject=1:x.dataset.nSubjects
                     %% CBF (now remove vascular artifacts)
                     if x.S.bMasking(2)==1 % apply vascular mask, but rename this to CurrentVascular mask, because we still need the original CurrentMaskNotVascular for 4D temporal calculations
                         CurrentMaskVascular = CurrentMaskNotVascular & VascularMask;
+					else
                         % Otherwise keep CurrentMaskNotVascular as is, don't apply a vascular mask
+						CurrentMaskVascular = CurrentMaskNotVascular;
                     end
 
                     if xASL_stat_SumNan(CurrentMaskVascular(:)) == 0
