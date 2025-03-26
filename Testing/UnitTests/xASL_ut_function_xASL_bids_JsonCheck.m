@@ -14,7 +14,7 @@ function UnitTest = xASL_ut_function_xASL_bids_JsonCheck(TestRepository)
 %
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_bids_JsonCheck(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
+% Copyright 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -38,7 +38,7 @@ jsonOut = xASL_bids_JsonCheck(jsonIn,'ASL');
 testCondition = true;
 
 % Define one or multiple test conditions here
-if ~isempty(jsonOut)
+if ~isempty(jsonOut) && numel(fieldnames(jsonOut)) > 0
     testCondition = false;
 end
 
