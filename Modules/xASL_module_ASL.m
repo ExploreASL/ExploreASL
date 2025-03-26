@@ -606,6 +606,14 @@ function [x] = xASL_module_ASL_ParseParameters(x, bOutput)
 % First ensure that we don't use quantification parameters from other sequences
 x.Q = struct;
 
+% Load x.Q information from dataPar.json if available
+if isfield(x, 'dir') && isfield(x.dir, 'dataPar') && exist(x.dir.dataPar, 'file')
+    xDataPar = xASL_io_ReadJson(x.dir.dataPar);
+	if isfield(xDataPar, 'x') && isfield(xDataPar.x, 'Q')
+		x.Q = xDataPar.x.Q;
+	end
+end
+    
 [~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bOutput);
 
 
