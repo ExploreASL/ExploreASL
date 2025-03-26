@@ -334,6 +334,7 @@ for iScanType=1:length(PreFixList)
             IM2noMask = {0};
             LoadFiles{1} = '';
             LoadFiles{2} = '';
+            LoadSubjects = '';
             UnAvailable = 0;
             NoImageN = 1;
             % Searching for available images
@@ -374,12 +375,14 @@ for iScanType=1:length(PreFixList)
                 if ExistBilateral
                     % If exist, add this subject/image to the list
                     LoadFiles{1}{end+1, 1} = PathNII;
-                    LoadSetsID(SubjSess, 1) = true;                         
+                    LoadSetsID(SubjSess, 1) = true;
+                    LoadSubjects{end+1, 1} = x.SUBJECTS{iSubject};
                 elseif ExistUnilateral
                     % same here
                     LoadFiles{1}{end+1, 1} = PathNII_Left;
                     LoadFiles{2}{end+1, 1} = PathNII_Right;
-                    LoadSetsID(SubjSess, 1) = true;               
+                    LoadSetsID(SubjSess, 1) = true;
+                    LoadSubjects{end+1, 1} = x.SUBJECTS{iSubject};
                 else
                     % if doesnt exist, dont add to the list
                     UnAvailable = UnAvailable+1;
@@ -462,12 +465,17 @@ for iScanType=1:length(PreFixList)
                     if bProceedComputationMaps
                         % initialize image indices that will be included
                         NotOutliers = true(1, size(IM{1}, 2));
-                        
+
+                        pathTSV = fullfile(x.D.PopDir, 'Stats', 'QC_RMS.tsv');
+
                         % ----------------------------------------------------------------------------------------------------
-                        %% 4. Compute difference with averate template
+                        %% 4. Compute difference with averate template & store in participants.tsv
                         % PM: this assumes bilateral images, not left-right splits, hence it only takes IM{1}
                         [theseAreNotOutliers, ~, RMS_output] = xASL_stat_RobustMean(IM{1});
                         RMS.(PreFixList{iScanType}) = RMS_output;
+                        RMS.([PreFixList{iScanType} '_SUBJECTS']) = LoadSubjects';
+
+                        xASL_bids_Add2ParticipantsTSV([LoadSubjects num2cell(RMS_output')], [PreFixList{iScanType} '_QC_RMS'], x, [], pathTSV);
 
 
                         % ----------------------------------------------------------------------------------------------------
