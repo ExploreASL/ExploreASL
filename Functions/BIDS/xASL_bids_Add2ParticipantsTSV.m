@@ -1,4 +1,4 @@
-function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
+function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite, PathTSV)
 %xASL_bids_Add2ParticipantsTSV Add data to participants.tsv
 %
 % FORMAT: xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x[, bOverwrite])
@@ -47,7 +47,9 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite)
 
 
 % Get path to participants.tsv
-PathTSV = fullfile(x.dir.xASLDerivatives, 'participants.tsv');
+if nargin<5 || isempty(PathTSV)
+    PathTSV = fullfile(x.dir.xASLDerivatives, 'participants.tsv');
+end
 
 
 %% 1) Admin - Validate that there are not too many columns
