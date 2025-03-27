@@ -264,7 +264,10 @@ if isfield(jsonInMerged,'PhoenixAnalyzed') && ~isempty(jsonInMerged.PhoenixAnaly
 			end
 		end
 		% Prioritize the Phoenix field values in the general case
-		if ~(strcmp(fn{1},'EchoTime') && bTimeEncodedFME) && ~isfield(studyPar, 'EchoTime')
+		if ~strcmp(fn{1},'EchoTime')  % Copy all other fields than Echo time
+			jsonOut.(fn{1}) = jsonInMerged.PhoenixAnalyzed.(fn{1});
+		elseif ~bTimeEncodedFME && ~isfield(studyPar, 'EchoTime') && length(unique(jsonInMerged.PhoenixAnalyzed.(fn{1}))) == 1
+			% Echo time can be only copied if not in studyPar, not TimeEncodedFME sequence, and only a single value
 			jsonOut.(fn{1}) = jsonInMerged.PhoenixAnalyzed.(fn{1});
 		end
 	end
