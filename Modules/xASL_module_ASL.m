@@ -603,17 +603,22 @@ function [x] = xASL_module_ASL_ParseParameters(x, bOutput)
 
 %% 1. Load ASL parameters (inheritance principle)
 
-% First ensure that we don't use quantification parameters from other sequences
+% x.Q historically contains both rawdata BIDS parameters (from *.asl.json)
+% and quantification settings from dataPar.json
+% PM: separate these two, so we don't need this ad-hoc fix here
+
+% A. First clear x.Q, ensuring that we don't re-use *asl.json BIDS rawdata parameters from other sequences
 x.Q = struct;
 
-% Load x.Q information from dataPar.json if available
+% B. Load x.Q quantification settings from dataPar.json, if available
 if isfield(x, 'dir') && isfield(x.dir, 'dataPar') && exist(x.dir.dataPar, 'file')
     xDataPar = xASL_io_ReadJson(x.dir.dataPar);
 	if isfield(xDataPar, 'x') && isfield(xDataPar.x, 'Q')
 		x.Q = xDataPar.x.Q;
 	end
 end
-    
+
+% C. Load the BIDS side-car (*asl.json)
 [~, x] = xASL_adm_LoadParms(x.P.Path_ASL4D_parms_mat, x, bOutput);
 
 
