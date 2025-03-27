@@ -5,7 +5,7 @@ function [NiftiPaths, ASLContext] = xASL_bids_MergeNifti(NiftiPaths, seqType, ni
 % 
 % INPUT:
 %   NiftiPaths - cell containing list of strings with full paths of the files (REQUIRED)
-%   seqType    - Type of the file - can be 'M0' or 'ASL' (REQUIRED)
+%   seqType    - Type of the file - can be 'M0' or 'M0PERev' or 'ASL' (REQUIRED)
 %   niiTable   - cell containing a table Filename, InstanceNumber, SeriesNumber, FileType, FilePath (OPTIONAL, DEFAULT = EMPTY)
 %
 % OUTPUT:
@@ -16,7 +16,7 @@ function [NiftiPaths, ASLContext] = xASL_bids_MergeNifti(NiftiPaths, seqType, ni
 % DESCRIPTION: This function takes a list of M0 or ASL4D files and concatenates them together in a longer 4D volume if possible
 %              following certain patterns: works only with 3D and 4D files; all files in the list must have the same size of the
 %              first three dimensions; files are generarily sorted according to the last number in the filename and outputted
-%              to M0.nii or ASL4D.nii; first JSON is taken and renamed, all other JSONs and NIIs are deleted after merging;
+%              to M0.nii M0PERev.nii or ASL4D.nii; first JSON is taken and renamed, all other JSONs and NIIs are deleted after merging;
 %              M0*_parms.m or ASL*_parms.mat is renamed to M0_parms.m or ASL4D_parms.m; M0 files are checked if the field 
 %              PhaseEncodingAxis is consistent through all the volumes, if not the nothing is merged; this is applied to a generic case
 %              and 3 other specific Siemens scenarios are implemented:
@@ -44,7 +44,7 @@ function [NiftiPaths, ASLContext] = xASL_bids_MergeNifti(NiftiPaths, seqType, ni
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+% Copyright 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -58,10 +58,10 @@ if nargin < 1 || isempty(NiftiPaths)
 end
 
 if nargin < 2 || isempty(seqType)
-	error('Files type need to be provided as M0 or ASL');
+	error('Files type need to be provided as M0, M0PERev or ASL');
 else
-	if ~strcmpi(seqType, 'M0') && ~strcmpi(seqType, 'ASL')
-		error('seqType must be either M0 or ASL');
+	if ~strcmpi(seqType, 'M0') && ~strcmpi(seqType, 'M0PERev') && ~strcmpi(seqType, 'ASL')
+		error('seqType must be either M0, M0PERev or ASL');
 	end
 end
 
@@ -74,34 +74,34 @@ ASLContext = '';
 
 if length(NiftiPaths)>1
 	switch (seqType)
-    case 'M0'
-        % 1. Merges the M0 files
-        pathOut = xASL_bids_MergeNifti_M0Files(NiftiPaths);
+		case {'M0', 'M0PERev'}
+			% 1. Merges the M0 files
+			pathOut = xASL_bids_MergeNifti_M0Files(NiftiPaths, seqType);
 
-    case 'ASL'
-		% 2. Run the GE merging procedure first, that returns an empty path if not all conditions are met
-		[pathOut,ASLContext] = xASL_bids_MergeNifti_GEASLFiles(NiftiPaths);
-		
-		% 3. Merge ASL files by SeriesNumber if different
-		if isempty(pathOut) && ~isempty(niiTable)
-			pathOut = xASL_bids_MergeNifti_SeriesNumber(NiftiPaths, niiTable);
-		end
-		
-		% 4. Merges Philips ASL file if they have the known pattern of filenames
-		if isempty(pathOut)
-			pathOut = xASL_bids_MergeNifti_Philips(NiftiPaths);
-		end
+		case 'ASL'
+			% 2. Run the GE merging procedure first, that returns an empty path if not all conditions are met
+			[pathOut,ASLContext] = xASL_bids_MergeNifti_GEASLFiles(NiftiPaths);
 
-        % 5. Merges Siemens ASL file if they have the known pattern of filenames
-		if isempty(pathOut)
-			pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths);
-		end
+			% 3. Merge ASL files by SeriesNumber if different
+			if isempty(pathOut) && ~isempty(niiTable)
+				pathOut = xASL_bids_MergeNifti_SeriesNumber(NiftiPaths, niiTable);
+			end
 
-        % 6. Generic merging of ASL4D files for non-Siemens, or Siemens files with an unknown pattern
-        if isempty(pathOut)
-            % If the previous Siemens merging didn't merge them already
-            pathOut = xASL_bids_MergeNifti_AllASLFiles(NiftiPaths);
-        end
+			% 4. Merges Philips ASL file if they have the known pattern of filenames
+			if isempty(pathOut)
+				pathOut = xASL_bids_MergeNifti_Philips(NiftiPaths);
+			end
+
+			% 5. Merges Siemens ASL file if they have the known pattern of filenames
+			if isempty(pathOut)
+				pathOut = xASL_bids_MergeNifti_SiemensASLFiles(NiftiPaths);
+			end
+
+			% 6. Generic merging of ASL4D files for non-Siemens, or Siemens files with an unknown pattern
+			if isempty(pathOut)
+				% If the previous Siemens merging didn't merge them already
+				pathOut = xASL_bids_MergeNifti_AllASLFiles(NiftiPaths);
+			end
 	end
 end
 
@@ -119,8 +119,8 @@ end
 
 %% ===========================================================================================================
 %% ===========================================================================================================
-function pathOut = xASL_bids_MergeNifti_M0Files(NiftiPaths)
-% 1. xASL_bids_MergeNifti_M0Files Generic merging of M0 files
+function pathOut = xASL_bids_MergeNifti_M0Files(NiftiPaths, Fname)
+% 1. xASL_bids_MergeNifti_M0Files Generic merging of M0 files and save under Fname.nii
 
 pathOut = ''; % Newly assigned path of a concatenated file
 listEndNumber = zeros(length(NiftiPaths),1);
@@ -168,10 +168,10 @@ end
 
 % Check if there's no difference in AP-PA direction, if all are the same, then start merging
 [~, indexSortedFile] = sort(listEndNumber);
-pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, 'M0', 0);
+pathOut = xASL_bids_MergeNifti_Merge(NiftiPaths, indexSortedFile, Fname, 0);
 
 if ~isempty(pathOut)
-	xASL_bids_MergeNifti_RenameParms(Fpath, 'M0');
+	xASL_bids_MergeNifti_RenameParms(Fpath, Fname);
 	xASL_bids_MergeNifti_Delete(NiftiPaths);
 	fprintf('Corrected dcm2niiX output for\n');
 	fprintf('%s\n', pathOut);

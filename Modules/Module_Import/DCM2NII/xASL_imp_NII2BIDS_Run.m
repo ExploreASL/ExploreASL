@@ -25,7 +25,7 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+% Copyright 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -79,7 +79,10 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 		
 	%% Perfusion files
 	try
-		xASL_imp_NII2BIDS_RunPerf(x.modules.import.imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
+		if exist(inSessionPath, 'dir')
+			% We need to check for the existence of the directory as there can be a special case when session exists but only contains structural and not ASL images
+			xASL_imp_NII2BIDS_RunPerf(x.modules.import.imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
+		end
 	catch loggingEntry
 		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
 		xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'perfusion', subjectSessionLabel, iRun);

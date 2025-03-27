@@ -35,7 +35,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+% Copyright 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -152,6 +152,8 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     if length(nii_files)>1
         if ~isempty(strfind(scan_name,'ASL4D'))
             [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'ASL', niiTable);
+		elseif  ~isempty(strfind(scan_name,'M0PERev'))
+            [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'M0PERev', niiTable);			
         elseif  ~isempty(strfind(scan_name,'M0'))
             [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'M0', niiTable);
         end
