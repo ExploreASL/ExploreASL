@@ -40,11 +40,13 @@ function x = xASL_imp_BasicParameterChecks(x)
     end
 
     % Check the imagePar input file
-    if isempty(x.dir.sourceStructure) && x.opts.bImport(1)
+	if (isempty(x.dir.SourceData) || ~exist(x.dir.SourceData, 'dir')) && x.opts.bImport(1)
+		error('Import from DICOM2NII option is ON, but sourcedata folder is missing');
+	elseif isempty(x.dir.sourceStructure) && x.opts.bImport(1)
         % If the path is empty, then try to find sourceStructure.json or sourcestruct.json
         fListImPar = xASL_adm_GetFileList(x.dir.DatasetRoot,'(?i)^source(struct(ure|)\.json$', 'List', [], 0);
         if length(fListImPar) < 1
-            error('Could not find the sourceStructure.json file...');
+            error('Import from DICOM2NII option is ON, but could not find the sourceStructure.json file');
         end
         x.dir.sourceStructure = fullfile(x.dir.DatasetRoot,fListImPar{1});
     elseif isempty(x.dir.sourceStructure) && (x.opts.bImport(2) || x.opts.bImport(3))
@@ -55,7 +57,7 @@ function x = xASL_imp_BasicParameterChecks(x)
         if isempty(fpath)
             x.dir.sourceStructure = fullfile(x.dir.DatasetRoot,x.dir.sourceStructure);
         end
-    end
+	end
 
     % Find the studyPar input file
     if isempty(x.dir.studyPar)
