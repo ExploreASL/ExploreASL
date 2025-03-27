@@ -1,7 +1,7 @@
 function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite, PathTSV)
 %xASL_bids_Add2ParticipantsTSV Add data to participants.tsv
 %
-% FORMAT: xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x[, bOverwrite])
+% FORMAT: xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x[, bOverwrite, PathTSV])
 %
 % INPUT:
 %   DataIn      - cell array with data to be added to participants.tsv, (REQUIRED)
@@ -13,6 +13,7 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite, PathTSV)
 %   bOverwrite  - boolean specifying to overwrite pre-existing data values for subject/session with
 %                 the same header (OPTIONAL, DEFAULT = true) 
 %                 (pre-existing participants.tsv is always overwritten)
+%   PathTSV     - path to different tsv-file (OPTIONAL, DEFAULT = /derivatives/ExploreASL/participants.tsv)
 %
 % OUTPUT: n/a
 % OUTPUT FILE:  /MyStudy/participants.tsv

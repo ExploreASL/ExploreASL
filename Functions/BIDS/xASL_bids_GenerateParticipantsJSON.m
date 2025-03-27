@@ -133,7 +133,7 @@ for iList=1:length(listKeys)
                 %% 4b. Manage units
                 if ~isempty(regexpi(descriptionBIDS, '(cbf|cerebral blood flow)'))
                     jsonParticipants.(lower(listKeys{iList})).Units = 'mL/100g/min';
-                elseif ~isempty(regexpi(descriptionBIDS, ('abv|arterial blood volume)')))
+                elseif ~isempty(regexpi(descriptionBIDS, '(abv|arterial blood volume)'))
                     jsonParticipants.(lower(listKeys{iList})).Units = '%';
                 elseif ~isempty(regexpi(descriptionBIDS, '(att|tt|itt|tex|arterial transit time|intravoxel transit time|time of exchange)'))
                     jsonParticipants.(lower(listKeys{iList})).Units = 's';

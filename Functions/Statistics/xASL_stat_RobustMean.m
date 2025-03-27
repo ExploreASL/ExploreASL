@@ -2,10 +2,10 @@ function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunct
 % Submodule of ExploreASL Structural module, that obtains volumes from the tissue segmentations
 % (& FLAIR WMH segmentations if they exist)
 %
-% FORMAT: [NoOutliers, iOutliers, ThresholdDeviation] = xASL_stat_RobustMean(IM, ParameterFunction)
+% FORMAT: [NoOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunction)
 %
 % INPUT:
-%   IM                 - input images, should be masked with xASL_im_IM2Column (REQUIRED)
+%   IM                 - input images, should be masked with xASL_im_IM2Column: vector image (REQUIRED)
 %   ParameterFunction  - parametric function to use for defining deviation
 %                        of an image: options:
 %                                     SoS - sum of squared errors (DEFAULT)
@@ -14,6 +14,7 @@ function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunct
 % OUTPUT:
 %   NotOutliers         - vector, true for images that were not outliers
 %   iOutliers           - indices of images that were outliers
+%   RMS                 - vector of numerical values, RMS of difference of individual image with group-average
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function detects outlier images, that can be used to create
 %              a robust average, e.g. for template or biasfield creation. This is based either on the sum-of-squares
