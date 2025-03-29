@@ -152,7 +152,7 @@ function [x,nii_files, summary_line, globalCounts, ASLContext] = xASL_imp_DCM2NI
     if length(nii_files)>1
         if ~isempty(strfind(scan_name,'ASL4D'))
             [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'ASL', niiTable);
-		elseif  ~isempty(strfind(scan_name,'M0PERev'))
+		elseif  ~isempty(strfind(scan_name,'M0PERev')) % note that in legacy, this is called M0_PERev
             [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'M0PERev', niiTable);			
         elseif  ~isempty(strfind(scan_name,'M0'))
             [nii_files,ASLContext] = xASL_bids_MergeNifti(nii_files, 'M0', niiTable);

@@ -6,6 +6,7 @@ function [NiftiPaths, ASLContext] = xASL_bids_MergeNifti(NiftiPaths, seqType, ni
 % INPUT:
 %   NiftiPaths - cell containing list of strings with full paths of the files (REQUIRED)
 %   seqType    - Type of the file - can be 'M0' or 'M0PERev' or 'ASL' (REQUIRED)
+%                note that in legacy file formats, the filename is M0_PERev, only internally here it is used as M0PERev
 %   niiTable   - cell containing a table Filename, InstanceNumber, SeriesNumber, FileType, FilePath (OPTIONAL, DEFAULT = EMPTY)
 %
 % OUTPUT:
