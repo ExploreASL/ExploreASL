@@ -25,9 +25,8 @@ function loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, loggingTable)
 % 2. DICOM -> NII+JSON (i.e. dcm2niiX)
 % 3. Manual curation for certain flavors
 % 3a. Siemens_PCASL_3DGRASE_VD13D_2
-% 3b. Philips_PCASL_3DGRASE_5.4.1.0_TopUp_1
-% 3c. Siemens_PCASL_3DGRASE_VB17A_TopUp_1
-% 3d. Siemens_PCASL_3DGRASE_VB17A_multiPLD_1
+% 3b. Siemens_PCASL_3DGRASE_VB17A_TopUp_1
+% 3c. Siemens_PCASL_3DGRASE_VB17A_multiPLD_1
 % 4. Convert NII+JSON -> BIDS
 %
 % EXAMPLE: loggingTable = xASL_test_Flavors_DCM2BIDS(testConfig, x, loggingTable);
@@ -109,19 +108,7 @@ DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'derivatives', 'ExploreASL
             nii_files = xASL_adm_GetFileList(DirASL, '^.*\.nii$', 'FPList', [], false);
             xASL_bids_MergeNifti(nii_files, 'ASL');
 
-            % 3b. 'Philips_PCASL_3DGRASE_5.4.1.0_TopUp_1'
-        case 'Philips_PCASL_3DGRASE_5.4.1.0_TopUp_1'
-			nii_files = xASL_adm_GetFileList(DirASL, '^M0_601_\d*\.nii$', 'FPList', [], false);
-			[~, filename, ~] = xASL_fileparts(nii_files{1});
-            xASL_Move(fullfile(DirASL, [filename '.nii']), fullfile(DirASL, 'M0.nii'), 1);
-            xASL_Move(fullfile(DirASL, [filename '.json']), fullfile(DirASL, 'M0.json'), 1);
-
-			nii_files = xASL_adm_GetFileList(DirASL, '^M0_701_\d*\.nii$', 'FPList', [], false);
-			[~, filename, ~] = xASL_fileparts(nii_files{1});
-            xASL_Move(fullfile(DirASL, [filename '.nii']), fullfile(DirASL, 'M0PERev.nii'), 1);
-            xASL_Move(fullfile(DirASL, [filename '.json']), fullfile(DirASL, 'M0PERev.json'), 1);
-
-            % 3c. 'Siemens_PCASL_3DGRASE_VB17A_TopUp_1'
+            % 3b. 'Siemens_PCASL_3DGRASE_VB17A_TopUp_1'
         case 'Siemens_PCASL_3DGRASE_VB17A_TopUp_1'
             imNS = xASL_io_Nifti2Im(fullfile(DirASL, 'ASL4D_NS.nii'));
             imSS = xASL_io_Nifti2Im(fullfile(DirASL, 'ASL4D_SS.nii'));
@@ -137,7 +124,7 @@ DirASL = fullfile(baseDirImport, flavorList{iFlavor}, 'derivatives', 'ExploreASL
             xASL_Move(fullfile(DirASL, 'M0_2.json'), fullfile(DirASL, 'M0PERev.json'), 1);
             xASL_Move(fullfile(DirASL, 'M0_2.nii'), fullfile(DirASL, 'M0PERev.nii'), 1);
 
-            % 3d. 'Siemens_PCASL_3DGRASE_VB17A_multiPLD_1'
+            % 3c. 'Siemens_PCASL_3DGRASE_VB17A_multiPLD_1'
         case 'Siemens_PCASL_3DGRASE_VB17A_multiPLD_1'
 
             if xASL_exist(fullfile(DirASL, 'ASL4D_NS_300.nii'))
