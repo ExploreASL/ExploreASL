@@ -1,13 +1,13 @@
 function x = xASL_qc_CollectParameters(x, iSubject, Module, iSession)
 %xASL_qc_CollectParameters Collect all parameters from structural & ASL, spread over the derivative folders
 %
-% FORMAT: x = xASL_qc_CollectParameters(x, iSubject, ScanType, CollectQCFunction [, iSession])
+% FORMAT: x = xASL_qc_CollectParameters(x, iSubject, Module, CollectQCFunction [, iSession])
 %
 % INPUT:
 %   x                   - structure containing fields with all information required to run this submodule (REQUIRED)
 %   iSubject            - index of current subject (REQUIRED)
-%   ScanType            - string for ScanType, options = 'Structural' 'ASL' 'func' 'dwi' (REQUIRED)
-%   iSession            - index of current session (OPTIONAL, default 1, but RECOMMENDED for ScanType == 'ASL')
+%   Module              - string for module, options = 'Structural' 'ASL' 'func' 'dwi' (REQUIRED)
+%   iSession            - index of current session (OPTIONAL, default 1, but RECOMMENDED for Module == 'ASL')
 %
 % OUTPUT:
 %   x                   - same as input
@@ -34,7 +34,7 @@ fprintf('Collecting QC parameters...\n');
 
 if nargin<3 || isempty(Module)
     % Run collecting and saving for all
-    error('Missing ScanType...');
+    error('Missing Module...');
 end
 if nargin<2 || isempty(iSubject)
     % Run collecting and saving for all
