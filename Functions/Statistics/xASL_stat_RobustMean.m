@@ -32,13 +32,13 @@ function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunct
 
 
 %% Admin
-if size(IM,2)<16 % only do the outlier detection with sufficiently large datasets
-    NotOutliers = ones(size(IM,2),1);
-    iOutliers = []; % empty
-    RMS = NaN;
-    fprintf('Outlier exclusion skipped, too small dataset\n');
-    return;
-end
+% if size(IM,2)<16 % only do the outlier detection with sufficiently large datasets
+%     NotOutliers = ones(size(IM,2),1);
+%     iOutliers = []; % empty
+%     RMS = NaN;
+%     fprintf('Outlier exclusion skipped, too small dataset\n');
+%     return;
+% end
 if nargin<2 || isempty(ParameterFunction)
     ParameterFunction = 'SoS';
 elseif isempty(regexpi(ParameterFunction, '^(SoS|AI)$'))
