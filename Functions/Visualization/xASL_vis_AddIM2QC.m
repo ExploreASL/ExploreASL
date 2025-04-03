@@ -60,7 +60,6 @@ function [x] = xASL_vis_AddIM2QC(x, parms)
 
 
     %% Create the field
-    IndexIm = 1;
     if ~isfield(x, 'Output_im') || isempty(x.Output_im)
         x.Output_im = struct;
 	end
@@ -111,9 +110,17 @@ function [x] = xASL_vis_AddIM2QC(x, parms)
 
     %% Add the image to the field
 	if strcmpi(parms.ModuleName, 'structural')
-		x.Output_im.(parms.ModuleName).(pathName){IndexIm} = IM;
+		if iscell(x.Output_im.(parms.ModuleName))
+			% Fix compatibility issue with previously saved data
+			x.Output_im.(parms.ModuleName) = [];
+		end
+		x.Output_im.(parms.ModuleName).(pathName) = IM;
 	else
-		x.Output_im.(parms.ModuleName).(x.SESSION).(pathName){IndexIm} = IM;
+		if iscell(x.Output_im.(parms.ModuleName).(x.SESSION))
+			% Fix compatibility issue with previously saved data
+			x.Output_im.(parms.ModuleName).(x.SESSION) = [];
+		end
+		x.Output_im.(parms.ModuleName).(x.SESSION).(pathName) = IM;
 	end
 
 end
