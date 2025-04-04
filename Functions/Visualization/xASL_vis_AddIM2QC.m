@@ -110,16 +110,32 @@ function [x] = xASL_vis_AddIM2QC(x, parms)
 
     %% Add the image to the field
 	if strcmpi(parms.ModuleName, 'structural')
+		%% ==============================================
+		%% PM: BACKWARD COMPATIBILITY CODE, CAN BE PHASED OUT
+		%% vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+		% Until version 1.11.0 and 1.12.0_beta, images were added as cells. 
+		% From 2.0.0, new images are added in the structure under a specific name.
+		% When processing new subjects, the previous QC structure is loaded, so in case the old version 
+		% is loaded, it has to be removed as it is not fully compatible
 		if iscell(x.Output_im.(parms.ModuleName))
-			% Fix compatibility issue with previously saved data
 			x.Output_im.(parms.ModuleName) = [];
 		end
+		%% ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+		%% PM: BACKWARD COMPATIBILITY CODE, CAN BE PHASED OUT
+		%% ==============================================
+		
 		x.Output_im.(parms.ModuleName).(pathName) = IM;
 	else
+		%% ==============================================
+		%% PM: BACKWARD COMPATIBILITY CODE, CAN BE PHASED OUT
+		%% vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 		if iscell(x.Output_im.(parms.ModuleName).(x.SESSION))
 			% Fix compatibility issue with previously saved data
 			x.Output_im.(parms.ModuleName).(x.SESSION) = [];
 		end
+		%% ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+		%% PM: BACKWARD COMPATIBILITY CODE, CAN BE PHASED OUT
+		%% ==============================================
 		x.Output_im.(parms.ModuleName).(x.SESSION).(pathName) = IM;
 	end
 
