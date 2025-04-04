@@ -356,10 +356,10 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig_sub_printQCImages(qcStruct, x, c
         % This should have only a single image per imageName, per xASL_vis_AddIM2QC
         if isempty(CurrentIm)
             warning(['Something went wrong in xASL_vis_AddIM2QC, image missing: ' imageFields{iImage}]);
-        elseif length(CurrentIm)>1
+        elseif iscell(CurrentIm)
             warning(['Something went wrong in xASL_vis_AddIM2QC, too many images: ' imageFields{iImage}]);
         end
-        CurrentIm = double(allImages.(imageFields{iImage}){1});
+        CurrentIm = double(allImages.(imageFields{iImage}));
 
         % Convert grayscale images to color
         if  size(CurrentIm,3) == 1 
