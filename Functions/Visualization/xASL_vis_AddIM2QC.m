@@ -117,7 +117,7 @@ function [x] = xASL_vis_AddIM2QC(x, parms)
 		% From 2.0.0, new images are added in the structure under a specific name.
 		% When processing new subjects, the previous QC structure is loaded, so in case the old version 
 		% is loaded, it has to be removed as it is not fully compatible
-		if iscell(x.Output_im.(parms.ModuleName))
+		if isfield(x.Output_im, parms.ModuleName) && iscell(x.Output_im.(parms.ModuleName))
 			x.Output_im.(parms.ModuleName) = [];
 		end
 		%% ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -129,7 +129,7 @@ function [x] = xASL_vis_AddIM2QC(x, parms)
 		%% ==============================================
 		%% PM: BACKWARD COMPATIBILITY CODE, CAN BE PHASED OUT
 		%% vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-		if iscell(x.Output_im.(parms.ModuleName).(x.SESSION))
+		if isfield(x.Output_im, parms.ModuleName) && isfield(x.Output_im.(parms.ModuleName), x.SESSION) && iscell(x.Output_im.(parms.ModuleName).(x.SESSION))
 			% Fix compatibility issue with previously saved data
 			x.Output_im.(parms.ModuleName).(x.SESSION) = [];
 		end
