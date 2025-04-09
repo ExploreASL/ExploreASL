@@ -68,7 +68,7 @@ for iList=1:length(listKeys)
             jsonParticipants.sex.Levels.M = 'male';
         case 'site'
             jsonParticipants.site.Description = 'Center where this scan was made';
-            uniqueSites = unique(tableParticipants(2:end, iList));
+            uniqueSites = unique(cellfun(@num2str, tableParticipants(2:end, iList), 'UniformOutput', false));
             for iSite=1:length(uniqueSites)
                 jsonParticipants.site.Levels.(['Site_' num2str(iSite)]) = uniqueSites{iSite};
             end
