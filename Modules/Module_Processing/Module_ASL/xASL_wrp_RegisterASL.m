@@ -203,7 +203,9 @@ end
 %% D. Remove pre-existing registration information, if we repeat registration
 xASL_delete(x.P.Path_mean_PWI_Clipped_sn_mat);
 xASL_delete(x.P.Path_mean_PWI_Clipped);
+xASL_delete(x.P.Path_mean_PWI_Clipped_json);
 xASL_delete(x.P.Path_mean_control);
+xASL_delete(x.P.Path_mean_control_json);
 if strcmp(x.P.SessionID,x.SESSIONS{1}) || x.dataset.nSessions==1
     xASL_delete(x.D.Path_PseudoTissue);
     xASL_delete(x.D.Bias_Native);
@@ -566,8 +568,8 @@ x.Output.ASL.(x.SESSIONS{x.iSession}).TC_ASL2T1w_Perc = TanimotoPerc(end);
 %% ----------------------------------------------------------------------------------------
 %% Delete temporary files
 if x.settings.DELETETEMP
-    File2Del = {x.D.Mean_Native, x.D.Bias_Native, x.D.Vasc_Native, x.D.Mask_Native, x.D.raw_Native, x.P.Path_mean_PWI_Clipped,x.P.Path_mean_PWI_Clipped_DCT,...
-        x.P.Path_mean_control, x.P.Path_PseudoCBF, x.D.PathMask, x.D.Path_PseudoTissue, x.D.PathMask, x.P.Path_mean_PWI_Clipped_ORI};
+    File2Del = {x.D.Mean_Native, x.D.Bias_Native, x.D.Vasc_Native, x.D.Mask_Native, x.D.raw_Native, x.P.Path_mean_PWI_Clipped, x.P.Path_mean_PWI_Clipped_json,x.P.Path_mean_PWI_Clipped_DCT,...
+        x.P.Path_mean_control, x.P.Path_mean_control_json, x.P.Path_PseudoCBF, x.D.PathMask, x.D.Path_PseudoTissue, x.D.PathMask, x.P.Path_mean_PWI_Clipped_ORI};
     for iL=1:length(File2Del)
         xASL_delete(File2Del{iL});
     end
