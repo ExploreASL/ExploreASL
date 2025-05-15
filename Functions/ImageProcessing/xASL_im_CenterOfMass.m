@@ -24,7 +24,7 @@ function xASL_im_CenterOfMass(PathNIfTI, OtherList, AllowedDistance)
 % EXAMPLE:      T1w: xASL_im_CenterOfMass('Path2Study/sub-001/T1.nii', {'Path2Study/sub-001/FLAIR.nii'}, 0);
 %               ASL: xASL_im_CenterOfMass('Path2Study/sub-001/ASL_1/ASL4D.nii', {'Path2Study/sub-001/ASL_1/M0.nii'}, 50);
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
+% Copyright (C) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -77,9 +77,14 @@ IM = single(nii.dat(:,:,:,1)).^0.5; % restore contrast
 % X-Y-Z order is the same for nVoxels & mm orientation matrix: L->R P->A I->S (from low to high values)
 
 % QC
-if sum(isfinite(nii.mat(:)))<numel(nii.mat(:))
-    warning(['There was an error in the NIfTI orientation matrix, trying to repair: ' PathNIfTI]);
-    nii.mat = nii.mat0; % if there is any error in the orientation matrix, revert to the original orientation
+if sum(isfinite(nii.mat(:)))<numel(nii.mat(:)) % if there is any error (e.g. a NaN) in the orientation matrix, revert to the original orientation
+    % First, issue a warning
+    warning('There was an error in the orientation matrix, hence we reverted to the original orientation; registration may be incorrect!');
+    fprintf('%s\n', ['nii.mat of ' PathNIfTI ' was:']);
+    nii.mat
+    fprintf('\n\n');
+    % Then, revert to the original orientation
+    nii.mat = nii.mat0; % revert to the original orientation
 end
 
 
@@ -125,9 +130,14 @@ for iO=1:length(OtherList)
         nii = xASL_io_ReadNifti(OtherList{iO});
 
         % QC
-        if sum(isfinite(nii.mat(:)))<numel(nii.mat(:))
-            warning(['There was an error in the NIfTI orientation matrix, trying to repair: ' OtherList{iO}]);
-            nii.mat = nii.mat0; % if there is any error in the orientation matrix, revert to the original orientation
+        if sum(isfinite(nii.mat(:)))<numel(nii.mat(:)) % if there is any error (e.g. a NaN) in the orientation matrix, revert to the original orientation
+            % First, issue a warning
+            warning('There was an error in the orientation matrix, hence we reverted to the original orientation; registration may be incorrect!');
+            fprintf('%s\n', ['nii.mat of ' OtherList{iO} ' was:']);
+            nii.mat
+            fprintf('\n\n');
+            % Then, revert to the original orientation
+            nii.mat = nii.mat0;
         end
 
         nii.mat(1:3,4) = nii.mat(1:3,4) + CoMshift;
@@ -153,7 +163,6 @@ end
 
 
 fprintf('%s\n',[' to XYZ:' num2str(CoM(1),3) ' ' num2str(CoM(2),3) ' ' num2str(CoM(3),3)]);
-
 
 
 end
