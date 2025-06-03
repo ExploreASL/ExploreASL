@@ -86,7 +86,7 @@ end
 %% Define FSL environment script (only declares variables, OK to repeat)
 FSLinit0 = ['FSLDIR=' FSLdir ';'];
 if exist(fullfile(RootFSLdir,'etc','fslconf','fsl.sh'),'file')
-	FSLinit1 = ['. ' FSLdir '/etc/fslconf/fsl.sh;'];
+    FSLinit1 = ['. ' FSLdir '/etc/fslconf/fsl.sh;'];
 elseif exist(fullfile(RootFSLdir,'etc','fsl','fsl.sh'),'file')
 	FSLinit1 = ['. ' FSLdir '/etc/fsl/fsl.sh;'];
 else
@@ -125,10 +125,15 @@ if length(FSLCommand)>5 && strcmp(FSLCommand(1:5),'/bin/')
 		FSLCommand = [FSLdir FSLCommand];
 	elseif exist(RootFSLdir,'dir')
 		FSLCommand = [FSLdir FSLCommand(5:end)];
-	else
-		warning('Cannot locate the command, skipping');
-		return;
+    else
+        FSLCommand = [FSLdir FSLCommand];
+		%warning('Cannot locate the command, skipping');
+		%return;
 	end
+end
+
+if ~ispc % no need to append on wsl as FSL already in path
+    FSLCommand = [FSLdir FSLCommand];
 end
 
 %% Be nice
@@ -141,17 +146,6 @@ if ispc
 else
     wslString = '';
 end
-
-% When there are weird symbols in the path, 
-% this cannot be given as options to the "External_ModelOptions.txt" file
-% It does work if the path is ommitted, and only the filenames are added
-
-% Hence, we need to ensure that we are in the ASL SESSION folder when starting this FSL work
-% This shouldn't influence use cases where we don't use the options.txt, because the folderpath
-% is usually included in the FSLCommand
-
-cd(x.P.SessionDir{x.iSession});
-
 if bVerbose
     Result1 = system([wslString FSLinit FSLoutput NiceString FSLCommand], '-echo');
 else
