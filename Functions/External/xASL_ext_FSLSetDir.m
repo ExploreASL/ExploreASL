@@ -93,7 +93,7 @@ end
 
 %% 1) Check if FSL is initialized by system
 if ispc 
-    [bSuccess, result2] = system('wsl which fsl');
+    [bSuccess, result2] = system('wsl -e bash -li -c "which fsl"'); % Running in interactive mode for cases with no automatic FSL initialization
 else
     [bSuccess, result2] = system('which fsl');
 end 
@@ -151,6 +151,11 @@ if bAutomaticallyDetectFSL
         [FoundWSL2(2), ~] = system('dir \\wsl$\Ubuntu-20.04');
         if FoundWSL2(2)==0 % we bias later Ubuntu versions
             RootWSLdir = '\\wsl$\Ubuntu-20.04';
+        end
+
+        [FoundWSL2(2), ~] = system('dir \\wsl$\Ubuntu-22.04');
+        if FoundWSL2(2)==0 % please add the latest recommended version 
+            RootWSLdir = '\\wsl$\Ubuntu-22.04';
         end
  
         if isempty(RootWSLdir) % if still no WSL found
@@ -233,7 +238,7 @@ if ispc
         RootWSLdir = RootWSLdir{end}; % default to most recent version
     end
     %% PM: not sure about this code here!!
-    FSLdir = FSLdir(length(RootWSLdir)+1:end);
+    FSLdir = FSLdir(length(RootWSLdir)+1:end); % works via wsl
 end
 FSLdir = strrep(FSLdir,'\','/');
 
