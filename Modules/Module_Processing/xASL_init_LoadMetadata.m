@@ -264,12 +264,12 @@ function [x] = xASL_bids_LoadParticipantTSV(x)
             end
             VarContent(:,end+1) = CellArray(2:end, iVar);
 
-            % Columns to skip
+            % Certain columns (e.g., containing _cbf_) are intentionally skipped
             varName2Skip = {'_cbf_'};
 
             % if any of the variable names that we should skip (e.g., cbf) is contained in the variable name,
             % we don't load it
-            if ~max(cellfun(@(y) contains(VarName, y), varName2Skip))
+            if ~any(cellfun(@(y) contains(VarName, y), varName2Skip))
                 x = xASL_init_AddVariable(x, VarName, VarContent, VarOptions, VarSample);
             end
         end
