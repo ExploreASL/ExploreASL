@@ -1,7 +1,7 @@
 function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, pvCSF, brainCentralityMap, LowThreshold)
 %xASL_im_M0ErodeSmoothExtrapolate M0 image processing
 %
-% FORMAT: [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, brainCentralityMap[, LowThreshold])
+% FORMAT: [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, NameOutput, pvGM, pvWM, pvCSF, brainCentralityMap[, LowThreshold])
 %
 % INPUT:
 %   ImIn - unprocessed M0 image, as 3D image or path (REQUIRED)
@@ -48,7 +48,7 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %               7.  Scale back to the GM M0
 %               8.  Print visual QC figure
 %
-% EXAMPLE: as used in ExploreASL (xASL_wrp_ProcessM0): [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_PV_pGM, x.P.Pop_Path_PV_PWM, path_BrainCentralityMap)
+% EXAMPLE: as used in ExploreASL (xASL_wrp_ProcessM0): [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_PV_pGM, x.P.Pop_Path_PV_PWM, x.P.Pop_Path_PV_PWM, path_BrainCentralityMap)
 % __________________________________
 % Copyright (C) 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
