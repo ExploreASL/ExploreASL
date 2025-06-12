@@ -198,17 +198,18 @@ for iIm=1:6
     OutIm{iIm} = xASL_vis_CreateVisualFig(x, {x.P.Pop_Path_rT1 VisualizeImage==iIm}, [], [0.75 0.35], [], {x.S.gray x.S.colors_ROI{iIm}});
 end
 
-% Initialize final image
-OutImFinal = zeros(size(OutIm{1}));
-OutImFinal(OutIm{1}==OutIm{2}) = OutImFinal(OutIm{1}==OutIm{2});
+% Initialize final image - make sure it has the proper dimensions when an individual image is returned empty
+OutImFinal = zeros(max(cellfun(@(x) size(x,1),OutIm)), max(cellfun(@(x) size(x,2),OutIm)), max(cellfun(@(x) size(x,3),OutIm)));
 
 for iIm=1:length(OutIm)
-    % Create masks with non-grey voxels (i.e. the overlay)
-    OutImMask{iIm} = OutIm{iIm}(:,:,1)~=OutIm{iIm}(:,:,2) | OutIm{iIm}(:,:,2)~=OutIm{iIm}(:,:,3)  | OutIm{iIm}(:,:,1)~=OutIm{iIm}(:,:,3);
-    OutImMask{iIm} = repmat(OutImMask{iIm}, [1 1 3]);
-    
-    % Add the overlay from each mask
-    OutImFinal(OutImMask{iIm}) = OutIm{iIm}(OutImMask{iIm});
+	if isequal(size(OutImFinal), size(OutIm{iIm}))
+		% Create masks with non-grey voxels (i.e. the overlay)
+		OutImMask{iIm} = OutIm{iIm}(:,:,1)~=OutIm{iIm}(:,:,2) | OutIm{iIm}(:,:,2)~=OutIm{iIm}(:,:,3)  | OutIm{iIm}(:,:,1)~=OutIm{iIm}(:,:,3);
+		OutImMask{iIm} = repmat(OutImMask{iIm}, [1 1 3]);
+
+		% Add the overlay from each mask
+		OutImFinal(OutImMask{iIm}) = OutIm{iIm}(OutImMask{iIm});
+	end
 end
 
 PathJPG = fullfile(ImageSaveDir, ['Regions_' Ffile '.jpg']);
