@@ -84,12 +84,14 @@ function [Ysrc,Ycls,Yb,Yb0,job,res,T3th,stime2] = cat_main_updateSPM(Ysrc,P,Yy,t
   %% Some error handling
   %    ds('l2','',vx_vol,Ysrc./WMth,Yp0>0.3,Ysrc./WMth,Yp0,80)
   Yp0  = single(P(:,:,:,3))/255/3 + single(P(:,:,:,1))/255*2/3 + single(P(:,:,:,2))/255;
-  if isfield(res,'Ylesion') && sum(res.Ylesion(:)>0)
-    res.YlesionFull = res.Ylesion; % ExploreASL fix
-    res.Ylesion = cat_vol_ctype( single(res.Ylesion) .* (Yp0>0.2) ); 
-    for k=1:size(P,4), Yl = P(:,:,:,k); Yl(res.Ylesion>0.5) = 0; P(:,:,:,k) = Yl; end  
-    Yl = P(:,:,:,3); Yl(res.Ylesion>0.5) = 255; P(:,:,:,3) = Yl; clear Yl; 
-    Yp0  = single(P(:,:,:,3))/255/3 + single(P(:,:,:,1))/255*2/3 + single(P(:,:,:,2))/255;
+  if isfield(res,'Ylesion') 
+	  res.YlesionFull = res.Ylesion; % ExploreASL fix
+	  if sum(res.Ylesion(:)>0)
+		  res.Ylesion = cat_vol_ctype( single(res.Ylesion) .* (Yp0>0.2) );
+		  for k=1:size(P,4), Yl = P(:,:,:,k); Yl(res.Ylesion>0.5) = 0; P(:,:,:,k) = Yl; end
+		  Yl = P(:,:,:,3); Yl(res.Ylesion>0.5) = 255; P(:,:,:,3) = Yl; clear Yl;
+		  Yp0  = single(P(:,:,:,3))/255/3 + single(P(:,:,:,1))/255*2/3 + single(P(:,:,:,2))/255;
+	  end
   end
   if sum(Yp0(:)>0.3)<100 
     % this error often depends on a failed affine registration, where SPM

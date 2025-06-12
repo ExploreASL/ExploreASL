@@ -222,14 +222,14 @@ if ~isfield(res,'spmpp')
     end
     if job.extopts.new_release && 0 
       % improvements for large ventricles ... not working now (RD201911)
-      if isfield(res,'Ylesion') && sum(res.Ylesion(:)>0)
+      if isfield(res,'YlesionFull') && sum(res.YlesionFull(:)>0)
         % [trans,res.ppe.reginitp] = cat_main_registration2(job2,res2,Ycls(1:2),Yy,tpm.M,res.Ylesion); 
         [trans,res.ppe.reginitp] = cat_main_registration2(job2,res2,Ycls(1:2),Yy,tpm.M,res.YlesionFull); 
       else
         [trans,res.ppe.reginitp] = cat_main_registration2(job2,res2,Ycls(1:2),Yy,tpm.M); 
       end
     else
-      if isfield(res,'Ylesion') && sum(res.Ylesion(:)>0)
+      if isfield(res,'YlesionFull') && sum(res.YlesionFull(:)>0)
         % [trans,res.ppe.reginitp] = cat_main_registration(job2,res2,Ycls(1:2),Yy,tpm.M,res.Ylesion); 
         [trans,res.ppe.reginitp] = cat_main_registration(job2,res2,Ycls(1:2),Yy,tpm.M,res.YlesionFull);
       else
@@ -602,20 +602,20 @@ end
     Yclsd{2} = cat_vol_ctype(min(255,single(Ycls{2}) + single(Ycls{7}))); % set WMHs as WM in some cases
   end
   
-  if (~isempty(job.extopts.xasl_lesion{1})) || (job.extopts.SLC && isfield(res,'Ylesion') && sum(res.Ylesion(:)>0))
+  if (~isempty(job.extopts.xasl_lesion{1})) || (job.extopts.SLC && isfield(res,'YlesionFull') && sum(res.YlesionFull(:)>0))
     % lesion detection in the original space with the original data
     LSstr   = 0.5; 
     Yvt     = cat_vol_morph( NS(Yl1,job.extopts.LAB.VT),'do',4,vx_vol);      % open to get lesions close to the ventricle
     Yvt     = cat_vol_morph( Yvt ,'dd',4,vx_vol);                            % add some voxels for smoothness
     res.Ylesion = cat_vol_ctype( single(res.Ylesion) .* (1 - (Yvt & Ym>0.9 & Ym<1.1) ));
-    res.YlesionFull = cat_vol_ctype( single(res.YlesionFull) .* (1 - (Yvt & Ym>0.9 & Ym<1.1) ));
+	res.YlesionFull = cat_vol_ctype( single(res.YlesionFull) .* (1 - (Yvt & Ym>0.9 & Ym<1.1) ));
     if ~debug, clear Yvt Ybgvt Ybgn;  end      
     % add lesion of automatic lesion estimation? - in development
     if job.extopts.WMHC>3
       res.Ylesion = cat_vol_ctype( single(res.Ylesion) + ...
         255* smooth3( Ym<1.5/3 & cat_vol_morph(NS(Yl1,job.extopts.LAB.LE),'dd',4*(1-LSstr))) ); 
-      res.YlesionFull = cat_vol_ctype( single(res.YlesionFull) + ...
-        255* smooth3( Ym<1.5/3 & cat_vol_morph(NS(Yl1,job.extopts.LAB.LE),'dd',4*(1-LSstr))) );
+	  res.YlesionFull = cat_vol_ctype( single(res.YlesionFull) + ...
+		  255* smooth3( Ym<1.5/3 & cat_vol_morph(NS(Yl1,job.extopts.LAB.LE),'dd',4*(1-LSstr))) );
     end
     %Ylesions = cat_vol_smooth3X(single(res.Ylesion)/255,4); % final smoothing to have soft boundaries
     Ylesions = cat_vol_smooth3X(single(res.YlesionFull),1.5); % final smoothing to have soft boundaries
