@@ -154,6 +154,11 @@ end
 
 % Print the applied masking settings
 fprintf('\n%s\n', 'We will apply the following ASL masking:');
+if x.S.bSubjectSpecificROI
+	% For Specific ROIs - Lesion and ROI provided on the input, we do not superimpose additional masks
+	x.S.bMasking = [0 0 0 0];
+end
+
 if x.S.bMasking(1)==1
     fprintf('%s\n', 'susceptibility mask: enabled');
 else
