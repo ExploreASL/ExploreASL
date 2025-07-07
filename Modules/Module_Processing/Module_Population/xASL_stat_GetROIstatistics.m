@@ -139,13 +139,17 @@ end
 
 %% 0.a Manage masking
 if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
-    x.S.bMasking = [1 1 1 1]; % default
+    bMasking = [1 1 1 1]; % default
+elseif isequal(x.S.bMasking, 1)	
+	bMasking = [1 1 1 1];
 elseif isequal(x.S.bMasking, 0)
-    x.S.bMasking = [0 0 0 0];
+    bMasking = [0 0 0 0];
+else
+	bMasking = x.S.bMasking;
 end
 
 if ~x.S.IsASL
-    x.S.bMasking(3) = 0; % disable tissue masking
+    bMasking(3) = 0; % disable tissue masking
 end
 
 if ~isfield(x.S, 'bWMH')
@@ -156,25 +160,25 @@ end
 fprintf('\n%s\n', 'We will apply the following ASL masking:');
 if x.S.bSubjectSpecificROI
 	% For Specific ROIs - Lesion and ROI provided on the input, we do not superimpose additional masks
-	x.S.bMasking = [0 0 0 0];
+	bMasking = [0 0 0 0];
 end
 
-if x.S.bMasking(1)==1
+if bMasking(1)==1
     fprintf('%s\n', 'susceptibility mask: enabled');
 else
     fprintf('%s\n', 'susceptibility mask: disabled');
 end
-if x.S.bMasking(2)==1
+if bMasking(2)==1
     fprintf('%s\n', 'vascular mask: enabled');
 else
     fprintf('%s\n', 'vascular mask: disabled');
 end
-if x.S.bMasking(3)==1
+if bMasking(3)==1
     fprintf('%s\n', 'tissue-specific mask: enabled');
 else
     fprintf('%s\n', 'tissue-specific mask: disabled');
 end
-if x.S.bMasking(4)==1
+if bMasking(4)==1
     fprintf('%s\n', 'WholeBrain mask: enabled');
 else
     fprintf('%s\n', 'WholeBrain mask: disabled');
@@ -222,7 +226,7 @@ end
 
 %% 0.c Determine whether group mask exists
 if x.S.InputNativeSpace
-	x.S.bMasking(1) = 0; % disable susceptibility masking
+	bMasking(1) = 0; % disable susceptibility masking
 else
 	if isfield(x.S,'MaskSusceptibility') && ~min(x.S.MaskSusceptibility == xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask))
 		HasGroupSusceptMask = true;
@@ -231,7 +235,7 @@ else
 	end
 end
 
-if x.S.bMasking(1)==1
+if bMasking(1)==1
     if HasGroupSusceptMask
         fprintf('Using population-based susceptibility mask...\n');
     else
@@ -569,7 +573,7 @@ for iSubject=1:x.dataset.nSubjects
 				Data4DIm = reshape(Data4DIm, [], size(Data4D, 4));
 			end
 
-            if x.S.bMasking(2)==1
+            if bMasking(2)==1
                 % Load vascular mask (this is done subject-wise)
                 FilePath = fullfile(x.dir.SESSIONDIR, 'MaskVascular.nii');
                 if xASL_exist(FilePath,'file')
@@ -591,7 +595,7 @@ for iSubject=1:x.dataset.nSubjects
 			DataIm = xASL_im_IM2Column(Data3D, x.S.masks.WBmask, false);
 		end
 
-		if x.S.bMasking(2)==1
+		if bMasking(2)==1
 			% Load vascular mask (this is done subject-wise)
 			FilePath = fullfile(filePathDir, ['MaskVascular' filePathSubject '.nii']);
 			if xASL_exist(FilePath,'file')
@@ -627,7 +631,7 @@ for iSubject=1:x.dataset.nSubjects
 		%% 4.e Actual data computations
 
 		SusceptibilityMask = xASL_im_IM2Column(x.S.masks.WBmask, x.S.masks.WBmask); % default = no susceptibility mask
-        if x.S.bMasking(1)==1
+        if bMasking(1)==1
             if x.S.InputNativeSpace
 				fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},'MaskSusceptibility_Atlas.nii');
                 if xASL_exist(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},'MaskSusceptibility_Atlas.nii'))
@@ -748,7 +752,7 @@ for iSubject=1:x.dataset.nSubjects
                 % pvPrimary is the main tissue type that is investigated
                 % pvSecondary is the other tissue type that is used with PVC
 
-				if x.S.bMasking(3)==0 % no tissue-masking
+				if bMasking(3)==0 % no tissue-masking
                     pvPrimary = ones(size(DataIm));
                     pvSecondary = ones(size(DataIm));
 					bSkipPVC = 1;
@@ -765,7 +769,7 @@ for iSubject=1:x.dataset.nSubjects
 				CurrentMaskNotVascular = logical(single(SubjectSpecificMasks(:,iROI)) .* (pvPrimary>0.5));
 
 				% Apply susceptibility mask
-				if x.S.bMasking(1) 
+				if bMasking(1) 
                     CurrentMaskNotVascular = logical(CurrentMaskNotVascular .* SusceptibilityMask);
 				end
 				
@@ -811,7 +815,7 @@ for iSubject=1:x.dataset.nSubjects
 					end
 
                     %% CBF (now remove vascular artifacts)
-                    if x.S.bMasking(2)==1 % apply vascular mask, but rename this to CurrentVascular mask, because we still need the original CurrentMaskNotVascular for 4D temporal calculations
+                    if bMasking(2)==1 % apply vascular mask, but rename this to CurrentVascular mask, because we still need the original CurrentMaskNotVascular for 4D temporal calculations
                         CurrentMaskVascular = CurrentMaskNotVascular & VascularMask;
 					else
                         % Otherwise keep CurrentMaskNotVascular as is, don't apply a vascular mask

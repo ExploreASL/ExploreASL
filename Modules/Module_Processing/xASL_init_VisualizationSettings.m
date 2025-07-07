@@ -42,14 +42,6 @@ function [x] = xASL_init_VisualizationSettings(x)
         x.S = struct;
     end
 
-    if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
-        x.S.bMasking = [1 1 1 1];
-    elseif isequal(x.S.bMasking, 1)
-        x.S.bMasking = [1 1 1 1];
-    elseif isequal(x.S.bMasking, 0)
-        x.S.bMasking = [0 0 0 0];        
-    end
-
     %% Slice numbers
     % Defines which transversal slices to use by default
     x.S.slices           = [53 62 74 87]; % for 1.5mm MNI, ([85 102 119 131] would be the same for 1mm MNI)
@@ -141,12 +133,22 @@ function [x] = xASL_init_VisualizationSettings(x)
     end
 
     ImageWB = xASL_io_Nifti2Im(x.D.Atlas.WholeBrain);
-    if x.S.bMasking(4)==0
+
+    if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
+        bMasking = [1 1 1 1];
+    elseif isequal(x.S.bMasking, 1)
+        bMasking = [1 1 1 1];
+    elseif isequal(x.S.bMasking, 0)
+        bMasking = [0 0 0 0];        
+	else
+		bMasking = x.S.bMasking;
+	end
+
+    if bMasking(4)==0
         x.S.masks.WBmask = true(size(ImageWB));
     else
         x.S.masks.WBmask = logical(ImageWB);
-    end
-
+	end
 
     warning('off','images:initSize:adjustingMag'); % warning about scaling if an image doesnt fit screen, disable
 
