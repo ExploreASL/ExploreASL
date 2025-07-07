@@ -139,7 +139,13 @@ end
 
 %% 0.a Manage masking
 if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
-    bMasking = [1 1 1 1]; % default
+	if x.S.bSubjectSpecificROI
+		% For Specific ROIs - Lesion and ROI provided on the input, we do not superimpose additional masks by default
+		fprintf('\n\n%s\n\n', 'Calculating statistics for subject-specific lesions or ROIs -> disabling all masks: susceptibility regions will not be masked, vascular artifacts may be included.');
+		bMasking = [0 0 0 0];
+	else % The standard default applies all masks
+		bMasking = [1 1 1 1];
+	end
 elseif isequal(x.S.bMasking, 1)	
 	bMasking = [1 1 1 1];
 elseif isequal(x.S.bMasking, 0)
@@ -149,8 +155,12 @@ else
 end
 
 if ~x.S.IsASL
-    bMasking(3) = 0; % disable tissue masking
+    bMasking(3) = 0; % disable tissue masking - this is done in all cases
 end
+
+if x.S.InputNativeSpace
+	bMasking(1) = 0; % disable susceptibility masking always for native space analyzis
+else
 
 if ~isfield(x.S, 'bWMH')
     x.S.bWMH = false; % by default, WMH are excluded from all ROIs
@@ -158,10 +168,6 @@ end
 
 % Print the applied masking settings
 fprintf('\n%s\n', 'We will apply the following ASL masking:');
-if x.S.bSubjectSpecificROI
-	% For Specific ROIs - Lesion and ROI provided on the input, we do not superimpose additional masks
-	bMasking = [0 0 0 0];
-end
 
 if bMasking(1)==1
     fprintf('%s\n', 'susceptibility mask: enabled');
@@ -225,9 +231,7 @@ end
 
 
 %% 0.c Determine whether group mask exists
-if x.S.InputNativeSpace
-	bMasking(1) = 0; % disable susceptibility masking
-else
+if ~x.S.InputNativeSpace
 	if isfield(x.S,'MaskSusceptibility') && ~min(x.S.MaskSusceptibility == xASL_im_IM2Column(ones(121,145,121),x.S.masks.WBmask))
 		HasGroupSusceptMask = true;
 	else
