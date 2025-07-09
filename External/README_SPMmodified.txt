@@ -247,6 +247,7 @@ External/SPMmodified/toolbox/cat12/cat_main_registration.m
 External/SPMmodified/toolbox/cat12/cat_main_updateSPM.m
 88 - We save our original lesion as LesionFull for later use, because the other lesion gets stripped (and this does not work when T1w has the lesion set to NaN by ExploreASL).
 External/SPMmodified/toolbox/cat12/cat_main.m
+225 - Use YLesionFull instead of YLesion
 708 - calling the registration with the Full Lesion, that is not stripped (as the stripped one does not work when NaNs were set to T1w - because the WM segmentation is then missing there).
 1390 - removing the lesion also when the xasl_lesion parameter was set. Few lines below - need to add apply the same transformations also to the non-stripped lesion. Do not divide it by
        255, as this makes it virtually unusable - no idea why CAT does that.

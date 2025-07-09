@@ -199,7 +199,7 @@ for iIm=1:6
 end
 
 % Initialize final image - make sure it has the proper dimensions when an individual image is returned empty
-OutImFinal = zeros(max(cellfun(@(x) size(x,1),OutIm)), max(cellfun(@(x) size(x,2),OutIm)), max(cellfun(@(x) size(x,3),OutIm)));
+OutImFinal = zeros(max(cellfun(@(y) size(y,1),OutIm)), max(cellfun(@(y) size(y,2),OutIm)), max(cellfun(@(y) size(y,3),OutIm)));
 
 for iIm=1:length(OutIm)
 	if isequal(size(OutImFinal), size(OutIm{iIm}))
@@ -209,6 +209,8 @@ for iIm=1:length(OutIm)
 
 		% Add the overlay from each mask
 		OutImFinal(OutImMask{iIm}) = OutIm{iIm}(OutImMask{iIm});
+	else
+		warning("Cannot merge masks due to differences in volume sizes");
 	end
 end
 
