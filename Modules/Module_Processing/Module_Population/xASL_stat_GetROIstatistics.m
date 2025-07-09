@@ -141,7 +141,7 @@ end
 if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
 	if x.S.bSubjectSpecificROI
 		% For Specific ROIs - Lesion and ROI provided on the input, we do not superimpose additional masks by default
-		fprintf('\n\n%s\n\n', 'Calculating statistics for subject-specific lesions or ROIs -> disabling all masks: susceptibility regions will not be masked, vascular artifacts may be included.');
+		warning('Calculating statistics for subject-specific lesions or ROIs -> disabling all masks: susceptibility regions will not be masked, vascular artifacts may be included.');
 		bMasking = [0 0 0 0];
 	else % The standard default applies all masks
 		bMasking = [1 1 1 1];
@@ -159,8 +159,8 @@ if ~x.S.IsASL
 end
 
 if x.S.InputNativeSpace
-	bMasking(1) = 0; % disable susceptibility masking always for native space analyzis
-else
+	bMasking(1) = 0; % disable susceptibility masking always for native space analysis
+end
 
 if ~isfield(x.S, 'bWMH')
     x.S.bWMH = false; % by default, WMH are excluded from all ROIs
@@ -748,7 +748,7 @@ for iSubject=1:x.dataset.nSubjects
 				end
             else
                 % Provide some feedback for debugging                
-                if xASL_stat_SumNan(DataIm(:)) == 0
+                if ~xASL_stat_SumNan(DataIm(:))
                     % Check for empty CBF map first
                     fprintf('%s\n', ['Warning: Empty image for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess)]);
 				end
@@ -756,7 +756,7 @@ for iSubject=1:x.dataset.nSubjects
                 % pvPrimary is the main tissue type that is investigated
                 % pvSecondary is the other tissue type that is used with PVC
 
-				if bMasking(3)==0 % no tissue-masking
+				if ~bMasking(3) % no tissue-masking
                     pvPrimary = ones(size(DataIm));
                     pvSecondary = ones(size(DataIm));
 					bSkipPVC = 1;
@@ -788,11 +788,11 @@ for iSubject=1:x.dataset.nSubjects
 				end
 
                 % Now check for empty masks
-                if xASL_stat_SumNan(CurrentMaskNotVascular(:)) == 0
+                if ~xASL_stat_SumNan(CurrentMaskNotVascular(:))
                     fprintf('%s\n', ['* Empty ' x.S.TissueMaskingLocal ' CBF mask for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
-                elseif xASL_stat_SumNan(pvPrimary(:)) == 0
+                elseif ~xASL_stat_SumNan(pvPrimary(:))
                     fprintf('%s\n', ['* Empty pv' pvPrimaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
-                elseif xASL_stat_SumNan(pvSecondary(:)) == 0
+                elseif ~xASL_stat_SumNan(pvSecondary(:))
                     fprintf('%s\n', ['* Empty pv' pvSecondaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                 else                    
                     % Check if the ROI size is large enough
@@ -826,7 +826,7 @@ for iSubject=1:x.dataset.nSubjects
 						CurrentMaskVascular = CurrentMaskNotVascular;
                     end
 
-                    if xASL_stat_SumNan(CurrentMaskVascular(:)) == 0
+                    if ~xASL_stat_SumNan(CurrentMaskVascular(:))
                         % Now check again for empty mask (as it was
                         % masked now also with a vascular artifact
                         % mask)
@@ -1116,7 +1116,7 @@ nVoxelsWMROI = sum(sum(sum(WMmask(ROI))));
 pGMROIsum = sum(sum(sum(pGM(ROI))));
 pWMROIsum = sum(sum(sum(pWM(ROI))));
 
-if  xASL_stat_SumNan(ROI(:))==0
+if  ~xASL_stat_SumNan(ROI(:))
     fprintf('%s','Empty ROI, skipping PVEc expansion');
     return;
 end

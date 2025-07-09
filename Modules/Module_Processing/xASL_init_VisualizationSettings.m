@@ -134,6 +134,7 @@ function [x] = xASL_init_VisualizationSettings(x)
 
     ImageWB = xASL_io_Nifti2Im(x.D.Atlas.WholeBrain);
 
+	% We set defaults to bMasking for use in this function. But we don't save the defaults to x.S to reuse them further
     if ~isfield(x.S,'bMasking') || isempty(x.S.bMasking)
         bMasking = [1 1 1 1];
     elseif isequal(x.S.bMasking, 1)
@@ -144,7 +145,7 @@ function [x] = xASL_init_VisualizationSettings(x)
 		bMasking = x.S.bMasking;
 	end
 
-    if bMasking(4)==0
+    if ~bMasking(4)
         x.S.masks.WBmask = true(size(ImageWB));
     else
         x.S.masks.WBmask = logical(ImageWB);
