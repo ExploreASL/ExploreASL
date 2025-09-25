@@ -49,6 +49,8 @@ else
 	% Gather a list of all files in the directory
 	Flist   = xASL_adm_GetFileList(pathDICOM,'.*','FPListRec',[0 Inf]);
 	for iL=1:length(Flist)
+        iL
+        fprintf('\n');
 		[~, ~, Fext] = xASL_fileparts(Flist{iL});
 		if isempty(regexp(Fext, '(xlsx|ini|json|DS_Store)'))
 			% Track progress if verbosity is on
@@ -132,13 +134,16 @@ else
 				[~, Pname, Pext] = fileparts(Flist{iL});
 				if strcmpi(Pext, '.ima') || strcmpi(Pext, '.dcm')
 					% In case the extension is IMA or DCM, we don't change the filename
-					NewFile = Flist{iL};
+					NewFile = [Pname Pext];
 				else
 					% In other cases, we append the extension DCM
 					% Note that we have to use the previous extension as this covers the care of incorrectly detecting the extension
 					% when a period (.) was in the filename
-					NewFile = fullfile(NewDir, [Pname Pext '.dcm']);
+					NewFile = [Pname Pext '.dcm'];
 				end
+
+                % Add the new directory
+                NewFile = fullfile(NewDir, NewFile);
 
 				% The file is moved to the correct directory
 				if ~strcmp(Flist{iL}, NewFile) && exist(Flist{iL}, 'file') && ~exist(NewFile, 'file')
