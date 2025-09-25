@@ -49,8 +49,6 @@ else
 	% Gather a list of all files in the directory
 	Flist   = xASL_adm_GetFileList(pathDICOM,'.*','FPListRec',[0 Inf]);
 	for iL=1:length(Flist)
-        iL
-        fprintf('\n');
 		[~, ~, Fext] = xASL_fileparts(Flist{iL});
 		if isempty(regexp(Fext, '(xlsx|ini|json|DS_Store)'))
 			% Track progress if verbosity is on
