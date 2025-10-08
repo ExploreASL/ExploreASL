@@ -261,7 +261,7 @@ matlabbatch{1}.spm.util.defs.comp{2}.dartel.K = 6;
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFile)
 												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.nii')};
-matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {pathTPM};
+matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathTPM, 'FreeSurferSubfields')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
 matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
 matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
@@ -271,10 +271,10 @@ spm_jobman('run',matlabbatch);
 
 % Create MAT file
 xASL_tsvWrite(TSV, fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.tsv'), 1);
-IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.nii'));
+IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferBrainstem.nii'));
 IM = uint8(IM);
 save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.mat'),'IM');
-xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.nii'));
+xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferBrainstem.nii'));
 
 %% Transform the Brainstem atlas from sym-MNI2009c to IXI512
 imAtlasOrig = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'ThalamusProbs.MNIsymSpace.nii.gz')); % Load atlas
@@ -346,7 +346,7 @@ matlabbatch{1}.spm.util.defs.comp{2}.dartel.K = 6;
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFile)
 												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii')};
-matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {pathTPM};
+matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathTPM, 'FreeSurferSubfields')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
 matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
 matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
@@ -356,10 +356,10 @@ spm_jobman('run',matlabbatch);
 
 % Create MAT file
 xASL_tsvWrite(TSV, fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.tsv'), 1);
-IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii'));
+IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamus.nii'));
 IM = uint8(IM);
 save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.mat'),'IM');
-xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii'));
+xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamus.nii'));
 %% Transform the atlases from MNI2009c to IXI512
 % This has to be done label per label
 
