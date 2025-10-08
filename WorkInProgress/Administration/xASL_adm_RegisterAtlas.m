@@ -275,7 +275,10 @@ IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferBrain
 IM = uint8(IM);
 save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.mat'),'IM');
 xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferBrainstem.nii'));
-
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.nii'));
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.nii.mat'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferBrainstem.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.nii.gz'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.mat'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.nii.mat'));
 %% Transform the Brainstem atlas from sym-MNI2009c to IXI512
 imAtlasOrig = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'ThalamusProbs.MNIsymSpace.nii.gz')); % Load atlas
 [~,imAtlasMax] = max(imAtlasOrig, [], 4); %Convert probabilities to labels
@@ -360,6 +363,10 @@ IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThala
 IM = uint8(IM);
 save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.mat'),'IM');
 xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamus.nii'));
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii'));
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.mat'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamus.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.gz'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.mat'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.mat'));
 %% Transform the atlases from MNI2009c to IXI512
 % This has to be done label per label
 
