@@ -1,12 +1,13 @@
-function [x, IsLoaded] = xASL_adm_LoadX(x, Path_xASL, bOverwrite)
+function [x, IsLoaded] = xASL_adm_LoadX(x, Path_xASL, bOverwrite, bIsRequired)
 %xASL_adm_LoadX Load x.mat file that keeps track of QC output
-% FORMAT: [x[, IsLoaded]] = xASL_adm_LoadX(x[, Path_xASL, bOverwrite])
+% FORMAT: [x[, IsLoaded]] = xASL_adm_LoadX(x[, Path_xASL, bOverwrite, bIsRequired])
 %
 % INPUT:
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
 %   Path_xASL   - path to the x.mat that contains the QC output (OPTIONAL, DEFAULT = x.dir.SUBJECTDIR/x.mat)
 %   bOverwrite  - true to overwrite the current x structure with the
 %                 x.Output & x.Output_im from the x.mat (OPTIONAL, DEFAULT=false)
+%   bIsRequired - boolean, if true, issue warning if x.mat didn't exist (OPTIONAL, DEFAULT=true)
 %
 % OUTPUT:
 %   x           - as input
@@ -29,7 +30,7 @@ function [x, IsLoaded] = xASL_adm_LoadX(x, Path_xASL, bOverwrite)
 % EXAMPLE: [x, IsLoaded] = xASL_adm_LoadX(x, fullfile(x.dir.xASLDerivatives,'x.mat'), true);
 %
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% Copyright (C) 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -58,11 +59,19 @@ end
 if nargin<3 || isempty(bOverwrite)
     bOverwrite = false;
 end
+if nargin<4 || isempty(bIsRequired)
+    bIsRequired = true;
+end
+
+
+
 FieldNames = {'Output', 'Output_im'};
 
 %% 2. Load X-struct from disc
 if ~exist(Path_xASL, 'file')
-    fprintf('%s\n',['Couldnt load ' Path_xASL]);
+    if bIsRequired
+        fprintf('%s\n', ['Could not load ' Path_xASL]);
+    end
     return;
 else
     OldX = load(Path_xASL, '-mat');
