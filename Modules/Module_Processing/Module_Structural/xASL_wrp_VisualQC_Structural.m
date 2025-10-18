@@ -32,7 +32,8 @@ function xASL_wrp_VisualQC_Structural(x)
 %% 1.   Admin
 PathX = fullfile(x.dir.SUBJECTDIR,'x.mat');
 iSubject = find(strcmp(x.SUBJECTS, x.P.SubjectID)); % Find current subject index
-x = xASL_adm_LoadX(x, PathX, true); % assume x.mat is newer than x
+x = xASL_adm_LoadX(x, PathX, true, false); % assume x.mat is newer than x
+% but don't issue warning if x.mat is missing, since this is the first module
 
 % Clear the current QC images
 if isfield(x,'Output_im') && isfield(x.Output_im,'Structural')
