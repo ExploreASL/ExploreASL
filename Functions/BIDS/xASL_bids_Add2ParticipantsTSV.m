@@ -69,8 +69,14 @@ end
 if x.dataset.nSessions>1
     % Sessions found
     if size(DataIn,2)<3 % A session column should exist
-        warning('Session column missing, too few columns, skipping');
-        return;
+        if contains(DataName, 'vol') || contains(DataName, 'ICV') || contains(DataName, 'WMH')
+            % if this is a volumetric metric from the structural module,
+            % we assume this should be the same for all sessions
+            DataIn = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(DataIn, x.SESSIONS);
+        else
+            warning('Session column missing, too few columns, skipping');
+            return;
+        end
     else % check if the sessions are the same in DataIn and x.SESSIONS
         tempSessionNames = xASL_adm_SortStringNumbers(unique(DataIn(:,2)))';
 
