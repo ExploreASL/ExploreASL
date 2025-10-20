@@ -97,6 +97,11 @@ function [x] = xASL_qc_CollectQC_func(x, iSubject, iSession)
         QuantFields = fields(x.Q); % all quantification fields
         for iField = 1:length(QuantFields) % iterate over fields
             FieldName = QuantFields{iField};
+            % Skip struct fields (e.g., x.Q.BASIL with subfields)
+            % These are quantification settings, not acquisition parameters
+            if isstruct(x.Q.(QuantFields{iField}))
+                continue;
+            end
             IndexIs = find(cellfun(@(x) strcmp(x,FieldName), KnownUnits)); % check if we know the unit
             if ~isempty(IndexIs) % do we know the unit?
                 FieldName = [FieldName '_' HaveUnits{IndexIs}]; % then add the unit to the fieldname
