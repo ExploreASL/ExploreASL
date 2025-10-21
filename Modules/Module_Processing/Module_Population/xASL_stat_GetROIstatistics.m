@@ -410,7 +410,7 @@ for iSubject=1:x.dataset.nSubjects
 					end
 				end
 			else
-				if bDoOnceROIPVEC
+				if bDoOnceROIPVEC && x.S.bSubjectSpecificROI == false
 					pGM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii'));
 					pWM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii'));
 
