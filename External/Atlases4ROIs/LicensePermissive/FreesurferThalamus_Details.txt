@@ -1,0 +1,9 @@
+Author: Juan Eugenio Iglesias
+
+E-mail: e.iglesias [at] ucl.ac.uk
+
+Rather than directly contacting the author, please post your questions on this module to the FreeSurfer mailing list at freesurfer [at] nmr.mgh.harvard.edu
+
+If you use these tools in your analysis, please cite:
+
+A probabilistic atlas of the human thalamic nuclei combining ex vivo MRI and histology. Iglesias, J.E., Insausti, R., Lerma-Usabiaga, G., Bocchetta, M., Van Leemput, K., Greve, D., van der Kouwe, A., Caballero-Gaudes, C., Paz-Alonso, P. Neuroimage (accepted).

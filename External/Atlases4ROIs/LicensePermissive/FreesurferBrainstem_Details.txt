@@ -1,0 +1,9 @@
+Author: Juan Eugenio Iglesias
+
+E-mail: e.iglesias [at] ucl.ac.uk
+
+Rather than directly contacting the author, please post your questions on this module to the FreeSurfer mailing list at freesurfer [at] nmr.mgh.harvard.edu
+
+If you use these tools in your analysis, please cite:
+
+Bayesian segmentation of brainstem structures in MRI. Iglesias, J.E., Van Leemput, K., Bhatt, P., Casillas, C., Dutt, S., Schuff, N., Truran-Sacrey, D., Boxer, A., and Fischl, B. NeuroImage, 113, June 2015, 184-195.
