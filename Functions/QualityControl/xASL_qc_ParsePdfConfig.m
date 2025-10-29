@@ -876,7 +876,12 @@ function [string, settingsPDF] = xASL_qc_ParsePdfConfig_sub_Generate_QC_String(q
     %% 7. Combine name, value, unit and range into a single string for printing
     if size(TempValue, 1) == 1
         % string = sprintf([qcStruct.alias ':' TempValue ' ' UnitRange ' \n']);
-        string = [qcStruct.alias ':' TempValue ' ' UnitRange];
+        try
+            string = [qcStruct.alias ':' TempValue ' ' UnitRange];
+        catch
+            string = 'qcStruct.alias: complicated value';
+            fprintf('%s\n', ['Cannot print this parameter to PDF: ' qcStruct.alias]);
+        end
     end
 
 
