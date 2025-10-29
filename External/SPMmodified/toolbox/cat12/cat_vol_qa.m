@@ -584,12 +584,24 @@ function varargout = cat_vol_qa(action,varargin)
       QAS.software.markdefs     = which('cat_stat_marks');
       QAS.software.qamethod     = action; 
       QAS.software.date         = datestr(clock,'yyyymmdd-HHMMSS');
-      warning off
-      QAS.software.opengl       = opengl('INFO');
-      QAS.software.opengldata   = opengl('DATA');
-      warning on
+
+
+      %% EXPLOREASL HACK for Matlab 2025 and further
+      matlabVersion             = version;
+      matlabVersion             = str2num(matlabVersion(end-5:end-2));
+      if matlabVersion>=2025
+          QAS.software.opengl = rendererinfo;
+          QAS.software.opengldata = rendererinfo;
+      else
+          warning off
+          QAS.software.opengl       = opengl('INFO');
+          QAS.software.opengldata   = opengl('DATA');
+          warning on
+      end
+
       QAS.software.cat_warnings = cat_warnings;
  
+      
       %QAS.parameter             = opt.job; 
       if isfield(opt,'job')
         QAS.parameter.opts        = opt.job.opts;
