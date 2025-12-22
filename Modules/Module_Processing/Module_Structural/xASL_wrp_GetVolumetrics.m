@@ -18,7 +18,7 @@ function xASL_wrp_GetVolumetrics(x)
 %
 % EXAMPLE: xASL_wrp_GetVolumetrics(x);
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% Copyright 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -51,7 +51,7 @@ if xASL_exist(pathCAT12Volume, 'file')
         tableCAT12{2,4} = xASL_num2str(volumeCAT12.S.subjectmeasures.vol_abs_CGW(1)/1000); % CSF volume
     else
         warning('catVol.S does not contain the subjectmeasures field...');
-        tableCAT12{2,2:4} = 'n/a';
+        tableCAT12(2,2:4) = {'n/a'};
     end
 
     xASL_tsvWrite(tableCAT12, SaveFileTSV, 1);
