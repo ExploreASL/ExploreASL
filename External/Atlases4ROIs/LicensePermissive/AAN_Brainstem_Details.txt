@@ -1,0 +1,11 @@
+Author: Brian Edlow
+
+Web: https://doi.org/10.5061/dryad.zw3r228d2
+
+Rather than directly contacting the author, please post your questions on this module to the FreeSurfer mailing list at freesurfer [at] nmr.mgh.harvard.edu
+
+If you use these tools in your analysis, please cite:
+
+Edlow, Brian L. et al. (2023), Sustaining wakefulness: Brainstem connectivity in human consciousness, [], Posted-content, https://doi.org/10.1101/2023.07.13.548265
+
+Edlow BL, Takahashi E, Wu O, Benner T, Dai G, Bu L, Grant PE, Greer DM, Greenberg SM, Kinney HC, Folkerth RD. Neuroanatomic connectivity of the human ascending arousal system critical to consciousness and its disorders. Journal of Neuropathology and Experimental Neurology. 2012;71:531-546.  PMCID: PMC3387430.

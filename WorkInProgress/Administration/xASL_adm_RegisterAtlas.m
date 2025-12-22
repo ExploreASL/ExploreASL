@@ -367,6 +367,65 @@ xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii'));
 xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.mat'));
 xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamus.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.gz'));
 xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.mat'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.mat'));
+
+%% Transform the AAN atlas from sym-MNI2009c to IXI512
+imAtlasOrig = xASL_io_Nifti2Im(fullfile(pathTPM, 'AAN', 'AAN_Brainstem_MNI152_1mm_v2p0.nii')); % Load atlas
+
+imAtlas = zeros(size(imAtlasOrig(:,:,:,1))); % Create an empty atlas
+TSV = {};
+imAtlas(imAtlasOrig==7201) = 1;TSV{1,1} = 'DR';
+imAtlas(imAtlasOrig==7202) = 2;TSV{2,1} = 'MnR';
+imAtlas(imAtlasOrig==7203) = 3;TSV{3,1} = 'PAG';
+imAtlas(imAtlasOrig==7204) = 4;TSV{4,1} = 'VTA';
+imAtlas(imAtlasOrig==7205) = 5;TSV{5,1} = 'LC';
+imAtlas(imAtlasOrig==7301) = 5;
+imAtlas(imAtlasOrig==7401) = 5;
+imAtlas(imAtlasOrig==7206) = 6;TSV{6,1} = 'LDTg';
+imAtlas(imAtlasOrig==7302) = 6;
+imAtlas(imAtlasOrig==7402) = 6;
+imAtlas(imAtlasOrig==7207) = 7;TSV{7,1} = 'mRt';
+imAtlas(imAtlasOrig==7303) = 7;
+imAtlas(imAtlasOrig==7403) = 7;
+imAtlas(imAtlasOrig==7208) = 8;TSV{8,1} = 'PBC';
+imAtlas(imAtlasOrig==7304) = 8;
+imAtlas(imAtlasOrig==7404) = 8;
+imAtlas(imAtlasOrig==7209) = 9;TSV{9,1} = 'PnO';
+imAtlas(imAtlasOrig==7305) = 9;
+imAtlas(imAtlasOrig==7405) = 9;
+imAtlas(imAtlasOrig==7210) = 10;TSV{10,1} = 'PTg';
+imAtlas(imAtlasOrig==7306) = 10;
+imAtlas(imAtlasOrig==7406) = 10;
+
+xASL_io_SaveNifti(fullfile(pathTPM, 'AAN', 'AAN_Brainstem_MNI152_1mm_v2p0.nii'),fullfile(pathTPM, 'AAN', 'AAN_Brainstem.nii'), imAtlas);
+
+% Nearest neighbor transformation
+matlabbatch = [];
+matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{2}.dartel.flowfield = {fullfile(pathTPM, pathTPMSymAtlasDir, ['u_ws' pathTPMSymAtlasFile])};
+matlabbatch{1}.spm.util.defs.comp{2}.dartel.times = [1 0];
+matlabbatch{1}.spm.util.defs.comp{2}.dartel.K = 6;
+matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFile)
+												   fullfile(pathTPM, 'AAN', 'AAN_Brainstem.nii')};
+matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathTPM, 'AAN')};
+matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
+matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
+matlabbatch{1}.spm.util.defs.out{1}.pull.fwhm = [0 0 0];
+matlabbatch{1}.spm.util.defs.out{1}.pull.prefix = 'o';
+
+spm_jobman('run',matlabbatch);
+
+% Create MAT file
+xASL_tsvWrite(TSV, fullfile(pathTPM, 'AAN', 'AAN_Brainstem.tsv'), 1);
+IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'AAN', 'oAAN_Brainstem.nii'));
+IM = uint8(IM);
+save(fullfile(pathTPM, 'AAN', 'AAN_Brainstem.mat'),'IM');
+xASL_adm_GzipNifti(fullfile(pathTPM, 'AAN', 'oAAN_Brainstem.nii'));
+xASL_delete(fullfile(pathTPM, 'AAN', 'AAN_Brainstem.nii'));
+xASL_delete(fullfile(pathTPM, 'AAN', 'AAN_Brainstem.nii.mat'));
+xASL_Move(fullfile(pathTPM, 'AAN', 'oAAN_Brainstem.nii.gz'),fullfile(pathTPM, 'AAN', 'AAN_Brainstem.nii.gz'));
+xASL_Move(fullfile(pathTPM, 'AAN', 'AAN_Brainstem.mat'),fullfile(pathTPM, 'AAN', 'AAN_Brainstem.nii.mat'));
+
 %% Transform the atlases from MNI2009c to IXI512
 % This has to be done label per label
 
