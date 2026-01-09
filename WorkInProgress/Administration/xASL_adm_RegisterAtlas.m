@@ -338,7 +338,122 @@ imAtlas(imAtlasMax==51) = 25;
 imAtlas(imAtlasMax==52) = 26;TSV{26,1} = 'LD';
 imAtlas(imAtlasMax==53) = 26;
 
+% Merged Histology-based
+imAtlasLargeHist = zeros(size(imAtlasMax(:,:,:,1))); % Create an empty atlas with merged regions histology based
+TSVLargeHist = {};
+imAtlasLargeHist(imAtlasMax==25) = 1;TSVLargeHist{1,1} = 'Anterior Thalamus';%AV
+imAtlasLargeHist(imAtlasMax==50) = 1;
+imAtlasLargeHist(imAtlasMax==24) = 1;%Pt
+imAtlasLargeHist(imAtlasMax==49) = 1;
+imAtlasLargeHist(imAtlasMax==16) = 2;TSVLargeHist{2,1} = 'Mediodorsal Thalamus';%MD1
+imAtlasLargeHist(imAtlasMax==39) = 2;
+imAtlasLargeHist(imAtlasMax==13) = 2;%MDm
+imAtlasLargeHist(imAtlasMax==36) = 2;
+imAtlasLargeHist(imAtlasMax==18) = 3;TSVLargeHist{3,1} = 'Ventral Motor Complex';%VA
+imAtlasLargeHist(imAtlasMax==41) = 3;
+imAtlasLargeHist(imAtlasMax==15) = 3;%VAmc
+imAtlasLargeHist(imAtlasMax==38) = 3;
+imAtlasLargeHist(imAtlasMax==11) = 3;%VLa
+imAtlasLargeHist(imAtlasMax==34) = 3;
+imAtlasLargeHist(imAtlasMax==21) = 3;%VM
+imAtlasLargeHist(imAtlasMax==44) = 3;
+imAtlasLargeHist(imAtlasMax==27) = 3;%VLp
+imAtlasLargeHist(imAtlasMax==47) = 3;
+imAtlasLargeHist(imAtlasMax==9) = 4;TSVLargeHist{4,1} = 'Ventral Sensory Complex';%VPL
+imAtlasLargeHist(imAtlasMax==32) = 4;
+imAtlasLargeHist(imAtlasMax==17) = 5;TSVLargeHist{5,1} = 'Intralaminar midline Complex';%CeM
+imAtlasLargeHist(imAtlasMax==40) = 5;
+imAtlasLargeHist(imAtlasMax==10) = 5;%CM
+imAtlasLargeHist(imAtlasMax==33) = 5;
+imAtlasLargeHist(imAtlasMax==22) = 5;%CL
+imAtlasLargeHist(imAtlasMax==46) = 5;
+imAtlasLargeHist(imAtlasMax==14) = 5;%Pf
+imAtlasLargeHist(imAtlasMax==37) = 5;
+imAtlasLargeHist(imAtlasMax==19) = 5;%MV(Re)
+imAtlasLargeHist(imAtlasMax==42) = 5;
+imAtlasLargeHist(imAtlasMax==26) = 5;%Pc
+imAtlasLargeHist(imAtlasMax==48) = 5;
+imAtlasLargeHist(imAtlasMax==12) = 6;TSVLargeHist{6,1} = 'Pulvinar Complex';%PuA
+imAtlasLargeHist(imAtlasMax==35) = 6;
+imAtlasLargeHist(imAtlasMax==6) = 6;%PuI
+imAtlasLargeHist(imAtlasMax==29) = 6;
+imAtlasLargeHist(imAtlasMax==7) = 6;%PuM
+imAtlasLargeHist(imAtlasMax==30) = 6;
+imAtlasLargeHist(imAtlasMax==23) = 6;%PuL
+imAtlasLargeHist(imAtlasMax==45) = 6;
+imAtlasLargeHist(imAtlasMax==2) = 7;TSVLargeHist{7,1} = 'Posterior Sensory';%LGN
+imAtlasLargeHist(imAtlasMax==3) = 7;
+imAtlasLargeHist(imAtlasMax==4) = 7;%MGN
+imAtlasLargeHist(imAtlasMax==5) = 7;
+imAtlasLargeHist(imAtlasMax==8) = 7;%L-Sg
+imAtlasLargeHist(imAtlasMax==31) = 7;
+
+%imAtlasLargeHist(imAtlasMax==20) = 17;TSV{17,1} = 'R';
+%imAtlasLargeHist(imAtlasMax==43) = 17;
+%imAtlasLargeHist(imAtlasMax==28) = 25;TSV{25,1} = 'LP';
+%imAtlasLargeHist(imAtlasMax==51) = 25;
+%imAtlasLargeHist(imAtlasMax==52) = 26;TSV{26,1} = 'LD';
+%imAtlasLargeHist(imAtlasMax==53) = 26;
+
+% Merged Functionally-based
+imAtlasLargeFunc = zeros(size(imAtlasMax(:,:,:,1))); % Create an empty atlas with merged regions functionally based
+TSVLargeFunc = {};
+imAtlasLargeFunc(imAtlasMax==25) = 1;TSVLargeFunc{1,1} = 'Limbic Prefrontal Thalamus';%AV
+imAtlasLargeFunc(imAtlasMax==50) = 1;
+imAtlasLargeFunc(imAtlasMax==13) = 1;%MDm
+imAtlasLargeFunc(imAtlasMax==36) = 1;
+imAtlasLargeFunc(imAtlasMax==17) = 1;%CeM
+imAtlasLargeFunc(imAtlasMax==40) = 1;
+imAtlasLargeFunc(imAtlasMax==16) = 1;%MD1
+imAtlasLargeFunc(imAtlasMax==39) = 1;
+imAtlasLargeFunc(imAtlasMax==19) = 1;%MV(Re)
+imAtlasLargeFunc(imAtlasMax==42) = 1;
+imAtlasLargeFunc(imAtlasMax==24) = 1;%Pt
+imAtlasLargeFunc(imAtlasMax==49) = 1;
+imAtlasLargeFunc(imAtlasMax==26) = 1;%Pc
+imAtlasLargeFunc(imAtlasMax==48) = 1;
+imAtlasLargeFunc(imAtlasMax==18) = 2;TSVLargeFunc{2,1} = 'Sensorimotor Intralaminar Reticular Thalamus';%VA
+imAtlasLargeFunc(imAtlasMax==41) = 2;
+imAtlasLargeFunc(imAtlasMax==15) = 2;%VAmc
+imAtlasLargeFunc(imAtlasMax==38) = 2;
+imAtlasLargeFunc(imAtlasMax==11) = 2;%VLa
+imAtlasLargeFunc(imAtlasMax==34) = 2;
+imAtlasLargeFunc(imAtlasMax==27) = 2;%VLp
+imAtlasLargeFunc(imAtlasMax==47) = 2;
+imAtlasLargeFunc(imAtlasMax==9) = 2;%VPL
+imAtlasLargeFunc(imAtlasMax==32) = 2;
+imAtlasLargeFunc(imAtlasMax==21) = 2;%VM
+imAtlasLargeFunc(imAtlasMax==44) = 2;
+imAtlasLargeFunc(imAtlasMax==10) = 2;%CM
+imAtlasLargeFunc(imAtlasMax==33) = 2;
+imAtlasLargeFunc(imAtlasMax==22) = 2;%CL
+imAtlasLargeFunc(imAtlasMax==46) = 2;
+imAtlasLargeFunc(imAtlasMax==14) = 2;%Pf
+imAtlasLargeFunc(imAtlasMax==37) = 2;
+imAtlasLargeFunc(imAtlasMax==20) = 2;%R
+imAtlasLargeFunc(imAtlasMax==43) = 2;
+imAtlasLargeFunc(imAtlasMax==12) = 3;TSVLargeFunc{3,1} = 'Posterior Association Pulvinar Thalamus';%PuA
+imAtlasLargeFunc(imAtlasMax==35) = 3;
+imAtlasLargeFunc(imAtlasMax==7) = 3;%PuM
+imAtlasLargeFunc(imAtlasMax==30) = 3;
+imAtlasLargeFunc(imAtlasMax==23) = 3;%PuL
+imAtlasLargeFunc(imAtlasMax==45) = 3;
+imAtlasLargeFunc(imAtlasMax==6) = 3;%PuI
+imAtlasLargeFunc(imAtlasMax==29) = 3;
+imAtlasLargeFunc(imAtlasMax==52) = 3;%LD
+imAtlasLargeFunc(imAtlasMax==53) = 3;
+imAtlasLargeFunc(imAtlasMax==28) = 3;%LP
+imAtlasLargeFunc(imAtlasMax==51) = 3;
+imAtlasLargeFunc(imAtlasMax==8) = 3;%L-Sg
+imAtlasLargeFunc(imAtlasMax==31) = 3;
+imAtlasLargeFunc(imAtlasMax==2) = 4;TSVLargeFunc{1,1} = 'Primary Sensory Relay';%LGN
+imAtlasLargeFunc(imAtlasMax==3) = 4;
+imAtlasLargeFunc(imAtlasMax==4) = 4;%MGN
+imAtlasLargeFunc(imAtlasMax==5) = 4;
+
 xASL_io_SaveNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'ThalamusProbs.MNIsymSpace.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii'), imAtlas);
+xASL_io_SaveNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'ThalamusProbs.MNIsymSpace.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii'), imAtlasLargeHist);
+xASL_io_SaveNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'ThalamusProbs.MNIsymSpace.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii'), imAtlasLargeFunc);
 
 % Nearest neighbor transformation
 matlabbatch = [];
@@ -348,7 +463,9 @@ matlabbatch{1}.spm.util.defs.comp{2}.dartel.times = [1 0];
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.K = 6;
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFile)
-												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii')};
+												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii')
+												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii')
+												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathTPM, 'FreeSurferSubfields')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
 matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
@@ -359,14 +476,32 @@ spm_jobman('run',matlabbatch);
 
 % Create MAT file
 xASL_tsvWrite(TSV, fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.tsv'), 1);
+xASL_tsvWrite(TSVLargeHist, fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.tsv'), 1);
+xASL_tsvWrite(TSVLargeFunc, fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.tsv'), 1);
 IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamus.nii'));
+IMHist = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusHist.nii'));
+IMFunc = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusFunc.nii'));
 IM = uint8(IM);
+IMHist = uint8(IMHist);
+IMFunc = uint8(IMFunc);
 save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.mat'),'IM');
+save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.mat'),'IMHist');
+save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.mat'),'IMFunc');
 xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamus.nii'));
+xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusHist.nii'));
+xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusFunc.nii'));
 xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii'));
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii'));
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii'));
 xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.mat'));
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii.mat'));
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii.mat'));
 xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamus.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.gz'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusHist.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii.gz'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusFunc.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii.gz'));
 xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.mat'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.mat'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.mat'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii.mat'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.mat'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii.mat'));
 
 %% Transform the AAN atlas from sym-MNI2009c to IXI512
 imAtlasOrig = xASL_io_Nifti2Im(fullfile(pathTPM, 'AAN', 'AAN_Brainstem_MNI152_1mm_v2p0.nii')); % Load atlas

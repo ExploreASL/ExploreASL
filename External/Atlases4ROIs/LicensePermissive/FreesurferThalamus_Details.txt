@@ -7,3 +7,19 @@ Rather than directly contacting the author, please post your questions on this m
 If you use these tools in your analysis, please cite:
 
 A probabilistic atlas of the human thalamic nuclei combining ex vivo MRI and histology. Iglesias, J.E., Insausti, R., Lerma-Usabiaga, G., Bocchetta, M., Van Leemput, K., Greve, D., van der Kouwe, A., Caballero-Gaudes, C., Paz-Alonso, P. Neuroimage (accepted).
+
+Two variants are added with merged larger regions and two following regions:
+HISTOLOGY-BASED ThalamusHist
+Anterior Thalamus: Left: AV (8103), Pt (8119); Right: AV (8203), Pt (8219)
+Mediodorsal Thalamus (MD complex): Left: MDm (8113), MDl (8112); Right: MDm (8213), MDl (8212)
+Ventral Motor Complex (VA/VL group): Left: VA (8126), VAmc (8127), VLa (8128), VLp (8129), VM (8130); Right: VA (8226), VAmc (8227), VLa (8228), VLp (8229), VM (8230)
+Ventral Sensory Complex (VP group): Left: VPL (8133); Right: VPL (8233)
+Intralaminar + Midline Complex: Left: CeM (8104), CL (8105), CM (8106), Pc (8117), Pf (8118), MV(Re) (8116); Right: CeM (8204), CL (8205), CM (8206), Pc (8217), Pf (8218), MV(Re) (8216)
+Pulvinar Complex: Left: PuA (8120), PuM (8123), PuL (8122), PuI (8121); Right: PuA (8220), PuM (8223), PuL (8222), PuI (8221)
+Posterior Sensory (LGN+MGN+L-Sg): Left: LGN (8109), MGN (8115), L-Sg (8111); Right: LGN (8209), MGN (8215), L-Sg (8211)
+
+FUNCTIONALLY BASED ThalamusFunc
+Limbic / Prefrontal Thalamus: Left: AV (8103), MDm (8113), MDl (8112), CeM (8104), MV(Re) (8116), Pt (8119), Pc (8117); Right: AV (8203), MDm (8213), MDl (8212), CeM (8204), MV(Re) (8216), Pt (8219), Pc (8217)
+Sensorimotor / Intralaminar / Reticular Thalamus: Left: VA (8126), VAmc (8127), VLa (8128), VLp (8129), VPL (8133), VM (8130), CM (8106), CL (8105), Pf (8118), R (8125); Right: VA (8226), VAmc (8227), VLa (8228), VLp (8229), VPL (8233), VM (8230), CM (8206), CL (8205), Pf (8218), R (8225)
+Posterior Association / Pulvinar Thalamus: Left: PuA (8120), PuM (8123), PuL (8122), PuI (8121), LD (8108), LP (8110), L-Sg (8111); Right: PuA (8220), PuM (8223), PuL (8222), PuI (8221), LD (8208), LP (8210), L-Sg (8211)
+Primary Sensory Relay: Left: LGN (8109), MGN (8115); Right: LGN (8209), MGN (8215)
