@@ -446,7 +446,7 @@ imAtlasLargeFunc(imAtlasMax==28) = 3;%LP
 imAtlasLargeFunc(imAtlasMax==51) = 3;
 imAtlasLargeFunc(imAtlasMax==8) = 3;%L-Sg
 imAtlasLargeFunc(imAtlasMax==31) = 3;
-imAtlasLargeFunc(imAtlasMax==2) = 4;TSVLargeFunc{1,1} = 'Primary Sensory Relay';%LGN
+imAtlasLargeFunc(imAtlasMax==2) = 4;TSVLargeFunc{4,1} = 'Primary Sensory Relay';%LGN
 imAtlasLargeFunc(imAtlasMax==3) = 4;
 imAtlasLargeFunc(imAtlasMax==4) = 4;%MGN
 imAtlasLargeFunc(imAtlasMax==5) = 4;
