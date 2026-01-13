@@ -452,8 +452,8 @@ imAtlasLargeFunc(imAtlasMax==4) = 4;%MGN
 imAtlasLargeFunc(imAtlasMax==5) = 4;
 
 xASL_io_SaveNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'ThalamusProbs.MNIsymSpace.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii'), imAtlas);
-xASL_io_SaveNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'ThalamusProbs.MNIsymSpace.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii'), imAtlasLargeHist);
-xASL_io_SaveNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'ThalamusProbs.MNIsymSpace.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii'), imAtlasLargeFunc);
+xASL_io_SaveNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'ThalamusProbs.MNIsymSpace.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHistological.nii'), imAtlasLargeHist);
+xASL_io_SaveNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'ThalamusProbs.MNIsymSpace.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunctional.nii'), imAtlasLargeFunc);
 
 % Nearest neighbor transformation
 matlabbatch = [];
@@ -464,8 +464,8 @@ matlabbatch{1}.spm.util.defs.comp{2}.dartel.K = 6;
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFile)
 												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii')
-												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii')
-												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii')};
+												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHistological.nii')
+												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunctional.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathTPM, 'FreeSurferSubfields')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 0;
 matlabbatch{1}.spm.util.defs.out{1}.pull.mask = 1;
@@ -476,32 +476,32 @@ spm_jobman('run',matlabbatch);
 
 % Create MAT file
 xASL_tsvWrite(TSV, fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.tsv'), 1);
-xASL_tsvWrite(TSVLargeHist, fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.tsv'), 1);
-xASL_tsvWrite(TSVLargeFunc, fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.tsv'), 1);
+xASL_tsvWrite(TSVLargeHist, fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHistological.tsv'), 1);
+xASL_tsvWrite(TSVLargeFunc, fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunctional.tsv'), 1);
 IM = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamus.nii'));
-IMHist = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusHist.nii'));
-IMFunc = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusFunc.nii'));
+IMHist = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusHistological.nii'));
+IMFunc = xASL_io_Nifti2Im(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusFunctional.nii'));
 IM = uint8(IM);
 IMHist = uint8(IMHist);
 IMFunc = uint8(IMFunc);
 save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.mat'),'IM');
-save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.mat'),'IMHist');
-save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.mat'),'IMFunc');
+save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHistological.mat'),'IMHist');
+save(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunctional.mat'),'IMFunc');
 xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamus.nii'));
-xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusHist.nii'));
-xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusFunc.nii'));
+xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusHistological.nii'));
+xASL_adm_GzipNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusFunctional.nii'));
 xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii'));
-xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii'));
-xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii'));
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHistological.nii'));
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunctional.nii'));
 xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.mat'));
-xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii.mat'));
-xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii.mat'));
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHistological.nii.mat'));
+xASL_delete(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunctional.nii.mat'));
 xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamus.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.gz'));
-xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusHist.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii.gz'));
-xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusFunc.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii.gz'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusHistological.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHistological.nii.gz'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'oFreesurferThalamusFunctional.nii.gz'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunctional.nii.gz'));
 xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.mat'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii.mat'));
-xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.mat'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHist.nii.mat'));
-xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.mat'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunc.nii.mat'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHistological.mat'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHistological.nii.mat'));
+xASL_Move(fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunctional.mat'),fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusFunctional.nii.mat'));
 
 %% Transform the AAN atlas from sym-MNI2009c to IXI512
 imAtlasOrig = xASL_io_Nifti2Im(fullfile(pathTPM, 'AAN', 'AAN_Brainstem_MNI152_1mm_v2p0.nii')); % Load atlas
