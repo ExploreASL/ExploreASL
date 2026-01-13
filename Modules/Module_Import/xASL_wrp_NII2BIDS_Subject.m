@@ -92,7 +92,7 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
 			
 			if ~isempty(checkExpression) % nameSubject should end in the session alias
 				bSessionValueDetected = true; % We found a session name - empty or not
-				sessionName = nameSubjectSession(checkExpression+1:end);
+				sessionName = sessionAliases{iAlias, 2};%nameSubjectSession(checkExpression+1:end);
 				subjectName = nameSubjectSession(1:checkExpression-1);
 			end
         end
