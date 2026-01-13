@@ -90,6 +90,10 @@ if nargin<1 || isempty(testConfig)
 		fprintf('Please add a testConfig.json to the Testing directory of ExploreASL...\n');
 		return
 	end
+else
+	if ~isstruct(testConfig) && exist(testConfig, 'file')
+		testConfig = xASL_io_ReadJson(testConfig);
+	end
 end
 
 if isempty(testConfig.pathExploreASL) || isempty(testConfig.pathFlavorDatabase)
