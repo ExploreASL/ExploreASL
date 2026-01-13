@@ -93,9 +93,9 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xAS
     kernelSize = round([8 8 8]./voxelSize);
 	for i4D = 1:size(PWI4D,4)
 
-		if isfield(x.modules.asl, 'ExternalSmoothGaussianMM') && length(x.modules.asl.ExternalSmoothGaussianMM)==3
+		if isfield(x.modules.asl, 'ExternalQuantificationSmoothGaussianMM') && length(x.modules.asl.ExternalQuantificationSmoothGaussianMM)==3
 			% Additional smoothing of the real data
-			PWI4D(:,:,:,i4D) = xASL_im_ndnanfilter(PWI4D(:,:,:,i4D), 'gauss', double(round(x.modules.asl.ExternalSmoothGaussianMM(:)'./voxelSize)), 1);
+			PWI4D(:,:,:,i4D) = xASL_im_ndnanfilter(PWI4D(:,:,:,i4D), 'gauss', double(round(x.modules.asl.ExternalQuantificationSmoothGaussianMM(:)'./voxelSize)), 1);
 		end
 
         PWI4D(:,:,:,i4D) = xASL_im_ndnanfilter(PWI4D(:,:,:,i4D), 'gauss', double(kernelSize), 2);
