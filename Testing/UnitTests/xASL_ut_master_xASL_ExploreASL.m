@@ -695,7 +695,8 @@ testDirsAndFiles.aslDir = fullfile(testDirsAndFiles.subDir,'ASL_1');
 % Check files
 testDirsAndFiles.catReport = fullfile(testDirsAndFiles.subDir,'catreport_T1.pdf');
 if usejava('jvm') % Only check the existence of the report when JVM is run. Otherwise the report is not created
-	testDirsAndFiles.aslReport = fullfile(testDirsAndFiles.subDir,'xASL_Report_sub-001_1.pdf');
+	testDirsAndFiles.aslReport = fullfile(testDirsAndFiles.subDir,'xASL_Report_sub-001_1_ASL_1.pdf');
+	testDirsAndFiles.aslReport = fullfile(testDirsAndFiles.subDir,'xASL_Report_sub-001_1_Structural.pdf');
 end
 
 % Iterate over test directories and files
