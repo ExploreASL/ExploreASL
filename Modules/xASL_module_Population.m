@@ -33,7 +33,7 @@ function [result, x] = xASL_module_Population(x)
 %
 % EXAMPLE: [~, x] = xASL_module_Population(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2025 ExploreASL
+% Copyright 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -59,6 +59,7 @@ if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking')
     x.S.TissueMasking = {'GM' 'WM','GM'}; % GM WM GM, fits with the Total & DeepWM & Tatu_ACA_MCA_PCA above
     % Note that this should be in the same order as the atlases/ROIs
     % A mismatch (e.g. TissueMasking=GM for Atlases=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
+    % You can also use CSF or combinations like GM+WM or GM+CSF
 elseif ~isfield(x.S, 'Atlases') || ~isfield(x.S, 'TissueMasking') || length(x.S.Atlases)~=length(x.S.TissueMasking)
 	% Incorrect values are provided
 	error('You need to provide x.S.Atlases and x.S.TissueMasking with the same length');
@@ -267,7 +268,7 @@ if ~x.mutex.HasState(StateName{8})
             % We use the specified tissue type
             % 'GM' = gray matter
             % 'WM' = white matter
-            % 'WB' = whole brain (= GM+WM)
+            % 'GM+WM' = whole brain
             x.S.TissueMaskingLocal = x.S.TissueMasking{iAtlas};
             
             % Find the path of the atlas
@@ -320,7 +321,7 @@ if ~x.mutex.HasState(StateName{8})
 		% Standard space analysis in a specific ROI with no tissue restriction
         x.S.InputNativeSpace = 0;
 		x.S.bSubjectSpecificROI = true;
-		x.S.TissueMaskingLocal = 'WB';
+		x.S.TissueMaskingLocal = 'GM+WM+CSF';
 		for iROI = 1:length(LesionUniqueROIList)
             x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iROI});
             xASL_wrp_GetROIstatistics(x);
@@ -330,7 +331,7 @@ if ~x.mutex.HasState(StateName{8})
 		if x.modules.population.bNativeSpaceAnalysis
 			x.S.InputNativeSpace = 1;
 			x.S.bSubjectSpecificROI = true;
-			x.S.TissueMaskingLocal = 'WB';
+			x.S.TissueMaskingLocal = 'GM+WM+CSF';
 			for iROI = 1:length(LesionUniqueROIList)
 				x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iROI});
 				% Remove 'r' at the start

@@ -42,7 +42,7 @@ function xASL_wrp_GetROIstatistics(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_wrp_GetROIstatistics(x);
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+% Copyright 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -141,15 +141,15 @@ else
     x.S.output_ID = [x.S.output_ID '_']; % add underscore if not empty
 end
 
-% Add subject/run-wise input data (e.g., qCBF) and subject/run-wise tissue mask (e.g., GM)
-x.S.output_ID = [x.S.output_ID x.S.InputDataStr '_' x.S.TissueMaskingLocal];
+% Add subject/run-wise input data (e.g., qCBF) and subject/run-wise tissue mask (e.g., GM or GM+WM)
+x.S.output_ID = [x.S.output_ID x.S.InputDataStr '_' strrep(x.S.TissueMaskingLocal,'+','_')];
 
 if x.S.InputNativeSpace
 	x.S.output_ID = [x.S.output_ID '_NativeSpace'];
 else
 	x.S.output_ID = [x.S.output_ID '_StandardSpace'];
 end
-x.S.output_ID = [x.S.output_ID '_' Ffile x.S.TissueMaskingLocal '_n=' num2str(x.dataset.nSubjects) '_' date];
+x.S.output_ID = [x.S.output_ID '_' Ffile strrep(x.S.TissueMaskingLocal,'+','_') '_n=' num2str(x.dataset.nSubjects) '_' date];
 
 
 %% ------------------------------------------------------------------------------------------------------------

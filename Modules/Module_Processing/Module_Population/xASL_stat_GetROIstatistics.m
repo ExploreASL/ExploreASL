@@ -37,7 +37,9 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %                        (loop outside this function for multiple tissue types)
 %                        'GM' = gray matter (GM)
 %                        'WM' = white matter (WM)
-%                        'WB' = whole brain (WB = GM+WM)
+%                        'GM+WM' = whole brain (GM+WM), legacy version was 'WB'
+%                        'CSF' = cerebrospinal fluid (CSF)
+%                        'GM+WM+CSF' = whole brain including CSF
 %                        (REQUIRED, single value)
 %                        Cannot be a vector. Iterate outside this function over multiple x.S.Atlases-x.S.TissueMaskingLocal combinations.
 %                        Note that a ROI needs to have a minimal volume. So a deepWM ROI for which pvGM is requested will be skipped.
@@ -91,7 +93,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      x = xASL_stat_GetROIstatistics(x);
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
+% Copyright (C) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -441,9 +443,9 @@ for iSubject=1:x.dataset.nSubjects
 		if bDoOnceROILR
 			namesROIuse = {''};
 			for iR=1:length(namesROIlocal)
-				namesROIuse{iR*3-2} = [namesROIlocal{iR} '_' x.S.TissueMaskingLocal '_B'];
-				namesROIuse{iR*3-1} = [namesROIlocal{iR} '_' x.S.TissueMaskingLocal '_L'];
-				namesROIuse{iR*3-0} = [namesROIlocal{iR} '_' x.S.TissueMaskingLocal '_R'];
+				namesROIuse{iR*3-2} = [namesROIlocal{iR} '_' strrep(x.S.TissueMaskingLocal,'+','_') '_B'];
+				namesROIuse{iR*3-1} = [namesROIlocal{iR} '_' strrep(x.S.TissueMaskingLocal,'+','_') '_L'];
+				namesROIuse{iR*3-0} = [namesROIlocal{iR} '_' strrep(x.S.TissueMaskingLocal,'+','_') '_R'];
 			end
 		end
 		if x.S.InputNativeSpace || bDoOnceROILR
@@ -681,7 +683,7 @@ for iSubject=1:x.dataset.nSubjects
             %                        (loop outside this function for multiple tissue types)
             % 'GM' = gray matter
             % 'WM' = white matter
-            % 'WB' = whole brain (= GM+WM)            
+            % 'GM+WM' = whole brain GM+WM, previously was 'WB'
 
 			if ~x.S.IsASL
 				pvPrimary = ones(size(DataIm)); % no masking

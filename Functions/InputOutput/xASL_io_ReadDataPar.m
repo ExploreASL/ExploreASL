@@ -74,12 +74,12 @@ function [x] = xASL_io_ReadDataPar(pathDataPar, bStudyPar)
 %   ...
 %   "S":
 %	{"Atlases": ["Total","Total","DeepWM","Mindboggle_OASIS_DKT31_CMA"],
-%    "TissueMasking": ["GM","WM","WM","GM"]}}
+%    "TissueMasking": ["GM","WM","WM","GM+WM"]}}
 %   ...
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+% Copyright 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

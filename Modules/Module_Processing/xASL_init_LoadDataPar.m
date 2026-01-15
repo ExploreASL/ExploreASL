@@ -26,7 +26,7 @@ function [x] = xASL_init_LoadDataPar(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:  n/a
 % __________________________________
-% Copyright (c) 2015-2024 ExploreASL
+% Copyright (c) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -182,7 +182,7 @@ if isfield(x, 'S') % Check upfront because we don't want to create a potentially
 			if ~isempty(regexpi(x.S.Atlases{iAtlas}, 'WM')) || ~isempty(regexpi(x.S.Atlases{iAtlas}, 'whitematter'))
 				textRecommendation = [textRecommendation 'WM'];
 			elseif ~isempty(regexpi(x.S.Atlases{iAtlas}, 'WB')) || ~isempty(regexpi(x.S.Atlases{iAtlas}, 'wholebrain'))
-				textRecommendation = [textRecommendation 'WB'];
+				textRecommendation = [textRecommendation 'GM+WM'];
 			else
 				textRecommendation = [textRecommendation 'GM'];
 			end
@@ -193,7 +193,7 @@ if isfield(x, 'S') % Check upfront because we don't want to create a potentially
 end
 if ~bAtlasTissueMatch
     fprintf('%s\n', 'When ROI atlases are provided in S.Atlases, their tissue types,');
-    fprintf('%s\n', 'you need to be provided as well in dataPar.json as "S":{"TissueMasking"}, with either option "GM", "WM", "WB" (==GM+WM).');
+    fprintf('%s\n', 'you need to be provided as well in dataPar.json as "S":{"TissueMasking"}, with either option "GM", "WM", "GM+WM".');
 	warning('x.S.TissueMasking input did not match x.S.Atlases');
 	fprintf('%s\n', 'If you want GM CBF from an atlas ROI, add "GM". If you want WM CBF from an atlas ROI, add "WM"');
 	fprintf('%s\n', 'If you want both GM CBF and WM CBF from an atlas ROI, add the atlas ROI twice and add both "GM" and "WM"');
