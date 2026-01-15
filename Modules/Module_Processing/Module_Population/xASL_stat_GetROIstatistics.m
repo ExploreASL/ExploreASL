@@ -99,8 +99,6 @@ function [x] = xASL_stat_GetROIstatistics(x)
 % you may only use this file in compliance with the License.
 % __________________________________
 
-
-
 %% ------------------------------------------------------------------------------------------------------------
 %% 0 Administration
 
@@ -292,8 +290,6 @@ bDoOnceROIStart = 1;
 
 for iSubject=1:x.dataset.nSubjects
 
-
-
     %% =======================================================================================================
     %% PM QUICK AND DIRTY SOLUTION TO LOAD SUBJECT-WISE ATLASES, THIS GOES OUT OF THIS CODE IN THE NEAR FUTURE
     %% =======================================================================================================
@@ -325,8 +321,6 @@ for iSubject=1:x.dataset.nSubjects
     %% =======================================================================================================
     %% PM QUICK AND DIRTY SOLUTION TO LOAD SUBJECT-WISE ATLASES, THIS GOES OUT OF THIS CODE IN THE NEAR FUTURE
     %% =======================================================================================================
-
-
 
 	for iSess=1:nSessions
 		% ID (which name, group etc), all for identification
@@ -391,6 +385,11 @@ for iSubject=1:x.dataset.nSubjects
 				x = xASL_init_FileSystem(x);
 				pGM_MNI = xASL_io_Nifti2Im(x.P.Path_PVgm);
 				pWM_MNI = xASL_io_Nifti2Im(x.P.Path_PVwm);
+				if exist(x.P.Path_PVcsf, 'file')
+					pCSF_MNI = xASL_io_Nifti2Im(x.P.Path_PVcsf);
+				else
+					pCSF_MNI = max(0,ones(size(pGM_MNI))-pGM_MNI-pWM_MNI);
+				end
 
 				% Calculate ROI size for each atlas
 				SumList = squeeze(sum(x.S.InputMasks,1));
@@ -415,6 +414,12 @@ for iSubject=1:x.dataset.nSubjects
 				if bDoOnceROIPVEC && x.S.bSubjectSpecificROI == false
 					pGM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii'));
 					pWM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii'));
+
+					if exist(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii'), 'file')
+						pCSF_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc3T1_ASL_res.nii'));
+					else
+						pCSF_MNI = max(0,ones(size(pGM_MNI))-pGM_MNI-pWM_MNI);
+					end
 
 					fprintf('Expanding ROIs with WM for PVC:    ');
 					for iROI=1:size(x.S.InputMasks,2)
@@ -488,6 +493,12 @@ for iSubject=1:x.dataset.nSubjects
 					continue;
 				end
 
+				if xASL_exist(x.P.Path_PVcsf, 'file')
+					pCSF = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVcsf),x.S.masks.WBmask);
+				else
+					pCSF = max(0,ones(pWM) - pGM - pWM);
+				end
+
 				%% 4.b Correct for WMH SEGM
 				if ~x.S.bWMH && xASL_exist(x.P.Path_PVwmh, 'file')
 					pWMH = xASL_im_IM2Column(xASL_io_Nifti2Im(x.P.Path_PVwmh), x.S.masks.WBmask);
@@ -495,6 +506,7 @@ for iSubject=1:x.dataset.nSubjects
 					pWMH(pWMH<0) = 0;
 					pGM = max(0, pGM - pWMH);
 					pWM = max(0, pWM - pWMH);
+					pCSF = max(0, pCSF - pWMH);
 				end
 
 				if size(x.S.InputMasks,3)>1
@@ -522,6 +534,13 @@ for iSubject=1:x.dataset.nSubjects
 						continue;
 					end
 
+					PathCSF = fullfile(x.D.PopDir, ['PV_pCSF_' x.SUBJECTS{iSubject} '.nii']);
+					if xASL_exist(PathCSF,'file')
+						pCSF = xASL_im_IM2Column(xASL_io_Nifti2Im(PathCSF),x.S.masks.WBmask);
+					else
+						pCSF = max(0,ones(pWM) - pGM - pWM);
+					end
+
 					%% 4.b.b Correct for WMH SEGM
 					WMHfile = fullfile(x.D.PopDir, ['PV_WMH_SEGM_' x.SUBJECTS{iSubject} '.nii']);
 					if ~x.S.bWMH && xASL_exist(WMHfile,'file')
@@ -530,6 +549,7 @@ for iSubject=1:x.dataset.nSubjects
 						pWMH(pWMH<0) = 0;
 						pGM = max(0, pGM - pWMH);
 						pWM = max(0, pWM - pWMH);
+						pCSF = max(0, pCSF - pWMH);
                     elseif ~x.S.bWMH
 						% The older version with PV_WMH not calculated.
 						% Keep it for backwards compatibility, but issue a warning
@@ -542,6 +562,7 @@ for iSubject=1:x.dataset.nSubjects
 							pWMH(pWMH<0) = 0;
 							pGM = max(0, pGM - pWMH.^0.67);
 							pWM = max(0, pWM - pWMH.^0.67);
+							pCSF = max(0, pCSF - pWMH.^0.67);
                         end
 					end
 				end
@@ -621,14 +642,12 @@ for iSubject=1:x.dataset.nSubjects
             warning('Something went wrong loading the data, verify if the data are correctly processed and present in the population folder');
         end
 
-
 		%% 4.d Show ROIs projected on ASL image
         % This is after expansion with WM for PVC
 		LabelIM = xASL_vis_Convert4D_3D_atlas(xASL_im_Column2IM(SubjectSpecificMasks(:, 1:3:end), x.S.masks.WBmask));
 		fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1}];
         
         xASL_stat_VisualizeSubjectWiseROI(x, LabelIM, Data3D, fileName);
-
 
 		%         % Labeling efficiency normalization
 		%         if  x.LabEffNorm; temp = xASL_im_NormalizeLabelingTerritories( temp, logical(x.masks.Data.data(:,iSub,1)), x); end
@@ -702,15 +721,42 @@ for iSubject=1:x.dataset.nSubjects
 				        pvSecondary = pGM;
 						pvPrimaryName = 'WM';
 						pvSecondaryName = 'GM';
-                    case 'WB'
-                        % we want WB, i.e. GM+WM, using CSF as "WM" in PVC
+					case 'CSF'
+                        % we want CSF, so GM+WM is used for PVC
+                        pvPrimary = pCSF;
+				        pvSecondary = pWM+pGM;
+						pvPrimaryName = 'CSF';
+						pvSecondaryName = 'GM+WM';
+					case {'GM+CSF', 'CSF+GM'}
+                        % we want GM+CSF, so WM is used for PVC
+                        pvPrimary = pGM+pCSF;
+				        pvSecondary = pWM;
+						pvPrimaryName = 'GM+CSF';
+						pvSecondaryName = 'WM';						
+					case {'WM+CSF', 'CSF+WM'}
+                        % we want WM+CSF, so GM is used for PVC
+                        pvPrimary = pWM+pCSF;
+				        pvSecondary = pGM;
+						pvPrimaryName = 'WM+CSF';
+						pvSecondaryName = 'GM';						
+                    case {'WB', 'GM+WM', 'WM+GM'}
+                        % we want GM+WM, using CSF as "WM" in PVC
+						if strcmp(x.S.TissueMaskingLocal, 'WB')
+							warning('TissuMasking==WB was used. This options was discontinued and was replaced by GM+WM. TissueMasking==GM+WM is used now, but please modify your input for the next time.')
+						end
 				        pvPrimary = pGM+pWM;
-				        pvSecondary = ones(size(pGM)) - pGM - pWM; % CSF
-						pvPrimaryName = 'WB';
+				        pvSecondary = pCSF; % CSF
+						pvPrimaryName = 'GM+WM';
 						pvSecondaryName = 'CSF';
 				        bSkipPVC = 1;
+					case {'GM+WM+CSF', 'GM+CSF+WM', 'WM+GM+CSF', 'WM+CSF+GM', 'CSF+GM+WM', 'CSF+WM+GM'}
+				        pvPrimary = pGM+pWM+pCSF;
+				        pvSecondary = zeros(size(pGM)); % empty
+						pvPrimaryName = 'GM+WM+CSF';
+						pvSecondaryName = 'empty';
+				        bSkipPVC = 1;
                     otherwise
-                        error('Unknown tissue type chosen, should be one out of ''GM'', ''WM'', ''WB''');
+                        error('Unknown tissue type chosen, should be one out of ''GM'', ''WM'', ''CSF'' or combinations of those such as ''GM+WM''');
                 end
             end
 
@@ -943,7 +989,8 @@ fprintf('\n');
 
 end
 
-
+%% ------------------------------------------------------------------------------------------------------------
+%% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
 function [pathOutput] = xASL_stat_VisualizeSubjectWiseROI(x, MaskROI, BackgroundImage, fileName, pathOutput)
 %xASL_stat_VisualizeSubjectWiseROI Show ROI projected on image
@@ -970,7 +1017,8 @@ function [pathOutput] = xASL_stat_VisualizeSubjectWiseROI(x, MaskROI, Background
 
 end
 
-
+%% ------------------------------------------------------------------------------------------------------------
+%% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
 function [S] = RemoveSuffixes(S)
 %RemoveSuffixes Clean output_ID by removing previous suffixes
@@ -989,7 +1037,6 @@ function [S] = RemoveSuffixes(S)
 % EXAMPLE: S = RemoveSuffixes(S);
 % __________________________________
 
-
 % Define here which strings to remove
 StrRemove = {'PVEC0' 'PVEC1' 'PVEC2' 'paired t-test'};
 
@@ -1007,11 +1054,10 @@ if ~isempty(UnderScoreFound)
     end
 end
 
-
 end
 
-
-
+%% ------------------------------------------------------------------------------------------------------------
+%% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
 function [ROI] = xASL_im_CreatePVEcROI(x, ROI, pGM, pWM)
 %xASL_im_CreatePVEcROI Clean output_ID by removing previous suffixes
@@ -1036,28 +1082,25 @@ function [ROI] = xASL_im_CreatePVEcROI(x, ROI, pGM, pWM)
 % EXAMPLE: [ROI] = xASL_im_CreatePVEcROI(x, ROI, pGM, pWM);
 % __________________________________
 
-
 ROI = ROI>0;
 
 ROI = xASL_im_Column2IM(ROI, x.S.masks.WBmask); % convert to image, decompress
 
-ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 17); % Dilate ROI
-pCSF = max(0,1-pGM-pWM);
-ROI(pCSF>0.35) = 0; % Remove pCSF from the mask
-ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 17); % Dilate ROI
+if max(size(pGM,1),size(pGM,2) < 130) 
+	% native space
+	ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 2); % Dilate ROI
+else
+	% standard space
+	ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 5); % Dilate ROI
+end
+	
+%pCSF = max(0,1-pGM-pWM);
+%ROI(pCSF>0.35) = 0; % Remove pCSF from the mask
+%ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 17); % Dilate ROI
 
 ROI = xASL_im_IM2Column(ROI, x.S.masks.WBmask); % convert back to column, compress
 
-
-
 end
-
-
-
-
-
-
-
 
 %% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
@@ -1101,8 +1144,6 @@ function [ROI] = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, WMdistMax)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 17);
 % __________________________________
-
-
 
 %% Admin
 GMmask = pGM>0.7;
@@ -1182,6 +1223,5 @@ else % It adds layers of WM until reaching certain ratio of GM and WM size (nVox
         Iteration = Iteration+1;
     end
 end
-
 
 end
