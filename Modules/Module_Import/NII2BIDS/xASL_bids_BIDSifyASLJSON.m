@@ -114,7 +114,7 @@ if ~isempty(regexpi(jsonInMerged.Manufacturer, 'GE', 'once'))
 end
 
 %% 5. Prioritize studyPar fields over the DICOM fields
-% Overwrite differing fields with those from Dicom, but report all differences
+% Overwrite differing fields with those from studyPar, but report all differences
 for fn = fieldnames(jsonInMerged)'
 	if isfield(jsonOut,fn{1})
 		% If the field is there, then report different fields

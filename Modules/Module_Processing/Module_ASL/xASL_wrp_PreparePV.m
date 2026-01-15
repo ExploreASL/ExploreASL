@@ -19,9 +19,9 @@ function x = xASL_wrp_PreparePV(x, bStandardSpace)
 % If bStandardSpace:
 %
 %   1. Create dummy upsampled ASL scan, for registration
-%   2. Reslice pGM & pWM to hi-res ASL
+%   2. Reslice pGM & pWM & pCSF to hi-res ASL
 %   3. Estimate effective spatial resolution of ASL
-%   4. Smooth pGM & pWM to this spatial resolution
+%   4. Smooth pGM & pWM & pCSF to this spatial resolution
 %   5. Move smoothed tissue posteriors to MNI space
 %
 % else: run step 3 only, which will use the effective spatial resolution
@@ -34,7 +34,7 @@ function x = xASL_wrp_PreparePV(x, bStandardSpace)
 %
 % EXAMPLE: xASL_wrp_PreparePV(x);
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
+% Copyright (C) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -67,7 +67,7 @@ else
         % resolution, if the resolutions are identical
         xASL_Copy(x.P.Path_c1T1, x.P.Path_PVgm, true);
         xASL_Copy(x.P.Path_c2T1, x.P.Path_PVwm, true);
-        if xASL_exist(x.P.Path_c3T1)
+		if xASL_exist(x.P.Path_c3T1)
             xASL_Copy(x.P.Path_c3T1, x.P.Path_PVcsf, true);
 		end
 		
@@ -79,6 +79,10 @@ else
         xASL_Copy(x.P.Pop_Path_rc1T1, x.P.Pop_Path_PV_pGM, true);
         xASL_Copy(x.P.Pop_Path_rc2T1, x.P.Pop_Path_PV_pWM, true);
 		
+		if xASL_exist(x.P.Pop_Path_rc3T1)
+            xASL_Copy(x.P.Pop_Path_rc3T1, x.P.Pop_Path_PV_pCSF, true);
+		end
+
 		if xASL_exist(x.P.Path_rWMH_SEGM, 'file')
             xASL_Copy(x.P.Path_rWMH_SEGM, x.P.Pop_Path_PV_WMH_SEGM, true);
 		end
@@ -105,6 +109,11 @@ if bStandardSpace
 	% because we then go directly to standard space and only apply the T1->MNI and not ASL->T1 nonlinear transformation
 	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c1T1 ',1'], [],[], x.settings.Quality);
 	xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c2T1 ',1'], [],[], x.settings.Quality);
+
+	if xASL_exist(x.P.Path_c3T1)
+		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_c3T1 ',1'], [],[], x.settings.Quality);
+	end
+
 	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 		xASL_spm_reslice([x.P.Path_rPWI ',1'], [x.P.Path_WMH_SEGM ',1'], [],[], x.settings.Quality);
 	end
@@ -117,28 +126,41 @@ if bStandardSpace
     %% A4. Smooth pGM & pWM to this spatial resolution
 	xASL_spm_smooth(x.P.Path_rc1T1, x.S.optimFWHM_mm, x.P.Path_rc1T1);
 	xASL_spm_smooth(x.P.Path_rc2T1, x.S.optimFWHM_mm, x.P.Path_rc2T1);
+
+	if xASL_exist(x.P.Path_rc3T1)
+		xASL_spm_smooth(x.P.Path_rc3T1, x.S.optimFWHM_mm, x.P.Path_rc3T1);
+	end
 	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
 		xASL_spm_smooth(x.P.Path_rWMH_SEGM, x.S.optimFWHM_mm, x.P.Path_rWMH_SEGM);
 	end
 	
 	%% ------------------------------------------------------------------------------------------
 	%% A5. Move smoothed tissue posteriors to MNI space
+	InputList   = {x.P.Path_rc1T1,x.P.Path_rc2T1};
+	OutputList  = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM};
+
+	if xASL_exist(x.P.Path_rc3T1, 'file')
+		InputList{end+1}  = x.P.Path_rc3T1;
+		OutputList{end+1} = x.P.Pop_Path_PV_pCSF;
+	end
+
 	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
-		InputList   = {x.P.Path_rc1T1,x.P.Path_rc2T1,x.P.Path_rWMH_SEGM};
-		OutputList  = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM,x.P.Pop_Path_PV_WMH_SEGM};
-	else
-		InputList   = {x.P.Path_rc1T1,x.P.Path_rc2T1};
-		OutputList  = {x.P.Pop_Path_PV_pGM,x.P.Pop_Path_PV_pWM};
+		InputList{end+1}  = x.P.Path_rWMH_SEGM;
+		OutputList{end+1} = x.P.Pop_Path_PV_WMH_SEGM;
 	end
 	
 	xASL_spm_deformations(x,InputList,OutputList,4, [], [], x.P.Path_y_ASL );
 	
     %% ------------------------------------------------------------------------------------------
     %% A6. Housekeeping
+	List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI};
+
+	if xASL_exist(x.P.Path_rc3T1, 'file')
+		List2Del{end+1} = x.P.Path_rc3T1;
+	end
+
 	if xASL_exist(x.P.Path_WMH_SEGM, 'file')
-		List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI x.P.Path_rWMH_SEGM};
-	else
-		List2Del = {x.P.Path_rc1T1 x.P.Path_rc2T1 x.P.Path_rPWI};
+		List2Del{end+1} = x.P.Path_rWMH_SEGM;
 	end
 	
     if x.settings.DELETETEMP
