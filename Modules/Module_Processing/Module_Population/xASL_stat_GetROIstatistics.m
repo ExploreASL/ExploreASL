@@ -383,13 +383,15 @@ for iSubject=1:x.dataset.nSubjects
 				x.dir.SUBJECTDIR = fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject});
 				x.dir.SESSIONDIR = fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess});
 				x = xASL_init_FileSystem(x);
+
+				
 				pGM_MNI = xASL_io_Nifti2Im(x.P.Path_PVgm);
 				pWM_MNI = xASL_io_Nifti2Im(x.P.Path_PVwm);
-				if exist(x.P.Path_PVcsf, 'file')
-					pCSF_MNI = xASL_io_Nifti2Im(x.P.Path_PVcsf);
-				else
-					pCSF_MNI = max(0,ones(size(pGM_MNI))-pGM_MNI-pWM_MNI);
-				end
+				%if exist(x.P.Path_PVcsf, 'file')
+				%	pCSF_MNI = xASL_io_Nifti2Im(x.P.Path_PVcsf);
+				%else
+				%	pCSF_MNI = max(0,ones(size(pGM_MNI))-pGM_MNI-pWM_MNI);
+				%end
 
 				% Calculate ROI size for each atlas
 				SumList = squeeze(sum(x.S.InputMasks,1));
@@ -397,45 +399,47 @@ for iSubject=1:x.dataset.nSubjects
 				if size(SumList,1)==1
 					SumList = SumList';
 				end
-
-				for iROI=1:size(x.S.InputMasks,2)
-					for iMask=1:size(x.S.InputMasks,3)
-						if sum(SumList(iROI,iMask))~=0 % skip empty ROIs
-							x.S.InputMasks(:,iROI,iMask) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,iROI,iMask), pGM_MNI, pWM_MNI);
-                        else
-                            numVoxels = sum(x.S.InputMasks(:,iROI,iMask));
-                            fprintf('\n');
-                            warning('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
-                            fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
+				
+				if strcmp(x.S.TissueMaskingLocal, 'GM')
+					for iROI=1:size(x.S.InputMasks,2)
+						for iMask=1:size(x.S.InputMasks,3)
+							if sum(SumList(iROI,iMask))~=0 % skip empty ROIs
+								x.S.InputMasks(:,iROI,iMask) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,iROI,iMask), pGM_MNI, pWM_MNI);
+							else
+								numVoxels = sum(x.S.InputMasks(:,iROI,iMask));
+								fprintf('\n');
+								warning('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
+								fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
+							end
 						end
 					end
 				end
 			else
-				if bDoOnceROIPVEC && x.S.bSubjectSpecificROI == false
+				if bDoOnceROIPVEC && x.S.bSubjectSpecificROI == false && strcmp(x.S.TissueMaskingLocal, 'GM')
 					pGM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1_ASL_res.nii'));
 					pWM_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii'));
 
-					if exist(fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1_ASL_res.nii'), 'file')
-						pCSF_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc3T1_ASL_res.nii'));
-					else
-						pCSF_MNI = max(0,ones(size(pGM_MNI))-pGM_MNI-pWM_MNI);
-					end
-
+					%if exist(fullfile(x.D.MapsSPMmodifiedDir, 'rc3T1_ASL_res.nii'), 'file')
+					%	pCSF_MNI = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rc3T1_ASL_res.nii'));
+					%else
+					%	pCSF_MNI = max(0,ones(size(pGM_MNI))-pGM_MNI-pWM_MNI);
+					%end
+					
 					fprintf('Expanding ROIs with WM for PVC:    ');
 					for iROI=1:size(x.S.InputMasks,2)
 						xASL_TrackProgress(iROI,size(x.S.InputMasks,2));
 						for iMask=1:size(x.S.InputMasks,3)
 							if sum(SumList(iROI,iMask))~=0 % skip empty ROIs
 								x.S.InputMasks(:,iROI,iMask) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,iROI,iMask), pGM_MNI, pWM_MNI);
-                            else
-                                fprintf('\n');
-                                numVoxels = sum(x.S.InputMasks(:,iROI,iMask));
-                                warning('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
-                                fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
+							else
+								fprintf('\n');
+								numVoxels = sum(x.S.InputMasks(:,iROI,iMask));
+								warning('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
+								fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
 							end
 						end
-                    end
-                    fprintf('\n');
+					end
+					fprintf('\n');
 					bDoOnceROIPVEC = 0;
 				end
 			end
