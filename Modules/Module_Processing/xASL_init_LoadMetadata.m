@@ -388,7 +388,7 @@ for iNum=1:size(VarContent,1)
 end
 
 
-% C) remove whitespaces
+% C) remove whitespaces in subject names
 VarContent(:,1) = strtrim(VarContent(:,1));
 
 % Determine whether group contains subject-wise or 
@@ -473,7 +473,7 @@ for iS=1:x.dataset.nSubjects
                 nextN = nextN+1;
             end
         end
-        if ~IsFound; HasEmpty = 1; end;
+        if ~IsFound; HasEmpty = 1; end
     end
 end
 
@@ -582,7 +582,7 @@ end
 %% ------------------------------------------------------------------------------------------------------------
 %% 4) Distinguish continous data (e.g. age) or ordinal data (groups to compare, e.g. cohort)
 %% 4A) Force continuous data for known parameters
-ListContinuousData = {'AcquisitionTime' 'age' 'MeanMotion' 'GM_vol' 'WM_vol' 'CSF_vol' 'GMWM_ICVRatio' 'GM_ICVRatio' 'WMH_count' 'WMH_vol'...
+ListContinuousData = {'AcquisitionTime' 'age' 'MMSE' 'MeanMotion' 'GM_vol' 'WM_vol' 'CSF_vol' 'GMWM_ICVRatio' 'GM_ICVRatio' 'WMH_count' 'WMH_vol'...
     'CBF_spatial_CoV' 'CBF_spatial_CoV_norm' 'PseudoCBF_spatial_CoV' 'Yrs_AAO' 'Hematocrit' 'SliceReadoutTime' 'AcquisitionTime' 'Inititial_PLD'...
     'LabelingEfficiency' 'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'...
     'Blood_T1art' 'GM','deep_WM','WholeBrain','L-ICA','R-ICA','POS','Caudate','Cerebellum','Frontal','Insula','Occipital','Parietal','Putamen'...
@@ -795,14 +795,14 @@ if size(NewVariable, 1)==size(x.S.SetsID, 1) % include variable
 
 
 %% DELETE THIS PART LATER, SEEMS COPY OF ABOVE
-    % ------------------------------------------------------------------------------------------------------------
-    % Add ordinal variable options, if they are not yet there
-    if x.S.Sets1_2Sample(SetIndex)~=3 && length(x.S.SetsOptions{SetIndex})==1
-        UniqueData = unique( x.S.SetsID(:,SetIndex) );
-        for iOption=1:length(UniqueData)
-            x.S.SetsOptions{SetIndex}{iOption} = num2str(UniqueData(iOption));
-        end
-    end
+    % % ------------------------------------------------------------------------------------------------------------
+    % % Add ordinal variable options, if they are not yet there
+    % if x.S.Sets1_2Sample(SetIndex)~=3 && length(x.S.SetsOptions{SetIndex})==1
+    %     UniqueData = unique( x.S.SetsID(:,SetIndex) );
+    %     for iOption=1:length(UniqueData)
+    %         x.S.SetsOptions{SetIndex}{iOption} = num2str(UniqueData(iOption));
+    %     end
+    % end
 end
    
 
