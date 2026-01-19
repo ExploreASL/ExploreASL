@@ -48,7 +48,7 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
 %
 % EXAMPLE: x = xASL_qc_CollectQC_ASL(x, 10, 1);
 % __________________________________
-% Copyright (c) 2015-2024 ExploreASL
+% Copyright (c) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -104,11 +104,13 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
         QuantFields = fields(x.Q); % all quantification fields
         for iField = 1:length(QuantFields) % iterate over fields
             FieldName = QuantFields{iField};
-            IndexIs = find(cellfun(@(x) strcmp(x,FieldName), KnownUnits)); % check if we know the unit
-            if ~isempty(IndexIs) % do we know the unit?
-                FieldName = [FieldName '_' HaveUnits{IndexIs}]; % then add the unit to the fieldname
-            end
-            ASL.(FieldName) = x.Q.(QuantFields{iField}); % add the field to ASL struct
+			if ~isstruct(x.Q.(QuantFields{iField}))
+				IndexIs = find(cellfun(@(x) strcmp(x,FieldName), KnownUnits)); % check if we know the unit
+				if ~isempty(IndexIs) % do we know the unit?
+					FieldName = [FieldName '_' HaveUnits{IndexIs}]; % then add the unit to the fieldname
+				end
+				ASL.(FieldName) = x.Q.(QuantFields{iField}); % add the field to ASL struct
+			end
         end
     end
 
