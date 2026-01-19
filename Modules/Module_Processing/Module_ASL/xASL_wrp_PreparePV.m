@@ -67,10 +67,8 @@ else
         % resolution, if the resolutions are identical
         xASL_Copy(x.P.Path_c1T1, x.P.Path_PVgm, true);
         xASL_Copy(x.P.Path_c2T1, x.P.Path_PVwm, true);
-		if xASL_exist(x.P.Path_c3T1)
-            xASL_Copy(x.P.Path_c3T1, x.P.Path_PVcsf, true);
-		end
-		
+		xASL_Copy(x.P.Path_c3T1, x.P.Path_PVcsf, true);
+				
 		if xASL_exist(x.P.Path_WMH_SEGM, 'file')
             xASL_Copy(x.P.Path_WMH_SEGM, x.P.Path_PVwmh, true);
 		end
@@ -78,11 +76,8 @@ else
         % also do this in standard space
         xASL_Copy(x.P.Pop_Path_rc1T1, x.P.Pop_Path_PV_pGM, true);
         xASL_Copy(x.P.Pop_Path_rc2T1, x.P.Pop_Path_PV_pWM, true);
+		xASL_Copy(x.P.Pop_Path_rc3T1, x.P.Pop_Path_PV_pCSF, true);
 		
-		if xASL_exist(x.P.Pop_Path_rc3T1)
-            xASL_Copy(x.P.Pop_Path_rc3T1, x.P.Pop_Path_PV_pCSF, true);
-		end
-
 		if xASL_exist(x.P.Path_rWMH_SEGM, 'file')
             xASL_Copy(x.P.Path_rWMH_SEGM, x.P.Pop_Path_PV_WMH_SEGM, true);
 		end

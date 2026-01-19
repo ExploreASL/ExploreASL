@@ -529,8 +529,8 @@ testPatientDestination = fullfile(TestRepository,'UnitTesting','working_director
 xASL_Copy(droTestPatientSource,droTestPatient);
 % Create dataPar.json
 dataParStruct.x.settings.Quality = 0;
-dataParStruct.x.S.Atlases = {'Total','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
-dataParStruct.x.S.TissueMasking = {'GM','WM','GM+WM','GM','GM','GM'};
+dataParStruct.x.S.Atlases = {'Total','DeepWM','Hammers','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
+dataParStruct.x.S.TissueMasking = {'GM','WM','GM+WM','CSF','GM','GM','GM'};
 xASL_io_WriteJson(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
 
 % Add studyPar JSON

@@ -266,9 +266,14 @@ if ~x.mutex.HasState(StateName{8})
             % If needed, an atlas or tissue type can be provided multiple times in different combinations
 
             % We use the specified tissue type
-            % 'GM' = gray matter
+			% 'GM' = gray matter
             % 'WM' = white matter
-            % 'GM+WM' = whole brain
+			% 'CSF' = cerebrospinal fluid
+            % 'GM+WM' = whole brain parenchyma GM+WM, previously was 'WB', alternatively can be defined as 'WM+GM'
+			% 'GM+CSF' = GM+CSF combination, 'CSF+GM' does the same
+			% 'WM+CSF' = WM+CSF combination
+			% 'GM+WM+CSF' = GM+WM+CSF combination
+
             x.S.TissueMaskingLocal = x.S.TissueMasking{iAtlas};
             
             % Find the path of the atlas

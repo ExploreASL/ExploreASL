@@ -706,7 +706,11 @@ for iSubject=1:x.dataset.nSubjects
             %                        (loop outside this function for multiple tissue types)
             % 'GM' = gray matter
             % 'WM' = white matter
-            % 'GM+WM' = whole brain GM+WM, previously was 'WB'
+			% 'CSF' = cerebrospinal fluid
+            % 'GM+WM' = whole brain parenchyma GM+WM, previously was 'WB', alternatively can be defined as 'WM+GM'
+			% 'GM+CSF' = GM+CSF combination, 'CSF+GM' does the same
+			% 'WM+CSF' = WM+CSF combination
+			% 'GM+WM+CSF' = GM+WM+CSF combination
 
 			if ~x.S.IsASL
 				pvPrimary = ones(size(DataIm)); % no masking
@@ -752,7 +756,6 @@ for iSubject=1:x.dataset.nSubjects
 				        pvSecondary = pCSF; % CSF
 						pvPrimaryName = 'GM+WM';
 						pvSecondaryName = 'CSF';
-				        bSkipPVC = 1;
 					case {'GM+WM+CSF', 'GM+CSF+WM', 'WM+GM+CSF', 'WM+CSF+GM', 'CSF+GM+WM', 'CSF+WM+GM'}
 				        pvPrimary = pGM+pWM+pCSF;
 				        pvSecondary = zeros(size(pGM)); % empty
@@ -1090,7 +1093,7 @@ ROI = ROI>0;
 
 ROI = xASL_im_Column2IM(ROI, x.S.masks.WBmask); % convert to image, decompress
 
-if max(size(pGM,1),size(pGM,2) < 130) 
+if x.S.InputNativeSpace
 	% native space
 	ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 2); % Dilate ROI
 else
