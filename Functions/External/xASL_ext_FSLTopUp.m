@@ -37,13 +37,11 @@ function [bSuccess] = xASL_ext_FSLTopUp(InDir, ScanType, x, OutputPath)
 %              [Smith 2004] S.M. Smith, M. Jenkinson, M.W. Woolrich, C.F. Beckmann, T.E.J. Behrens, H. Johansen-Berg, P.R. Bannister, M. De Luca, I. Drobnjak, D.E. Flitney, R. Niazy, J. Saunders, J. Vickers, Y. Zhang, N. De Stefano, J.M. Brady, and P.M. Matthews. Advances in functional and structural MR image analysis and implementation as FSL. NeuroImage, 23(S1):208-219, 2004.
 %              https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/topup
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
+% Copyright (C) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
-
-
 
 
 %% Admin: set ScanType
@@ -344,7 +342,9 @@ else
         end
 
         % Now we convert the images in single precision before running TopUp
-        xASL_io_SaveNifti(PathApplyTopUp{iTopUp}, PathApplyTopUp{iTopUp}, single(xASL_io_Nifti2Im(PathApplyTopUp{iTopUp})), 32, false);
+		IMtmp = xASL_io_Nifti2Im(PathApplyTopUp{iTopUp});
+		IMtmp(isnan(IMtmp)) = 0;
+        xASL_io_SaveNifti(PathApplyTopUp{iTopUp}, PathApplyTopUp{iTopUp}, single(IMtmp), 32, false);
 
         fprintf('\n\n=========================================================================\n')
         fprintf('%s\n',['Applying FSL TopUp to ' PathApplyTopUp{iTopUp}]);
@@ -432,7 +432,7 @@ fprintf([PrintFile PrintExt ' has similar acquisition parms as the output image\
 fprintf([PrintFile2 PrintExt2 ', so we register them now & resample them to the output image space\n']);
 fprintf('=========================================================================\n')
 
-%% A) Create temporary average image of the output image
+%% A) Create temporary average image of the output image (typically the ASL image)
 tIM = xASL_io_Nifti2Im(PathNII{end});
 TempRegPath = fullfile(InDir, 'TempRegIm.nii');
 if size(tIM,4)>1
@@ -444,7 +444,7 @@ else
 end
 
 %% B) Register
-srcPath = {TopUpNIIPath{SameParmsInd}};
+srcPath = {TopUpNIIPath{SameParmsInd}}; % The copy of M0 is used as source
 OtherList = {};
 for iC=1:length(TopUpNIIPath)
     if iC~=SameParmsInd
@@ -524,10 +524,10 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
     json = xASL_adm_LoadParms(JSONin, x);
 
  	if ~isfield(json,'PhaseEncodingDirection')
-        warning(['PhaseEncodingDirection JSON field missing: ' PathIn]);
+        error(['Cannot execute TOP-UP, PhaseEncodingDirection JSON field missing: ' PathIn]);
         json.PhaseEncodingDirection = NaN;
     elseif ~isfield(json,'TotalReadoutTime')
-        warning(['TotalReadoutTime JSON field missing: ' PathIn]);
+        error(['Cannot execute TOP-UP, TotalReadoutTime JSON field missing: ' PathIn]);
         json.TotalReadoutTime = NaN;
     end
 
@@ -546,7 +546,7 @@ function [AcqParms] = ObtainTopUpParms(PathIn, x)
         case 'k-'
             AcqParms = '0 0 -1';
         otherwise
-            warning(['Unknown PhaseEncodingDirection: ' PathIn]);
+            error(['Cannot execute TOP-UP with unknown PhaseEncodingDirection: ' PathIn]);
             AcqParms = 'n/a n/a n/a';
     end
 
