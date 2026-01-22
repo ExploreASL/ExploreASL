@@ -48,6 +48,10 @@ end
 
 header = [];
 
+if ispc() == 1
+    bTryDCMTK = false;% DCMTK is deactivated for Windows due to crashing on many versions
+end
+
 if ~xASL_exist(filepath, 'file') 
 	warning(['Cannot read DICOM file as it does not exist: ' filepath]);
 	return;
