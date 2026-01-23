@@ -27,7 +27,7 @@ function header = xASL_io_DcmtkRead(filepath, bPixel, bTryDCMTK, bSkipNonDicoms)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES:
 % __________________________________
-% Copyright 2015-2025 ExploreASL
+% Copyright 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -48,7 +48,7 @@ end
 
 header = [];
 
-if ispc() == 1
+if ispc() == 1 % Temporary solution until DCMTK is fixed for Windows
     bTryDCMTK = false;% DCMTK is deactivated for Windows due to crashing on many versions
 end
 
