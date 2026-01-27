@@ -112,18 +112,18 @@ end
 
 %-Flags
 %--------------------------------------------------------------------------
-def_flags          = spm_get_defaults('realign.estimate');
+def_flags          = spm_get_defaults('realign.estimate'); % Loads SPM's default realignment settings.
 def_flags.PW       = '';
-if bZigzag
-	def_flags.graphics = 1;
-	def_flags.quality  = 1;
-	def_flags.rtm      = 0;
-else
+if bZigzag % Zig-zag modifies defaults — zig-zag regression assumes a fixed reference image, not a moving mean.
+	def_flags.graphics = 1; % Graphics on
+	def_flags.quality  = 1; % Highest quality
+	def_flags.rtm      = 0; % Disables rference to mean
+else 
 	def_flags.graphics = ~spm('CmdLine');
 end
 def_flags.lkp      = 1:6;
 
-if nargin < 2
+if nargin < 2 % Merge user flags with defaults - Any missing fields in flags are filled with defaults.
     flags = def_flags;
 else
     fnms = fieldnames(def_flags);
@@ -144,26 +144,33 @@ end
 
 %-Images
 %--------------------------------------------------------------------------
-if ~iscell(P), P = {P}; end
-for i=1:numel(P), if ischar(P{i}), P{i} = spm_vol(P{i}); end; end
-P(cellfun(@isempty,P)) = [];
+if ~iscell(P), P = {P}; end % Always treat P as a cell array (one cell per session).
+for i=1:numel(P), if ischar(P{i}), P{i} = spm_vol(P{i}); end; end % Convert filenames → spm_vol structs.
+P(cellfun(@isempty,P)) = []; % Remove empty sessions.
 if ~isempty(flags.PW) && ischar(flags.PW), flags.PW = spm_vol(flags.PW); end
 
 if isempty(P), warning('Nothing to do.'); end
 
 %-Perform realignment
 %==========================================================================
-if numel(P)==1
-    P{1} = realign_series(P{1}, flags);
-	if bZigzag
-        if nargout==0, save_parameters(P{1}); end
+if numel(P)==1 % Single session
+    P{1} = realign_series(P{1}, flags); % Perform rigid-body realignment against the first image.
+    if bZigzag
+        if nargout==0, save_parameters(P{1}); end % Save raw motion parameters first.
         n = length(P{1});
         ref=-ones(n,1);           %% ZW  should be switched later to allow different label control order, now assume first image is label
         ref(2:2:end)=1;
         if(ctrfirst), ref=-ref; end
-        P{1}=cleanandsave_parameters(P{1},ref);
-	end
+        % Builds zig-zag reference vector
+        P{1}=cleanandsave_parameters(P{1},ref); % This is where zig-zag regression happens
+    end 
 elseif numel(P) > 1
+      %  Multiple sessions
+      %  This block:
+      %  Aligns the first volume of each session
+      %  Applies that transform to all volumes in each session
+      %  Runs realignment within each session
+      %  Applies zig-zag cleaning per session
     Ptmp = P{1}(1);
     for s=2:numel(P)
         Ptmp = [Ptmp ; P{s}(1)];
@@ -192,7 +199,7 @@ end
 %-Save results
 %==========================================================================
 
-if ~nargout
+if ~nargout % If the function is called without output:
     for s=1:numel(P)
         %-Save parameters as rp_*.txt files
         %------------------------------------------------------------------
@@ -200,7 +207,7 @@ if ~nargout
 			save_parameters(P{s});
 		end
 			
-        %-Update voxel to world mapping in images header
+        %-Update voxel to world mapping in images header - Update NIfTI headers
         %------------------------------------------------------------------
         for i=1:numel(P{s})
             spm_get_space([P{s}(i).fname ',' num2str(P{s}(i).n)], P{s}(i).mat);
@@ -230,6 +237,21 @@ function P = realign_series(P,flags)
 % The scaling (and offset) parameters are also set to contain the
 % optimum scaling required to match the images.
 %__________________________________________________________________________
+
+% This is pure SPM and unchanged by zig-zag.
+% At a high level, it:
+    % Samples voxels from the reference image
+    % Smooths images
+    % Computes image gradients
+    % Solves a least-squares rigid-body registration
+    % Iterates until convergence
+
+% x1,x2,x3 → sampled voxel coordinates
+% G → intensity values
+% dG1,dG2,dG3 → spatial gradients
+% A → Jacobian of intensity wrt motion parameters
+% Solve (AᵀA)⁻¹Aᵀb for motion updates
+% This is classic Friston 1995 rigid-body registration.
 
 if numel(P)<2, return; end
 
@@ -605,16 +627,17 @@ Vo=V;
 Q = zeros(n,6);
 clQ=zeros(n,6);
 for j=1:n
-	qq     = spm_imatrix(V(j).mat/V(1).mat);
-	Q(j,:) = qq(1:6);
-    clQ(j,:)=qq(1:6);
+	qq     = spm_imatrix(V(j).mat/V(1).mat); % Extract motion parameters
+	Q(j,:) = qq(1:6); % original motion (6 columns)
+    clQ(j,:)=qq(1:6); % copy to be cleaned
 end
 for j=1:6
     refval=clQ(:,j);
-    clQ(:,j)=refval-ref/(ref'*ref)*ref'*refval;
-    clQ(:,j)=clQ(:,j)-clQ(1,j);
+    clQ(:,j)=refval-ref/(ref'*ref)*ref'*refval; % This is linear regression removal.
+    clQ(:,j)=clQ(:,j)-clQ(1,j); % Re-reference to first volume. Ensures: First image has zero motion and that motion remains relative to first volume
 end
 for j=1:n
+    % Rebuild transformation matrices - This replaces the original motion with the cleaned motion.
     nmat = spm_matrix(clQ(j,:));
     Vo(j).mat=nmat*V(1).mat;
 end
