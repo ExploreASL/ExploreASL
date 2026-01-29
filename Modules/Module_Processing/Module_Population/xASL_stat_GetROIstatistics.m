@@ -1067,7 +1067,7 @@ end
 %% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
 function [ROI] = xASL_im_CreatePVEcROI(x, ROI, pGM, pWM)
-%xASL_im_CreatePVEcROI Clean output_ID by removing previous suffixes
+%xASL_im_CreatePVEcROI Runs ROI expansion for PVC, but does that for GM only
 %
 % FORMAT: [ROI] = xASL_im_CreatePVEcROI(x, ROI, pGM, pWM)
 %

@@ -182,6 +182,7 @@ if isfield(x, 'S') % Check upfront because we don't want to create a potentially
 			if ~isempty(regexpi(x.S.Atlases{iAtlas}, 'WM')) || ~isempty(regexpi(x.S.Atlases{iAtlas}, 'whitematter'))
 				textRecommendation = [textRecommendation 'WM'];
 			elseif ~isempty(regexpi(x.S.Atlases{iAtlas}, 'WB')) || ~isempty(regexpi(x.S.Atlases{iAtlas}, 'wholebrain'))
+				% In case the atlas name contains WB, we inform the user that the probable tissue mix the user wants is GM+WM. This is a recommendation only and the user needs to specify in the configuration if GM+WM or GM+WM+CSF is wanted
 				textRecommendation = [textRecommendation 'GM+WM'];
 			else
 				textRecommendation = [textRecommendation 'GM'];
