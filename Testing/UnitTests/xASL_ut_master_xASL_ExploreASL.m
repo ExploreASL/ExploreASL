@@ -604,14 +604,14 @@ if exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'fil
     if isfield(testContent,'x')
         if isfield(testContent.x,'S')
             if isfield(testContent.x.S,'Atlases')
-                if ~(numel(testContent.x.S.Atlases)==6)
+                if ~(numel(testContent.x.S.Atlases)==7)
                     testCondition = false; % Test failed
                 end
             else
                 testCondition = false; % Test failed
 			end
 			if isfield(testContent.x.S,'TissueMasking')
-                if ~(numel(testContent.x.S.TissueMasking)==6)
+                if ~(numel(testContent.x.S.TissueMasking)==7)
                     testCondition = false; % Test failed
                 end
             else
