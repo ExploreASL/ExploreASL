@@ -23,7 +23,15 @@ pathColinFileCLS = 'colin27_cls_tal_hires.nii';
 pathColinFileGM = 'colin27_gm.nii';
 pathColinFileWM = 'colin27_wm.nii';
 pathColinFileGMWM = 'colin27_gmwm.nii';
+
+pathFSL152Dir = 'fsl_mni152';
+pathFSL152File = 'FSL_MNI152_FreeSurferConformed_1mm.nii';
+
+pathSchaefer = 'Schaefer';
+
 pathExploreASL = '/home/janpetr/ExploreASL/ExploreASL';
+pathSPM = fullfile(pathExploreASL,'External', 'SPMmodified');
+pathCATtemplates = fullfile(pathSPM, 'toolbox', 'cat12', 'templates_volumes');
 
 %% Load the ICMB-152 atlas 
 % We used this one http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_asym_09a_nifti.zip
@@ -58,21 +66,21 @@ xASL_io_SaveNifti(fullfile(pathTPM,pathColinDir, pathColinFileCLS),fullfile(path
 xASL_io_SaveNifti(fullfile(pathTPM,pathColinDir, pathColinFileCLS),fullfile(pathTPM,pathColinDir, pathColinFileGMWM),imCombined);
 
 %% Presmooth the atlas and move it to the IXI resolution
-xASL_im_PreSmooth(fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMAtlasDir, pathTPMAtlasFileGMWM));
-xASL_im_PreSmooth(fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMAtlasDir, pathTPMAtlasFile));
-xASL_im_PreSmooth(fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMAtlasDir, pathTPMAtlasFileWM));
+xASL_im_PreSmooth(fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMAtlasDir, pathTPMAtlasFileGMWM));
+xASL_im_PreSmooth(fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMAtlasDir, pathTPMAtlasFile));
+xASL_im_PreSmooth(fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMAtlasDir, pathTPMAtlasFileWM));
 
-xASL_im_PreSmooth(fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFileGMWM));
-xASL_im_PreSmooth(fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFile));
-xASL_im_PreSmooth(fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFileWM));
+xASL_im_PreSmooth(fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFileGMWM));
+xASL_im_PreSmooth(fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFile));
+xASL_im_PreSmooth(fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFileWM));
 
-xASL_im_PreSmooth(fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathColinDir, pathColinFileGM));
-xASL_im_PreSmooth(fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathColinDir, pathColinFileWM));
-xASL_im_PreSmooth(fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathColinDir, pathColinFileGMWM));
+xASL_im_PreSmooth(fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathColinDir, pathColinFileGM));
+xASL_im_PreSmooth(fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathColinDir, pathColinFileWM));
+xASL_im_PreSmooth(fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii'),fullfile(pathTPM, pathColinDir, pathColinFileGMWM));
 
 % And resample to 1.5mm DARTEL space
 matlabbatch = [];
-matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMAtlasDir, ['s' pathTPMAtlasFileGMWM])
 	fullfile(pathTPM, pathTPMAtlasDir, ['s' pathTPMAtlasFile])
 	fullfile(pathTPM, pathTPMAtlasDir, ['s' pathTPMAtlasFileWM])
@@ -98,27 +106,27 @@ matlabbatch{1}.spm.tools.dartel.warp1.settings.rform = 0;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).rparam = [4 2 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).K = 0;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).template = {fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).rparam = [2 1 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).K = 0;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_2_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).template = {fullfile(pathCATtemplates ,'Template_2_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).rparam = [1 0.5 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).K = 1;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_3_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).template = {fullfile(pathCATtemplates ,'Template_3_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).rparam = [0.5 0.25 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).K = 2;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_4_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).template = {fullfile(pathCATtemplates ,'Template_4_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).rparam = [0.25 0.125 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).K = 4;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_5_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).template = {fullfile(pathCATtemplates ,'Template_5_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).rparam = [0.25 0.125 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).K = 6;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).template = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.lmreg = 0.01;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.cyc = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.its = 3;
@@ -129,7 +137,7 @@ matlabbatch = [];
 matlabbatch{1}.spm.util.defs.comp{1}.dartel.flowfield = {fullfile(pathTPM, pathTPMAtlasDir, ['u_ws' pathTPMAtlasFile])};
 matlabbatch{1}.spm.util.defs.comp{1}.dartel.times = [1 0];
 matlabbatch{1}.spm.util.defs.comp{1}.dartel.K = 6;
-matlabbatch{1}.spm.util.defs.comp{1}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{1}.dartel.template = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMAtlasDir, ['ws' pathTPMAtlasFile])};
 matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {pathTPM};
 matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 4;
@@ -149,27 +157,27 @@ matlabbatch{1}.spm.tools.dartel.warp1.settings.rform = 0;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).rparam = [4 2 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).K = 0;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).template = {fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).rparam = [2 1 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).K = 0;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_2_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).template = {fullfile(pathCATtemplates ,'Template_2_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).rparam = [1 0.5 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).K = 1;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_3_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).template = {fullfile(pathCATtemplates ,'Template_3_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).rparam = [0.5 0.25 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).K = 2;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_4_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).template = {fullfile(pathCATtemplates ,'Template_4_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).rparam = [0.25 0.125 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).K = 4;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_5_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).template = {fullfile(pathCATtemplates ,'Template_5_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).rparam = [0.25 0.125 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).K = 6;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).template = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.lmreg = 0.01;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.cyc = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.its = 3;
@@ -180,7 +188,7 @@ matlabbatch = [];
 matlabbatch{1}.spm.util.defs.comp{1}.dartel.flowfield = {fullfile(pathTPM, pathTPMSymAtlasDir, ['u_ws' pathTPMSymAtlasFile])};
 matlabbatch{1}.spm.util.defs.comp{1}.dartel.times = [1 0];
 matlabbatch{1}.spm.util.defs.comp{1}.dartel.K = 6;
-matlabbatch{1}.spm.util.defs.comp{1}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{1}.dartel.template = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMSymAtlasDir, ['ws' pathTPMSymAtlasFile])};
 matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {pathTPM};
 matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 4;
@@ -200,27 +208,27 @@ matlabbatch{1}.spm.tools.dartel.warp1.settings.rform = 0;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).rparam = [4 2 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).K = 0;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_1_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).template = {fullfile(pathCATtemplates ,'Template_1_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).rparam = [2 1 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).K = 0;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_2_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).template = {fullfile(pathCATtemplates ,'Template_2_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).rparam = [1 0.5 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).K = 1;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_3_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).template = {fullfile(pathCATtemplates ,'Template_3_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).rparam = [0.5 0.25 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).K = 2;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_4_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).template = {fullfile(pathCATtemplates ,'Template_4_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).rparam = [0.25 0.125 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).K = 4;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_5_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).template = {fullfile(pathCATtemplates ,'Template_5_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).its = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).rparam = [0.25 0.125 1e-06];
 matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).K = 6;
-matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).template = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.lmreg = 0.01;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.cyc = 3;
 matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.its = 3;
@@ -231,7 +239,7 @@ matlabbatch = [];
 matlabbatch{1}.spm.util.defs.comp{1}.dartel.flowfield = {fullfile(pathTPM, pathColinDir, ['u_ws' pathColinFileGM])};
 matlabbatch{1}.spm.util.defs.comp{1}.dartel.times = [1 0];
 matlabbatch{1}.spm.util.defs.comp{1}.dartel.K = 6;
-matlabbatch{1}.spm.util.defs.comp{1}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{1}.dartel.template = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathColinDir, ['ws' pathColinFileGM])};
 matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {pathTPM};
 matlabbatch{1}.spm.util.defs.out{1}.pull.interp = 4;
@@ -254,11 +262,11 @@ xASL_io_SaveNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'BrainstemProbs.MNIsy
 
 % Nearest neighbor transformation
 matlabbatch = [];
-matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.flowfield = {fullfile(pathTPM, pathTPMSymAtlasDir, ['u_ws' pathTPMSymAtlasFile])};
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.times = [1 0];
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.K = 6;
-matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFile)
 												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferBrainstem.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathTPM, 'FreeSurferSubfields')};
@@ -457,11 +465,11 @@ xASL_io_SaveNifti(fullfile(pathTPM, 'FreeSurferSubfields', 'ThalamusProbs.MNIsym
 
 % Nearest neighbor transformation
 matlabbatch = [];
-matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.flowfield = {fullfile(pathTPM, pathTPMSymAtlasDir, ['u_ws' pathTPMSymAtlasFile])};
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.times = [1 0];
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.K = 6;
-matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFile)
 												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamus.nii')
 												   fullfile(pathTPM, 'FreeSurferSubfields', 'FreesurferThalamusHistological.nii')
@@ -535,11 +543,11 @@ xASL_io_SaveNifti(fullfile(pathTPM, 'AAN', 'AAN_Brainstem_MNI152_1mm_v2p0.nii'),
 
 % Nearest neighbor transformation
 matlabbatch = [];
-matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.flowfield = {fullfile(pathTPM, pathTPMSymAtlasDir, ['u_ws' pathTPMSymAtlasFile])};
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.times = [1 0];
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.K = 6;
-matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMSymAtlasDir, pathTPMSymAtlasFile)
 												   fullfile(pathTPM, 'AAN', 'AAN_Brainstem.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {fullfile(pathTPM, 'AAN')};
@@ -571,11 +579,11 @@ max(imAtlas(:))
 % Nearest neighbor transformation
 
 matlabbatch = [];
-matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.flowfield = {fullfile(pathTPM, pathTPMAtlasDir, ['u_ws' pathTPMAtlasFile])};
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.times = [1 0];
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.K = 6;
-matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, pathTPMAtlasDir, pathTPMAtlasFile)
 												   fullfile(pathTPM, 'WMPM', 'WMPM_Type_III.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {pathTPM};
@@ -598,11 +606,11 @@ max(imAtlas(:))
 % Nearest neighbor transformation
 
 matlabbatch = [];
-matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{1}.id.space = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.flowfield = {fullfile(pathTPM, pathColinDir, ['u_ws' pathColinFileGM])};
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.times = [1 0];
 matlabbatch{1}.spm.util.defs.comp{2}.dartel.K = 6;
-matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathExploreASL, 'External', 'SPMmodified', 'toolbox', 'cat12', 'templates_volumes' ,'Template_6_IXI555_MNI152.nii')};
+matlabbatch{1}.spm.util.defs.comp{2}.dartel.template = {fullfile(pathCATtemplates ,'Template_6_IXI555_MNI152.nii')};
 matlabbatch{1}.spm.util.defs.out{1}.pull.fnames = {fullfile(pathTPM, 'AAL3', 'AAL3v1_1mm.nii')
 	                                               fullfile(pathTPM, pathColinDir, pathColinFileGM)};
 matlabbatch{1}.spm.util.defs.out{1}.pull.savedir.saveusr = {pathTPM};
@@ -623,3 +631,215 @@ xASL_adm_AtlasConvert_LeftRight2Bilateral(fullfile(pathTPM, 'oAAL3v1_1mm.nii'), 
 %save(fullfile(pathTPM, 'oAAL3v1_1mm.nii.mat'),'IM');
 %xASL_io_SaveNifti(fullfile(pathTPM, 'oAAL3v1_1mm.nii'), fullfile(pathTPM, 'oAAL3v1_1mm.nii'), IM);
 %xASL_adm_GzipNifti(fullfile(pathTPM, 'oAAL3v1_1mm.nii'));
+
+
+%% Spatially normalize and segment the FSL_MNI152 atlas
+% The Basic atlas is from here (note that it is the same dataset, but different registration than the standard MNI atlases like MNI2009c etc
+% https://neurovault.org/images/14245/
+
+% First align to IXI512 and segment
+
+% Unzip the atlases
+xASL_adm_UnzipNifti(fullfile(pathTPM, pathFSL152Dir, pathFSL152File));
+
+% Set CAT12 template & registration settings
+matlabbatch = [];
+matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm                         = {fullfile(pathSPM, 'tpm', 'TPM.nii')};
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_savesteps           = 0;
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_quality             = 0;
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.xasl_disabledartel       = 0;
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.shooting.shootingtpm = {fullfile(pathCATtemplates, 'Template_0_IXI555_MNI152_GS.nii')}; % Runs Geodesic Shooting to this n=555 subjects template  %pathCATtemplates
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.shooting.regstr = 0.5;
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP           = 1070; % full cleanup. 1070 light cleanup
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr        = 0.5; % 0.5; % strength local adaptive segmentation
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr       = 2; % using SPM approach -> 0.5 GCUT may be more robust, to avoid stripping GM at brain poles
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox           = 1.5; % voxelsize on which registration is run (1.5 == default)
+matlabbatch{1}.spm.tools.cat.estwrite.opts.biasstr          = 0.5; % SPM bias-correction strength
+matlabbatch{1}.spm.tools.cat.estwrite.opts.samp             = 3;   % spm sampling distance
+% Add the FSL152MNI reference
+matlabbatch{1}.spm.tools.cat.estwrite.data                  = {fullfile(pathTPM, pathFSL152Dir, pathFSL152File)}; % T1.nii
+matlabbatch{1}.spm.tools.cat.estwrite.nproc                 = 0; % don't split the segmentation in multiple processes.
+matlabbatch{1}.spm.tools.cat.estwrite.opts.affreg           = 'mni'; % regularize affine registration for MNI European brains
+matlabbatch{1}.spm.tools.cat.estwrite.output.surface        = 0;   % don't do surface modeling
+matlabbatch{1}.spm.tools.cat.estwrite.output.GM.native      = 1;   % save c1T1 in native space
+matlabbatch{1}.spm.tools.cat.estwrite.output.GM.mod         = 0;   % don't save modulation
+matlabbatch{1}.spm.tools.cat.estwrite.output.GM.dartel      = 0;   % don't save DARTEL space c1T1, this happens below in the reslice part
+matlabbatch{1}.spm.tools.cat.estwrite.output.WM.native      = 1;   % save c2T1 in native space
+matlabbatch{1}.spm.tools.cat.estwrite.output.WM.mod         = 0;   % don't save modulation
+matlabbatch{1}.spm.tools.cat.estwrite.output.WM.dartel      = 0;   % don't save DARTEL space c2T1, this happens below in the reslice part
+matlabbatch{1}.spm.tools.cat.estwrite.output.warps          = [1 0]; % save warp to MNI
+matlabbatch{1}.spm.tools.cat.estwrite.output.bias.warped    = 0;   % don't save bias-corrected T1.nii
+matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.noROI  = struct([]); % don't do ROI estimations
+matlabbatch{1}.spm.tools.cat.estwrite.output.jacobianwarped = 0;
+matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.fixed= [1 0.1]; % process everything on 1 mm fixed resolution (default)
+% Run CAT12 segmentation
+spm_jobman('run',matlabbatch); % Run CAT12
+
+xASL_adm_UnzipNifti(fullfile(pathTPM, pathSchaefer, 'Schaefer2018_100Parcels_7Networks_order_FSLMNI152_1mm.nii.gz'));
+xASL_adm_UnzipNifti(fullfile(pathTPM, pathSchaefer, 'Schaefer2018_100Parcels_17Networks_order_FSLMNI152_1mm.nii.gz'));
+
+% Transform to IXI512 template
+matlabbatch = [];
+matlabbatch{1}.spm.tools.cat.tools.defs.field1 = {[fullfile(pathTPM, pathFSL152Dir, 'mri', 'y_FSL_MNI152_FreeSurferConformed_1mm.nii') ',1']};
+matlabbatch{1}.spm.tools.cat.tools.defs.images = {[fullfile(pathTPM, pathSchaefer, 'Schaefer2018_100Parcels_7Networks_order_FSLMNI152_1mm.nii') ',1']};
+matlabbatch{1}.spm.tools.cat.tools.defs.interp = 0;
+matlabbatch{1}.spm.tools.cat.tools.defs.modulate = 0;
+spm_jobman('run',matlabbatch);
+matlabbatch{1}.spm.tools.cat.tools.defs.images = {[fullfile(pathTPM, pathSchaefer, 'Schaefer2018_100Parcels_17Networks_order_FSLMNI152_1mm.nii') ',1']};
+spm_jobman('run',matlabbatch);
+
+% Convert atlas to a bilateral version for 7 Networks
+imAtlasOrig = xASL_io_Nifti2Im(fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_7Networks_order_FSLMNI152_1mm.nii'));
+imAtlas = zeros(size(imAtlasOrig(:,:,:,1))); % Create an empty atlas
+TSV = {};
+
+% Relabel the atlas
+imAtlas(imAtlasOrig==51) = 1;TSV{1,1} = '7Networks_Vis_1';
+imAtlas(imAtlasOrig==52) = 2;TSV{2,1} = '7Networks_Vis_2';
+imAtlas(imAtlasOrig==53) = 3;TSV{3,1} = '7Networks_Vis_3';
+imAtlas(imAtlasOrig==54) = 4;TSV{4,1} = '7Networks_Vis_4';
+imAtlas(imAtlasOrig==55) = 5;TSV{5,1} = '7Networks_Vis_5';
+imAtlas(imAtlasOrig==56) = 6;TSV{6,1} = '7Networks_Vis_6';
+imAtlas(imAtlasOrig==57) = 7;TSV{7,1} = '7Networks_Vis_7';
+imAtlas(imAtlasOrig==58) = 8;TSV{8,1} = '7Networks_Vis_8';
+TSV{9,1} = '7Networks_Vis_9';% RH_Vis_9 isn't defined
+imAtlas(imAtlasOrig==59) = 10;TSV{10,1} = '7Networks_SomMot_1';
+imAtlas(imAtlasOrig==60) = 11;TSV{11,1} = '7Networks_SomMot_2';
+imAtlas(imAtlasOrig==61) = 12;TSV{12,1} = '7Networks_SomMot_3';
+imAtlas(imAtlasOrig==62) = 13;TSV{13,1} = '7Networks_SomMot_4';
+imAtlas(imAtlasOrig==63) = 14;TSV{14,1} = '7Networks_SomMot_5';
+imAtlas(imAtlasOrig==64) = 15;TSV{15,1} = '7Networks_SomMot_6';
+imAtlas(imAtlasOrig==67) = 16;TSV{16,1} = '7Networks_DorsAttn_Post_1';
+imAtlas(imAtlasOrig==68) = 17;TSV{17,1} = '7Networks_DorsAttn_Post_2';
+imAtlas(imAtlasOrig==69) = 18;TSV{18,1} = '7Networks_DorsAttn_Post_3';
+imAtlas(imAtlasOrig==70) = 19;TSV{19,1} = '7Networks_DorsAttn_Post_4';
+imAtlas(imAtlasOrig==71) = 20;TSV{20,1} = '7Networks_DorsAttn_Post_5';
+TSV{21,1} = '7Networks_DorsAttn_Post_6';
+imAtlas(imAtlasOrig==72) = 22;TSV{22,1} = '7Networks_DorsAttn_PrCv_1';
+imAtlas(imAtlasOrig==73) = 23;TSV{23,1} = '7Networks_DorsAttn_FEF_1';
+TSV{24,1} = '7Networks_SalVentAttn_ParOper_';
+imAtlas(imAtlasOrig==76) = 25;TSV{25,1} = '7Networks_SalVentAttn_FrOperIns_1';
+TSV{26,1} = '7Networks_SalVentAttn_FrOperIns_2';
+TSV{27,1} = '7Networks_SalVentAttn_PFCl_1';
+imAtlas(imAtlasOrig==77) = 28;TSV{28,1} = '7Networks_SalVentAttn_Med_1';
+imAtlas(imAtlasOrig==78) = 29;TSV{29,1} = '7Networks_SalVentAttn_Med_2';
+TSV{30,1} = '7Networks_SalVentAttn_Med_3';
+imAtlas(imAtlasOrig==79) = 31;TSV{31,1} = '7Networks_Limbic_OFC_1';
+imAtlas(imAtlasOrig==80) = 32;TSV{32,1} = '7Networks_Limbic_TempPole_1';
+TSV{33,1} = '7Networks_Limbic_TempPole_2';
+imAtlas(imAtlasOrig==81) = 34;TSV{34,1} = '7Networks_Cont_Par_1';
+imAtlas(imAtlasOrig==83) = 35;TSV{35,1} = '7Networks_Cont_PFCl_1';
+imAtlas(imAtlasOrig==89) = 36;TSV{36,1} = '7Networks_Cont_pCun_1';
+imAtlas(imAtlasOrig==87) = 37;TSV{37,1} = '7Networks_Cont_Cing_1';
+imAtlas(imAtlasOrig==91) = 38;TSV{38,1} = '7Networks_Default_Temp_1';
+imAtlas(imAtlasOrig==92) = 39;TSV{39,1} = '7Networks_Default_Temp_2';
+imAtlas(imAtlasOrig==90) = 40;TSV{40,1} = '7Networks_Default_Par_1';
+TSV{41,1} = '7Networks_Default_Par_2';
+TSV{42,1} = '7Networks_Default_PFC_1';
+TSV{43,1} = '7Networks_Default_PFC_2';
+TSV{44,1} = '7Networks_Default_PFC_3';
+TSV{45,1} = '7Networks_Default_PFC_4';
+TSV{46,1} = '7Networks_Default_PFC_5';
+TSV{47,1} = '7Networks_Default_PFC_6';
+TSV{48,1} = '7Networks_Default_PFC_7';
+imAtlas(imAtlasOrig==99) = 49;TSV{49,1} = '7Networks_Default_pCunPCC_1';
+imAtlas(imAtlasOrig==100) = 50;TSV{50,1} = '7Networks_Default_pCunPCC_2';
+imAtlas(imAtlasOrig==65) = 51;TSV{51,1} = '7Networks_SomMot_7';
+imAtlas(imAtlasOrig==66) = 52;TSV{52,1} = '7Networks_SomMot_8';
+imAtlas(imAtlasOrig==74) = 53;TSV{53,1} = '7Networks_SalVentAttn_TempOccPar_1';
+imAtlas(imAtlasOrig==75) = 54;TSV{54,1} = '7Networks_SalVentAttn_TempOccPar_2';
+imAtlas(imAtlasOrig==82) = 55;TSV{55,1} = '7Networks_Cont_Par_2';
+imAtlas(imAtlasOrig==84) = 56;TSV{56,1} = '7Networks_Cont_PFCl_2';
+imAtlas(imAtlasOrig==85) = 57;TSV{57,1} = '7Networks_Cont_PFCl_3';
+imAtlas(imAtlasOrig==86) = 58;TSV{58,1} = '7Networks_Cont_PFCl_4';
+imAtlas(imAtlasOrig==88) = 59;TSV{59,1} = '7Networks_Cont_PFCmp_1';
+imAtlas(imAtlasOrig==93) = 60;TSV{60,1} = '7Networks_Default_Temp_3';
+imAtlas(imAtlasOrig==94) = 61;TSV{61,1} = '7Networks_Default_PFCv_1';
+imAtlas(imAtlasOrig==95) = 62;TSV{62,1} = '7Networks_Default_PFCv_2';
+imAtlas(imAtlasOrig==96) = 63;TSV{63,1} = '7Networks_Default_PFCdPFCm_1';
+imAtlas(imAtlasOrig==97) = 64;TSV{64,1} = '7Networks_Default_PFCdPFCm_2';
+imAtlas(imAtlasOrig==98) = 65;TSV{65,1} = '7Networks_Default_PFCdPFCm_3';
+
+% Save the relabeled atlas and TSV for 7Networks
+xASL_io_SaveNifti(fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_7Networks_order_FSLMNI152_1mm.nii'),fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_7Networks_order_FSLMNI152_1mm.nii'), imAtlas);% Save the new version
+xASL_tsvWrite(TSV, fullfile(pathTPM, pathSchaefer, 'Schaefer_100Parcels_7Networks.tsv'), 1);
+
+% Convert atlas to a bilateral version for 17 Networks
+imAtlasOrig = xASL_io_Nifti2Im(fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_17Networks_order_FSLMNI152_1mm.nii'));
+imAtlas = zeros(size(imAtlasOrig(:,:,:,1))); % Create an empty atlas
+TSV = {};
+
+% Relabel the atlas
+imAtlas(imAtlasOrig==51) = 1;TSV{1,1} = '17Networks_VisCent_ExStr_1';
+imAtlas(imAtlasOrig==52) = 2;TSV{2,1} = '17Networks_VisCent_ExStr_2';
+TSV{3,1} = '17Networks_VisCent_Striate_1';
+imAtlas(imAtlasOrig==53) = 4;TSV{4,1} = '17Networks_VisCent_ExStr_3';
+imAtlas(imAtlasOrig==55) = 5;TSV{5,1} = '17Networks_VisPeri_ExStrInf_1';
+imAtlas(imAtlasOrig==54) = 6;TSV{6,1} = '17Networks_VisPeri_StriCal_1';
+imAtlas(imAtlasOrig==56) = 7;TSV{7,1} = '17Networks_VisPeri_ExStrSup_1';
+imAtlas(imAtlasOrig==57) = 8;TSV{8,1} = '17Networks_SomMotA_1';
+imAtlas(imAtlasOrig==58) = 9;TSV{9,1} = '17Networks_SomMotA_2';
+imAtlas(imAtlasOrig==61) = 10;TSV{10,1} = '17Networks_SomMotB_Aud_1';
+imAtlas(imAtlasOrig==62) = 11;TSV{11,1} = '17Networks_SomMotB_S2_1';
+imAtlas(imAtlasOrig==63) = 12;TSV{12,1} = '17Networks_SomMotB_S2_2';
+imAtlas(imAtlasOrig==64) = 13;TSV{13,1} = '17Networks_SomMotB_Cent_1';
+imAtlas(imAtlasOrig==65) = 14;TSV{14,1} = '17Networks_DorsAttnA_TempOcc_1';
+imAtlas(imAtlasOrig==66) = 15;TSV{15,1} = '17Networks_DorsAttnA_ParOcc_1';
+imAtlas(imAtlasOrig==67) = 16;TSV{16,1} = '17Networks_DorsAttnA_SPL_1';
+imAtlas(imAtlasOrig==68) = 17;TSV{17,1} = '17Networks_DorsAttnB_PostC_1';
+imAtlas(imAtlasOrig==69) = 18;TSV{18,1} = '17Networks_DorsAttnB_PostC_2';
+TSV{19,1} = '17Networks_DorsAttnB_PostC_3';
+imAtlas(imAtlasOrig==70) = 20;TSV{20,1} = '17Networks_DorsAttnB_FEF_1';
+imAtlas(imAtlasOrig==71) = 21;TSV{21,1} = '17Networks_SalVentAttnA_ParOper_1';
+imAtlas(imAtlasOrig==72) = 22;TSV{22,1} = '17Networks_SalVentAttnA_Ins_1';
+TSV{23,1} = '17Networks_SalVentAttnA_Ins_2';
+imAtlas(imAtlasOrig==73) = 24;TSV{24,1} = '17Networks_SalVentAttnA_ParMed_1';
+imAtlas(imAtlasOrig==74) = 25;TSV{25,1} = '17Networks_SalVentAttnA_FrMed_1';
+imAtlas(imAtlasOrig==76) = 26;TSV{26,1} = '17Networks_SalVentAttnB_PFCl_1';
+imAtlas(imAtlasOrig==77) = 27;TSV{27,1} = '17Networks_SalVentAttnB_PFCmp_1';
+imAtlas(imAtlasOrig==78) = 28;TSV{28,1} = '17Networks_LimbicB_OFC_1';
+imAtlas(imAtlasOrig==79) = 29;TSV{29,1} = '17Networks_LimbicA_TempPole_1';
+TSV{30,1} = '17Networks_LimbicA_TempPole_2';
+imAtlas(imAtlasOrig==80) = 31;TSV{31,1} = '17Networks_ContA_IPS_1';
+imAtlas(imAtlasOrig==81) = 32;TSV{32,1} = '17Networks_ContA_PFCl_1';
+imAtlas(imAtlasOrig==82) = 33;TSV{33,1} = '17Networks_ContA_PFCl_2';
+imAtlas(imAtlasOrig==86) = 34;TSV{34,1} = '17Networks_ContB_PFClv_1';
+imAtlas(imAtlasOrig==88) = 35;TSV{35,1} = '17Networks_ContC_pCun_1';
+TSV{36,1} = '17Networks_ContC_pCun_2';
+imAtlas(imAtlasOrig==87) = 37;TSV{37,1} = '17Networks_ContC_Cingp_1';
+imAtlas(imAtlasOrig==90) = 38;TSV{38,1} = '17Networks_DefaultA_PFCd_1';
+imAtlas(imAtlasOrig==91) = 39;TSV{39,1} = '17Networks_DefaultA_pCunPCC_1';
+imAtlas(imAtlasOrig==92) = 40;TSV{40,1} = '17Networks_DefaultA_PFCm_1';
+TSV{41,1} = '17Networks_DefaultB_Temp_1';
+TSV{42,1} = '17Networks_DefaultB_Temp_2';
+TSV{43,1} = '17Networks_DefaultB_IPL_1';
+imAtlas(imAtlasOrig==93) = 44;TSV{44,1} = '17Networks_DefaultB_PFCd_1';
+TSV{45,1} = '17Networks_DefaultB_PFCl_1';
+imAtlas(imAtlasOrig==94) = 46;TSV{46,1} = '17Networks_DefaultB_PFCv_1';
+imAtlas(imAtlasOrig==95) = 47;TSV{47,1} = '17Networks_DefaultB_PFCv_2';
+imAtlas(imAtlasOrig==96) = 48;TSV{48,1} = '17Networks_DefaultC_Rsp_1';
+imAtlas(imAtlasOrig==97) = 49;TSV{49,1} = '17Networks_DefaultC_PHC_1';
+imAtlas(imAtlasOrig==98) = 50;TSV{50,1} = '17Networks_TempPar_1';
+imAtlas(imAtlasOrig==59) = 51;TSV{51,1} = '17Networks_SomMotA_3';
+imAtlas(imAtlasOrig==60) = 52;TSV{52,1} = '17Networks_SomMotA_4';
+imAtlas(imAtlasOrig==75) = 53;TSV{53,1} = '17Networks_SalVentAttnB_IPL_1';
+imAtlas(imAtlasOrig==83) = 54;TSV{54,1} = '17Networks_ContB_Temp_1';
+imAtlas(imAtlasOrig==84) = 55;TSV{55,1} = '17Networks_ContB_IPL_1';
+imAtlas(imAtlasOrig==85) = 56;TSV{56,1} = '17Networks_ContB_PFCld_1';
+imAtlas(imAtlasOrig==89) = 57;TSV{57,1} = '17Networks_DefaultA_IPL_1';
+imAtlas(imAtlasOrig==99) = 58;TSV{58,1} = '17Networks_TempPar_2';
+imAtlas(imAtlasOrig==100) = 59;TSV{59,1} = '17Networks_TempPar_3';
+
+% Save the relabeled atlas and TSV for 17Networks
+xASL_io_SaveNifti(fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_17Networks_order_FSLMNI152_1mm.nii'),fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_17Networks_order_FSLMNI152_1mm.nii'), imAtlas);% Save the new version
+xASL_tsvWrite(TSV, fullfile(pathTPM, pathSchaefer, 'Schaefer_100Parcels_17Networks.tsv'), 1);
+
+% Save the atlas
+for iNet = [7,17]
+	IM = xASL_io_Nifti2Im(fullfile(pathTPM, pathSchaefer, ['wSchaefer2018_100Parcels_' num2str(iNet) 'Networks_order_FSLMNI152_1mm.nii']));
+	IM = uint8(IM);
+	save(fullfile(pathTPM, pathSchaefer, ['Schaefer_100Parcels_' num2str(iNet) 'Networks.nii.mat']),'IM');
+	xASL_adm_GzipNifti(fullfile(pathTPM, pathSchaefer, ['wSchaefer2018_100Parcels_' num2str(iNet) 'Networks_order_FSLMNI152_1mm.nii']));
+	xASL_delete(fullfile(pathTPM, pathSchaefer, ['Schaefer_100Parcels_' num2str(iNet) 'Networks.nii']));
+	xASL_Move(fullfile(pathTPM, pathSchaefer, ['wSchaefer2018_100Parcels_' num2str(iNet) 'Networks_order_FSLMNI152_1mm.nii.gz']),fullfile(pathTPM, pathSchaefer, ['Schaefer_100Parcels_' num2str(iNet) 'Networks.nii.gz']));
+end
