@@ -690,7 +690,19 @@ spm_jobman('run',matlabbatch);
 
 % Convert atlas to a bilateral version for 7 Networks
 imAtlasOrig = xASL_io_Nifti2Im(fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_7Networks_order_FSLMNI152_1mm.nii'));
-imAtlas = zeros(size(imAtlasOrig(:,:,:,1))); % Create an empty atlas
+% Transform to IXI512 template
+matlabbatch = [];
+matlabbatch{1}.spm.tools.cat.tools.defs.field1 = {[fullfile(pathTPM, pathFSL152Dir, 'mri', 'y_FSL_MNI152_FreeSurferConformed_1mm.nii') ',1']};
+matlabbatch{1}.spm.tools.cat.tools.defs.images = {[fullfile(pathTPM, pathSchaefer, 'Schaefer2018_100Parcels_7Networks_order_FSLMNI152_1mm.nii') ',1']};
+matlabbatch{1}.spm.tools.cat.tools.defs.interp = 0;
+matlabbatch{1}.spm.tools.cat.tools.defs.modulate = 0;
+spm_jobman('run',matlabbatch);
+matlabbatch{1}.spm.tools.cat.tools.defs.images = {[fullfile(pathTPM, pathSchaefer, 'Schaefer2018_100Parcels_17Networks_order_FSLMNI152_1mm.nii') ',1']};
+spm_jobman('run',matlabbatch);
+
+% Convert atlas to a bilateral version for 7 Networks
+imAtlasOrig = xASL_io_Nifti2Im(fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_7Networks_order_FSLMNI152_1mm.nii'));
+imAtlas = imAtlasOrig; % Prepare for relabeling
 TSV = {};
 
 % Relabel the atlas
@@ -759,6 +771,7 @@ imAtlas(imAtlasOrig==95) = 62;TSV{62,1} = '7Networks_Default_PFCv_2';
 imAtlas(imAtlasOrig==96) = 63;TSV{63,1} = '7Networks_Default_PFCdPFCm_1';
 imAtlas(imAtlasOrig==97) = 64;TSV{64,1} = '7Networks_Default_PFCdPFCm_2';
 imAtlas(imAtlasOrig==98) = 65;TSV{65,1} = '7Networks_Default_PFCdPFCm_3';
+imAtlas(imAtlas>100) = 0;
 
 % Save the relabeled atlas and TSV for 7Networks
 xASL_io_SaveNifti(fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_7Networks_order_FSLMNI152_1mm.nii'),fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_7Networks_order_FSLMNI152_1mm.nii'), imAtlas);% Save the new version
@@ -766,7 +779,7 @@ xASL_tsvWrite(TSV, fullfile(pathTPM, pathSchaefer, 'Schaefer_100Parcels_7Network
 
 % Convert atlas to a bilateral version for 17 Networks
 imAtlasOrig = xASL_io_Nifti2Im(fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_17Networks_order_FSLMNI152_1mm.nii'));
-imAtlas = zeros(size(imAtlasOrig(:,:,:,1))); % Create an empty atlas
+imAtlas = imAtlasOrig; % Prepare for relabeling
 TSV = {};
 
 % Relabel the atlas
@@ -829,6 +842,7 @@ imAtlas(imAtlasOrig==85) = 56;TSV{56,1} = '17Networks_ContB_PFCld_1';
 imAtlas(imAtlasOrig==89) = 57;TSV{57,1} = '17Networks_DefaultA_IPL_1';
 imAtlas(imAtlasOrig==99) = 58;TSV{58,1} = '17Networks_TempPar_2';
 imAtlas(imAtlasOrig==100) = 59;TSV{59,1} = '17Networks_TempPar_3';
+imAtlas(imAtlas>100) = 0;
 
 % Save the relabeled atlas and TSV for 17Networks
 xASL_io_SaveNifti(fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_17Networks_order_FSLMNI152_1mm.nii'),fullfile(pathTPM, pathSchaefer, 'wSchaefer2018_100Parcels_17Networks_order_FSLMNI152_1mm.nii'), imAtlas);% Save the new version
@@ -843,3 +857,4 @@ for iNet = [7,17]
 	xASL_delete(fullfile(pathTPM, pathSchaefer, ['Schaefer_100Parcels_' num2str(iNet) 'Networks.nii']));
 	xASL_Move(fullfile(pathTPM, pathSchaefer, ['wSchaefer2018_100Parcels_' num2str(iNet) 'Networks_order_FSLMNI152_1mm.nii.gz']),fullfile(pathTPM, pathSchaefer, ['Schaefer_100Parcels_' num2str(iNet) 'Networks.nii.gz']));
 end
+
