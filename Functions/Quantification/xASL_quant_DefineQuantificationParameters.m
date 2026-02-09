@@ -46,7 +46,7 @@ function [x] = xASL_quant_DefineQuantificationParameters(x)
 % 
 % EXAMPLE: x = xASL_quant_DefineQuantificationParameters(x);
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
+% Copyright (C) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -195,13 +195,17 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 3.   Arterial blood T2
 if ~isfield(x.Q, 'T2art')
-	if x.MagneticFieldStrength == 3
-		x.Q.T2art = 165; % ms Gregori JMRI 2013; Lee ISMRM 2003
-		% Jean Chen 2009 MRM, DOI: 10.1002/mrm.21858 175 ms
-		% 175 ms for Hct 0.21; 122 ms for Hct 0.44
-	else
-		x.Q.T2art = 239; % ms Lee ISMRM 2003
-		% Jean Chen 2009 MRM, DOI: 10.1002/mrm.21858 157 ms
+	switch(x.MagneticFieldStrength)
+		case 3
+			x.Q.T2art = 165; % ms Gregori JMRI 2013; Lee ISMRM 2003
+			% Jean Chen 2009 MRM, DOI: 10.1002/mrm.21858 175 ms
+			% 175 ms for Hct 0.21; 122 ms for Hct 0.44
+		case 1.5
+			x.Q.T2art = 239; % ms Lee ISMRM 2003
+			% Jean Chen 2009 MRM, DOI: 10.1002/mrm.21858 157 ms
+		otherwise
+			x.Q.T2art = 165;
+			fprintf('%s\n',['Warning: Unknown T2 blood for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);	
 	end
 end
 if ~isfield(x.Q,'Lambda')
@@ -236,26 +240,28 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 5.   Tissue T2(*)
 if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
-    if x.MagneticFieldStrength == 3
-	    x.Q.T2star = 47.3; % default for 3T; Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
-    elseif x.MagneticFieldStrength == 7
-	    x.Q.T2star = 35.6; % Voelker 2021
-    elseif x.MagneticFieldStrength == 1.5
-	    x.Q.T2star = 62.0; % Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
-    else
-	    x.Q.T2star = 47.3;
-	    fprintf('%s\n',['Warning: Unknown T2star for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+    switch(x.MagneticFieldStrength)
+		case 3
+			x.Q.T2star = 47.3; % default for 3T; Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
+		case 7
+			x.Q.T2star = 35.6; % Voelker 2021
+		case 1.5
+			x.Q.T2star = 62.0; % Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
+		otherwise
+			x.Q.T2star = 47.3;
+			fprintf('%s\n',['Warning: Unknown T2star for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
     end
 end
 if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
-    if x.MagneticFieldStrength == 3
-	    x.Q.T2 = 85; % in ms - default for 3T (ref Johannes Gregori, JMRI 2013) 88 for frontal GM, 79 for occipital GM (Lu et al, 2005 JMRI)
-	    % Hct specific values are in 10.1002/mrm.21342
-    elseif x.MagneticFieldStrength == 1.5
-	    x.Q.T2 = 95; % in ms - 99 for frontal GM, 90 for occipital GM (Lu et al, 2005 JMRI).
-    else
-	    x.Q.T2 = 85;
-	    fprintf('%s\n',['Warning: Unknown T2 for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+    switch(x.MagneticFieldStrength)
+		case 3
+			x.Q.T2 = 85; % in ms - default for 3T (ref Johannes Gregori, JMRI 2013) 88 for frontal GM, 79 for occipital GM (Lu et al, 2005 JMRI)
+			% Hct specific values are in 10.1002/mrm.21342
+		case 1.5
+			x.Q.T2 = 95; % in ms - 99 for frontal GM, 90 for occipital GM (Lu et al, 2005 JMRI).
+		otherwise
+			x.Q.T2 = 85;
+			fprintf('%s\n',['Warning: Unknown T2 for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
     end
 end
 
