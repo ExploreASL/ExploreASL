@@ -194,12 +194,12 @@ if ~x.mutex.HasState(StateName{1})
     % don't remove any previous WMH_SEGM
     xASL_adm_CleanUpBeforeRerun(x.dir.xASLDerivatives, [1 2], false, false, x.P.SubjectID);
 	
-	% Fix multiple T1w|T2w|T1c|FLAIR iterations
+	% Fix multiple T1w|T2w|T1c|FLAIR volumes
 	listFile     = {x.P.Path_T1, x.P.Path_FLAIR, x.P.Path_T2, x.P.Path_T1c};
 	listFile_ORI = {x.P.Path_T1_ORI, x.P.Path_FLAIR_ORI, x.P.Path_T2_ORI, x.P.Path_T1c_ORI};
 	
 	for iFile = 1:length(listFile)
-		if xASL_exist(listFile{iFile}, 'file') % Fix multiple T1w iterations
+		if xASL_exist(listFile{iFile}, 'file') % Fix multiple T1w volumes
 			IM = xASL_io_Nifti2Im(listFile{iFile});
 			if size(IM,4)>1 || size(IM,5)>1 || size(IM,6)>1 || size(IM,7)>1
 				warning(['Too many dims, using first: ' listFile{iFile}]);
