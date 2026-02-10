@@ -25,9 +25,6 @@ function xASL_wrp_LinearReg_FLAIR2T1w(x, bAutoACPC)
 % you may only use this file in compliance with the License.
 % __________________________________
 
-%
-% 2019-05-02 HJM
-
 
 if nargin<2 || isempty(bAutoACPC)
     bAutoACPC = true;
@@ -42,11 +39,12 @@ fprintf('%s\n','FLAIR.nii detected, processing...');
 
 
 %% ---------------------------------------------------------------------------------------------------
-%% 1)Obtain lists of paths
+%% 1. Obtain lists of paths
 
 OtherList = {x.P.Path_WMH_SEGM};
 
-Lesion_FLAIR_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['(?i)^Lesion_' x.P.FLAIR '_\d*\.nii$'], 'FPList', [0 Inf]);
+% Add lesion/ROI masks to the registration list
+Lesion_FLAIR_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['(?i)^(Lesion|ROI)_' x.P.FLAIR '_\d*\.nii$'], 'FPList', [0 Inf]);
 for iS=1:length(Lesion_FLAIR_list)
     OtherList{end+1,1} = Lesion_FLAIR_list{iS};
 end
@@ -54,7 +52,7 @@ end
 
 
 %% ---------------------------------------------------------------------------------------------------
-%% 2)Perform the registration
+%% 2. Perform the registration
 
 xASL_im_ClipExtremes(x.P.Path_FLAIR, 0.999999, 0, [], 1); % First we clip high vascular intensities & normalize to 4096, for more stable image contrast
 
@@ -64,6 +62,5 @@ end
 % Finally, run the SPM coregistration
 xASL_spm_coreg(x.P.Path_T1, x.P.Path_FLAIR, OtherList, x);
 
-    
-end
 
+end
