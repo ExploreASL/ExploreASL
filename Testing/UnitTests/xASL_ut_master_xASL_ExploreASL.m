@@ -1048,6 +1048,7 @@ xASL_Copy(droTestPatientSource,droTestPatient);
 dataParStruct.x.settings.Quality = 0;
 dataParStruct.x.S.Atlases = {'TotalGM','DeepWM','Hammers','HOcort_CONN','HOsub_CONN','Mindboggle_OASIS_DKT31_CMA'};
 dataParStruct.x.S.TissueMasking = {'GM','WM','GM','GM','GM','GM'};
+dataParStruct.x.S.TissueThreshold = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
 xASL_io_WriteJson(fullfile(droTestPatient,'dataPar.json'),dataParStruct);
 
 % Add studyPar JSON
@@ -1120,6 +1121,13 @@ if exist(fullfile(droTestPatient,'derivatives','ExploreASL','dataPar.json'),'fil
 			end
 			if isfield(testContent.x.S,'TissueMasking')
 				if ~(numel(testContent.x.S.TissueMasking)==6)
+                    testCondition = false; % Test failed
+				end
+			else
+                testCondition = false; % Test failed
+			end
+			if isfield(testContent.x.S, 'TissueThreshold')
+				if ~(numel(testContent.x.S.TissueThreshold)==6)
                     testCondition = false; % Test failed
 				end
 			else

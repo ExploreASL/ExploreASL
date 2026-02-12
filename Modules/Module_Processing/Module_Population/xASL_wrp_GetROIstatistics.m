@@ -142,14 +142,14 @@ else
 end
 
 % Add subject/run-wise input data (e.g., qCBF) and subject/run-wise tissue mask (e.g., GM or GM+WM)
-x.S.output_ID = [x.S.output_ID x.S.InputDataStr '_' strrep(x.S.TissueMaskingLocal,'+','_')];
+x.S.output_ID = [x.S.output_ID x.S.InputDataStr '_' strrep(x.S.TissueMaskingLocal,'+','_') 'PV' num2str(x.S.TissueThresholdLocal)];
 
 if x.S.InputNativeSpace
 	x.S.output_ID = [x.S.output_ID '_NativeSpace'];
 else
 	x.S.output_ID = [x.S.output_ID '_StandardSpace'];
 end
-x.S.output_ID = [x.S.output_ID '_' Ffile strrep(x.S.TissueMaskingLocal,'+','_') '_n=' num2str(x.dataset.nSubjects) '_' date];
+x.S.output_ID = [x.S.output_ID '_' Ffile '_n=' num2str(x.dataset.nSubjects) '_' date];
 
 
 %% ------------------------------------------------------------------------------------------------------------

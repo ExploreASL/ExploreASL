@@ -65,10 +65,27 @@ elseif ~isfield(x.S, 'Atlases') || ~isfield(x.S, 'TissueMasking') || length(x.S.
 	error('You need to provide x.S.Atlases and x.S.TissueMasking with the same length');
 end
 
+if ~isfield(x.S.TissueThreshold)
+	% The default threshold is 0.7
+	x.S.TissueThreshold = ones(1,length(x.S.TissueMasking)) * 0.7;
+end
+
+if length(x.S.TissueMasking) ~= length(x.S.TissueThreshold)
+	error('x.S.TissueThreshold has to match the length of x.S.TissueMasking');
+end
+
+if max(x.S.TissueThreshold) > 1
+	error('Maximum value for x.S.TissueThrehold is 1');
+end
+
+if min(x.S.TissueThreshold) < 0
+	error('Minimum value for x.S.TissueThrehold is 0');
+end
+
 % Print the used atlases	
 fprintf('\nThe following ROI atlases have been selected with the following tissue:\n')
 for iAtlas=1:length(x.S.Atlases)
-    fprintf('%s\n', [x.S.TissueMasking{iAtlas} ' tissue within ' x.S.Atlases{iAtlas} ' ROIs']);
+    fprintf('%s\n', [x.S.TissueMasking{iAtlas} ' tissue within ' x.S.Atlases{iAtlas} ' ROIs, and Tissue threshold ' str2num(x.S.TissueThreshold(iAtlas))]);
 end
 fprintf('\n');
 
@@ -275,6 +292,7 @@ if ~x.mutex.HasState(StateName{8})
 			% 'GM+WM+CSF' = GM+WM+CSF combination
 
             x.S.TissueMaskingLocal = x.S.TissueMasking{iAtlas};
+			x.S.TissueThresholdLocal = x.S.TissueThreshold(iAtlas);
             
             % Find the path of the atlas
             pathAtlas = fullfile(x.dir.dirAtlas, [x.S.Atlases{iAtlas} '.nii']);
@@ -327,6 +345,7 @@ if ~x.mutex.HasState(StateName{8})
         x.S.InputNativeSpace = 0;
 		x.S.bSubjectSpecificROI = true;
 		x.S.TissueMaskingLocal = 'GM+WM+CSF';
+		x.S.TissueThresholdLocal = 0.8;
 		for iROI = 1:length(LesionUniqueROIList)
             x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iROI});
             xASL_wrp_GetROIstatistics(x);
@@ -337,6 +356,7 @@ if ~x.mutex.HasState(StateName{8})
 			x.S.InputNativeSpace = 1;
 			x.S.bSubjectSpecificROI = true;
 			x.S.TissueMaskingLocal = 'GM+WM+CSF';
+			x.S.TissueThresholdLocal = 0.8;
 			for iROI = 1:length(LesionUniqueROIList)
 				x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iROI});
 				% Remove 'r' at the start

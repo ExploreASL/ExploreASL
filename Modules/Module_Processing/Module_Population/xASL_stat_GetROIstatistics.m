@@ -43,6 +43,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 %                        (REQUIRED, single value)
 %                        Cannot be a vector. Iterate outside this function over multiple x.S.Atlases-x.S.TissueMaskingLocal combinations.
 %                        Note that a ROI needs to have a minimal volume. So a deepWM ROI for which pvGM is requested will be skipped.
+%   x.S.TissueThresholdLocal - local threshold value (0-1) for thresholding the primary tissue before calculating statistics
 %
 %
 % OUTPUT:
@@ -704,7 +705,7 @@ for iSubject=1:x.dataset.nSubjects
 
             %   x.S.TissueMaskingLocal - value specifying which subject-wise tissue type we will mask with. Cannot be a vector
             %                        (loop outside this function for multiple tissue types)
-            % 'GM' = gray matter
+			% 'GM' = gray matter
             % 'WM' = white matter
 			% 'CSF' = cerebrospinal fluid
             % 'GM+WM' = whole brain parenchyma GM+WM, previously was 'WB', alternatively can be defined as 'WM+GM'
@@ -825,7 +826,7 @@ for iSubject=1:x.dataset.nSubjects
 				end
 
 				% Apply tissue-masking (which is de facto turned off for Lesions, because the masks are volumes completely filled with ones)
-				CurrentMaskNotVascular = logical(single(SubjectSpecificMasks(:,iROI)) .* (pvPrimary>0.5));
+				CurrentMaskNotVascular = logical(single(SubjectSpecificMasks(:,iROI)) .* (pvPrimary>x.S.TissueThresholdLocal));
 
 				% Apply susceptibility mask
 				if bMasking(1) 

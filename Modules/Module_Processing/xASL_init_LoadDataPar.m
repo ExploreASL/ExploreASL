@@ -191,6 +191,16 @@ if isfield(x, 'S') % Check upfront because we don't want to create a potentially
 		textRecommendation = [textRecommendation '"]}'];
 		fprintf('Recommended addition to the dataPar.json to match provided Atlases: %s\n\n', textRecommendation);
 	end
+
+	if isfield(x.S, 'TissueThreshold')
+		if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking') && (length(x.S.TissueThreshold) > 1)
+			% If TissueThreshold is provided without the other two parameters, it has to have length 1
+			warning('TissueThreshold has to have one value only when TissueMasking and Atlases are not provided');
+		elseif (isfield(x.S, 'Atlases') && length(x.S.Atlases)~=length(x.S.TissueThreshold)) || (isfield(x.S, 'TissueMasking') && length(x.S.TissueMasking)~=length(x.S.TissueThreshold))
+			warning('Length of Atlases and TissueMasking has to match the length of TissueThreshold');
+		end
+	end
+
 end
 if ~bAtlasTissueMatch
     fprintf('%s\n', 'When ROI atlases are provided in S.Atlases, their tissue types,');
