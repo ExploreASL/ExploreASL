@@ -205,25 +205,35 @@ namesROIlocal = x.S.NamesROI;
 %% 0.b Native space atlas input
 if x.S.InputNativeSpace
 	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
-	atlasN = max(inputAtlasTmp(:));
-	x.S.InputMasks = zeros(length(x.LeftMask), atlasN);
-	for kk = 1:atlasN
-		x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp == kk,x.S.masks.WBmask);
-	end
+	if x.S.bSubjectSpecificROI
+		% For subject specific atlases - they are a 4D collection of non-binary PV maps
+		atlasN = size(inputAtlasTmp, 4);
+		x.S.InputMasks = zeros(length(x.LeftMask), atlasN);
+		for kk = 1:atlasN
+			x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp(:,:,:,kk), x.S.masks.WBmask);
+		end
+	else 
+		% For standard atlases - multilabel binary masks
+		atlasN = max(inputAtlasTmp(:));
+		x.S.InputMasks = zeros(length(x.LeftMask), atlasN);
+		for kk = 1:atlasN
+			x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp == kk,x.S.masks.WBmask);
+		end
 
-	if ~isempty(strfind(x.S.InputAtlasNativeName,'Hammers'))
-		namesROIs2Merge{1} = {'middle_frontal_gyrus','superior_frontal_gyrus','inferior_frontal_gyrus'};
-		namesROIs2Merge{2} = {'lateral_orbital_gyrus','medial_orbital_gyrus','posterior_orbital_gyrus','anterior_orbital_gyrus'};
-		namesROIsJoint = {'middle+superior+inferior_frontal_gyrus','lateral+medial+posterior+anterior_orbital_gyrus'};
-	else
-		namesROIs2Merge = [];
-		namesROIsJoint = [];
-	end
+		if ~isempty(strfind(x.S.InputAtlasNativeName,'Hammers'))
+			namesROIs2Merge{1} = {'middle_frontal_gyrus','superior_frontal_gyrus','inferior_frontal_gyrus'};
+			namesROIs2Merge{2} = {'lateral_orbital_gyrus','medial_orbital_gyrus','posterior_orbital_gyrus','anterior_orbital_gyrus'};
+			namesROIsJoint = {'middle+superior+inferior_frontal_gyrus','lateral+medial+posterior+anterior_orbital_gyrus'};
+		else
+			namesROIs2Merge = [];
+			namesROIsJoint = [];
+		end
 
-	% Amend the new atlas names, change the actual atlas for each subject alone
-	for rr = 1:length(namesROIs2Merge)
-		atlasN = atlasN + 1;
-		namesROIlocal{atlasN} = namesROIsJoint{rr};
+		% Amend the new atlas names, change the actual atlas for each subject alone
+		for rr = 1:length(namesROIs2Merge)
+			atlasN = atlasN + 1;
+			namesROIlocal{atlasN} = namesROIsJoint{rr};
+		end
 	end
 
 else
@@ -820,8 +830,8 @@ for iSubject=1:x.dataset.nSubjects
 
 				% Skip tissue masking for Lesions or ROIs
 				if x.S.bSubjectSpecificROI 
-					pvPrimary = ones(size(DataIm));
-                    pvSecondary = ones(size(DataIm));
+					pvPrimary = SubjectSpecificMasks(:,iROI);
+                    pvSecondary = 1-pvPrimary;
 					bSkipPVC = 1;
 				end
 
@@ -838,8 +848,8 @@ for iSubject=1:x.dataset.nSubjects
                 x.S.DAT_median_PVC0(SubjSess,iROI) = NaN;
                 x.S.DAT_CoV_PVC0(SubjSess,iROI) = NaN;
 				
+				x.S.DAT_mean_PVC1(SubjSess,iROI) = NaN;
 				if ~bSkipPVC
-					x.S.DAT_mean_PVC1(SubjSess,iROI) = NaN;
 					x.S.DAT_mean_PVC2(SubjSess,iROI) = NaN;
 					%x.S.DAT_CoV_PVC2(SubjSess,iROI) = NaN;
 				end
@@ -907,8 +917,8 @@ for iSubject=1:x.dataset.nSubjects
 
                         x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 1);
                         x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 0);
+						x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 1, 1, pvPrimary); % PVC==1, "single-compartment" PVC (regress pGM only)
 						if ~bSkipPVC
-							x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 1, 1, pvPrimary); % PVC==1, "single-compartment" PVC (regress pGM only)
 							x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 						end
                     end

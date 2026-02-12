@@ -345,7 +345,7 @@ if ~x.mutex.HasState(StateName{8})
         x.S.InputNativeSpace = 0;
 		x.S.bSubjectSpecificROI = true;
 		x.S.TissueMaskingLocal = 'GM+WM+CSF';
-		x.S.TissueThresholdLocal = 0.8;
+		x.S.TissueThresholdLocal = 0.5;
 		for iROI = 1:length(LesionUniqueROIList)
             x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iROI});
             xASL_wrp_GetROIstatistics(x);
@@ -356,7 +356,7 @@ if ~x.mutex.HasState(StateName{8})
 			x.S.InputNativeSpace = 1;
 			x.S.bSubjectSpecificROI = true;
 			x.S.TissueMaskingLocal = 'GM+WM+CSF';
-			x.S.TissueThresholdLocal = 0.8;
+			x.S.TissueThresholdLocal = 0.5;
 			for iROI = 1:length(LesionUniqueROIList)
 				x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iROI});
 				% Remove 'r' at the start
