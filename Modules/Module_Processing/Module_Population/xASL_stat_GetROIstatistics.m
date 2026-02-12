@@ -838,8 +838,9 @@ for iSubject=1:x.dataset.nSubjects
                 x.S.DAT_CoV_PVC0(SubjSess,iROI) = NaN;
 				
 				if ~bSkipPVC
+					x.S.DAT_mean_PVC1(SubjSess,iROI) = NaN;
 					x.S.DAT_mean_PVC2(SubjSess,iROI) = NaN;
-					x.S.DAT_CoV_PVC2(SubjSess,iROI) = NaN;
+					%x.S.DAT_CoV_PVC2(SubjSess,iROI) = NaN;
 				end
 
                 % Now check for empty masks
@@ -870,7 +871,7 @@ for iSubject=1:x.dataset.nSubjects
                     x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 0);
 					if ~bSkipPVC
                         % No visualization here, because there is no different masking
-						x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+						% x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 					end
 
                     %% CBF (now remove vascular artifacts)
@@ -906,7 +907,7 @@ for iSubject=1:x.dataset.nSubjects
                         x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 1);
                         x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 0);
 						if ~bSkipPVC
-							% x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 1, 1, pvPrimary); % PVC==1, "single-compartment" PVC (regress pGM only)
+							x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 1, 1, pvPrimary); % PVC==1, "single-compartment" PVC (regress pGM only)
 							x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 						end
                     end

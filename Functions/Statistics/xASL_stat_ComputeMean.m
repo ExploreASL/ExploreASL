@@ -10,7 +10,7 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bPVC,
 %            - ignore when 0 (OPTIONAL, default = 0)
 %   bPVC   - perform PV-correction (OPTIONAL, DEFAULT = 0)
 %            0 - don't do partial volume correction, just calculate a mean or median on imMask
-%            1 - simple partial volume correction by normalizaton by the GM volume - see Petr et al. 2018
+%            1 - simple partial volume correction by normalizaton by the GM volume, a simple weighted mean - see Petr et al. 2018
 %            2 - partial volume correction using linear regression and imGM, imWM maps according to Asllani et al. 2008
 %   bParametric - performs parametric statistics (1 mean) or non-parametric when turned off (0 median) (OPTIONAL, DEFAULT 1) 
 %   imGM   - GM partial volume map with the same size as imCBF
