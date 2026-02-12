@@ -65,7 +65,7 @@ elseif ~isfield(x.S, 'Atlases') || ~isfield(x.S, 'TissueMasking') || length(x.S.
 	error('You need to provide x.S.Atlases and x.S.TissueMasking with the same length');
 end
 
-if ~isfield(x.S.TissueThreshold)
+if ~isfield(x.S, 'TissueThreshold')
 	% The default threshold is 0.7
 	x.S.TissueThreshold = ones(1,length(x.S.TissueMasking)) * 0.7;
 end
@@ -85,7 +85,7 @@ end
 % Print the used atlases	
 fprintf('\nThe following ROI atlases have been selected with the following tissue:\n')
 for iAtlas=1:length(x.S.Atlases)
-    fprintf('%s\n', [x.S.TissueMasking{iAtlas} ' tissue within ' x.S.Atlases{iAtlas} ' ROIs, and Tissue threshold ' str2num(x.S.TissueThreshold(iAtlas))]);
+    fprintf('%s\n', [x.S.TissueMasking{iAtlas} ' tissue within ' x.S.Atlases{iAtlas} ' ROIs, and Tissue threshold ' num2str(x.S.TissueThreshold(iAtlas))]);
 end
 fprintf('\n');
 
