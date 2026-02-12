@@ -287,7 +287,7 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
 
 
 	if ~x.S.InputNativeSpace
-		SumList = squeeze(sum(x.S.InputMasks,1));
+		SumList = squeeze(sum(x.S.InputMasks>0.5,1));
 		SumList = SumList > MinVoxels;
 		if size(SumList,1)==1
 			SumList = SumList';
@@ -316,7 +316,6 @@ for iSubject=1:x.dataset.nSubjects
 		if xASL_exist(x.S.InputAtlasPath, 'file')
 			% Load the atlas
 			x = xASL_stat_AtlasForStats(x);
-			x.S.InputMasks = logical(x.S.InputMasks);
 			bDoOnceROILR = 1; % We will need to split it to Left/Right/Bilateral again
 		else
 			% We don't need to reload the ROI names as their definition was loaded previously
@@ -373,19 +372,28 @@ for iSubject=1:x.dataset.nSubjects
 				x.LeftMask = xASL_im_IM2Column(x.LeftMask, x.S.masks.WBmask);
 
 				inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']));
-				atlasN = max(inputAtlasTmp(:));
-				x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
-				for kk = 1:atlasN
-					x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp == kk,x.S.masks.WBmask);
-				end
+				if x.S.bSubjectSpecificROI
+					% For subject specific atlases - they are a 4D collection of non-binary PV maps
+					atlasN = size(inputAtlasTmp, 4);
+					x.S.InputMasks = zeros(length(x.LeftMask), atlasN);
+					for kk = 1:atlasN
+						x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp(:,:,:,kk), x.S.masks.WBmask);
+					end
+				else
+					atlasN = max(inputAtlasTmp(:));
+					x.S.InputMasks = zeros(length(x.LeftMask),atlasN);
+					for kk = 1:atlasN
+						x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp == kk,x.S.masks.WBmask);
+					end
 
-				for rr = 1:length(namesROIs2Merge)
-					atlasN = atlasN + 1;
-					x.S.InputMasks(:,atlasN) = zeros(size(x.S.InputMasks,1),1);
-					for qq = 1:length(namesROIs2Merge{rr})
-						for pp = 1:(atlasN-1)
-							if ~isempty(strfind(namesROIlocal{pp},namesROIs2Merge{rr}{qq}))
-								x.S.InputMasks(:,atlasN) = (x.S.InputMasks(:,atlasN) + x.S.InputMasks(:,pp))>0;
+					for rr = 1:length(namesROIs2Merge)
+						atlasN = atlasN + 1;
+						x.S.InputMasks(:,atlasN) = zeros(size(x.S.InputMasks,1),1);
+						for qq = 1:length(namesROIs2Merge{rr})
+							for pp = 1:(atlasN-1)
+								if ~isempty(strfind(namesROIlocal{pp},namesROIs2Merge{rr}{qq}))
+									x.S.InputMasks(:,atlasN) = (x.S.InputMasks(:,atlasN) + x.S.InputMasks(:,pp))>0;
+								end
 							end
 						end
 					end
@@ -405,7 +413,7 @@ for iSubject=1:x.dataset.nSubjects
 				%end
 
 				% Calculate ROI size for each atlas
-				SumList = squeeze(sum(x.S.InputMasks,1));
+				SumList = squeeze(sum(x.S.InputMasks>0.5,1));
 				SumList = SumList>MinVoxels;
 				if size(SumList,1)==1
 					SumList = SumList';
@@ -415,9 +423,9 @@ for iSubject=1:x.dataset.nSubjects
 					for iROI=1:size(x.S.InputMasks,2)
 						for iMask=1:size(x.S.InputMasks,3)
 							if sum(SumList(iROI,iMask))~=0 % skip empty ROIs
-								x.S.InputMasks(:,iROI,iMask) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,iROI,iMask), pGM_MNI, pWM_MNI);
+								x.S.InputMasks(:,iROI,iMask) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,iROI,iMask)>0.5, pGM_MNI, pWM_MNI);
 							else
-								numVoxels = sum(x.S.InputMasks(:,iROI,iMask));
+								numVoxels = sum(x.S.InputMasks(:,iROI,iMask)>0.5);
 								fprintf('\n');
 								warning('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
 								fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
@@ -470,7 +478,11 @@ for iSubject=1:x.dataset.nSubjects
 		end
 		if x.S.InputNativeSpace || bDoOnceROILR
 			NewSize = [size(x.S.InputMasks,1) size(x.S.InputMasks,2)*3 size(x.S.InputMasks,3)];
-			x.S.InputMasksTemp = false(NewSize);
+			if x.S.bSubjectSpecificROI
+				x.S.InputMasksTemp = zeros(NewSize);
+			else
+				x.S.InputMasksTemp = false(NewSize);
+			end
 			x.S.InputMasksTemp(:,1:3:end-2,:)           = x.S.InputMasks;
 			x.S.InputMasksTemp( x.LeftMask,2:3:end-1,:) = x.S.InputMasks( x.LeftMask,:,:); % left  only
 			x.S.InputMasksTemp(~x.LeftMask,3:3:end  ,:) = x.S.InputMasks(~x.LeftMask,:,:); % right only
@@ -836,7 +848,7 @@ for iSubject=1:x.dataset.nSubjects
 				end
 
 				% Apply tissue-masking (which is de facto turned off for Lesions, because the masks are volumes completely filled with ones)
-				CurrentMaskNotVascular = logical(single(SubjectSpecificMasks(:,iROI)) .* (pvPrimary>x.S.TissueThresholdLocal));
+				CurrentMaskNotVascular = logical(single(SubjectSpecificMasks(:,iROI)>0.5) .* (pvPrimary>x.S.TissueThresholdLocal));
 
 				% Apply susceptibility mask
 				if bMasking(1) 

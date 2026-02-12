@@ -275,9 +275,9 @@ if ~bBinary
 	xASL_delete(pathTmpPreSmooth);
 
 	% Threshold at 50%
-	imMaskTmp = xASL_io_Nifti2Im(pathMaskOutput);
-	imMaskTmp = imMaskTmp > 0.5;
-	xASL_io_SaveNifti(pathMaskOutput, pathMaskOutput, imMaskTmp);
+	%imMaskTmp = xASL_io_Nifti2Im(pathMaskOutput);
+	%imMaskTmp = imMaskTmp > 0.5;
+	%xASL_io_SaveNifti(pathMaskOutput, pathMaskOutput, imMaskTmp);
 else % multilabel file
 	% multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding, keep binary
 	xASL_spm_deformations(x, pathMaskInput, pathMaskOutput, 0, pathReference, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
