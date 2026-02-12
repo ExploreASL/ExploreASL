@@ -848,7 +848,7 @@ for iSubject=1:x.dataset.nSubjects
 				end
 
 				% Apply tissue-masking (which is de facto turned off for Lesions, because the masks are volumes completely filled with ones)
-				CurrentMaskNotVascular = logical(single(SubjectSpecificMasks(:,iROI)>0.5) .* (pvPrimary>x.S.TissueThresholdLocal));
+				CurrentMaskNotVascular = logical(single(SubjectSpecificMasks(:,iROI)>0.1) .* (pvPrimary>x.S.TissueThresholdLocal));
 
 				% Apply susceptibility mask
 				if bMasking(1) 
@@ -929,7 +929,13 @@ for iSubject=1:x.dataset.nSubjects
 
                         x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 1);
                         x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 0);
-						x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 1, 1, pvPrimary); % PVC==1, "single-compartment" PVC (regress pGM only)
+						if x.S.bSubjectSpecificROI 
+							% For subject specific ROI, we weight the mean by the ROI PV
+							x.S.DAT_mean_PVC3(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 3, 1, pvPrimary); % PVC==3, weighted mean
+						else
+							% Otherwise we calculate sum over the ROI and weight by the tissue PV
+							x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 1, 1, pvPrimary); % PVC==1, "single-compartment" PVC (regress pGM only)
+						end
 						if ~bSkipPVC
 							x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 						end

@@ -10,8 +10,9 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bPVC,
 %            - ignore when 0 (OPTIONAL, default = 0)
 %   bPVC   - perform PV-correction (OPTIONAL, DEFAULT = 0)
 %            0 - don't do partial volume correction, just calculate a mean or median on imMask
-%            1 - simple partial volume correction by normalizaton by the GM volume, a simple weighted mean - see Petr et al. 2018
+%            1 - simple partial volume correction by normalizaton by the GM volume - see Petr et al. 2018
 %            2 - partial volume correction using linear regression and imGM, imWM maps according to Asllani et al. 2008
+%            3 - weighted mean across the ROI with weighting with the GM volume - this is mainly used for Lesions/ROIs
 %   bParametric - performs parametric statistics (1 mean) or non-parametric when turned off (0 median) (OPTIONAL, DEFAULT 1) 
 %   imGM   - GM partial volume map with the same size as imCBF
 %            (OPTIONAL, REQUIRED for bPVC==2 and bPVC==1)
@@ -48,7 +49,7 @@ function [CBF_GM, CBF_WM] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bPVC,
 %             volume errors on the estimation of gray matter cerebral blood flow with arterial spin labeling MRI. Magnetic Resonance Materials in 
 %             Physics, Biology and Medicine. 2018 Dec 1;31(6):725-34.
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
+% Copyright (C) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -180,6 +181,12 @@ switch (bPVC)
 		gwcbf                      = (imCBF')*pinv(gwpv');
 		CBF_GM                     = gwcbf(1);
 		CBF_WM                     = gwcbf(2);
+	case 3
+		%% 3e. Weighted mean
+		if isempty(imGM)
+			error('imGM needs to be provided for bPVC == 1');
+		end
+		CBF_GM = xASL_stat_SumNan(imCBF.*imGM, 1)/xASL_stat_SumNan(imGM, 1);
 end
 
     % % Print histograms to check validity
