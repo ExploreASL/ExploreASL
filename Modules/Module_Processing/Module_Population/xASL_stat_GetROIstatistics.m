@@ -931,7 +931,7 @@ for iSubject=1:x.dataset.nSubjects
                         x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 0);
 						if x.S.bSubjectSpecificROI 
 							% For subject specific ROI, we weight the mean by the ROI PV
-							x.S.DAT_mean_PVC3(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 3, 1, pvPrimary); % PVC==3, weighted mean
+							x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 3, 1, pvPrimary); % PVC==3, weighted mean
 						else
 							% Otherwise we calculate sum over the ROI and weight by the tissue PV
 							x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 1, 1, pvPrimary); % PVC==1, "single-compartment" PVC (regress pGM only)

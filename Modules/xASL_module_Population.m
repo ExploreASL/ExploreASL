@@ -82,6 +82,19 @@ if min(x.S.TissueThreshold) < 0
 	error('Minimum value for x.S.TissueThrehold is 0');
 end
 
+if ~isfield(x.S, 'LesionROIThreshold')
+	% The default LesionROIThreshold is 0.5
+	x.S.LesionROIThreshold = 0.5;
+end
+
+if max(x.S.LesionROIThreshold) > 1
+	error('Maximum value for x.S.LesionROIThreshold is 1');
+end
+
+if min(x.S.LesionROIThreshold) < 0
+	error('Minimum value for x.S.LesionROIThreshold is 0');
+end
+
 % Print the used atlases	
 fprintf('\nThe following ROI atlases have been selected with the following tissue:\n')
 for iAtlas=1:length(x.S.Atlases)
@@ -345,7 +358,7 @@ if ~x.mutex.HasState(StateName{8})
         x.S.InputNativeSpace = 0;
 		x.S.bSubjectSpecificROI = true;
 		x.S.TissueMaskingLocal = 'GM+WM+CSF';
-		x.S.TissueThresholdLocal = 0.5;
+		x.S.TissueThresholdLocal = x.S.LesionROIThreshold;
 		for iROI = 1:length(LesionUniqueROIList)
             x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iROI});
             xASL_wrp_GetROIstatistics(x);
@@ -356,7 +369,7 @@ if ~x.mutex.HasState(StateName{8})
 			x.S.InputNativeSpace = 1;
 			x.S.bSubjectSpecificROI = true;
 			x.S.TissueMaskingLocal = 'GM+WM+CSF';
-			x.S.TissueThresholdLocal = 0.5;
+			x.S.TissueThresholdLocal = x.S.LesionROIThreshold;
 			for iROI = 1:length(LesionUniqueROIList)
 				x.S.InputAtlasPath = fullfile(x.D.PopDir, LesionUniqueROIList{iROI});
 				% Remove 'r' at the start
