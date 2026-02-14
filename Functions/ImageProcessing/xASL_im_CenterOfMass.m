@@ -63,8 +63,6 @@ end
 nii = xASL_io_ReadNifti(PathNIfTI);
 IM = single(nii.dat(:,:,:,1)).^0.5; % restore contrast
 % & use first image!
-% nii.mat = nii.mat0; % restore original orientation
-% Don't reload mat0, this can differ between derivatives & original files
 
 %% ---------------------------------------------------------------------------------
 %% Compute current center voxel position from orientation matrix
