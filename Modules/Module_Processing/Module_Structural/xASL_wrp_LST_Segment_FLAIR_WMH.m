@@ -111,7 +111,7 @@ switch lower(WMHsegmAlg)
             matlabbatch{1}.spm.tools.LST.lga.opts_lga.maxiter = 3;
 		end
 	otherwise
-		error('Unknown or undefined segmentation algorithm.');
+		error('Unknown or undefined segmentation algorithm');
 end
 
 
@@ -209,11 +209,20 @@ for iFile=1:length(FilePathsAre)
     end
 end
 
+
 % Create a dummy WMH_SEGM in case of a FLAIR without WMH_SEGM
-if xASL_exist(x.P.Path_rFLAIR, 'file') && ~xASL_exist(x.P.Path_WMH_SEGM, 'file')
-    imageFLAIR = xASL_io_Nifti2Im(x.P.Path_rFLAIR);
-    imageWMH = zeros(size(imageFLAIR), 'logical');
-    xASL_io_CreateNifti(x.P.Path_WMH_SEGM, imageWMH, [], [], 0);
+% >>>>>>>>>>> PM: THIS IS TRICKY, we assume here that if LST did not create a WMH_SEGM, there is no lesion load,
+% >>>>>>>>>>> although LST could also have not run correctly (but it would have crashed)
+if xASL_exist(x.P.Path_FLAIR, 'file') && ~xASL_exist(x.P.Path_WMH_SEGM, 'file')
+    warning('LST did not segment WMH, so we create a dummy WMH_SEGM.nii, assuming no WMH load');
+    imageT1 = xASL_io_Nifti2Im(x.P.Path_T1);
+    imageWMH = zeros(size(imageT1), 'logical');
+    xASL_io_SaveNifti(x.P.Path_T1, x.P.Path_WMH_SEGM, imageWMH);
+elseif xASL_exist(x.P.Path_WMH_SEGM, 'file')
+    % Set WMH_SEGM nii.mat0 to T1 nii.mat0 (it had the FLAIR nii.mat0)
+    nii_T1 = xASL_io_ReadNifti(x.P.Path_T1);
+    xASL_io_SaveNifti(x.P.Path_WMH_SEGM, x.P.Path_WMH_SEGM, xASL_io_Nifti2Im(nii_WMH.dat(:,:,:,:)), [], [], [], [], [], [], [], nii_T1.mat0);
 end
+
 
 end
