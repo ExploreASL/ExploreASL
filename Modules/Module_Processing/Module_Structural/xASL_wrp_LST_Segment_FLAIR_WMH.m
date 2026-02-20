@@ -221,7 +221,7 @@ if xASL_exist(x.P.Path_FLAIR, 'file') && ~xASL_exist(x.P.Path_WMH_SEGM, 'file')
 elseif xASL_exist(x.P.Path_WMH_SEGM, 'file')
     % Set WMH_SEGM nii.mat0 to T1 nii.mat0 (it had the FLAIR nii.mat0)
     nii_T1 = xASL_io_ReadNifti(x.P.Path_T1);
-    xASL_io_SaveNifti(x.P.Path_WMH_SEGM, x.P.Path_WMH_SEGM, xASL_io_Nifti2Im(nii_WMH.dat(:,:,:,:)), [], [], [], [], [], [], [], nii_T1.mat0);
+    xASL_io_SaveNifti(x.P.Path_WMH_SEGM, x.P.Path_WMH_SEGM, xASL_io_Nifti2Im(nii_WMH.dat(:,:,:,:)), [], [], [], [], [], [], [], nii_T1.mat0, false);
 end
 
 
