@@ -1,4 +1,4 @@
-function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite, changeMat0)
+function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite, changeMat0, bWarnings)
 % Save a file to a Nifti format, while taking the parameters from another file
 %
 % FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite, changeMat0])
@@ -28,6 +28,7 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %                  1 -> [1 1 1] and 0 -> [0 0 0] and creates a warning; [1 0] - error
 %   changeMat0     New orientation matrix mat0 4x4. Note that mat0 should always stay as it was originally from the scanner, 
 %                  but we can exceptionally change it, e.g. if mat0 was incorrectly converted from the DICOM header (OPTIONAL, DEFAULT same as previous)
+%   bWarnings      Boolean to issue (true) or suppress (false) warnings (OPTIONAL, DEFAULT = true)
 %                  
 %
 % JSON saving options are:
@@ -240,7 +241,7 @@ if ~isempty(changeMat)
 end
 
 if ~isempty(changeMat0)
-	warning('Note that mat0 (the original NIfTI orientation) is changed upon request. This can jeopardize re-running ExploreASL when done in the processing module!');
+	if bWarnings; warning('Note that mat0 (the original NIfTI orientation) is changed upon request. This can jeopardize re-running ExploreASL!'); end
 	newNifti.mat0 = changeMat0;
 end
 
