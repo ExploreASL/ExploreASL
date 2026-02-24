@@ -39,7 +39,7 @@ function [x] = xASL_im_CreateGroupAnalysisMask(x, Threshold)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        xASL_im_CreateGroupAnalysisMask(x);
 % __________________________________
-% Copyright (c) 2015-2024 ExploreASL
+% Copyright (c) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -264,6 +264,7 @@ function xASL_im_CreateGroupAnalysisMask_Transform(pathMaskInput, pathMaskOutput
 imMaskTmp = xASL_io_Nifti2Im(pathMaskInput);
 
 if ~bBinary
+	% Non-binary mask - a 3D file where regions are indexed by unique integers
 	% Non-binary masks - presmooth, spline-interpolation and keep partial volume map
 	% Pre-smooth the mask before downsampling to native space
 	[tmpPath,tmpFile,tmpExt] = xASL_fileparts(pathMaskOutput);
@@ -278,7 +279,7 @@ if ~bBinary
 	%imMaskTmp = xASL_io_Nifti2Im(pathMaskOutput);
 	%imMaskTmp = imMaskTmp > 0.5;
 	%xASL_io_SaveNifti(pathMaskOutput, pathMaskOutput, imMaskTmp);
-else % multilabel file
+else % multilabel mask - a 4D binary file where individual regions are provided as binary 3D images and 1 or more regions are stacked in a 4D file
 	% multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding, keep binary
 	xASL_spm_deformations(x, pathMaskInput, pathMaskOutput, 0, pathReference, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
 	xASL_adm_GzipNifti(pathMaskOutput);

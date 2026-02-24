@@ -75,11 +75,11 @@ if length(x.S.TissueMasking) ~= length(x.S.TissueThreshold)
 end
 
 if max(x.S.TissueThreshold) > 1
-	error('Maximum value for x.S.TissueThrehold is 1');
+	error('Maximum value for x.S.TissueThreshold is 1');
 end
 
 if min(x.S.TissueThreshold) < 0
-	error('Minimum value for x.S.TissueThrehold is 0');
+	error('Minimum value for x.S.TissueThreshold is 0');
 end
 
 if ~isfield(x.S, 'LesionROIThreshold')
