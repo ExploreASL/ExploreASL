@@ -252,16 +252,16 @@ if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
 			fprintf('%s\n',['Warning: Unknown T2star for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
     end
 end
-if ~isfield(x.Q,'T2') || isempty(x.Q.T2)
+if ~isfield(x.Q,'TissueT2') || isempty(x.Q.TissueT2)
     switch(x.MagneticFieldStrength)
 		case 3
-			x.Q.T2 = 85; % in ms - default for 3T (ref Johannes Gregori, JMRI 2013) 88 for frontal GM, 79 for occipital GM (Lu et al, 2005 JMRI)
+			x.Q.TissueT2 = 85; % in ms - default for 3T (ref Johannes Gregori, JMRI 2013) 88 for frontal GM, 79 for occipital GM (Lu et al, 2005 JMRI)
 			% Hct specific values are in 10.1002/mrm.21342
 		case 1.5
-			x.Q.T2 = 95; % in ms - 99 for frontal GM, 90 for occipital GM (Lu et al, 2005 JMRI).
+			x.Q.TissueT2 = 95; % in ms - 99 for frontal GM, 90 for occipital GM (Lu et al, 2005 JMRI).
 		otherwise
-			x.Q.T2 = 85;
-			fprintf('%s\n',['Warning: Unknown T2 for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+			x.Q.TissueT2 = 85;
+			fprintf('%s\n',['Warning: Unknown TissueT2 for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
     end
 end
 
