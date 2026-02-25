@@ -258,13 +258,13 @@ function xASL_im_CreateGroupAnalysisMask_Transform(pathMaskInput, pathMaskOutput
 % pathReference is the filename of the reference file in native space
 
 % Automatically detect mask type
-% PM:   in the future we can also do option 1 for multi-label
+% PM:   in the future we can also do option 1 for 4D binary mask
 %       masks, by splitting them in multiple individual masks and
 %       treating those separately
 imMaskTmp = xASL_io_Nifti2Im(pathMaskInput);
 
 if ~bBinary
-	% Non-binary mask - a 3D file where regions are indexed by unique integers
+	% Non-binary mask - a 3D file where individual regions are indexed by unique integers (e.g. 1=frontal lobe, 2 CSF)
 	% Non-binary masks - presmooth, spline-interpolation and keep partial volume map
 	% Pre-smooth the mask before downsampling to native space
 	[tmpPath,tmpFile,tmpExt] = xASL_fileparts(pathMaskOutput);
@@ -279,8 +279,8 @@ if ~bBinary
 	%imMaskTmp = xASL_io_Nifti2Im(pathMaskOutput);
 	%imMaskTmp = imMaskTmp > 0.5;
 	%xASL_io_SaveNifti(pathMaskOutput, pathMaskOutput, imMaskTmp);
-else % multilabel mask - a 4D binary file where individual regions are provided as binary 3D images and 1 or more regions are stacked in a 4D file
-	% multi-label masks - no presmooth, nearest-neighbor interpolation, no thresholding, keep binary
+else % Binary mask - a 4D binary file where individual regions are provided as binary 3D images and 1 or more regions are stacked in a 4D file
+	% Binary mask - no presmooth, nearest-neighbor interpolation, no thresholding, keep binary
 	xASL_spm_deformations(x, pathMaskInput, pathMaskOutput, 0, pathReference, x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
 	xASL_adm_GzipNifti(pathMaskOutput);
 end

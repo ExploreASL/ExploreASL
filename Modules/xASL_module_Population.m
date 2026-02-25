@@ -68,37 +68,27 @@ end
 if ~isfield(x.S, 'TissueThreshold')
 	% The default threshold is 0.7
 	x.S.TissueThreshold = ones(1,length(x.S.TissueMasking)) * 0.7;
-end
-
-if length(x.S.TissueMasking) ~= length(x.S.TissueThreshold)
+elseif length(x.S.TissueMasking) ~= length(x.S.TissueThreshold)
 	error('x.S.TissueThreshold has to match the length of x.S.TissueMasking');
-end
-
-if max(x.S.TissueThreshold) > 1
+elseif max(x.S.TissueThreshold) > 1
 	error('Maximum value for x.S.TissueThreshold is 1');
-end
-
-if min(x.S.TissueThreshold) < 0
+elseif min(x.S.TissueThreshold) < 0
 	error('Minimum value for x.S.TissueThreshold is 0');
 end
 
 if ~isfield(x.S, 'LesionROIThreshold')
 	% The default LesionROIThreshold is 0.5
 	x.S.LesionROIThreshold = 0.5;
-end
-
-if max(x.S.LesionROIThreshold) > 1
+elseif max(x.S.LesionROIThreshold) > 1
 	error('Maximum value for x.S.LesionROIThreshold is 1');
-end
-
-if min(x.S.LesionROIThreshold) < 0
+elseif min(x.S.LesionROIThreshold) < 0
 	error('Minimum value for x.S.LesionROIThreshold is 0');
 end
 
 % Print the used atlases	
-fprintf('\nThe following ROI atlases have been selected with the following tissue:\n')
+fprintf('\nThe following atlases have been selected with the following tissue masks and tissue thresholds:\n')
 for iAtlas=1:length(x.S.Atlases)
-    fprintf('%s\n', [x.S.TissueMasking{iAtlas} ' tissue within ' x.S.Atlases{iAtlas} ' ROIs, and Tissue threshold ' num2str(x.S.TissueThreshold(iAtlas))]);
+    fprintf('%s\n', [x.S.TissueMasking{iAtlas} ' > ' num2str(x.S.TissueThreshold(iAtlas)) ' within ' x.S.Atlases{iAtlas} ' atlas']);
 end
 fprintf('\n');
 

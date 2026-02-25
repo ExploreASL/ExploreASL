@@ -206,14 +206,14 @@ namesROIlocal = x.S.NamesROI;
 if x.S.InputNativeSpace
 	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
 	if x.S.bSubjectSpecificROI
-		% For subject specific atlases - they are a 4D collection of non-binary PV maps
+		% For subject specific atlases - they are 4D probabilistic PV maps
 		atlasN = size(inputAtlasTmp, 4);
 		x.S.InputMasks = zeros(length(x.LeftMask), atlasN);
 		for kk = 1:atlasN
 			x.S.InputMasks(:,kk) = xASL_im_IM2Column(inputAtlasTmp(:,:,:,kk), x.S.masks.WBmask);
 		end
 	else 
-		% For standard atlases - multilabel binary masks
+		% For standard atlases - 4D binary masks
 		atlasN = max(inputAtlasTmp(:));
 		x.S.InputMasks = zeros(length(x.LeftMask), atlasN);
 		for kk = 1:atlasN
