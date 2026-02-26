@@ -25,12 +25,23 @@ function [isEqualdim, isEqualMat0, isEqualMat] = xASL_im_IsEqualOrientations(pat
 % EXAMPLE: [isEqualdim, isEqualMat0, isEqualMat] = xASL_im_IsEqualOrientations('pathToMyNifti', 'pathToMyOtherNifti');
 %
 % __________________________________
-% Copyright (c) 2015-2025 ExploreASL
+% Copyright (c) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
 
+if nargin < 2 || isempty(pathNifti1, pathNifti2)
+	error('Function requires two input paths');
+end
+
+if ~xASL_exist(pathNifti1, 'file')
+	error(['Missing file ' pathNifti1]);
+end
+
+if ~xASL_exist(pathNifti2, 'file')
+	error(['Missing file ' pathNifti2]);
+end
 
 %% 1. Load NIfTIs
 objectNifti1 = xASL_io_ReadNifti(pathNifti1);

@@ -1,7 +1,7 @@
 function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite, changeMat0, bWarnings)
 % Save a file to a Nifti format, while taking the parameters from another file
 %
-% FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite, changeMat0])
+% FORMAT: xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew[, nBits, bGZip, changeMat, bCopyOrigJson, JsonFields, bLegacy2BIDS, bOverwrite, changeMat0, bWarnings])
 %
 % INPUT:
 %   pathOrigNifti  Path to the original Nifti file to take parameters from (REQUIRED)
@@ -111,6 +111,10 @@ else
 	if ~isequal(size(changeMat0),[4 4])
 		error('changeMat0 has to be 4x4');
 	end
+end
+
+if nargin < 12 || isempty(bWarnings)
+	bWarnings = true;
 end
 
 % JSON saving, see detailed explanation above.
