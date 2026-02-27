@@ -67,7 +67,8 @@ else
         xASL_Copy(x.P.Path_c1T1, x.P.Path_PVgm, true);
         xASL_Copy(x.P.Path_c2T1, x.P.Path_PVwm, true);
 		xASL_Copy(x.P.Path_c3T1, x.P.Path_PVcsf, true);
-		
+		xASL_Copy(x.P.Path_T1, x.P.Path_PVt1, true);
+				
 		if xASL_exist(x.P.Path_WMH_SEGM, 'file')
             xASL_Copy(x.P.Path_WMH_SEGM, x.P.Path_PVwmh, true);
 		end
@@ -194,8 +195,10 @@ end
 %% B1. Presmooth and transform GM and WM segmentations to the ASL space
 xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c1T1, x.P.Path_PVgm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c2T1, x.P.Path_PVwm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_T1, x.P.Path_PVt1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVgm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVgm);
 xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwm);
+xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVt1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVt1);
 
 %% B2. Presmooth and transform the CSF segmentation to the ASL space
 if xASL_exist(x.P.Path_c3T1, 'file') % Check file existence as for older versions c3T1 was not always available
