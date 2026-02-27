@@ -94,20 +94,27 @@ CSFim = xASL_io_Nifti2Im(pvCSF);
 
 if xASL_stat_SumNan(GMim(:))==0
     error('Empty GM partial volume map, cannot process the M0');
-elseif xASL_stat_SumNan(WMim(:))==0
-    error('Empty WM partial volume map, cannot process the M0');
-elseif xASL_stat_SumNan(CSFim(:))==0
-    error('Empty CSF partial volume map, cannot process the M0');
+elseif (xASL_stat_SumNan(WMim(:))==0) && (xASL_stat_SumNan(CSFim(:))==0)
+    error('Empty WM and CSF partial volume map, cannot process the M0');
 else
     % This was 0.7 for rc1T1 in standard space,
     % to keep some robustness, we now take pvGM*1.2*(pvWM+pvCSF)
-    GMmask = GMim>( 1.2.*(WMim+CSFim) );
+	if isempty(CSFim)
+		GMmask = GMim>( 1.2 .* WMim );
+	else
+		GMmask = GMim>( 1.2 .* (WMim+CSFim) );
+	end
 
     % this is the parenchyma mask, this used to be
     % (GMim+WMim)>0.5 for rc1T1 & rc2T1
     % For robustness, we do (GMim+WMim)>CSFim
     % now for pvGM & pvWM
-    Mask1 = (GMim+WMim)>(1.5.*CSFim);
+	if xASL_stat_SumNan(CSFim(:)) ~= 0
+		Mask1 = (GMim+WMim)>(1.5.*CSFim);
+	else
+		Mask1 = (GMim+WMim)>0.5;
+	end
+
     fprintf('\n%s', 'Processing M0 image: ');
 end
 

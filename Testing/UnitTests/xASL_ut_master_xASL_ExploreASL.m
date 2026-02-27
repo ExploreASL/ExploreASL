@@ -801,7 +801,7 @@ try
     
     % Mean values
     referenceMeanDerCBF = 8.8205;
-    meanDerCBF = mean(imDerCBF(:));
+    meanDerCBF = xASL_stat_MeanNan(imDerCBF(:));
     
     % Check that at least the mean value is somewhat consistent
     thresh.DiffMeanCBF = 0.1;

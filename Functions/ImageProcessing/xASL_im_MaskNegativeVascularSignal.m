@@ -77,22 +77,28 @@ function [NegativeMask, TreatedPWI] = xASL_im_MaskNegativeVascularSignal(x, IsSp
     elseif ~xASL_exist(WMpath, 'file')
         warning([WMpath ' missing, skipping']);
         return;
-    elseif ~xASL_exist(CSFpath, 'file')
-        warning([CSFpath ' missing, skipping']);
-        return;
     end
         
     GMim = xASL_io_Nifti2Im(GMpath);
     WMim = xASL_io_Nifti2Im(WMpath);
-    CSFim = xASL_io_Nifti2Im(CSFpath);
+	if ~xASL_exist(CSFpath, 'file')
+        warning([CSFpath ' missing']);
+		CSFim = [];
+	else
+		CSFim = xASL_io_Nifti2Im(CSFpath);
+	end
  
     %% 1. Obtain mask of negative voxels within pGM>0.5 mask
     % Create GMmask in ASL space from SPM
     PWIim = xASL_io_Nifti2Im(PWIpath);
-    if size(PWIim,4)>1
-        PWIim = xASL_stat_MeanNan(PWIim,4);
-    end
-    GMmask = GMim>(WMim+CSFim);
+	if size(PWIim,4)>1
+		PWIim = xASL_stat_MeanNan(PWIim,4);
+	end
+	if ~isempty(CSFim)
+		GMmask = GMim>(WMim+CSFim);
+	else
+		GMmask = GMim>WMim;
+	end
     % This used to be rc1T1>0.5, now this is pvGM (on ASL resolution)>0.5
     % Because of transformations and smoothing, the value 0.5 changes
     % But pGM>(pWM+pCSF) should stay roughly the same

@@ -108,25 +108,43 @@ PositiveMaskMNI = xASL_im_DilateErodeFull(PositiveMaskMNI,'dilate',xASL_im_Dilat
 % Use previously created smoothed PGM images
 pGM = xASL_io_Nifti2Im(x.P.Path_PVgm);
 pWM = xASL_io_Nifti2Im(x.P.Path_PVwm);
-pCSF = xASL_io_Nifti2Im(x.P.Path_PVcsf);
+if xASL_exist(x.P.Path_PVcsf)
+	pCSF = xASL_io_Nifti2Im(x.P.Path_PVcsf);
+else 
+	pCSF = [];
+end
 
 MaskVascularNative = ~NegativeMaskNative & ~PositiveMaskNative;
 
 % this is the parenchyma brain mask, this used to be
 % (GMim+WMim)>0.5 for rc1T1 & rc2T1
 % We want to be inclusive, so we do (GMim+WMim)>CSFim
-BrainMask = (pGM+pWM)>pCSF;
+if isempty(pCSF)
+	BrainMask = (pGM+pWM) > 0.5;
+else
+	BrainMask = (pGM+pWM) > pCSF;
+end
 MaskVascularNative(~BrainMask) = 0; % Remove extracranial (same setting as in ROI module)
 MaskVascularNative(pWM>(0.8*max(pWM))) = 1; % Remove WM vascular spots
-MaskVascularNative(pCSF>(0.8*max(pCSF(:)))) = 1; % Remove WM vascular spots
+if ~isempty(pCSF)
+	MaskVascularNative(pCSF>(0.8*max(pCSF(:)))) = 1; % Remove WM vascular spots
+end
 
 % Obtain cranial mask for image processing (e.g., BASIL)
-BrainMaskProcessingNativeSpace = (pGM+pWM+pCSF)>0.08;
+if isempty(pCSF)
+	BrainMaskProcessingNativeSpace = (pGM+pWM)>0.08;
+else
+	BrainMaskProcessingNativeSpace = (pGM+pWM+pCSF)>0.08;
+end
 
 %% 3B. Brainmasking & FoV-masking standard space
 pGM = xASL_io_Nifti2Im(x.P.Pop_Path_PV_pGM);
 pWM = xASL_io_Nifti2Im(x.P.Pop_Path_PV_pWM);
-pCSF = xASL_io_Nifti2Im(x.P.Pop_Path_PV_pCSF);
+if xASL_exist(x.P.Pop_Path_PV_pCSF, 'file')
+	pCSF = xASL_io_Nifti2Im(x.P.Pop_Path_PV_pCSF);
+else
+	pCSF = [];
+end
 FoVim = xASL_io_Nifti2Im(x.P.Pop_Path_FoV);
 
 MaskVascularMNI = ~NegativeMaskMNI & ~PositiveMaskMNI;
@@ -134,14 +152,24 @@ MaskVascularMNI = ~NegativeMaskMNI & ~PositiveMaskMNI;
 % this is the parenchyma brain mask, this used to be
 % (GMim+WMim)>0.5 for rc1T1 & rc2T1
 % We want to be inclusive, so we do (GMim+WMim)>CSFim
-BrainMask = (pGM+pWM)>pCSF;
+if isempty(pCSF)
+	BrainMask = (pGM+pWM) > 0.5;
+else
+	BrainMask = (pGM+pWM) > pCSF;
+end
 BrainMask = BrainMask & FoVim; % -> same setting as used in ROI analysis
 MaskVascularMNI(~BrainMask) = 0; % Remove extracranial & FoVim
 MaskVascularMNI(pWM>(0.9*max(pWM(:)))) = 1; % Remove WM vascular spots
-MaskVascularMNI(pCSF>(0.9*max(pCSF(:)))) = 1; % Remove CSF vascular spots
+if ~isempty(pCSF)
+	MaskVascularMNI(pCSF>(0.9*max(pCSF(:)))) = 1; % Remove CSF vascular spots
+end
 
 % Obtain brain mask for image processing (e.g., BASIL)
-BrainMaskProcessingStandardSpace = (pGM+pWM+pCSF)>0.08 & FoVim;
+if isempty(pCSF)
+	BrainMaskProcessingStandardSpace = (pGM+pWM)>0.08 & FoVim;
+else
+	BrainMaskProcessingStandardSpace = (pGM+pWM+pCSF)>0.08 & FoVim;
+end
 
 %% 3C. Save brain mask for image processing (e.g., BASIL)
 % This mask can be used for fitting data, e.g., BASIL, fitting ATT, Tex,
