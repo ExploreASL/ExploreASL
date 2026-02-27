@@ -34,7 +34,7 @@ function xASL_dev_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
 % 2. Compilation marked with version number including compiled SPM: xASL_dev_MakeStandalone('Drive/User/Folder/',true,false);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -103,7 +103,7 @@ addpath(genpath(fullfile(spm('Dir'))));
 
 % First remove folders that we want to exclude
 warning('off','MATLAB:rmpath:DirNotFound');
-FoldersNot2Deploy = {'Design','WorkInProgress','GitHub',fullfile('External','TestDataSet'),fullfile('External','DIP'),...
+FoldersNot2Deploy = {'WorkInProgress','GitHub',fullfile('External','TestDataSet'),fullfile('External','DIP'),...
     fullfile(spm('Dir'),'toolbox', 'FieldMap'),fullfile(spm('Dir'),'toolbox', 'SRender')};
 for iFolder=1:length(FoldersNot2Deploy)
     rmpath(genpath(fullfile(x.opts.MyPath, FoldersNot2Deploy{iFolder})));
