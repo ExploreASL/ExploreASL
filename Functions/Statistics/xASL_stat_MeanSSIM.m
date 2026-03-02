@@ -18,7 +18,6 @@ function mssim=xASL_stat_MeanSSIM(imRef,imSrc,dynRange)
 % REFERENCE: Z. Wang, A. C. Bovik, H. R. Sheikh and E. P. Simoncelli, Image quality assessment: From error 
 %            visibility to structural similarity, IEEE Transactions on Image Processing, 13(4):600-612, 2004.
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

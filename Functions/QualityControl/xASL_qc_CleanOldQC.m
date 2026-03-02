@@ -19,7 +19,6 @@ function [x] = xASL_qc_CleanOldQC(x, bRemoveCurrentSession)
 %     3. Remove outdated tags from x-struct that do not have the session sub-field for ASL, dwi, func
 % EXAMPLE: x = xASL_qc_RemoveOutdatedQC(x);
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL	
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

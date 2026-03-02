@@ -34,7 +34,6 @@ function outStruct = xASL_adm_OrderFields(inStruct,orderStruct)
 % struct2.A = 1;
 % outStruct = xASL_adm_OrderFields(struct1,struct2);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

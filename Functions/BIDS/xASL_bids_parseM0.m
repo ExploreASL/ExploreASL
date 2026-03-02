@@ -23,7 +23,6 @@ function xASL_bids_parseM0(pathASLNifti)
 % EXAMPLE:     xASL_bids_parseM0('/test/ASL4D.nii')
 %
 % __________________________________
-% Copyright 2015-2022 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

@@ -27,7 +27,6 @@ function [ImOut] = xASL_vis_Imwrite(ImIn, PathOut, ColorMap, bRescale)
 %          xASL_vis_Imwrite([80x80   matrix], '/MyOutputFolder/MyFileName.jpg', [], false); 
 %
 % __________________________________
-% Copyright 2015-2020 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

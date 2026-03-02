@@ -52,7 +52,6 @@ function TC = xASL_qc_TanimotoCoeff(Image1, Image2, imMask, type, bClip, bSmooth
 %    David C. Anastasiu, George Karypis, "Efficient identification of Tanimoto nearest neighbors",
 %        International Journal of Data Science and Analytics, 2017.
 % __________________________________
-% Copyright 2015-2020 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

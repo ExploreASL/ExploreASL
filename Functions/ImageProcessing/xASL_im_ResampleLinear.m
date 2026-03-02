@@ -16,7 +16,6 @@ function imOutput = xASL_im_ResampleLinear(imInput, newSize)
 %               output = xASL_im_ResampleLinear(image, [2,2,2]);
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

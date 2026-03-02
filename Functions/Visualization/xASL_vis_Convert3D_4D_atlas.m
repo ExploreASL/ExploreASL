@@ -14,7 +14,6 @@ function [AtlasOut] = xASL_vis_Convert3D_4D_atlas(AtlasIn)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: AtlasOut = xASL_vis_Convert3D_4D_atlas(AtlasIn);
 % __________________________________
-% Copyright 2017-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

@@ -31,7 +31,6 @@ function SignalPercentage = xASL_quant_BSupCalculation(BackgroundSuppressionPuls
 % EXAMPLE: signalPercentage = xASL_quant_BSupCalculation([2200 2600], 2700, 1, 1240, [0 30 50 70], '/home/test/graph.jpg')
 %
 % __________________________________
-% Copyright (c) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

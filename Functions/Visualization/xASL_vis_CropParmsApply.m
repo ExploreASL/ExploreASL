@@ -20,7 +20,6 @@ function ImageOut = xASL_vis_CropParmsApply(ImageIn,CropParameters,Xmax,Ymin,Yma
 % EXAMPLE:      To crop a [121 145] MNI 1.5 mm slice to a [121 121] square:
 %               ImageOut = xASL_vis_CropParmsApply(ImageIn,[12 133 0 121])
 % __________________________________
-% Copyright 2015-2020 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

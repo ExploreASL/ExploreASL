@@ -32,7 +32,6 @@ function [ControlIm, LabelIm, OrderContLabl, xQ] = xASL_quant_GetControlLabelOrd
 % [ControlIm, LabelIm, xQ] = xASL_quant_GetControlLabelOrder(ASLTimeSeries, xQ);
 % 
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

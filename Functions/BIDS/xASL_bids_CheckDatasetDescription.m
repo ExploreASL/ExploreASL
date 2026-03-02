@@ -21,7 +21,6 @@ function [bImportedExploreASL, bImportedSameVersion, versionExploreASLBIDS, bImp
 % EXAMPLE:      [bImportedExploreASL, bImportedSameVersion, versionExploreASLBIDS, bImportedBETA] = xASL_bids_CheckDatasetDescription(datasetDescription, x.Version);
 %               
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

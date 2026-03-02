@@ -34,7 +34,6 @@ function xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, P
 % EXAMPLE:      xASL_im_CreateASLDeformationField(x);
 %               xASL_im_CreateASLDeformationField(x, 1, [3 3 7]);
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

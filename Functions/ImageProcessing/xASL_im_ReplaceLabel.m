@@ -34,7 +34,6 @@ function xASL_im_ReplaceLabel(pathNifti, LabelNumbersOld, LabelNumbersNew, pathN
 % EXAMPLE (same but shorter): xASL_im_ReplaceLabel('./CICERO/subject/RPI/4V.nii', [1 2], [2 1])
 % 
 % __________________________________
-% Copyright 2021-2021 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

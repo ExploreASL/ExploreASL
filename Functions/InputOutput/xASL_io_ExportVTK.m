@@ -22,7 +22,6 @@ function xASL_io_ExportVTK(nifti,mask,exportPath)
 %                   nifti = '.\test.nii';
 %                   xASL_io_ExportVTK(nifti);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

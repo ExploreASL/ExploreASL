@@ -16,7 +16,6 @@ function [NewList] = xASL_adm_CompareLists(list1, list2)
 %               testListB = {4, 5, 6, 'A', 'B', 'C'}';
 %               [NewList] = xASL_adm_CompareLists(testListA, testListB); 
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

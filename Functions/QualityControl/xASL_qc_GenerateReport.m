@@ -25,7 +25,6 @@ function [x] = xASL_qc_GenerateReport(x, subject, modules, bOverWrite)
 %          xASL_qc_GenerateReport(x, 'sub-001', true);
 %          xASL_qc_GenerateReport(x, [], false);
 % __________________________________
-% Copyright (C) 2015-2025 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

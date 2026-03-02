@@ -24,7 +24,6 @@ function [DiceCoeff] = xASL_stat_PairwiseDice(GroupA, GroupB)
 % EXAMPLE: DiceCoeff = xASL_stat_PairwiseDice({'/MyPath/Image1.nii';'/MyPath/Image2.nii'}, {'/MyPath/Image3.nii';'/MyPath/Image4.nii'});
 % 
 % __________________________________
-% Copyright 2015-2020 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
