@@ -647,6 +647,7 @@ for iSubject=1:x.dataset.nSubjects
 		if xASL_exist(FilePath, 'file')
 			Data3D = xASL_io_Nifti2Im(FilePath,[121 145 121]);
 			DataIm = xASL_im_IM2Column(Data3D, x.S.masks.WBmask, false);
+			DataIm(isinf(DataIm)) = NaN;
 		end
 
 		if bMasking(2)==1

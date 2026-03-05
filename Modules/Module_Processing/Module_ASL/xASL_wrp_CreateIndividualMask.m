@@ -166,9 +166,9 @@ end
 
 % Obtain brain mask for image processing (e.g., BASIL)
 if isempty(pCSF)
-	BrainMaskProcessingStandardSpace = (pGM+pWM)>0.08 & FoVim;
+	BrainMaskProcessingStandardSpace = ((pGM+pWM)>0.08) & FoVim;
 else
-	BrainMaskProcessingStandardSpace = (pGM+pWM+pCSF)>0.08 & FoVim;
+	BrainMaskProcessingStandardSpace = ((pGM+pWM+pCSF)>0.08) & FoVim;
 end
 
 %% 3C. Save brain mask for image processing (e.g., BASIL)
