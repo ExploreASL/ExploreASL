@@ -62,7 +62,7 @@ function [comparison] = xASL_test_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 % Henk on MacOS: [ResultsTable] = xASL_test_TestExploreASL('/Users/hjmutsaerts/ExploreASL/TestDataSets', '/Users/hjmutsaerts/ExploreASL/ExploreASL_TestCasesProcessed', 1, 0,[],'henkjanmutsaerts@gmail.com');
 % VUmc server:   [ResultsTable] = xASL_test_TestExploreASL('/radshare/ExploreASL_Test/ExploreASL_TestCases', '/radshare/ExploreASL_Test/ExploreASL_TestCasesProcessed', 1);
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% Copyright (c) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.

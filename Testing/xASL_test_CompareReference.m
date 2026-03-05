@@ -19,7 +19,7 @@ function [result] = xASL_test_CompareReference(pathReference, pathResults, pathD
 %
 %      [result] = xASL_test_CompareReference('<dir>/ExploreASL/Testing//ReferenceValues.tsv', '<dir>/TestDataSetsTemp', '<dir>/TestResults');
 % __________________________________
-% Copyright (c) 2015-2023 ExploreASL 
+% Copyright (c) 2015-2026 ExploreASL 
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -57,7 +57,7 @@ function [ReferenceTables,ReferenceTable] = xASL_qc_LoadRefTable(pathRefTable)
             fprintf('OS:      %s\n', operatingSystem);
             ReferenceTables(iRow,:) = []; % Remove row 1
             ReferenceTables(iRow,:) = []; % Remove row 2
-            ReferenceTable.(versionXASL) = ReferenceTables(iRow:iRow+10,:);
+            ReferenceTable.(versionXASL) = ReferenceTables(iRow:iRow+11,:);
         end
         iRow=iRow+1;
     end
