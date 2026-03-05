@@ -116,14 +116,8 @@ end
 
 MaskVascularNative = ~NegativeMaskNative & ~PositiveMaskNative;
 
-% this is the parenchyma brain mask, this used to be
-% (GMim+WMim)>0.5 for rc1T1 & rc2T1
-% We want to be inclusive, so we do (GMim+WMim)>CSFim
-if isempty(pCSF)
-	BrainMask = (pGM+pWM) > 0.5;
-else
-	BrainMask = (pGM+pWM) > pCSF;
-end
+BrainMask = (pGM+pWM) > 0.5;
+
 MaskVascularNative(~BrainMask) = 0; % Remove extracranial (same setting as in ROI module)
 MaskVascularNative(pWM>(0.8*max(pWM))) = 1; % Remove WM vascular spots
 if ~isempty(pCSF)
@@ -149,14 +143,7 @@ FoVim = xASL_io_Nifti2Im(x.P.Pop_Path_FoV);
 
 MaskVascularMNI = ~NegativeMaskMNI & ~PositiveMaskMNI;
 
-% this is the parenchyma brain mask, this used to be
-% (GMim+WMim)>0.5 for rc1T1 & rc2T1
-% We want to be inclusive, so we do (GMim+WMim)>CSFim
-if isempty(pCSF)
-	BrainMask = (pGM+pWM) > 0.5;
-else
-	BrainMask = (pGM+pWM) > pCSF;
-end
+BrainMask = (pGM+pWM) > 0.5;
 BrainMask = BrainMask & FoVim; % -> same setting as used in ROI analysis
 MaskVascularMNI(~BrainMask) = 0; % Remove extracranial & FoVim
 MaskVascularMNI(pWM>(0.9*max(pWM(:)))) = 1; % Remove WM vascular spots

@@ -50,7 +50,7 @@ function [ImOut, VisualQC] = xASL_im_M0ErodeSmoothExtrapolate(ImIn, DirOutput, N
 %
 % EXAMPLE: as used in ExploreASL (xASL_wrp_ProcessM0): [ImOut] = xASL_im_M0ErodeSmoothExtrapolate(x.P.Pop_Path_M0, x.D.M0regASLdir, x.P.SubjectID, x.P.Pop_Path_PV_pGM, x.P.Pop_Path_PV_PWM, x.P.Pop_Path_PV_PWM, path_BrainCentralityMap)
 % __________________________________
-% Copyright (C) 2015-2025 ExploreASL
+% Copyright (C) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
@@ -90,30 +90,20 @@ ImIn = xASL_io_Nifti2Im(ImIn);
 % Here, we load the partial volume maps for the first mask
 GMim = xASL_io_Nifti2Im(pvGM);
 WMim = xASL_io_Nifti2Im(pvWM);
-CSFim = xASL_io_Nifti2Im(pvCSF);
 
 if xASL_stat_SumNan(GMim(:))==0
     error('Empty GM partial volume map, cannot process the M0');
-elseif (xASL_stat_SumNan(WMim(:))==0) && (xASL_stat_SumNan(CSFim(:))==0)
-    error('Empty WM and CSF partial volume map, cannot process the M0');
+elseif (xASL_stat_SumNan(WMim(:))==0)
+    error('Empty WM partial volume map, cannot process the M0');
 else
     % This was 0.7 for rc1T1 in standard space,
-    % to keep some robustness, we now take pvGM*1.2*(pvWM+pvCSF)
-	if isempty(CSFim)
-		GMmask = GMim>( 1.2 .* WMim );
-	else
-		GMmask = GMim>( 1.2 .* (WMim+CSFim) );
-	end
-
+    % to keep some robustness, we now take pvGM > 0.5
+	GMmask = GMim>0.5;
+	
     % this is the parenchyma mask, this used to be
     % (GMim+WMim)>0.5 for rc1T1 & rc2T1
-    % For robustness, we do (GMim+WMim)>CSFim
-    % now for pvGM & pvWM
-	if xASL_stat_SumNan(CSFim(:)) ~= 0
-		Mask1 = (GMim+WMim)>(1.5.*CSFim);
-	else
-		Mask1 = (GMim+WMim)>0.5;
-	end
+    % And we keep it as combined GM and WM remains to fill most voxels
+	Mask1 = (GMim+WMim)>0.5;
 
     fprintf('\n%s', 'Processing M0 image: ');
 end
