@@ -37,8 +37,6 @@ function xASL_wrp_RealignASL(x, bASL)
 % ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
-
-
 %% ----------------------------------------------------------------------------------------
 %% Administration
 
@@ -54,6 +52,8 @@ end
 
 [Fpath, Ffile, Fext] = fileparts(InputPath);
 rpfile = fullfile( Fpath, ['rp_' Ffile '.txt']);
+rpfile_within  = fullfile(Fpath, ['within_rp_'  Ffile '.txt']);
+rpfile_between = fullfile(Fpath, ['between_rp_' Ffile '.txt']);
 rInputPath = fullfile( Fpath, ['r' Ffile Fext]);
 InputPathJson = fullfile( Fpath, [Ffile '.json']);
 rInputPathJson = fullfile( Fpath, ['r' Ffile '.json']);
@@ -68,6 +68,7 @@ MinimumtValue = NaN;
 %% Read basic image information
 tempnii = xASL_io_ReadNifti(InputPath);
 nFrames = double(tempnii.hdr.dim(5));
+numFrames = nFrames;
 if length(x.Q.EchoTime)>1
     nFrames=nFrames/numel(unique(x.Q.EchoTime));
 end
@@ -93,6 +94,18 @@ if isfield(x.Q,'LookLocker') && x.Q.LookLocker
 	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' as Look-Locker correction is not implemented.']);
 end
 
+% Set flags for multi-TE and multi-PLD datasets
+if x.Q.nUniqueInitial_PLD>2
+    bMultiPLD = 1;
+else
+    bMultiPLD = 0;
+end
+
+if x.Q.nUniqueEchoTime>2
+    bMultiTE = 1;
+else
+    bMultiTE = 0;
+end
 
 %% File management
 % Here we define the files created in this wrapper, and delete them if they
@@ -190,117 +203,123 @@ end
 
 %% ----------------------------------------------------------------------------------------
 %% 1. Estimate motion
-	fprintf('SPM motion estimation');
-	
-	% Issue warning if empty image
-	if max(max(max(max(tempnii.dat(:)))))==0 || numel(unique(tempnii.dat(:)))==1
-		warning('Invalid input image, skipping');
-		return;
-	end
-	
-	switch x.settings.Quality
-		case 1 % normal quality
-			flags.quality = 1;
-			flags.sep = minVoxelSize;
-		case 0 % low quality for fast try-out
-			flags.quality = 0.01;
-			flags.sep = minVoxelSize*2;
-	end
-	
-	flags.rtm = 1; % realign to mean
-	flags.interp = 1;
-	flags.graphics = 0;
-	
-	% If previous realign parameters exist, delete them
-	xASL_delete(rpfile);
-	
-	% Run motion correction for corresponding case
-    % Note that this is the adapted spm_realign, including zig-zag
-    % regression to account for ASL's potential control-label difference in
-    % average head position
-	spm_realign(spm_vol(InputPath), flags, bZigZag);
+if bMultiTE
+    fprintf('SPM motion estimation in multi-TE data');
+elseif bMultiPLD
+    fprintf('SPM motion estimation in multi-PLD data: within PLDs');
+else
+    fprintf('SPM motion estimation');
+end
 
+% Issue warning if empty image
+if max(max(max(max(tempnii.dat(:)))))==0 || numel(unique(tempnii.dat(:)))==1
+	warning('Invalid input image, skipping');
+	return;
+end
 
+switch x.settings.Quality
+	case 1 % normal quality
+		flags.quality = 1;
+		flags.sep = minVoxelSize;
+	case 0 % low quality for fast try-out
+		flags.quality = 0.01;
+		flags.sep = minVoxelSize*2;
+end
+
+flags.rtm = 1; % realign to mean
+flags.interp = 1;
+flags.graphics = 0;
+
+% If previous realign parameters exist, delete them
+xASL_delete(rpfile);
+
+% Run motion correction for corresponding case
+% Note that this is the adapted spm_realign, including zig-zag
+% regression to account for ASL's potential control-label difference in
+% average head position
+
+V = spm_vol(InputPath);
+unique_PLDs = unique(x.Q.Initial_PLD);
+TE_idx = zeros(numFrames,1);
+rp_all = zeros(numFrames, 6);
+
+if bMultiTE
+    % Hanldes Multi-TE dataset regardless of PLD
+    for p = 1:numel(unique_PLDs)
+        idxPLD = x.Q.Initial_PLD == unique_PLDs(p); % Creates a logical vector storing whether each image in x.Q.Initial_PLD belongs to the specific PLD called in unique_PLDs(p) or not
+        framesPLD = find(idxPLD); % Indices of the frames belonging to this PLD
+        [~, order] = sort(x.Q.EchoTime(framesPLD)); % Determine TE ordering within this PLD based on EchoTime (no frame reordering)
+    
+        TE_idx(framesPLD(order)) = 1:numel(framesPLD); % Assign index number to each TE based on the sorting
+    end
+    idx_firstTE = (TE_idx == 1); % Collect all of the first TEs
+    spm_realign(V(idx_firstTE), flags, bZigZag); % Run alignment on the first TEs only
+    
+    % Load RP file for TE1 frames
+    te1_frames = find(idx_firstTE); % Find() converts the logical vector to absolute frame numbers - translates dataset frame numbers into RP file row numbers
+    rp_te1 = load(rpfile);   % rows correspond to te1_frames now
+
+    for p = 1:numel(unique_PLDs)
+        idxPLD    = x.Q.Initial_PLD == unique_PLDs(p);
+        framesPLD = find(idxPLD);
+    
+        te1_candidates = framesPLD(TE_idx(framesPLD) == 1); % Identify first TE frame within this PLD
+        if numel(te1_candidates) ~= 1
+            warning('Expected exactly one TE1 frame for PLD %d, found %d. Using first occurrence.', unique_PLDs(p), numel(te1_candidates));
+        end
+        firstTE_frame = te1_candidates(1);
+
+        row_in_rp = find(te1_frames == firstTE_frame); % Identify in which row of the rpfile the identified fist TE frame sits
+        rp_first_PLD = rp_te1(row_in_rp,:); % Select the correct motion row
+    
+        rp_all(framesPLD, :) = repmat(rp_first_PLD, numel(framesPLD), 1); % Propagate motion numerically to all TEs
+    
+        remaining_frames = framesPLD(TE_idx(framesPLD) > 1);
+        ref_affine = spm_get_space([V(firstTE_frame).fname ',' num2str(V(firstTE_frame).n(1))] ); % Read the affine exactly as SPM wrote it
+    
+        for f = 1:numel(remaining_frames) % Apply motion to NIfTI headers for remaining TEs
+            Vframe = V(remaining_frames(f));
+            spm_get_space([Vframe.fname ',' num2str(Vframe.n(1))], ref_affine);
+        end
+    end
+    writematrix(rp_all, rpfile, 'delimiter', '\t');
+
+elseif bMultiPLD
+    % Handles only Multi-PLD datasets
+    rp_files_perPLD = cell(length(unique_PLDs), 1);
+    for p = 1:numel(unique_PLDs)
+        idx = x.Q.Initial_PLD == unique_PLDs(p); 
+        spm_realign(V(idx), flags, bZigZag);
+        
+        temp_rp = load(rpfile);
+        rp_all(idx, :) = temp_rp; % Update the rp array to hold the new motion estimates
+        rp_files_perPLD{p} = fullfile(Fpath, ['within_rp_' Ffile '_' num2str(unique_PLDs(p)) '.txt']); % Set the filename and filepath for the within PLD rpfiles
+        movefile(rpfile, rp_files_perPLD{p}); % Rename the most recently outputed rpfile so that it doesn get overwritten by the next iteration
+    end
+    writematrix(rp_all, rpfile_within, 'delimiter', '\t'); % Write out all the motion estimates into one rpfile - the rpfile
+
+    fprintf('SPM motion estimation in multi-PLD data: between PLDs');
+    spm_realign(V, flags, bZigZag);
+    movefile(rpfile, rpfile_between);
+
+    rp_within = load(rpfile_within, '-ascii');
+    rp_between = load(rpfile_between, '-ascii');
+    rp_multi = zeros(nFrames, 12); % because for some reason spm_imatrix outputs 12 columns despite only having inputs with 6 columns
+    for i = 1:nFrames
+        rp_within_matrix = spm_matrix(rp_within(i,:)); 
+        rp_between_matrix = spm_matrix(rp_between(i,:)); 
+        rp_overall = rp_between_matrix * rp_within_matrix;
+        rp_multi(i,:) = spm_imatrix(rp_overall);
+    end
+    writematrix(rp_multi, rpfile, 'delimiter', '\t');
+
+else
+    % Handles simple datasets
+    spm_realign(V, flags, bZigZag);
+end
+ 
 %% ----------------------------------------------------------------------------------------
-%% 2. Calculate and plot position and motion parameters
-	fprintf('%s\n','Calculate & plot position & motion parameters');
-	
-	% Summarize real-world realign parameters into net displacement vector (NDV)
-	rp = load(rpfile, '-ascii'); % load the 3 translation and 3 rotation values
-	MeanRadius = 50; % typical distance center head to cerebral cortex (Power et al., NeuroImage 2012)
-	% PM: assess this from logical ASL EPI mask? This does influence the weighting of rotations compared to translations
-	
-	% % FD = frame displacement
-	% if length(x.Q.EchoTime)>2
-	%     FD{1} = rp(1:NumTEs:end,:); %multiTE -> gives back the normal rp for the plots
-	%     FD{2} = diff(rp(1:NumTEs:end,:));
-	% else
-	FD{1}=rp; % position (absolute displacement)
-	FD{2} = diff(rp); % motion (relative displacement)
-	% end
-	
-	if max(rp(:))==0
-		warning('Something wrong with motion parameters, skipping');
-		return;
-	end
-	
-	close all;
-	if usejava('jvm') % only if JVM loaded
-		fig = figure('Visible','off');
-	end
-	
-	for ii=1:2 % 1 = absolute displacement 2 = relative displacement==motion
-		tx{ii} = FD{ii}(:,1); ty{ii} = FD{ii}(:,2); tz{ii}  = FD{ii}(:,3); % translations
-		rx{ii} = FD{ii}(:,4); ry{ii} = FD{ii}(:,5); rz{ii}  = FD{ii}(:,6); % rotations (pitch, roll, yaw)
-		
-		PartTranslation{ii} = tx{ii}.^2 + ty{ii}.^2 + tz{ii}.^2;
-		PartRotation{ii} = 0.2*MeanRadius^2* ((cos(rx{ii})-1).^2 + (sin(rx{ii})).^2 + (cos(ry{ii})-1).^2 + (sin(ry{ii})).^2 + (cos(rz{ii})-1).^2 + (sin(rz{ii})).^2);
-		try
-			NDV{ii} = sqrt(PartTranslation{ii} + PartRotation{ii});
-		catch
-			
-		end
-		
-		if ii==2
-			NDV{2} = [0; NDV{2}]; % add leading zero difference
-		end
-		
-		% Descriptives
-		median_NDV{ii} = median(NDV{ii});
-		mean_NDV{ii} = mean(NDV{ii});
-		max_NDV{ii} = max(NDV{ii});
-		SD_NDV{ii} = std(NDV{ii});
-		MAD_NDV{ii} = xASL_stat_MadNan(NDV{ii},0); % median absolute deviation from median
-		
-		if usejava('jvm') % only if JVM loaded
-			subplot(3,1,ii); % plot position (subplot 1) & motion (subplot 2)
-			plot(NDV{ii},'Color',[0.4,0.4,0.4]); % lines between frames
-			hold on
-			plot(NDV{ii},'o','MarkerSize',5); % cirkels for frames
-			hold on
-			
-			plot(repmat(mean_NDV{ii},151,1),'Color',[0,0,1]); % mean NDV in blue
-			hold on
-			
-			if ii==1
-				axis([0 nFrames 0 max(NDV{ii})]);
-				title(['Position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame']);
-				ylabel('NDV (mm)');
-				
-			elseif ii==2
-				
-				axis([0 nFrames 0 minVoxelSize]);
-				title(['Motion plot of ' x.P.SubjectID '-' x.P.SessionID]);
-				ylabel('NDV/frame (mm//frame)');
-			end
-			
-			xlabel('frame#');
-			axis([1 length(NDV{ii}) 0 ceil(max(NDV{ii}))]); % fix X-axes to be same for subplots
-		end
-	end
-
-%% ----------------------------------------------------------------------------------------
-%% 3. Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
+%% 2. Reslice images if applicable
 
 if bENABLE || bSpikeRemoval
     % Resample ASL image (apply motion estimation)
@@ -325,6 +344,73 @@ if bENABLE || bSpikeRemoval
     xASL_delete(x.P.Path_mean_PWI_Clipped);
 end
 
+
+%% ----------------------------------------------------------------------------------------
+%% 3. Calculate position and motion parameters
+fprintf('%s\n','Calculate & plot position & motion parameters');
+
+% Summarize real-world realign parameters into net displacement vector (NDV)
+rp = load(rpfile, '-ascii'); % load the 3 translation and 3 rotation values
+MeanRadius = 50; % typical distance center head to cerebral cortex (Power et al., NeuroImage 2012)
+% PM: assess this from logical ASL EPI mask? This does influence the weighting of rotations compared to translations
+
+% % FD = frame displacement
+% NumTEs = numel(unique(x.Q.EchoTime));
+% if length(x.Q.EchoTime)>2
+%     FD{1} = rp(1:NumTEs:end,:); %multiTE -> gives back the normal rp for the plots
+%     FD{2} = diff(rp(1:NumTEs:end,:));
+% else
+FD{1}=rp; % position (absolute displacement)
+FD{2} = diff(rp); % motion (relative displacement)
+% end
+
+if max(rp(:))==0
+	warning('Something wrong with motion parameters, skipping');
+	return;
+end
+
+[NDV, median_NDV, mean_NDV, max_NDV, SD_NDV, MAD_NDV] = xASL_compute_NDV(FD, MeanRadius);
+
+if bMultiPLD && ~bMultiTE
+    for p = 1:numel(rp_files_perPLD)
+        rp_per_PLD = load(rp_files_perPLD{p});
+    
+        FD_within = cell(1,2);
+        FD_within{1}=rp_per_PLD;
+        FD_within{2} = diff(rp_per_PLD);
+        
+        [within_NDV{p}, within_median_NDV{p}, within_mean_NDV{p}, within_max_NDV{p}, within_SD_NDV{p}, within_MAD_NDV{p}] = xASL_compute_NDV(FD_within, MeanRadius);
+    end
+end
+
+function [NDV, median_NDV, mean_NDV, max_NDV, SD_NDV, MAD_NDV] = xASL_compute_NDV(FD, MeanRadius)
+    for ii = 1:2 % 1 = absolute displacement 2 = relative displacement==motion
+	    tx{ii} = FD{ii}(:,1); ty{ii} = FD{ii}(:,2); tz{ii}  = FD{ii}(:,3); % translations
+	    rx{ii} = FD{ii}(:,4); ry{ii} = FD{ii}(:,5); rz{ii}  = FD{ii}(:,6); % rotations (pitch, roll, yaw)
+	    
+	    PartTranslation{ii} = tx{ii}.^2 + ty{ii}.^2 + tz{ii}.^2;
+	    PartRotation{ii} = 0.2*MeanRadius^2* ((cos(rx{ii})-1).^2 + (sin(rx{ii})).^2 + (cos(ry{ii})-1).^2 + (sin(ry{ii})).^2 + (cos(rz{ii})-1).^2 + (sin(rz{ii})).^2);
+	    try
+		    NDV{ii} = sqrt(PartTranslation{ii} + PartRotation{ii});
+	    catch
+		    
+	    end
+	    
+	    if ii==2
+		    NDV{2} = [0; NDV{2}]; % add leading zero difference
+	    end
+	    
+	    % Descriptives
+	    median_NDV{ii} = median(NDV{ii});
+	    mean_NDV{ii} = mean(NDV{ii});
+	    max_NDV{ii} = max(NDV{ii});
+	    SD_NDV{ii} = std(NDV{ii});
+	    MAD_NDV{ii} = xASL_stat_MadNan(NDV{ii},0); % median absolute deviation from median 
+    end
+end
+
+%% ----------------------------------------------------------------------------------------
+%% 4. Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
 
 if ~bENABLE && ~bSpikeRemoval
     fprintf('%s\n', 'Skipping ENABLE');
@@ -373,7 +459,7 @@ xASL_adm_DeleteFilePair(rInputPath, 'json'); % delete temporary image
 
 
 %% ----------------------------------------------------------------------------------------
-%% 4. Set volumes to exclude
+%% 5. Set volumes to exclude
 if bSpikeRemoval
     fprintf('%s\n', ['Running spike removal with threshold ' xASL_num2str(x.modules.asl.SpikeRemovalAbsoluteThreshold) ' mm']);
     exclusion = (NDV{2}>x.modules.asl.SpikeRemovalAbsoluteThreshold)';
@@ -406,36 +492,79 @@ elseif bENABLE
     end
 end
 
+%% ----------------------------------------------------------------------------------------
+%% 6. Plot motion 
+function fig = xASL_plot_motion(NDV, mean_NDV, nFrames, minVoxelSize, x, bENABLE, bSpikeRemoval, bWithin, exclusion, outFile, pTitle, mTitle)
+    if usejava('jvm') % only if JVM loaded
+        fig = figure('Visible','off');
+        for FD_idx = 1:2 % 1 = absolute displacement 2 = relative displacement==motion
+		    subplot(3,1,FD_idx); % plot position (subplot 1) & motion (subplot 2)
+		    plot(NDV{FD_idx},'Color',[0.4,0.4,0.4]); % lines between frames
+		    hold on
+		    plot(NDV{FD_idx},'o','MarkerSize',5); % circles for frames
+		    hold on
+		    
+		    plot(repmat(mean_NDV{FD_idx},151,1),'Color',[0,0,1]); % mean NDV in blue
+		    hold on
 
-if usejava('jvm') % only if JVM loaded
-    if bENABLE || bSpikeRemoval
-    %% ----------------------------------------------------------------------------------------
-    %% 5. Plot exclusion matrix
-        % Save threshold-free spike detection
-        hold on
-        subplot(3,1,3);
-        hold on
-        plot(exclusion,'r');
-        hold on
-        ylabel('Exclusion matrix');
-        axis([1 length(NDV{ii}) 0 ceil(max(NDV{ii}))]); % fix X-axes to be same for subplots
+		    if FD_idx==1
+			    % axis([0 nFrames 0 max(NDV{FD_idx})]); % original axis fixing
+			    title(pTitle);
+			    ylabel('NDV (mm)');
+			    
+		    elseif FD_idx==2
+			    % axis([0 nFrames 0 minVoxelSize]); % original axis fixing
+			    title(mTitle);
+			    ylabel('NDV/frame (mm//frame)');
+		    end
+		    
+		    xlabel('frame#');
+		    % axis([1 length(NDV{FD_idx}) 0 ceil(max(NDV{FD_idx}))]); % fix X-axes to be same for subplots : original axis fixing
+            axis([1 length(NDV{FD_idx}) 0 max(NDV{FD_idx})*1.05]);
+        end
+
+        if (bENABLE || bSpikeRemoval) && ~bWithin
+            subplot(3,1,3);
+            plot(exclusion,'r');
+            ylabel('Exclusion matrix');
+            % axis([1 length(NDV{FD_idx}) 0 ceil(max(NDV{FD_idx}))]); % fix X-axes to be same for subplots :: original axis fixing
+            axis([1 length(NDV{FD_idx}) 0 max(NDV{2})*1.05]);
+        end
+        
+        fprintf('Saving motion plot to %s\n', outFile);
+        
+        xASL_adm_CreateDir(fileparts(outFile));
+        saveas(fig, outFile, 'jpg');
+        close (fig);
     end
-
-    %% ----------------------------------------------------------------------------------------
-    %% 6. Save motion plot
-	fprintf('Saving motion plot to %s\n', jpgfile_Motion);
-    
-	xASL_adm_CreateDir(fileparts(jpgfile_Motion));
-    saveas(fig, jpgfile_Motion, 'jpg');
-	close all;
-	clear fig;
 end
 
+if bMultiPLD && ~bMultiTE
+    pTitle = ['Overall position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame'];
+    mTitle = ['Overall motion plot of ' x.P.SubjectID '-' x.P.SessionID];
+else
+    pTitle = ['Position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame'];
+    mTitle = ['Motion plot of ' x.P.SubjectID '-' x.P.SessionID];
+end
+
+bWithin = false;
+xASL_plot_motion(NDV, mean_NDV, nFrames, minVoxelSize, x, bENABLE, bSpikeRemoval, bWithin, exclusion, jpgfile_Motion, pTitle, mTitle);
+
+if bMultiPLD && ~bMultiTE
+    bWithin = true;
+    for p = 1:length(unique_PLDs)
+        outFile = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID, '_', x.P.SessionID '_PLD' num2str(unique_PLDs(p)) '_motion.jpg']);
+        pTitle = ['PLD' num2str(unique_PLDs(p)) ' Position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first PLD frame'];
+        mTitle = ['PLD' num2str(unique_PLDs(p)) ' Motion plot of ' x.P.SubjectID '-' x.P.SessionID];
+        xASL_plot_motion(within_NDV{p}, within_mean_NDV{p}, nFrames, minVoxelSize, x, bENABLE, bSpikeRemoval, bWithin, exclusion, outFile, pTitle, mTitle);
+    end
+end
+
+
+%% ----------------------------------------------------------------------------------------
+%% 7. Save ENABLE sorting plot
 if bENABLE
     tValue(1:3) = tValue(4); % for nicer plotting
-
-    %% ----------------------------------------------------------------------------------------
-    %% 6. Save ENABLE sorting plot
 
     if usejava('jvm') % only if JVM loaded
         fig = figure('Visible','off');
@@ -455,7 +584,7 @@ if bENABLE
 end
 
 %% ----------------------------------------------------------------------------------------
-%% 7. Save QC images before and after volume-spikes exclusion
+%% 8. Save QC images before and after volume-spikes exclusion
 
 if bSpikeRemoval || bENABLE
 	Slice2Show = floor(size(PWI4D,3)*0.67); % e.g. slice 11/17
@@ -499,7 +628,7 @@ end
 
 
 %% ----------------------------------------------------------------------------------------
-%% 8. Remove spike volumes from NIfTI
+%% 9. Remove spike volumes from NIfTI
 
 if bENABLE || bSpikeRemoval
 
@@ -542,13 +671,13 @@ end
 
 
 %% ----------------------------------------------------------------------------------------
-%% 9. Save motion statistics before excluding motion spikes
+%% 10. Save motion statistics before excluding motion spikes
 % Save results for later summarization in analysis module
 xASL_adm_CreateDir(x.D.MotionDir);
 save(pathSave_NDV, 'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','exclusion','PercExcl','MinimumtValue');
 
 %% ----------------------------------------------------------------------------------------
-%% 10. Save motion statistics after excluding motion spikes
+%% 11. Save motion statistics after excluding motion spikes
     
     if sum(exclusion)>0
         for ii=1:2
