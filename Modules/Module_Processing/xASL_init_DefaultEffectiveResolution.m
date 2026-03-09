@@ -103,7 +103,7 @@ else
 		% FWHM. Roughly speaking, the 3d_grase PSF should be somewhere between the 2d_epi
 		% and 3d_spiral.
 	else
-		warning(['Unknown setting x.Q.PulseSequenceType=' xASL_num2str(x.Q.PulseSequenceType) ', x.Q.MRAcuqisitionType=' xASL_num2str(x.Q.MRAcquisitionType)]);
+		warning(['Unknown setting x.Q.PulseSequenceType=' xASL_num2str(x.Q.PulseSequenceType) ', x.Q.MRAcquisitionType=' xASL_num2str(x.Q.MRAcquisitionType)]);
 	end
 
 	%% ----------------------------------------------------------------------------------------
@@ -114,8 +114,10 @@ else
 		if regexpi(x.Q.Vendor, 'GE') && NativeResolution(1) < 2
 			% The individual resolution will also depend on the FOV, so we cannot set a fixed resolution but rather modify it based on the native resolution
 			if isempty(x.Q.NumberOfArms)
-				warning('Number of spirals not defined for a GE sequence');
-			elseif x.Q.NumberOfArms == 8
+				warning('Number of spirals not defined for a GE sequence, defaulting to 8 arms');
+				x.Q.NumberOfArms = 8;
+			end
+			if x.Q.NumberOfArms == 8
 				% For the standard number of spirals, we use 2 times the native resolution
 				NativeResolution(1:2) = 2 * NativeResolution(1:2);
 			elseif x.Q.NumberOfArms == 4
