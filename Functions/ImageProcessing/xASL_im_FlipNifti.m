@@ -30,7 +30,7 @@ function xASL_im_FlipNifti(pathInput, flipAxis, bOverwrite)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_im_FlipNifti('CICERO_Nolan/analysis/C3T-S007_1/RPI_4V/4V.nii');
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

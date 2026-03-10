@@ -37,7 +37,7 @@ function [imPVC,imCBFrec,imResidual] = xASL_im_PVCkernel(imCBF, imPV, kernel, mo
 %  volume errors on the estimation of gray matter cerebral blood flow with 
 %  arterial spin labeling MRI. MAGMA 2018. DOI:10.1007/s10334-018-0691-y
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

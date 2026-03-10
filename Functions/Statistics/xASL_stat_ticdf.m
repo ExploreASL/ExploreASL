@@ -21,7 +21,7 @@ function T = xASL_stat_ticdf(P,nu)
 %             M. Abramowitz and I.A. Stegun. Handbook of mathematical Functions with Formulas, Graphs, and Mathematical Tables. 1964
 %             http://people.math.sfu.ca/~cbm/aands/abramowitz_and_stegun.pdf
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

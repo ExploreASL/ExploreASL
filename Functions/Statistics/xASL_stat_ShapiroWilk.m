@@ -25,7 +25,7 @@ function [H, P, W] = xASL_stat_ShapiroWilk(x, alpha)
 % REFERENCES: References: Royston P. "Algorithm AS R94", Applied Statistics (1995) Vol. 44, No. 4.
 %   AS R94
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

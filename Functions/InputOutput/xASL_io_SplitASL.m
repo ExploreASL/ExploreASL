@@ -48,7 +48,7 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 % EXAMPLE 5: for removing the 1st volume as dummy
 % xASL_io_SplitASL('/data/RAD/share/EPAD500/010EPAD00001/ASL_1/ASL4D.nii', [],1);
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

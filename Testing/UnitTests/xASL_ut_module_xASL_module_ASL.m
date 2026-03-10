@@ -15,7 +15,7 @@ function UnitTest = xASL_ut_module_xASL_module_ASL(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_module_xASL_module_ASL(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % Copyright 2015-2021 ExploreASL
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

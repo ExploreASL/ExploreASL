@@ -26,7 +26,7 @@ function xASL_spm_affine(srcPath, refPath, fwhmSrc, fwhmRef, otherList, bDCT, bQ
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_spm_affine('/MyStudy/Subject1/T1.nii.gz', '/MyStudy/Subject1/mean_control.nii', 5, 5);
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

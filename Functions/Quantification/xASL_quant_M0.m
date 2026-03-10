@@ -32,7 +32,7 @@ function [M0IM] = xASL_quant_M0(inputM0, x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: M0IM = xASL_quant_M0('MyStudy/sub-001/ASL_1/rM0.nii', x);
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

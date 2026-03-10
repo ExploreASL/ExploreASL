@@ -47,7 +47,7 @@ function [ScaleImage, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_i
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [ScaleImage, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseExternalQuantification);
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

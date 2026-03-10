@@ -63,7 +63,7 @@ function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale,
 %          or for printing to file:
 %          xASL_vis_CreateVisualFig(x, {'//AnalysisDir/Population/T1_Sub-001.nii' '//AnalysisDir/Population/rc1T1_Sub-001.nii', '//AnalysisDir/Population/T1w_Check', [1 0.5], 'pGM', {x.S.gray x.S.red});
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

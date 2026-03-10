@@ -23,7 +23,7 @@ function [MeanAI_PreTopUp_Perc, MeanAI_PostTopUp_Perc] = xASL_vis_VisualQC_TopUp
 % EXAMPLE: xASL_vis_VisualQC_TopUp('analysis/Sub-001/dwi/B0.nii', 'analysis/Sub-001/dwi/Unwarped.nii', x, 10, 'analysis/Population/TopUpCheckDir');
 %
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

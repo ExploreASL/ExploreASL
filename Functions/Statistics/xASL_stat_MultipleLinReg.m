@@ -32,7 +32,7 @@ function [b,CI,pval,stats] = xASL_stat_MultipleLinReg(X,Y,bIntercept)
 %             http://home.iitk.ac.in/~shalab/regression/Chapter3-Regression-MultipleLinearRegressionModel.pdf
 %             https://www.wessa.net/rwasp_multipleregression.wasp
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

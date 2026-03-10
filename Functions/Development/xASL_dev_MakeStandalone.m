@@ -34,7 +34,7 @@ function xASL_dev_MakeStandalone(outputPath, bCompileSPM, markAsLatest)
 % 2. Compilation marked with version number including compiled SPM: xASL_dev_MakeStandalone('Drive/User/Folder/',true,false);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

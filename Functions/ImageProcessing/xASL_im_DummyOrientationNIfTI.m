@@ -55,7 +55,7 @@ function xASL_im_DummyOrientationNIfTI(PathSrc, PathRef, PathDummyOut, bApplyRot
 % REFERENCES: See: https://nipy.org/nibabel/coordinate_systems.html,
 % And also the explanation inside xASL_im_DecomposeAffineTransformation.m
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

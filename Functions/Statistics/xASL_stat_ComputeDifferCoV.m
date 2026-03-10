@@ -31,7 +31,7 @@ function diffCoV = xASL_stat_ComputeDifferCoV(imCBF, imMask, nMinSize, bPVC, imG
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

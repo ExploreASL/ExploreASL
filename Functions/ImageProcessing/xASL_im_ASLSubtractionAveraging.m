@@ -77,7 +77,7 @@ function [PWI, PWI3D, PWI4D, x, Control, Control3D, Control4D] = xASL_im_ASLSubt
 %     Inside xASL_wrp_RegisterASL: [PWI, ~, ~, ~, Control] = xASL_im_ASLSubtractionAveraging(x, x.P.Path_despiked_ASL4D);
 %     Inside xASL_quant_ASL: [PWI] = xASL_im_ASLSubtractionAveraging(x, [], PWI4D);
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

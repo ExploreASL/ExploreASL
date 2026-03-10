@@ -13,7 +13,7 @@ function UserName = xASL_adm_GetUserName()
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      UserName = xASL_adm_GetUserName();
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

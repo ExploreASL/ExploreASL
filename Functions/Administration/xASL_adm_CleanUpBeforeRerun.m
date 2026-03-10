@@ -44,7 +44,7 @@ function xASL_adm_CleanUpBeforeRerun(AnalysisDir, iModule, bRemoveWMH, bAllSubje
 % - For rerunning ASL & population modules of single subject: xASL_adm_CleanupBeforeCompleteRerun('/PathToMyStudyAnalysisDir', [2 3], 0, 0, 'Sub-001')
 %
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

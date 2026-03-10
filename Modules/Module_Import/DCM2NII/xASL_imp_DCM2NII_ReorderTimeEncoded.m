@@ -22,7 +22,7 @@ function resultJSON = xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncode
 %
 % __________________________________
 % Copyright 2015-2023 ExploreASL
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

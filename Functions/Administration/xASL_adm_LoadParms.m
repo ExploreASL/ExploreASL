@@ -29,7 +29,7 @@ function [Parms, x] = xASL_adm_LoadParms(ParmsPath, x, bVerbose)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [~, x] = xASL_adm_LoadParms('/MyStudy/sub-001/ASL_1/ASL4D.json', x, bO);
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

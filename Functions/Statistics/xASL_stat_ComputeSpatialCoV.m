@@ -36,7 +36,7 @@ function sCov = xASL_stat_ComputeSpatialCoV(imCBF, imMask, nMinSize, bPVC, bPara
 %             coefficient of variation in arterial spin labeling cerebral blood flow images. Journal of Cerebral Blood Flow & Metabolism. 
 %             2017 Sep;37(9):3184-92.
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

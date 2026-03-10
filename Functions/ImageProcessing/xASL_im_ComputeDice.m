@@ -17,7 +17,7 @@ function [DiceCoeff] = xASL_im_ComputeDice(imA, imB)
 % EXAMPLE: DiceCoeff = xASL_im_ComputeDice([1 0 1], [1 1 0]); % mask has
 %          two voxels, of which 1 voxel overlaps, so DiceCoeff=0.5
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________

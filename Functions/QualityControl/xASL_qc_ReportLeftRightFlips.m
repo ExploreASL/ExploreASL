@@ -23,7 +23,7 @@ function xASL_qc_ReportLeftRightFlips(dirRoot, bZip)
 % EXAMPLE: xASL_qc_ReportLeftRightFlips('/Users/henk/surfdrive/HolidayPics/CICERO_Nolan/analysis');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Licensed under Apache 2.0, see permissions and limitations at
+% SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
 % __________________________________
