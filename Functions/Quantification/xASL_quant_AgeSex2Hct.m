@@ -28,8 +28,6 @@ function [Hematocrit] = xASL_quant_AgeSex2Hct(age, sex)
 % Ser Public Health Serv Publ 1967
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

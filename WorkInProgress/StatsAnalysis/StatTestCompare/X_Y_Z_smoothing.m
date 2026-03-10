@@ -1,7 +1,5 @@
 % Copyright 2015-2024 ExploreASL (Works In Progress code)
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 function output_data_xyz = X_Y_Z_smoothing(input_data,X_FWHM,Y_FWHM,Z_FWHM)

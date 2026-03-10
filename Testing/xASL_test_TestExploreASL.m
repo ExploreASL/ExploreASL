@@ -63,8 +63,6 @@ function [comparison] = xASL_test_TestExploreASL(TestDirOrig, TestDirDest, RunMe
 % VUmc server:   [ResultsTable] = xASL_test_TestExploreASL('/radshare/ExploreASL_Test/ExploreASL_TestCases', '/radshare/ExploreASL_Test/ExploreASL_TestCasesProcessed', 1);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

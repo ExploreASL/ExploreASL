@@ -20,8 +20,6 @@ function xASL_imp_DCM2NII_SanityChecks(x, thisSubject, thisVisit)
 % __________________________________
 % Copyright 2015-2022 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

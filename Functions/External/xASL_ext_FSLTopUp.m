@@ -38,8 +38,6 @@ function [bSuccess] = xASL_ext_FSLTopUp(InDir, ScanType, x, OutputPath)
 %              https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/topup
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

@@ -43,8 +43,6 @@ function [result, x] = xASL_module_LongReg(x)
 % __________________________________
 % Copyright ? 2015-2019 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

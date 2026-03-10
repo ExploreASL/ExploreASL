@@ -34,8 +34,6 @@ function xASL_io_CreateNifti(pathNewNifti, imNew, resMat, nBits, bGZip)
 %          xASL_io_CreateNifti('c:\User\path\new.nii', im, [], 32, 0)
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

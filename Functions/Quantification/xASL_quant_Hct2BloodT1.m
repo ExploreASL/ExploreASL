@@ -28,8 +28,6 @@ function BloodT1 = xASL_quant_Hct2BloodT1(Hematocrit, Y, B0, bVerbose)
 % REFERENCE: Hales, 2016 JCBFM, DOI: 10.1177/0271678X15605856
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

@@ -37,8 +37,6 @@ function xASL_qc_SortBySpatialCoV(x, Threshold1, Threshold2)
 % __________________________________
 % Copyright 2015-2020 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

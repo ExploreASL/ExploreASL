@@ -37,8 +37,6 @@ function sCov = xASL_stat_ComputeSpatialCoV(imCBF, imMask, nMinSize, bPVC, bPara
 %             2017 Sep;37(9):3184-92.
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

@@ -26,8 +26,6 @@ function xASL_dev_DocCrawler(inputPath, outputFile, contentType)
 % EXAMPLE:      xASL_dev_DocCrawler('M:\...\Functions', 'M:\...\Output.md','Functions');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

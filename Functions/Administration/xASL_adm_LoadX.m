@@ -31,8 +31,6 @@ function [x, IsLoaded] = xASL_adm_LoadX(x, Path_xASL, bOverwrite, bIsRequired)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

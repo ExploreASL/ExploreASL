@@ -15,8 +15,6 @@ function image_out = xASL_im_NormalizeLabelingTerritories( imageIN, GMmask, x)
 % EXAMPLE:      ...
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

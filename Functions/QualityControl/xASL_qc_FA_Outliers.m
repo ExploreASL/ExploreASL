@@ -22,8 +22,6 @@ function [FA_Outliers_mL] = xASL_qc_FA_Outliers(InputFA)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

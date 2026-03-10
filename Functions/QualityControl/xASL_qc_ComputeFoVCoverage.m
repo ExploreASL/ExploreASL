@@ -23,8 +23,6 @@ function [CoveragePerc] = xASL_qc_ComputeFoVCoverage(InputPath, x)
 % EXAMPLE: CoveragePerc = xASL_qc_ComputeFoVCoverage('//MyDisk/MyStudy/sub-001/ASL_1/mean_control.nii', x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

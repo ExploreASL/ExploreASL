@@ -21,8 +21,6 @@ function [structOut] = xASL_qc_ComputeNiftiOrientation(PathNIfTI, structIn)
 % EXAMPLE:      structOut = xASL_qc_ComputeNiftiOrientation('test.nii')
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

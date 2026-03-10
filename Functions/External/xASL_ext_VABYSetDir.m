@@ -18,8 +18,6 @@ function [VABYdir, x] = xASL_ext_VABYSetDir(x)
 % EXAMPLE: VABYdir = xASL_ext_VABYSetDir(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

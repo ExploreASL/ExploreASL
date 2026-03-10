@@ -24,8 +24,6 @@ function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunct
 % EXAMPLE: NotOutliers = xASL_stat_RobustMean(IM);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

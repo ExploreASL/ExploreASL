@@ -22,8 +22,6 @@ function y = xASL_stat_MadNan(x,flag,dim)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 %

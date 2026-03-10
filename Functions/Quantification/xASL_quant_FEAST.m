@@ -24,8 +24,6 @@ function xASL_quant_FEAST(x)
 % REFERENCE: JJ Wang, 2003 MRM; Y Chen, 2012 MAGMA
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

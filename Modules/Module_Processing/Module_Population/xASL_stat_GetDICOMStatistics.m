@@ -29,8 +29,6 @@ function xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions, bOverwrite)
 % __________________________________
 % Copyright 2016-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

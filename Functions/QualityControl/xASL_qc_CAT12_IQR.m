@@ -19,8 +19,6 @@ function [QA_Output] = xASL_qc_CAT12_IQR(InputImage, InputC1, InputC2, InputC3, 
 %               InputC3 = '/Users/henk/ExploreASL/Obesitas_Nijmegen/analysis/sub-001/p3T1.nii';
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

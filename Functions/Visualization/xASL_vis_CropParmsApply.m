@@ -21,8 +21,6 @@ function ImageOut = xASL_vis_CropParmsApply(ImageIn,CropParameters,Xmax,Ymin,Yma
 %               ImageOut = xASL_vis_CropParmsApply(ImageIn,[12 133 0 121])
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

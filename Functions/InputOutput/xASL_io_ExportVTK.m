@@ -23,8 +23,6 @@ function xASL_io_ExportVTK(nifti,mask,exportPath)
 %                   xASL_io_ExportVTK(nifti);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

@@ -20,8 +20,6 @@ function y = xASL_stat_QuantileNan(x,quant,dim)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 %

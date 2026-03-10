@@ -23,8 +23,6 @@ function [path_PWI4D, path_PWI4D_Pop] = xASL_im_MergePWI4D(x)
 %   [path_PWI4D, path_PWI4D_Pop] = xASL_im_MergePWI4D(x)
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

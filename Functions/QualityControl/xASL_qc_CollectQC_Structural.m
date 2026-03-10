@@ -25,8 +25,6 @@ function [x] = xASL_qc_CollectQC_Structural(x, iSubject)
 % EXAMPLE: x = xASL_qc_CollectQC_Structural(x, 10);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

@@ -25,8 +25,6 @@ function [spm_path, spm_version] = xASL_adm_CheckSPM(modality, proposed_spm_path
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

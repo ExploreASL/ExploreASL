@@ -20,8 +20,6 @@ function [result] = xASL_test_CompareReference(pathReference, pathResults, pathD
 %      [result] = xASL_test_CompareReference('<dir>/ExploreASL/Testing//ReferenceValues.tsv', '<dir>/TestDataSetsTemp', '<dir>/TestResults');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

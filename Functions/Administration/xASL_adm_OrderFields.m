@@ -35,8 +35,6 @@ function outStruct = xASL_adm_OrderFields(inStruct,orderStruct)
 % outStruct = xASL_adm_OrderFields(struct1,struct2);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

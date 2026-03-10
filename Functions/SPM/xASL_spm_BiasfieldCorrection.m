@@ -26,8 +26,6 @@ function xASL_spm_BiasfieldCorrection(PathIn, SPMdir, Quality, PathMask, PathOut
 % EXAMPLE: xASL_spm_BiasfieldCorrection('/MyStudy/sub-001/T1.nii', x.D.SPMDIR);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

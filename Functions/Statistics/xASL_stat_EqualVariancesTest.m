@@ -27,8 +27,6 @@ function [resTest, P] = xASL_stat_EqualVariancesTest(X, alpha, type)
 %             Zar, J. H. (1999), Biostatistical Analysis (2nd ed.). NJ: Prentice-Hall, Englewood Cliffs. p. 180. 
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 %

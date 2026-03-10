@@ -37,8 +37,6 @@ function xASL_qc_WADQC_GenerateDescriptor(x, iSubject, ScanTypeIs)
 % For more information about WAD-QC please visit: https://github.com/wadqc/WAD_Documentatie/wiki
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

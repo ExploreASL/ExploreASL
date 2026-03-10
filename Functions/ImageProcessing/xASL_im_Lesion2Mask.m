@@ -39,8 +39,6 @@ function LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
 % EXAMPLE: xASL_im_Lesion2Mask('/MyStudy/sub-001/Lesion_T1_1.nii.gz', x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

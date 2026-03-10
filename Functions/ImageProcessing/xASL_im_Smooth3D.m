@@ -22,8 +22,6 @@ function [imSmo, imGaussX, imGaussY, imGaussZ] = xASL_im_Smooth3D(imIn, sigma, P
 % EXAMPLE: [imSmo,~,~,~] = xASL_im_Smooth3D(imIn, [3 5 4], {'gaussian','gaussian','flat'})
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

@@ -20,8 +20,6 @@ function [x] = xASL_qc_CleanOldQC(x, bRemoveCurrentSession)
 % EXAMPLE: x = xASL_qc_RemoveOutdatedQC(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

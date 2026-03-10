@@ -17,8 +17,6 @@ function [NewList] = xASL_adm_CompareLists(list1, list2)
 %               [NewList] = xASL_adm_CompareLists(testListA, testListB); 
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

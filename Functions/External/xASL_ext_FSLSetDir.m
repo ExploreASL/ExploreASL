@@ -23,8 +23,6 @@ function [FSLdir, x, RootWSLdir] = xASL_ext_FSLSetDir(x)
 % EXAMPLE: FSLdir = xASL_ext_FSLSetDir(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

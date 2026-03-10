@@ -18,8 +18,6 @@ function output_res = xASL_im_ResampleLinearFair(im_input, newsize)
 % __________________________________
 % Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

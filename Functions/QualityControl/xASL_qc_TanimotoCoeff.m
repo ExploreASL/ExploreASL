@@ -53,8 +53,6 @@ function TC = xASL_qc_TanimotoCoeff(Image1, Image2, imMask, type, bClip, bSmooth
 %        International Journal of Data Science and Analytics, 2017.
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

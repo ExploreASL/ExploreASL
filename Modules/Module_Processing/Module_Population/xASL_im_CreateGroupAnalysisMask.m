@@ -40,8 +40,6 @@ function [x] = xASL_im_CreateGroupAnalysisMask(x, Threshold)
 % EXAMPLE:        xASL_im_CreateGroupAnalysisMask(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

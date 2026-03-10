@@ -67,8 +67,6 @@ function xASL_wrp_ProcessM0(x)
 % __________________________________
 % Copyright (C) 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

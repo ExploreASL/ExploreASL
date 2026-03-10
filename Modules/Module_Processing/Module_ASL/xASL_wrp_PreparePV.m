@@ -36,8 +36,6 @@ function x = xASL_wrp_PreparePV(x, bStandardSpace)
 % __________________________________
 % Copyright (C) 2015-2026 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 %% ------------------------------------------------------------------------------------------

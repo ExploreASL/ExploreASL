@@ -1,12 +1,8 @@
 % Copyright 2015-2024 ExploreASL (Works In Progress code)
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 %xASL_adm_ChangeHeaders Change the header of each ExploreASL Matlab .m file
@@ -22,8 +18,6 @@ fileList = xASL_adm_GetFileList(x.opts.MyPath, '.*.m$', 'FPListRec');
 % Define the text to add after the first '% Copyright' line
 headerText = {
     '% SPDX-License-Identifier: Apache-2.0'
-    '% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE'
-    '% you may only use this file in compliance with the License.'
     '% __________________________________';
     '';
 };

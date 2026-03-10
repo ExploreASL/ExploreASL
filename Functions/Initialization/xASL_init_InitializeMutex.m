@@ -25,9 +25,12 @@ function [x] = xASL_init_InitializeMutex(x, ModuleName)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [x] = xASL_init_InitializeMutex(x, 'xASL_module_Structural')
 % __________________________________
+<<<<<<< HEAD
 % SPDX-License-Identifier: Apache-2.0
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
+% __________________________________
+% SPDX-License-Identifier: Apache-2.0
 % __________________________________
 
 % Check inputs

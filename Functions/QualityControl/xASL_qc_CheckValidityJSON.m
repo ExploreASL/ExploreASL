@@ -17,8 +17,6 @@ function [IsValid] = xASL_qc_CheckValidityJSON(PathJSON)
 % EXAMPLE:      [IsValid] = xASL_qc_CheckValidityJSON(PathJSON);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 

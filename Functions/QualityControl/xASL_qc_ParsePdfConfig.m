@@ -59,8 +59,6 @@ function [settingsPDF] = xASL_qc_ParsePdfConfig(layoutStructure, x, currentFigur
 % EXAMPLE: xASL_qc_ParsePdfConfig(layoutStructure, x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
 % __________________________________
 
 
