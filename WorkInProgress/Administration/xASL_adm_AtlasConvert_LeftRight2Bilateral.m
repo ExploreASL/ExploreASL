@@ -3,6 +3,13 @@ function xASL_adm_AtlasConvert_LeftRight2Bilateral(pathNiftii, pathTSVin, pathTS
 % Load atlas saved in pathNiftii with labels in pathTSV and convert to bilateral using the scheme specified in atlasType
 
 % Load image and label information
+% __________________________________
+% Licensed under Apache 2.0, see permissions and limitations at
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
+
 
 IM = xASL_io_Nifti2Im(pathNiftii);
 TSV = xASL_tsvRead(pathTSVin);
