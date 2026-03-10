@@ -39,7 +39,6 @@ function [x] = xASL_im_CreateGroupAnalysisMask(x, Threshold)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        xASL_im_CreateGroupAnalysisMask(x);
 % __________________________________
-% Copyright (c) 2015-2026 ExploreASL
 % Licensed under Apache 2.0, see permissions and limitations at
 % https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % you may only use this file in compliance with the License.
