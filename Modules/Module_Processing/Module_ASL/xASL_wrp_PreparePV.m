@@ -54,6 +54,14 @@ if ~xASL_exist(x.P.Path_despiked_ASL4D, 'file')
     x.P.Path_despiked_ASL4D = x.P.Path_ASL4D;
 end
 
+% Check if there are Lesions or ROIs saved for the structural images. This then influences the code below for deciding which files to save
+bLesion_ROI = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['(?i)^(Lesion|ROI)_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.nii$'], 'FPList', [0 Inf]);
+if isempty(bLesion_ROI)
+	bLesion_ROI = 0;
+else
+	bLesion_ROI = 1;
+end
+
 % If the resolution of T1 partial volume maps & CBF are already the same,
 % copy the PVs
 if ~xASL_im_CompareNIfTIResolutionXYZ(x.P.Path_c1T1, x.P.Path_c2T1)
@@ -67,7 +75,11 @@ else
         xASL_Copy(x.P.Path_c1T1, x.P.Path_PVgm, true);
         xASL_Copy(x.P.Path_c2T1, x.P.Path_PVwm, true);
 		xASL_Copy(x.P.Path_c3T1, x.P.Path_PVcsf, true);
-		xASL_Copy(x.P.Path_T1, x.P.Path_PVt1, true);
+
+		% Only save the T1 file in native space if we have Lesions/ROIs so that we can do a QC
+		if bLesion_ROI
+			xASL_Copy(x.P.Path_T1, x.P.Path_PVt1, true);
+		end
 				
 		if xASL_exist(x.P.Path_WMH_SEGM, 'file')
             xASL_Copy(x.P.Path_WMH_SEGM, x.P.Path_PVwmh, true);
@@ -195,10 +207,13 @@ end
 %% B1. Presmooth and transform GM and WM segmentations to the ASL space
 xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c1T1, x.P.Path_PVgm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_c2T1, x.P.Path_PVwm,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_T1, x.P.Path_PVt1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVgm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVgm);
 xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwm);
-xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVt1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVt1);
+
+if bLesion_ROI
+	xASL_im_PreSmooth(x.P.Path_PWI,x.P.Path_T1, x.P.Path_PVt1,x.S.optimFWHM_Res_mm,[],x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+	xASL_spm_reslice(x.P.Path_PWI, x.P.Path_PVt1, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVt1);
+end
 
 %% B2. Presmooth and transform the CSF segmentation to the ASL space
 if xASL_exist(x.P.Path_c3T1, 'file') % Check file existence as for older versions c3T1 was not always available
