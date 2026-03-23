@@ -164,11 +164,6 @@ if bStandardSpace
 		OutputList{end+1} = x.P.Pop_Path_PV_WMH_SEGM;
 	end
 
-	if xASL_exist(x.P.Path_rc3T1, 'file')
-		InputList{end+1} = x.P.Path_rc3T1;
-		OutputList{end+1} = x.P.Pop_Path_PV_pCSF;
-	end
-
 	xASL_spm_deformations(x, InputList, OutputList, 4, [], [], x.P.Path_y_ASL );
     %% ------------------------------------------------------------------------------------------
     %% A6. Housekeeping
