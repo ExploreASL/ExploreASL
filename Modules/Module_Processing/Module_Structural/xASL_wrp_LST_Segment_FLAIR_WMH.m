@@ -156,6 +156,7 @@ for iFile=1:length(FilePathsAre)
     if xASL_exist(FilePathsAre{iFile}, 'file')
         %% ----------------------------------------------------------
         %% 6. Remove NaNs from segmentations & fix image edges
+		WMHheader = xASL_io_ReadNifti(FilePathsAre{iFile});
         WMHim = xASL_io_Nifti2Im(FilePathsAre{iFile});
         WMHim(isnan(WMHim)) = 0; % set NaNs to zeros
 
@@ -168,6 +169,7 @@ for iFile=1:length(FilePathsAre)
 		LesionList = xASL_adm_GetFileList(x.dir.SUBJECTDIR, '^Lesion_(FLAIR|T1)_\d*\.nii$', 'FPList', [0 Inf]);
 		for iLesion=1:length(LesionList)
 			[Fpath, Ffile] = xASL_fileparts(LesionList{iLesion});
+			LesionHeader = xASL_io_ReadNifti(LesionList{iLesion});
 			LesionIM = xASL_io_Nifti2Im(LesionList{iLesion});
 			if sum(LesionIM(:))>0
 				fprintf('%s\n', ['>>> Warning: removing ' LesionList{iLesion} ' from ' FilePathsAre{iFile} ' <<<']);
@@ -176,7 +178,7 @@ for iFile=1:length(FilePathsAre)
 				end
 
 				% Resample if needed
-				if ~isequal(size(LesionIM), size(WMHim))
+				if ~all(abs(LesionHeader.mat - WMHheader.mat) < 1e-3, 'all') || ~isequal(size(LesionIM), size(WMHim))
 					PathTemp = fullfile(Fpath, [Ffile '_temp.nii']);
 					xASL_spm_reslice(FilePathsAre{iFile}, LesionList{iLesion}, [], [], x.settings.Quality, PathTemp, 0);
 					LesionIM = xASL_io_Nifti2Im(PathTemp);
