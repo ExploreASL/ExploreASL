@@ -1,0 +1,62 @@
+function xASL_adm_AlignLesionROItoStructural(Lesion_ROI_list)
+%xASL_adm_AlignLesionROItoStructural Go through the list of Lesions and ROIs and double-check if they are aligned with their corresponding structural file
+%
+% FORMAT: xASL_adm_AlignLesionROItoStructural(Lesion_ROI_list)
+%
+% INPUT:
+%   Lesion_ROI_list - list of Lesions and ROIs (REQUIRED)
+%
+% OUTPUT: n/a
+%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: Go through all the Lesions and ROIs in the list. Check the corresponding FLAR/T1 files. If the MAT of both files are similar, then do not do anything.
+% if they differ, but the matrix size and MAT0 are equal, then reset the MAT for the Lesion or ROI and save again
+%
+% EXAMPLE: xASL_adm_AlignLesionROItoStructural(Lesion_ROI_list)
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% __________________________________
+% SPDX-License-Identifier: Apache-2.0
+% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
+% you may only use this file in compliance with the License.
+% __________________________________
+
+if nargin<1 || isempty(Lesion_ROI_list)
+	error('Need 1 input argument');
+end
+
+% Cycle through all files
+for iS=1:length(Lesion_ROI_list)
+	% Obtain the structural file and check its existence
+	[fPath, fName, fExt] = xASL_fileparts(Lesion_ROI_list{iS}); % Split the filename to path and name
+	[startIndex,endIndex] = regexp(fName, '(T1|FLAIR)'); % Extract the name of the structural file
+	fStructName = fullfile(fPath,[fName(startIndex:endIndex) fExt]);
+
+	if xASL_exist(fStructName, 'file')
+		% Load NIfTI header of both files
+		lesionHeader = xASL_io_ReadNifti(Lesion_ROI_list{iS});
+		structHeader = xASL_io_ReadNifti(fStructName);
+
+		% Check if the MAT are OK
+		if ~all(abs(lesionHeader.mat - structHeader.mat) < 1e-3, 'all')
+			% The transformation matrices differ, we have to fix this
+			
+			if ~isequal(size(lesionHeader.dat), size(structHeader.dat))
+				% Option 2 - sizes differ, we report a difference that we cannot fix
+				warning('%s\n%s\n%s', 'The transformation matrix MAT of Lesion/ROI and the corresponding structural files differ, and matrix sizes differ as well, so I cannot reset the orientation. Please check the files:', Lesion_ROI_list{iS}, fStructName);
+			elseif ~all(abs(lesionHeader.mat0 - structHeader.mat0) < 1e-3, 'all')
+				% Option 3 - MAT0 also differ, we report a difference that we cannot fix
+				warning('%s\n%s\n%s','The transformation matrix MAT of Lesion/ROI and the corresponding structural files differ. And MAT0 differ as well, so I cannot the orientation. Please check the files:', Lesion_ROI_list{iS}, fStructName);
+			else
+				% Option 4 - we report a difference and set MAT of the Lesion/ROI to that of T1
+				warning('%s\n%s\n%s','The transformation matrix MAT of Lesion/ROI and the corresponding structural files differ, but MAT0 are equal, so aligning both MAT and MAT0:', Lesion_ROI_list{iS}, fStructName);
+
+				% Save the Lesion/ROI again with a correct MAT and assign a warning
+				imLesion = xASL_io_Nifti2Im(Lesion_ROI_list{iS});
+				xASL_io_SaveNifti(fStructName, Lesion_ROI_list{iS}, imLesion);
+			end
+		end
+	end
+end
+
+end
+

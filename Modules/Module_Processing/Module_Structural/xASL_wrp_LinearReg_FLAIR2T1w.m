@@ -47,7 +47,7 @@ for iS=1:length(Lesion_FLAIR_list)
     OtherList{end+1,1} = Lesion_FLAIR_list{iS};
 end
 
-
+xASL_adm_AlignLesionROItoStructural(Lesion_FLAIR_list);    
 
 %% ---------------------------------------------------------------------------------------------------
 %% 2. Perform the registration
