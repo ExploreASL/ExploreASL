@@ -15,7 +15,6 @@ function logTable = xASL_test_AddLoggingEntryToTable(nameFlavor,logTable,logStru
 % EXAMPLE:      logTable = xASL_test_AddLoggingEntryToTable(nameFlavor,logTable,logStruct);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

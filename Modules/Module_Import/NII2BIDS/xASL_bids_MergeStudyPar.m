@@ -31,7 +31,6 @@ function jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,bidsModality)
 % EXAMPLE:     jsonIn = xASL_bids_MergeStudyPar(jsonIn,studyPar,'asl');
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

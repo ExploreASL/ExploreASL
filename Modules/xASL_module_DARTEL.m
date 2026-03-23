@@ -30,7 +30,6 @@ function [result, x] = xASL_module_DARTEL(x)
 % REFERENCES:
 % Ashburner J. A fast diffeomorphic image registration algorithm. Neuroimage. 2007;38(1):95
 % __________________________________
-% Copyright ? 2015-2019 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

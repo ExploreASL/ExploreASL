@@ -25,7 +25,6 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSession);
 % __________________________________
-% Copyright 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

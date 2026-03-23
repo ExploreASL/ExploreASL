@@ -20,7 +20,6 @@ function [resultJSON, bTimeEncoded, bTimeEncodedFME] = xASL_imp_DCM2NII_CheckIfF
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2022 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

@@ -25,7 +25,6 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

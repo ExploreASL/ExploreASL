@@ -19,7 +19,6 @@ function xASL_wrp_LinearReg_FLAIR2T1w(x, bAutoACPC)
 % EXAMPLE: xASL_wrp_LinearReg_FLAIR2T1w(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2019 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

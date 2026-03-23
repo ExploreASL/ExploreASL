@@ -21,7 +21,6 @@ function [parms, pathDcmDict] = xASL_imp_DCM2NII_Subject_StoreJSON(imPar, SavePa
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2023 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

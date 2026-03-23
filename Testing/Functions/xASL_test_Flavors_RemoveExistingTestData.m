@@ -13,7 +13,6 @@ function xASL_test_Flavors_RemoveExistingTestData(testConfig)
 % EXAMPLE:      xASL_test_Flavors_RemoveExistingTestData(testConfig);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

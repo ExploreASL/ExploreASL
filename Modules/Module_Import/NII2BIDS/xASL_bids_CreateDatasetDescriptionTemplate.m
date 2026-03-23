@@ -24,7 +24,6 @@ function [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft, versionExplo
 %               [json] = xASL_bids_CreateDatasetDescriptionTemplate(draft,'1.8.0');
 %               
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

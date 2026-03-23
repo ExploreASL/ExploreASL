@@ -25,7 +25,6 @@ function [dcm2niiCatchedErrors] = xASL_imp_CatchErrors(WarningID, WarningMessage
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     [dcm2niiCatchedErrors] = xASL_imp_CatchErrors(WarningID, WarningMessage, WarningLine, WarningFileName, WarningPath, scan_name, scanpath, destdir, dcm2niiCatchedErrors, imPar, StackIn);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

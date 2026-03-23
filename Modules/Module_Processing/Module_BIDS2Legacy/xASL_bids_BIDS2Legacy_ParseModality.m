@@ -20,7 +20,6 @@ function xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjS
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_bids_BIDS2Legacy_ParseModality(BIDS, bidsPar, SubjectVisit, iSubjSess, ModalitiesUnique, nModalities, bOverwrite);
 % __________________________________
-% Copyright 2015-2023 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

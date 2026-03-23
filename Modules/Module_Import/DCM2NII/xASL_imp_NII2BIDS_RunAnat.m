@@ -22,7 +22,6 @@ function xASL_imp_NII2BIDS_RunAnat(imPar, bidsPar, studyPar, subjectSessionLabel
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

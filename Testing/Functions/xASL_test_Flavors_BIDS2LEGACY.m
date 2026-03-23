@@ -13,7 +13,6 @@ function loggingTable = xASL_test_Flavors_BIDS2LEGACY(testConfig, loggingTable)
 % EXAMPLE:      xASL_test_Flavors_BIDS2LEGACY(testConfig);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

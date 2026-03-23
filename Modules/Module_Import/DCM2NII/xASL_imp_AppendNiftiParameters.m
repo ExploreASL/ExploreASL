@@ -14,7 +14,6 @@ function s = xASL_imp_AppendNiftiParameters(nii_files)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     s = xASL_imp_AppendNiftiParameters(nii_files);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

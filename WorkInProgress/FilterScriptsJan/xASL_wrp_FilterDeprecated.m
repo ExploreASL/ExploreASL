@@ -1,4 +1,3 @@
-% Copyright 2015-2024 ExploreASL (Works In Progress code)
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

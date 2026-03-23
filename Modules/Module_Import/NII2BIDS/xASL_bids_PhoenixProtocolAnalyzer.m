@@ -26,7 +26,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 % EXAMPLE:          [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList);
 %
 % __________________________________
-% Copyright @ 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

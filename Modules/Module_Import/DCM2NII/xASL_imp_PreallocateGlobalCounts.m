@@ -18,7 +18,6 @@ function [subject,visit] = xASL_imp_PreallocateGlobalCounts(nSubjects, subject, 
 % EXAMPLE:        n/a
 %
 % __________________________________
-% Copyright 2015-2022 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

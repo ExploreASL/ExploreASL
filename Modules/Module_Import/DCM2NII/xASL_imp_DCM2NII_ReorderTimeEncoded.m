@@ -21,7 +21,6 @@ function resultJSON = xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncode
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2023 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

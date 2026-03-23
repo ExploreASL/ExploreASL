@@ -17,7 +17,6 @@ function xASL_im_Move3DVolume(pathNifti, pathResult, dim, volNum, numVoxel)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

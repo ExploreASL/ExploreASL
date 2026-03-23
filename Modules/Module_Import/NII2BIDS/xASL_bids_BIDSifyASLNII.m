@@ -20,7 +20,6 @@ function jsonOut = xASL_bids_BIDSifyASLNII(jsonIn, bidsPar, pathIn, pathOutPrefi
 % EXAMPLE: n/a
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

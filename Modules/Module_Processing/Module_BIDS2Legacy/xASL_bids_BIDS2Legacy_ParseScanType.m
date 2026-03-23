@@ -24,7 +24,6 @@ function xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_bids_BIDS2Legacy_ParseScanType(modalityConfiguration, SubjectVisit, RunsUnique, RunsAre, bOverwrite);
 % __________________________________
-% Copyright 2015-2023 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

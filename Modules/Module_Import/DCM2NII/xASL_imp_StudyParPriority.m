@@ -22,7 +22,6 @@ function studyParSpecificSubjVisitSess = xASL_imp_StudyParPriority(studyParAll, 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        studyPar = xASL_imp_StudyParPriority(studyParAll, 'sub-01', '1', '2')
 % __________________________________
-% Copyright 2015-2022 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

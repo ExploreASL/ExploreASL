@@ -18,7 +18,6 @@ function [UnitTests,UnitTestsTable] = xASL_test_UnitTesting(bPull)
 %
 % EXAMPLE:      [UnitTests,UnitTestsTable] = xASL_test_UnitTesting;
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

@@ -30,7 +30,6 @@ function xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel
 % EXAMPLE:     xASL_imp_NII2BIDS_RunPerf(imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
 %
 % __________________________________
-% Copyright 2015-2023 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

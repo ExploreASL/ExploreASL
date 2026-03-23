@@ -65,7 +65,6 @@ function xASL_wrp_ProcessM0(x)
 %
 % EXAMPLE: xASL_wrp_ProcessM0(x);
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

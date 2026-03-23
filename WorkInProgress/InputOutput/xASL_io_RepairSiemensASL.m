@@ -12,7 +12,6 @@ function xASL_io_RepairSiemensASL(InputPath)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_io_RepairSiemensASL(AnalysisDir);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

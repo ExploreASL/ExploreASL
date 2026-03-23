@@ -87,7 +87,6 @@ function x = xASL_wrp_RegisterASL(x)
 %
 % EXAMPLE: xASL_wrp_RegisterASL(x);
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

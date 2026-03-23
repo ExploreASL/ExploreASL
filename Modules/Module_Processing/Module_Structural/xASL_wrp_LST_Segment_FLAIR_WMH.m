@@ -37,7 +37,6 @@ function xASL_wrp_LST_Segment_FLAIR_WMH(x, rWMHPath, WMHsegmAlg)
 % Schmidt P, Gaser C, Arsic M, et al. An automated tool for detection of FLAIR-hyperintense white-matter lesions in Multiple Sclerosis. Neuroimage. 2012;59(4):3774?3783.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2020 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

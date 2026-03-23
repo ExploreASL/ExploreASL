@@ -28,7 +28,6 @@ function xASL_wrp_VisualQC_ASL(x)
 %
 % EXAMPLE: xASL_wrp_VisualQC_ASL(x);
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

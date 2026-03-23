@@ -41,7 +41,6 @@ function [x] = xASL_wrp_SegmentT1w(x, bSegmentSPM12)
 % Gaser, C., 2009. Partial volume segmentation with adaptive maximum a posteriori (MAP) approach. NeuroImage 47, S121.
 % Mendrik AM, Vincken KL, Kuijf HJ, et al. MRBrainS Challenge: Online Evaluation Framework for Brain Image Segmentation in 3T MRI Scans. Comput.Intell.Neurosci. 2015. p. 813696-mrbrains13.isi.uu.nl/results.php.
 % __________________________________
-% Copyright 2015-2019 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

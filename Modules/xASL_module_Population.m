@@ -33,7 +33,6 @@ function [result, x] = xASL_module_Population(x)
 %
 % EXAMPLE: [~, x] = xASL_module_Population(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2026 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

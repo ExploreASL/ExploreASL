@@ -28,7 +28,6 @@ function jsonOut = xASL_bids_BIDSifyM0(jsonIn, jsonInASL, studyPar, pathM0In, pa
 % EXAMPLE: n/a
 %
 % __________________________________
-% Copyright 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

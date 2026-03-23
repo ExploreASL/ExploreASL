@@ -22,7 +22,6 @@ function [nSessions, bSessionsMissing, SESSIONS] = xASL_adm_GetPopulationSession
 %
 % EXAMPLE: n/a
 % __________________________________
-% Copyright (C) 2015-2023 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

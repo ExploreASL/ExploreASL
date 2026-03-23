@@ -37,7 +37,6 @@ function xASL_wrp_LST_T1w_LesionFilling_WMH(x, rWMHPath)
 % Battaglini M, Jenkinson M, De Stefano N. Evaluating and reducing the impact of white matter lesions on brain volume measurements. Hum Brain Mapp. 2012;33(9):2062?2071.
 % Pareto D, Sastre-Garriga J, Aymerich FX, et al. Lesion filling effect in regional brain volume estimations: a study in multiple sclerosis patients with low lesion load. Neuroradiology. Neuroradiology; 2016;58(5):467?474http://dx.doi.org/10.1007/s00234-016-1654-5.
 % __________________________________
-% Copyright 2015-2020 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

@@ -18,7 +18,6 @@ function xASL_MoveDirMerge(SrcDir, DstDir, bOverwrite, bVerbose)
 % EXAMPLE: xASL_MoveDirMerge('c:\User\path1', 'c:\User\path2'); Merge contents, no overwriting
 %          xASL_MoveDirMerge('c:\User\path1', 'c:\User\path2',true);  Merge contents, overwriting
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

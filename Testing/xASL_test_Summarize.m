@@ -12,7 +12,6 @@ function [summary, summaryTable] = xASL_test_Summarize(ResultsDir)
 %
 % EXAMPLE:      [summary] = xASL_test_Summarize('/User/ASLTestResults/2022-20-01-results');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2023 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

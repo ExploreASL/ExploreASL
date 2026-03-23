@@ -22,7 +22,6 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
 %
 % REFERENCES:       ...
 % __________________________________
-% Copyright @ 2015-2020 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

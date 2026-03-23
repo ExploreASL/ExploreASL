@@ -30,7 +30,6 @@ function xASL_adm_ImportBaMoS_NewStructure(AnalysisDir, BaMoSDir, bPullPush, Reg
 % EXAMPLE for MacOS: xASL_adm_ImportBaMoS('/Users/henk/ExploreASL/ASL/SABRE/analysis', '/Users/henk/ExploreASL/ASL/SABRE/Carole', false, '\d{5}\d*');
 % EXAMPLE for server: xASL_adm_ImportBaMoS('/radshare/SABRE/analysis', '/radshare/SABRE/Carole', false, '\d{5}\d*');
 % __________________________________
-% Copyright 2015-2019 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

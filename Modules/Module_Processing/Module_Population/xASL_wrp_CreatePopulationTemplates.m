@@ -83,7 +83,6 @@ function RMS = xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Set
 %          xASL_wrp_CreatePopulationTemplates(x, 0, 1, {'qCBF' 'CBF' 1}, 1, 0, {{@xASL_stat_MeanNan} {'mean'}});
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

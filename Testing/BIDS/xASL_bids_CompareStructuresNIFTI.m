@@ -29,7 +29,6 @@ function [differences,identical,dn] = xASL_bids_CompareStructuresNIFTI(differenc
 %
 % REFERENCES:       ...
 % __________________________________
-% Copyright @ 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

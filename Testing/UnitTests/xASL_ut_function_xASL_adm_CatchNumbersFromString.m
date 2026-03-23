@@ -14,7 +14,6 @@ function UnitTest = xASL_ut_function_xASL_adm_CatchNumbersFromString(TestReposit
 %
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_adm_CatchNumbersFromString(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

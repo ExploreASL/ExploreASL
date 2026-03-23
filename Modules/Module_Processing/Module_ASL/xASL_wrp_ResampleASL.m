@@ -31,7 +31,6 @@ function xASL_wrp_ResampleASL(x)
 %
 % EXAMPLE: xASL_wrp_ResampleASL(x);
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

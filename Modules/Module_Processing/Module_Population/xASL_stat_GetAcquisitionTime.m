@@ -26,7 +26,6 @@ function x = xASL_stat_GetAcquisitionTime(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_stat_GetAcquisitionTime(x);
 % __________________________________
-% Copyright 2016-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

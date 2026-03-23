@@ -14,7 +14,6 @@ function UnitTest = xASL_ut_module_xASL_module_Population(TestRepository)
 %
 % EXAMPLE:      UnitTests(1) = xASL_ut_module_xASL_module_Population(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

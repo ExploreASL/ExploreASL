@@ -17,7 +17,6 @@ function xASL_adm_DeleteManyTempFiles(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      xASL_adm_DeleteManyTempFiles(x);
 % __________________________________
-% Copyright 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

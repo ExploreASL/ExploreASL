@@ -18,7 +18,6 @@ function xASL_wrp_GetVolumetrics(x)
 %
 % EXAMPLE: xASL_wrp_GetVolumetrics(x);
 % __________________________________
-% Copyright 2015-2025 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

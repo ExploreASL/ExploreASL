@@ -16,7 +16,6 @@ function xASL_adm_UpdateStructure(datasetRoot)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: ExploreASL_UpdateStructure([], x);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

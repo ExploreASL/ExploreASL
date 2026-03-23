@@ -25,7 +25,6 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, matches, dcm2niiCatchedErrors);
 % __________________________________
-% Copyright 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

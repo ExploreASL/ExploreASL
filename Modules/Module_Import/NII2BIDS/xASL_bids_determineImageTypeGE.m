@@ -15,7 +15,6 @@ function imageType = xASL_bids_determineImageTypeGE(jsonPar)
 % EXAMPLE:     iHeader = xASL_io_DcmtkRead(iFile);
 %              imageType = xASL_bids_determineImageTypeGE(iHeader);
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

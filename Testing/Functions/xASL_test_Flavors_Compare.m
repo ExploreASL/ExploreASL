@@ -16,7 +16,6 @@ function [flavors,flavorList] = xASL_test_Flavors_Compare(testConfig,flavors,fol
 % EXAMPLE:      flavorList = xASL_test_Flavors_Compare(testConfig,folderA,folderB);
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

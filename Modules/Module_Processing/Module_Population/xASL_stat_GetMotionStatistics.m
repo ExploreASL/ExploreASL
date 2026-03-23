@@ -31,7 +31,6 @@ function xASL_stat_GetMotionStatistics(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_stat_GetMotionStatistics(x);
 % __________________________________
-% Copyright 2016-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

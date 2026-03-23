@@ -28,7 +28,6 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
 %               xASL_bids_DRO2BIDS(droTestPatient, droSubject, [], '1.2.3');
 %               
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

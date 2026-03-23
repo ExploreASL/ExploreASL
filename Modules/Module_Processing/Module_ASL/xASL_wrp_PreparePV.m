@@ -34,7 +34,6 @@ function x = xASL_wrp_PreparePV(x, bStandardSpace)
 %
 % EXAMPLE: xASL_wrp_PreparePV(x);
 % __________________________________
-% Copyright (C) 2015-2026 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

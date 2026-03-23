@@ -22,7 +22,6 @@ function xASL_adm_GzipAllFiles(ROOT, bFolder, bUseLinux, pathExternal, bVerbose)
 %
 % EXAMPLE: xASL_adm_GzipAllFiles(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2025 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

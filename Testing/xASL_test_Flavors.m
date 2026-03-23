@@ -51,7 +51,6 @@ function [flavors, testConfig] = xASL_test_Flavors(testConfig, bOnlyRemoveResult
 % EXAMPLE: [flavors, testConfig] = xASL_test_Flavors;
 %
 % __________________________________
-% Copyright 2015-2022 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

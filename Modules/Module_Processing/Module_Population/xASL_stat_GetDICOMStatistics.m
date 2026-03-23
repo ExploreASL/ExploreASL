@@ -27,7 +27,6 @@ function xASL_stat_GetDICOMStatistics(x, ScanType, HasSessions, bOverwrite)
 % ------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_stat_GetDICOMStatistics(x, 'ASL', true);
 % __________________________________
-% Copyright 2016-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

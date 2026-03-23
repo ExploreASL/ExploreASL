@@ -17,7 +17,6 @@ function jsonOut = xASL_bids_VendorFieldCheck(jsonIn)
 % EXAMPLE: n/a
 %
 % __________________________________
-% Copyright 2015-2020 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

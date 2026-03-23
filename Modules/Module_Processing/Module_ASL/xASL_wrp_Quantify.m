@@ -40,7 +40,6 @@ function xASL_wrp_Quantify(x, PWI4D_Path, pathOutputCBF, M0Path, SliceGradientPa
 %     Comparison of 3 T and 7 T ASL techniques for concurrent functional perfusion and BOLD studies
 %     Neuroimage. 2017; 156:363-376.
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

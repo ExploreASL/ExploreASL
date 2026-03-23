@@ -16,7 +16,6 @@ function output_res = xASL_im_ResampleLinearFair(im_input, newsize)
 %               output = xASL_im_ResampleLinearFair(image, [2,2,2]);
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

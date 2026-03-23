@@ -16,7 +16,6 @@ function xASL_wrp_LinearReg_Others2T1w(x, bAutoACPC)
 % EXAMPLE: xASL_wrp_LinearReg_Others2T1w(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

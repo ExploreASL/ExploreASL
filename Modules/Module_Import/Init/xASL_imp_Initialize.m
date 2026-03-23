@@ -22,7 +22,6 @@ function imPar = xASL_imp_Initialize(studyPath, imParPath)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     imPar = xASL_imp_Initialize(studyPath, imParPath);
 % __________________________________
-% Copyright 2015-2024 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

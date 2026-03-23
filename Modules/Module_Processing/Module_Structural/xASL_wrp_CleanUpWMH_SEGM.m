@@ -39,7 +39,6 @@ function xASL_wrp_CleanUpWMH_SEGM(x)
 %
 % EXAMPLE: xASL_wrp_CleanUpWMH_SEGM(x);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

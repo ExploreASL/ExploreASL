@@ -14,7 +14,6 @@ function UnitTest = xASL_ut_function_xASL_io_WriteJson(TestRepository)
 %
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_io_WriteJson(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2023 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

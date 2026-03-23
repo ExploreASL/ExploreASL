@@ -14,7 +14,6 @@ function xASL_io_RepairSiemensASL_MOSAIC(InputPath)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_io_RepairSiemensASL_MOSAIC(AnalysisDir);
 % __________________________________
-% Copyright 2015-2019 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

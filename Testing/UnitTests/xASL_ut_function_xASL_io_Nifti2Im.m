@@ -14,7 +14,6 @@ function UnitTest = xASL_ut_function_xASL_io_Nifti2Im(TestRepository)
 %
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_io_Nifti2Im(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

@@ -20,7 +20,6 @@ function xASL_wrp_FLAIR_BiasfieldCorrection(x)
 % EXAMPLE: xASL_wrp_FLAIR_BiasfieldCorrection(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2019 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

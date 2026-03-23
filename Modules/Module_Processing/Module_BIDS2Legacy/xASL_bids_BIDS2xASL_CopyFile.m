@@ -15,7 +15,6 @@ function xASL_bids_BIDS2xASL_CopyFile(pathOrig, pathDest, bOverwrite)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     xASL_bids_BIDS2xASL_CopyFile(pathOrig, pathDest, bOverwrite)
 % __________________________________
-% Copyright 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

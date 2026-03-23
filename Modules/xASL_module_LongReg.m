@@ -41,7 +41,6 @@ function [result, x] = xASL_module_LongReg(x)
 % Ashburner J, Ridgway GR. Symmetric diffeomorphic modeling of longitudinal structural MRI. Front Neurosci. 2012. p. 197.
 % Ashburner J. A fast diffeomorphic image registration algorithm. Neuroimage. 2007;38(1):95
 % __________________________________
-% Copyright ? 2015-2019 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

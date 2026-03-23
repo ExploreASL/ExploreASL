@@ -38,7 +38,6 @@ function xASL_wrp_PVC(x)
 %
 % EXAMPLE: xASL_wrp_PVC(x);
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 

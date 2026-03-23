@@ -14,7 +14,6 @@ function UnitTest = xASL_ut_function_xASL_io_CheckDeprecatedFields(TestRepositor
 %
 % EXAMPLE:      UnitTests(1) = xASL_ut_function_xASL_io_CheckDeprecatedFields(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2015-2023 ExploreASL
 % SPDX-License-Identifier: Apache-2.0
 % __________________________________
 
