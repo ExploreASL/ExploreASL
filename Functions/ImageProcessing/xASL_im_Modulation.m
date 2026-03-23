@@ -49,6 +49,8 @@ end
 %tNii.dat(:,:,:,:,:)  = single(ones(tNii.dat.dim));
 
 % Run the SPM script for creating the determinants
+xASL_delete(x.P.Path_j_T1);
+
 xASL_adm_UnzipNifti(x.P.Path_y_T1);
 matlabbatch{1}.spm.util.defs.comp{1}.def = {x.P.Path_y_T1};
 matlabbatch{1}.spm.util.defs.out{1}.savejac.ofname = 'T1.nii';
