@@ -1,5 +1,5 @@
-function [INname, OUTname] = xASL_wrp_LesionResliceList(x,bLesion_T1,bLesion_FLAIR,bROI_T1,bROI_FLAIR)
-%xASL_wrp_LesionResliceList Creates list of structural image paths to
+function [INname, OUTname] = xASL_adm_LesionResliceList(x,bLesion_T1,bLesion_FLAIR,bROI_T1,bROI_FLAIR)
+%xASL_adm_LesionResliceList Creates list of structural image paths to
 % reslice.
 %
 % FORMAT:       [INname, OUTname] = xASL_wrp_LesionResliceList(x,bLesion_T1,bLesion_FLAIR,bROI_T1,bROI_FLAIR)

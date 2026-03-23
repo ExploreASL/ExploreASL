@@ -20,7 +20,7 @@ function xASL_adm_AlignLesionROItoStructural(Lesion_ROI_list)
 % you may only use this file in compliance with the License.
 % __________________________________
 
-if nargin<1 || isempty(Lesion_ROI_list)
+if nargin<1
 	error('Need 1 input argument');
 end
 
