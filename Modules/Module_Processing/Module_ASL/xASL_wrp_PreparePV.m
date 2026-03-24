@@ -57,9 +57,9 @@ end
 % Check if there are Lesions or ROIs saved for the structural images. This then influences the code below for deciding which files to save
 bLesion_ROI = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['(?i)^(Lesion|ROI)_(' x.P.STRUCT '|' x.P.FLAIR ')_\d*\.nii$'], 'FPList', [0 Inf]);
 if isempty(bLesion_ROI)
-	bLesion_ROI = 0;
+	bLesion_ROI = false;
 else
-	bLesion_ROI = 1;
+	bLesion_ROI = true;
 end
 
 % If the resolution of T1 partial volume maps & CBF are already the same,

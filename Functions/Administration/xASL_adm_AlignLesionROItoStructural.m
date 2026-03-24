@@ -9,7 +9,7 @@ function xASL_adm_AlignLesionROItoStructural(Lesion_ROI_list)
 % OUTPUT: n/a
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION: Go through all the Lesions and ROIs in the list. Check the corresponding FLAR/T1 files. If the MAT of both files are similar, then do not do anything.
+% DESCRIPTION: Go through all the Lesions and ROIs in the list. Check the corresponding FLAIR/T1 files. If the MAT of both files are similar, then do not do anything.
 % if they differ, but the matrix size and MAT0 are equal, then reset the MAT for the Lesion or ROI and save again
 %
 % EXAMPLE: xASL_adm_AlignLesionROItoStructural(Lesion_ROI_list)
@@ -41,14 +41,14 @@ for iS=1:length(Lesion_ROI_list)
 			% The transformation matrices differ, we have to fix this
 			
 			if ~isequal(size(lesionHeader.dat), size(structHeader.dat))
-				% Option 2 - sizes differ, we report a difference that we cannot fix
-				warning('%s\n%s\n%s', 'The transformation matrix MAT of Lesion/ROI and the corresponding structural files differ, and matrix sizes differ as well, so I cannot reset the orientation. Please check the files:', Lesion_ROI_list{iS}, fStructName);
+				% Option 2 - image sizes differ, we report a difference that we cannot fix
+				warning('%s\n%s\n%s', 'The transformation matrix MAT and the image size of Lesion/ROI and the corresponding structural files differ. Please check the alignment of the files:', Lesion_ROI_list{iS}, fStructName);
 			elseif ~all(abs(lesionHeader.mat0 - structHeader.mat0) < 1e-3, 'all')
 				% Option 3 - MAT0 also differ, we report a difference that we cannot fix
-				warning('%s\n%s\n%s','The transformation matrix MAT of Lesion/ROI and the corresponding structural files differ. And MAT0 differ as well, so I cannot the orientation. Please check the files:', Lesion_ROI_list{iS}, fStructName);
+				warning('%s\n%s\n%s','The transformation matrix MAT and MAT0 of Lesion/ROI and the corresponding structural files differ. Please check the alignment of the files:', Lesion_ROI_list{iS}, fStructName);
 			else
 				% Option 4 - we report a difference and set MAT of the Lesion/ROI to that of T1
-				warning('%s\n%s\n%s','The transformation matrix MAT of Lesion/ROI and the corresponding structural files differ, but MAT0 are equal, so aligning both MAT and MAT0:', Lesion_ROI_list{iS}, fStructName);
+				warning('%s\n%s\n%s','The transformation matrix MAT of Lesion/ROI and the corresponding structural files differ, but MAT0 are equal. Fixing MAT of the Lesion/ROI:', Lesion_ROI_list{iS}, fStructName);
 
 				% Save the Lesion/ROI again with a correct MAT and assign a warning
 				imLesion = xASL_io_Nifti2Im(Lesion_ROI_list{iS});
