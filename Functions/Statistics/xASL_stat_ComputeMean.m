@@ -133,7 +133,7 @@ if ~isempty(imWM)
 	imWM = imWM(imMask); 
 end
 
-if sum(imMask(:))<nMinSize 
+if sum(imMask(:))<nMinSize || sum(imMask(:)) <= 0 
     CBF_GM = NaN;
     CBF_WM = NaN;
     return;
