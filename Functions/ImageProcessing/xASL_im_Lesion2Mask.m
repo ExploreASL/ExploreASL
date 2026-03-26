@@ -1,14 +1,14 @@
-function LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
+function LesionIM = xASL_im_Lesion2Mask(LesionPath, x, bSaveBinary)
 % xASL_im_Lesion2Mask Create multiple masks from single ROI/lesion mask, to
 % be used as custom "atlas"
 %
-% FORMAT: LesionIM = xASL_im_Lesion2Mask(LesionPath, x)
+% FORMAT: LesionIM = xASL_im_Lesion2Mask(LesionPath, x, bSaveBinary)
 % 
 % INPUT:
 %   LesionPath  - (string) path to the NIfTI containing the mask of
 %                  ROI/lesion (REQUIRED)
 %   x           - structure containing fields with all information required to run this function within ExploreASL (REQUIRED)
-%
+%   bSaveBinary - Enforces to save the ROI as 4D binary file even if the six ROIs are mutually exclusive
 % OUTPUT:       - new image containing the masks
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function takes a mask and adds several ROIs, to be used as custom "atlas", e.g. when computing region-average CBF values.
@@ -50,6 +50,10 @@ if nargin<1 || isempty(LesionPath)
 elseif ~xASL_exist(LesionPath,'file')
     fprintf('%s\n',['Skipped because mask didnt exist: ' LesionPath]);
 	return;
+end
+
+if nargin<3 || isempty(bSaveBinary)
+	bSaveBinary = 1;
 end
 
 % Distinguish between lesion & ROI masks
@@ -149,11 +153,10 @@ AnyMaskAll = LesionImage{1} | LesionImage{2} | LesionImage{3} | LesionImage{4} |
 SumMaskAll = LesionImage{1} + LesionImage{2} + LesionImage{3} + LesionImage{4} + LesionImage{5} + LesionImage{6};
 bMutualExclusive = sum(AnyMaskAll(:))==sum(SumMaskAll(:));
 
-if bMutualExclusive
+if bMutualExclusive && ~bSaveBinary
     fprintf('%s\n', 'Masks were mutually exclusive, so joined in 3D NIfTI');
 else
     
-    warning('Lesion masks were not mutually exclusive');
     if ~bMutualExclusiveLesion
         fprintf('%s\n', 'Overlap found between ipsilateral and contralateral lesion masks');
     end
@@ -174,7 +177,7 @@ LesionIM = uint8(zeros(size(LesionIM)));
 VisualizeImage = uint8(zeros(size(LesionIM)));
 
 for iMask=1:6
-    if bMutualExclusive
+    if bMutualExclusive && ~bSaveBinary
         LesionIM(logical(LesionImage{iMask})) = iMask;
     else
         LesionIM(:,:,:,iMask) = LesionImage{iMask};
