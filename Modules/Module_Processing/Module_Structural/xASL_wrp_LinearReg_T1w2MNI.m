@@ -59,9 +59,6 @@ Lesion_ROI_list = xASL_adm_GetFileList(x.dir.SUBJECTDIR, ['(?i)^(Lesion|ROI)_(' 
 for iS=1:length(Lesion_ROI_list)
     OtherList{end+1,1} = Lesion_ROI_list{iS};
 end
-xASL_adm_AlignLesionROItoStructural(Lesion_ROI_list);    
-
-
 
 % Check for other ScanTypes that need to be in alignment of the T1w
 % Here, we assume that all NIfTIs from all other scan types (e.g., ASL, fMRI, DTI, etc)
