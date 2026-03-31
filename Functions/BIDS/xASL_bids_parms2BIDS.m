@@ -1,4 +1,4 @@
-function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids)
+function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids, bVerbose)
 % Takes the input parameters from xASL legacy format (inXasl) and BIDS format, merges them and converts to either xASL legacy or BIDS format.
 % FORMAT: outBids = xASL_bids_parms2BIDS(inXasl[, inBids, bOutBids, priorityBids])
 % 
@@ -7,6 +7,8 @@ function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids
 %   inBids       - a structure with input parameters in the BIDS format (OPTIONAL, DEFAULT = [])
 %   bOutBids     - the output structures is in BIDS format (==1, default) or xASL format (==0) (OPTIONAL, DEFAULT = 1)
 %   bPriorityBids - in case of conflicts, the BIDS input is preferred (==1, default), otherwise (==0), xASL is prefered (OPTIONAL, DEFAULT = 1)
+%   bVerbose     - %   bVerbose    - boolean specifying whether verbose output on screen/log
+%                 is desired (OPTIONAL, DEFAULT=true)
 %
 % OUTPUT:
 % outParms       - the merged output structure in the selected format
@@ -48,6 +50,9 @@ if nargin < 3 || isempty(bOutBids)
 end
 if nargin < 4 || isempty(bPriorityBids)
 	bPriorityBids = 1;
+end
+if nargin<5 || isempty(bVerbose)
+    bVerbose = true;
 end
 
 % In case we input BIDS and want output in BIDS we skip the rest
@@ -359,7 +364,7 @@ end
 
 % If we convert to Legacy, we make sure to properly initialize the field outParms.Q.PulseSequenceType
 if ~bOutBids
-	outParms.Q = xASL_adm_DefineASLReadout(outParms.Q);
+	outParms.Q = xASL_adm_DefineASLReadout(outParms.Q, bVerbose);
 end
 
 % We check and correctly rename the discontinued Legacy fields that require a more complicated conversion than is done using xASL_io_CheckDeprecatedFieldsX

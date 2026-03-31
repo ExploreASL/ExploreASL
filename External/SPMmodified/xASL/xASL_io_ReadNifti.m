@@ -95,7 +95,7 @@ if nargout > 2
 	if exist(pathJson, 'file')
 		json = xASL_io_ReadJson(pathJson);
 		if bBIDS2Legacy
-			json = xASL_bids_parms2BIDS([], json, 0); % BIDS to Legacy conversion
+			json = xASL_bids_parms2BIDS([], json, 0, [], false); % BIDS to Legacy conversion
 		end
 	end
 end

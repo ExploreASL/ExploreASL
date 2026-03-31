@@ -110,7 +110,7 @@ if exist(JSONPath,'file') % According to the BIDS inheritance principle, the JSO
 	JSONParms = xASL_io_ReadJson(JSONPath);
 
     % Convert parameters to BIDS
-	Parms = xASL_bids_parms2BIDS(Parms, JSONParms, 0, 1);
+	Parms = xASL_bids_parms2BIDS(Parms, JSONParms, 0, 1, false);
 
 end
 
