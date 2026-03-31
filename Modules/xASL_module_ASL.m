@@ -403,7 +403,7 @@ if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-3})
 			if xASL_exist(x.P.Path_M0,'file')
 				warning('M0 NIfTI detected, but skipping M0 processing because x.Q.M0="Absent"');
 			else
-				fprintf('%s\n', 'x.Q.M0="Absent", skipping M0 processing');
+				if bOutput; fprintf('%s\n', 'x.Q.M0="Absent", skipping M0 processing'); end
 			end
         elseif xASL_exist(x.P.Path_M0,'file')
 
@@ -465,10 +465,10 @@ if ~x.mutex.HasState(StateName{iState}) || ~x.mutex.HasState(StateName{iState+1}
 end
 
 % Check again if we have multiple values for certain ASL parameters (PLD, LD, TE) directly on the PWI file used for processing
-x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_PWI4D_used);
+x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_PWI4D_used, bOutput);
 
 % Check multi-parametric quantification options
-x = xASL_module_ASL_MultiParameterQuantificationOptions(x);
+x = xASL_module_ASL_MultiParameterQuantificationOptions(x, bOutput);
 
 % Quantification is performed here according to ASL consensus paper (Alsop, MRM 2016)
 % Including PVC
@@ -636,12 +636,12 @@ end
 
 
 %% 3. Multi-parameter parsing
-x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_ASL4D);
+x = xASL_module_ASL_MultiParameterParsing(x, x.P.Path_ASL4D, bOutput);
 
 %% 4. TimeEncoded parsing
 % Check if TimeEncoded is defined
 if isfield(x.Q, 'TimeEncodedMatrixType') || isfield(x.Q, 'TimeEncodedMatrixSize') || isfield(x.Q, 'TimeEncodedMatrix')
-    fprintf(2,'Time encoded images detected, we will process this but this is a new feature that is still under development\n');
+    if bOutput; fprintf(2,'Time encoded images detected, we will process this but this is a new feature that is still under development\n'); end
     x.modules.asl.bTimeEncoded = true;
 	
 	% Initialize as empty if missing
@@ -683,6 +683,7 @@ end
 % Check if there is Decoding Matrix as input
 %(some datasets will have a decoding matrix that we can use directly in the decoding part)
 
+
 %% 5. Session merging
 % Initialization
 nLists = 0;
@@ -697,7 +698,7 @@ else
 		x.modules.asl.SessionMergingList = {x.modules.asl.SessionMergingList};
 	end
     nLists = numel(x.modules.asl.SessionMergingList);
-    fprintf('\n%s', ['-> Detected ' xASL_num2str(nLists) ' list(s) for concatenating sessions']);
+    if bOutput; fprintf('\n%s', ['-> Detected ' xASL_num2str(nLists) ' list(s) for concatenating sessions\n']); end
 end
 
 % Read and check a corresponding list with merging scalings - it is also a list of lists like SessionMergingList and it should have the same structure
@@ -766,7 +767,7 @@ for iList=1:nLists
 	end
 end
 
-if x.modules.asl.bMergingSessions
+if x.modules.asl.bMergingSessions && bOutput
     if ~isempty(x.modules.asl.sessionsToMerge)
         fprintf('%s', ' and will now concatenate the following sessions:')
         for iSession = 1:numel(x.modules.asl.sessionsToMerge)
@@ -811,7 +812,7 @@ if ~x.modules.asl.ApplyQuantification(5) && ~xASL_exist(x.P.Path_M0) && ~strcmp(
 end
 
 if strcmp(x.Q.M0, 'Absent')
-    fprintf('%s\n', 'x.Q.M0="Absent" so disabling M0 processing');
+    if bOutput; fprintf('%s\n', 'x.Q.M0="Absent" so disabling M0 processing'); end
     x.modules.asl.ApplyQuantification([2, 4, 5]) = 0;
     
     if xASL_exist(x.P.Path_M0)
@@ -823,7 +824,7 @@ end
 end
 
 %% ========================================================================================================================
-function x = xASL_module_ASL_MultiParameterParsing(x, pathASL)
+function x = xASL_module_ASL_MultiParameterParsing(x, pathASL, bVerbose)
 % Read the ASL parameters (PLD, LD, TE) from JSON and calculate the number of unique values
 % 0.1 Read the JSON sidecar
 % 0.2 Obtain the number of image volumes 
@@ -862,7 +863,7 @@ for iPar=1:length(parNames)
         % if the field is completely missing
         warning(['Missing field x.Q.' parNames{iPar} ', this may be needed for quantification']);
         % After the warning, we default to single-parameter processing
-        fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
+        if bVerbose; fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']); end
 		x.Q.(parNames{iPar}) = [];
 		x.Q.(['unique' parNames{iPar}]) = [];
 	    x.Q.(['nUnique' parNames{iPar}]) = 1;
@@ -870,7 +871,7 @@ for iPar=1:length(parNames)
         % if the field exists but is illegal
         warning(['Illegal field x.Q.' parNames{iPar} ', this should not be empty and should contain numerical values']);
         % After the warning, we default to single-parameter processing
-        fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']);
+        if bVerbose; fprintf('%s\n', ['Defaulting to single-' parAbbreviation{iPar} ' ASL processing']); end
 		x.Q.(parNames{iPar}) = [];
 		x.Q.(['unique' parNames{iPar}]) = [];
 	    x.Q.(['nUnique' parNames{iPar}]) = 1;
@@ -886,9 +887,9 @@ for iPar=1:length(parNames)
     
         % Handle different number of parameters (== potentially different ASL sequences)
 		if x.Q.(['nUnique' parNames{iPar}]) == 1
-            fprintf('%s\n', ['Single-' parAbbreviation{iPar} ' ASL detected']);
+            if bVerbose; fprintf('%s\n', ['Single-' parAbbreviation{iPar} ' ASL detected']); end
 		elseif x.Q.(['nUnique' parNames{iPar}]) == 2
-            fprintf('%s\n', ['Dual-' parAbbreviation{iPar} ' ASL detected']);
+            if bVerbose; fprintf('%s\n', ['Dual-' parAbbreviation{iPar} ' ASL detected']); end
             
             if strcmp(parAbbreviation{iPar}, 'TE')
                 warning('Dual-echo ASL detected, dual-echo ASL processing not yet implemented');
@@ -903,11 +904,11 @@ for iPar=1:length(parNames)
 		end
     
         % Now we print to the screen which unique parameter-values we detected
-        fprintf('%s\n', ['Detected the following unique ' parNames{iPar} 's (ms):'])
+        if bVerbose; fprintf('%s\n', ['Detected the following unique ' parNames{iPar} 's (ms):']); end
         for iVol = 1:x.Q.(['nUnique' parNames{iPar}])
-            fprintf('%.2f, ', round(x.Q.(['unique' parNames{iPar}])(iVol), 4));
+            if bVerbose; fprintf('%.2f, ', round(x.Q.(['unique' parNames{iPar}])(iVol), 4)); end
         end
-        fprintf('\n');
+        if bVerbose; fprintf('\n'); end
     end
     
 	%% 2. Check if parameter vector and number of volumes match
@@ -941,7 +942,7 @@ end
 end
 
 %% ========================================================================================================================
-function x = xASL_module_ASL_MultiParameterQuantificationOptions(x)
+function x = xASL_module_ASL_MultiParameterQuantificationOptions(x, bVerbose)
 % Check the ASL parameters (PLD, LD, TE) previously parsed and set the specific Multi-parameter quantification options
 % The multi-parameter quantification options are either set here based on the data, or we check if the values provided in
 % the dataPar.json are compatible with the data
@@ -960,19 +961,19 @@ for iPar=1:length(parNames)
         x.modules.asl.(['bQuantifyMulti' parAbbreviation{iPar}]) = false;		
 	else
 		 if x.Q.(['nUnique' parNames{iPar}])>2
-			 fprintf('%s\n', ['Multiple ' parNames{iPar} 's detected, processing this as multi-' parAbbreviation{iPar} ' ASL']);
-			 fprintf('%s\n', 'Note that this feature is still under development');
+			 if bVerbose; fprintf('%s\n', ['Multiple ' parNames{iPar} 's detected, processing this as multi-' parAbbreviation{iPar} ' ASL']); end
+			 if bVerbose; fprintf('%s\n', 'Note that this feature is still under development'); end
     
 			 if strcmp(parAbbreviation{iPar}, 'PLD')
 				 if isfield(x.modules.asl, 'bQuantifyMultiPLD') && ~x.modules.asl.bQuantifyMultiPLD
-					 fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.');
+					 if bVerbose; fprintf('%s\n', 'Multi PLDs detected, but multi-PLD quantification set OFF.'); end
 				 else
 					 % In case it wasn't defined or it was defined as true, we can set it to true
 					 x.modules.asl.bQuantifyMultiPLD = true;
 				 end
 			 elseif strcmp(parAbbreviation{iPar}, 'LD')
 				 if x.modules.asl.bQuantifyMultiPLD
-					 fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing');
+					 if bVerbose; fprintf('%s\n', 'Multi labeling durations detected, taking this into account for multi-PLD ASL processing'); end
 				 else
 					 warning('Multi labeling durations detected but multiPLD-quantification is turned off, is this correct?');
 				 end
