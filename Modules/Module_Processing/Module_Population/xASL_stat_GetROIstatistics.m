@@ -826,12 +826,7 @@ for iSubject=1:x.dataset.nSubjects
 					x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, 0, 0, 1);
 				end
             else
-                % Provide some feedback for debugging                
-                if ~xASL_stat_SumNan(DataIm(:))
-                    % Check for empty CBF map first
-                    fprintf('%s\n', ['Warning: Empty image for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess)]);
-				end
-
+                %% A. For ASL stats, first initialize defaults (NaNs)
                 % pvPrimary is the main tissue type that is investigated
                 % pvSecondary is the other tissue type that is used with PVC
 
@@ -853,14 +848,6 @@ for iSubject=1:x.dataset.nSubjects
 					end
 				end
 
-				% Apply tissue-masking (which is de facto turned off for Lesions, because the masks are volumes completely filled with ones)
-				CurrentMaskNotVascular = logical(single(SubjectSpecificMasks(:,iROI)>0.1) .* (pvPrimary>x.S.TissueThresholdLocal));
-
-				% Apply susceptibility mask
-				if bMasking(1) 
-                    CurrentMaskNotVascular = logical(CurrentMaskNotVascular .* SusceptibilityMask);
-				end
-				
 				% Initialize output data matrix [subject/session ROI-statistics] with NaNs
                 x.S.DAT_mean_PVC0(SubjSess,iROI) = NaN;
                 x.S.DAT_median_PVC0(SubjSess,iROI) = NaN;
@@ -871,142 +858,158 @@ for iSubject=1:x.dataset.nSubjects
 					x.S.DAT_mean_PVC2(SubjSess,iROI) = NaN;
 					%x.S.DAT_CoV_PVC2(SubjSess,iROI) = NaN;
 				end
+				
 
-                % Now check for empty masks
-                if ~xASL_stat_SumNan(CurrentMaskNotVascular(:))
-                    fprintf('%s\n', ['* Empty ' x.S.TissueMaskingLocal ' CBF mask for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
-                elseif ~xASL_stat_SumNan(pvPrimary(:))
-                    fprintf('%s\n', ['* Empty pv' pvPrimaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
-                elseif ~xASL_stat_SumNan(pvSecondary(:))
-                    fprintf('%s\n', ['* Empty pv' pvSecondaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
-                else                    
-                    % Check if the ROI size is large enough
-                    imMask = CurrentMaskNotVascular;
-                    imMask = (imMask>0) & isfinite(DataIm);
-                    imMask = imMask & (DataIm~=0); % Exclude zero values as well
-
-                    if sum(imMask)<MinVoxels
-                        fprintf('\n');
-                        warning('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in sCoV calculations']);
-                        fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
-                    end
-
-
-                    %% CoV
-                    % Visualization first
-		            fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
-                    [pathOutput_sCoV] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMaskNotVascular, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_sCoV);
-
-                    x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 0);
-					if ~bSkipPVC
-                        % No visualization here, because there is no different masking
-						% x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
-					end
-
-                    %% CBF (now remove vascular artifacts)
-                    if bMasking(2)==1 % apply vascular mask, but rename this to CurrentVascular mask, because we still need the original CurrentMaskNotVascular for 4D temporal calculations
-                        CurrentMaskVascular = CurrentMaskNotVascular & VascularMask;
-					else
-                        % Otherwise keep CurrentMaskNotVascular as is, don't apply a vascular mask
-						CurrentMaskVascular = CurrentMaskNotVascular;
-                    end
-
-                    if ~xASL_stat_SumNan(CurrentMaskVascular(:))
-                        % Now check again for empty mask (as it was
-                        % masked now also with a vascular artifact
-                        % mask)
-                        fprintf('%s\n', ['* Empty ' x.S.TissueMaskingLocal ' non-vascular CBF mask for subject ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]); % slightly different warning/mask as above for sCoV
-                    else
-
-                        % Visualization first (this differs from sCoV only by the vascular mask)
-		                fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_CBF'];
-                        [pathOutput_CBF] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMaskVascular, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_CBF);
-
+                %% B. Then check for empty data first, in which case we will skip this subject-run
+                if ~xASL_stat_SumNan(DataIm(:))
+                    % Check for empty CBF map first
+                    fprintf('%s\n', ['Warning: Empty image for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess)]);
+                else
+                    %% C. In the case of existing data, we will check masks
+                
+				    % Apply tissue-masking (which is de facto turned off for Lesions, because the masks are volumes completely filled with ones)
+				    CurrentMaskNotVascular = logical(single(SubjectSpecificMasks(:,iROI)>0.1) .* (pvPrimary>x.S.TissueThresholdLocal));
+    
+				    % Apply susceptibility mask
+				    if bMasking(1) 
+                        CurrentMaskNotVascular = logical(CurrentMaskNotVascular .* SusceptibilityMask);
+				    end
+    
+                    % Now check for empty masks
+                    if ~xASL_stat_SumNan(CurrentMaskNotVascular(:))
+                        fprintf('%s\n', ['* Empty ' x.S.TissueMaskingLocal ' CBF mask for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
+                    elseif ~xASL_stat_SumNan(pvPrimary(:))
+                        fprintf('%s\n', ['* Empty pv' pvPrimaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
+                    elseif ~xASL_stat_SumNan(pvSecondary(:))
+                        fprintf('%s\n', ['* Empty pv' pvSecondaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
+                    else                    
                         % Check if the ROI size is large enough
-                        imMask = CurrentMaskVascular;
+                        imMask = CurrentMaskNotVascular;
                         imMask = (imMask>0) & isfinite(DataIm);
                         imMask = imMask & (DataIm~=0); % Exclude zero values as well
     
                         if sum(imMask)<MinVoxels
                             fprintf('\n');
-                            warning('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in CBF calculations']);
+                            warning('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in sCoV calculations']);
                             fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
                         end
-
-                        x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 1);
-                        x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 0);
-						
-						% We calculate sum over the ROI and weight by the tissue PV
-						x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 1, 1, pvPrimary); % PVC==1, "single-compartment" PVC (regress pGM only)
-						
-						if ~bSkipPVC
-							x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
-						end
+    
+                        %% CoV
+                        % Visualization first
+		                fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
+                        [pathOutput_sCoV] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMaskNotVascular, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_sCoV);
+    
+                        x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 0);
+					    if ~bSkipPVC
+                            % No visualization here, because there is no different masking
+						    % x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+					    end
+    
+                        %% CBF (now remove vascular artifacts)
+                        if bMasking(2)==1 % apply vascular mask, but rename this to CurrentVascular mask, because we still need the original CurrentMaskNotVascular for 4D temporal calculations
+                            CurrentMaskVascular = CurrentMaskNotVascular & VascularMask;
+					    else
+                            % Otherwise keep CurrentMaskNotVascular as is, don't apply a vascular mask
+						    CurrentMaskVascular = CurrentMaskNotVascular;
+                        end
+    
+                        if ~xASL_stat_SumNan(CurrentMaskVascular(:))
+                            % Now check again for empty mask (as it was
+                            % masked now also with a vascular artifact
+                            % mask)
+                            fprintf('%s\n', ['* Empty ' x.S.TissueMaskingLocal ' non-vascular CBF mask for subject ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]); % slightly different warning/mask as above for sCoV
+                        else
+    
+                            % Visualization first (this differs from sCoV only by the vascular mask)
+		                    fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_CBF'];
+                            [pathOutput_CBF] = xASL_stat_VisualizeSubjectWiseROI(x, xASL_im_Column2IM(CurrentMaskVascular, x.S.masks.WBmask), xASL_im_Column2IM(DataIm, x.S.masks.WBmask), fileName, pathOutput_CBF);
+    
+                            % Check if the ROI size is large enough
+                            imMask = CurrentMaskVascular;
+                            imMask = (imMask>0) & isfinite(DataIm);
+                            imMask = imMask & (DataIm~=0); % Exclude zero values as well
+        
+                            if sum(imMask)<MinVoxels
+                                fprintf('\n');
+                                warning('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in CBF calculations']);
+                                fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
+                            end
+    
+                            x.S.DAT_mean_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 1);
+                            x.S.DAT_median_PVC0(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 0, 0);
+						    
+						    % We calculate sum over the ROI and weight by the tissue PV
+						    x.S.DAT_mean_PVC1(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 1, 1, pvPrimary); % PVC==1, "single-compartment" PVC (regress pGM only)
+						    
+						    if ~bSkipPVC
+							    x.S.DAT_mean_PVC2(SubjSess,iROI) = xASL_stat_ComputeMean(DataIm, CurrentMaskVascular, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+						    end
+                        end
                     end
-                end
-
-				%% Diff_CoV, new parameter by Jan Petr
-				% x.S.DAT_Diff_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 0);
-				% if ~bSkipPVC
-					% x.S.DAT_Diff_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 1, pvPrimary, [], 0);
-					% x.S.DAT_Diff_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 2, pvPrimary, pvSecondary, 0);
-				% end
-				%% 4D temporal data calculations - do not always exist
-				if ~isempty(Data4D)
-					% Initialize the precalculated vectors
-					sCoV4D = zeros(1, size(Data4DIm, 2));
-					diffCoV4D = zeros(1, size(Data4DIm, 2));
-
-					% Precalculate the temporal values - use functions that work in 3D only to do it for each temporal point
-					for iRepetition=1:size(Data4DIm, 2)
-						sCoV4D(iRepetition) = xASL_stat_ComputeSpatialCoV(Data4DIm(:, iRepetition), CurrentMaskNotVascular, MinVoxels, 0);
-					end
-
-					CurrentMaskNotVascularFull = xASL_im_Column2IM(CurrentMaskNotVascular, x.S.masks.WBmask);% We need the full mask for the Diff-CoV calculation
-					for iRepetition=1:size(Data4DIm, 2)
-						diffCoV4D(iRepetition) = xASL_stat_ComputeDifferCoV(Data4D(:, :, :, iRepetition), CurrentMaskNotVascularFull, MinVoxels);
-					end
-					
-					% Compute the temporal values - we add here the type of statistics and PVC status, the contrast type (CBF/ATT/Tex) is assigned outside of this function
-					% We already do all the averaging here, so it has to be contained in the name
-					x.S.DAT_CoV4D_mean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(sCoV4D);
-					x.S.DAT_CoV4D_sd_PVC0(SubjSess, iROI) = xASL_stat_StdNan(sCoV4D);
-					x.S.DAT_diffCoV4D_mean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(diffCoV4D);
-					x.S.DAT_diffCoV4D_sd_PVC0(SubjSess, iROI) = xASL_stat_StdNan(diffCoV4D);
-
-                    % Compute average label position stats
-                    % Initialization
-					mean4D_SliceWise = zeros(size(Data4D, 3), size(Data4D, 4));
-                    sCoV4D_SliceWise = zeros(size(Data4D, 3), size(Data4D, 4));
-                    tempSD4D_SliceWise = zeros(1, size(Data4D, 3));
-
-					%diffCoV4DCenter = zeros(1, size(Data4DIm, 2));
-					% Precalculate the temporal values in 2D for each slice and repetition
-					for iSlice=1:size(Data4D, 3)
-						for iRepetition=1:size(Data4DIm, 2)
-							mean4D_SliceWise(iSlice, iRepetition) = xASL_stat_ComputeMean(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
-							sCoV4D_SliceWise(iSlice, iRepetition) = xASL_stat_ComputeSpatialCoV(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
-						end
-						% First STD across repetitions, the slice-wise mean
-						tempSD4D_SliceWise(iSlice) = xASL_stat_ComputeMean(xASL_stat_StdNan(Data4D(:, :, iSlice, :), [], 4), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
-					end
-
-					% For each repetition - calculate the best slice
-					vectorSlice = repmat((1:size(Data4D, 3))', [1 size(mean4D_SliceWise, 2)]); % Vector with slice numbers
-					mean4D_SliceWise = abs(mean4D_SliceWise); % flip negative values
-					mean4DcenterSlice = xASL_stat_SumNan(mean4D_SliceWise.*vectorSlice, 1)./xASL_stat_SumNan(mean4D_SliceWise, 1); % Calculate the weighted mean
-					x.S.DAT_LabelSliceLocation4D_tMean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(mean4DcenterSlice);
-					x.S.DAT_LabelSliceLocation4D_tSD_PVC0(SubjSess, iROI) = xASL_stat_StdNan(mean4DcenterSlice);
-
-					sCoV4D_SliceWise = abs(sCoV4D_SliceWise); % flip negative values
-                    % Note that sCoV4D is only negative for negative means
-					sCoV4DcenterSlice = xASL_stat_SumNan(sCoV4D_SliceWise.*vectorSlice, 1)./xASL_stat_SumNan(sCoV4D_SliceWise, 1); % Calculate the weighted mean
-					x.S.DAT_LabelsCoV_SliceLocation_tMean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(sCoV4DcenterSlice);
-					x.S.DAT_LabelsCoV_SliceLocation_tSD_PVC0(SubjSess, iROI) = xASL_stat_StdNan(sCoV4DcenterSlice);
-
-					x.S.DAT_SlicetSD_SliceLocation_PVC0(SubjSess, iROI) = xASL_stat_SumNan(tempSD4D_SliceWise.*vectorSlice(:,1)')./xASL_stat_SumNan(tempSD4D_SliceWise); % Calculate the weighted mean
-				end
-			end
+    
+				    %% Diff_CoV, new parameter by Jan Petr
+				    % x.S.DAT_Diff_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 0);
+				    % if ~bSkipPVC
+					    % x.S.DAT_Diff_CoV_PVC1(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 1, pvPrimary, [], 0);
+					    % x.S.DAT_Diff_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeDifferCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 2, pvPrimary, pvSecondary, 0);
+				    % end
+				    %% 4D temporal data calculations - do not always exist
+				    if ~isempty(Data4D)
+					    % Initialize the precalculated vectors
+					    sCoV4D = zeros(1, size(Data4DIm, 2));
+					    diffCoV4D = zeros(1, size(Data4DIm, 2));
+    
+					    % Precalculate the temporal values - use functions that work in 3D only to do it for each temporal point
+					    for iRepetition=1:size(Data4DIm, 2)
+						    sCoV4D(iRepetition) = xASL_stat_ComputeSpatialCoV(Data4DIm(:, iRepetition), CurrentMaskNotVascular, MinVoxels, 0);
+					    end
+    
+					    CurrentMaskNotVascularFull = xASL_im_Column2IM(CurrentMaskNotVascular, x.S.masks.WBmask);% We need the full mask for the Diff-CoV calculation
+					    for iRepetition=1:size(Data4DIm, 2)
+						    diffCoV4D(iRepetition) = xASL_stat_ComputeDifferCoV(Data4D(:, :, :, iRepetition), CurrentMaskNotVascularFull, MinVoxels);
+					    end
+					    
+					    % Compute the temporal values - we add here the type of statistics and PVC status, the contrast type (CBF/ATT/Tex) is assigned outside of this function
+					    % We already do all the averaging here, so it has to be contained in the name
+					    x.S.DAT_CoV4D_mean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(sCoV4D);
+					    x.S.DAT_CoV4D_sd_PVC0(SubjSess, iROI) = xASL_stat_StdNan(sCoV4D);
+					    x.S.DAT_diffCoV4D_mean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(diffCoV4D);
+					    x.S.DAT_diffCoV4D_sd_PVC0(SubjSess, iROI) = xASL_stat_StdNan(diffCoV4D);
+    
+                        % Compute average label position stats
+                        % Initialization
+					    mean4D_SliceWise = zeros(size(Data4D, 3), size(Data4D, 4));
+                        sCoV4D_SliceWise = zeros(size(Data4D, 3), size(Data4D, 4));
+                        tempSD4D_SliceWise = zeros(1, size(Data4D, 3));
+    
+					    %diffCoV4DCenter = zeros(1, size(Data4DIm, 2));
+					    % Precalculate the temporal values in 2D for each slice and repetition
+					    for iSlice=1:size(Data4D, 3)
+						    for iRepetition=1:size(Data4DIm, 2)
+							    mean4D_SliceWise(iSlice, iRepetition) = xASL_stat_ComputeMean(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
+							    sCoV4D_SliceWise(iSlice, iRepetition) = xASL_stat_ComputeSpatialCoV(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
+						    end
+						    % First STD across repetitions, the slice-wise mean
+						    tempSD4D_SliceWise(iSlice) = xASL_stat_ComputeMean(xASL_stat_StdNan(Data4D(:, :, iSlice, :), [], 4), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
+					    end
+    
+					    % For each repetition - calculate the best slice
+					    vectorSlice = repmat((1:size(Data4D, 3))', [1 size(mean4D_SliceWise, 2)]); % Vector with slice numbers
+					    mean4D_SliceWise = abs(mean4D_SliceWise); % flip negative values
+					    mean4DcenterSlice = xASL_stat_SumNan(mean4D_SliceWise.*vectorSlice, 1)./xASL_stat_SumNan(mean4D_SliceWise, 1); % Calculate the weighted mean
+					    x.S.DAT_LabelSliceLocation4D_tMean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(mean4DcenterSlice);
+					    x.S.DAT_LabelSliceLocation4D_tSD_PVC0(SubjSess, iROI) = xASL_stat_StdNan(mean4DcenterSlice);
+    
+					    sCoV4D_SliceWise = abs(sCoV4D_SliceWise); % flip negative values
+                        % Note that sCoV4D is only negative for negative means
+					    sCoV4DcenterSlice = xASL_stat_SumNan(sCoV4D_SliceWise.*vectorSlice, 1)./xASL_stat_SumNan(sCoV4D_SliceWise, 1); % Calculate the weighted mean
+					    x.S.DAT_LabelsCoV_SliceLocation_tMean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(sCoV4DcenterSlice);
+					    x.S.DAT_LabelsCoV_SliceLocation_tSD_PVC0(SubjSess, iROI) = xASL_stat_StdNan(sCoV4DcenterSlice);
+    
+					    x.S.DAT_SlicetSD_SliceLocation_PVC0(SubjSess, iROI) = xASL_stat_SumNan(tempSD4D_SliceWise.*vectorSlice(:,1)')./xASL_stat_SumNan(tempSD4D_SliceWise); % Calculate the weighted mean
+                    end % if ~isempty(Data4D)
+                end % if ~xASL_stat_SumNan(DataIm(:))
+			end % x.S.IsASL
 		end % for iROI=1:size(SubjectSpecificMasks,2)
         
         % Create last rows if missing
