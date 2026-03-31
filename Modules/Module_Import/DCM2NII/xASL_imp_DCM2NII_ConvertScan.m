@@ -106,7 +106,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
 	elseif ~isempty(regexpi(scan_name, '^(M0.*|func_bold)$', 'once'))
 		bPutInSessionFolder = true;
 		bAnatomical = false;
-	elseif ~isempty(regexpi(scan_name, '^(T1.+|T2.+|FLAIR|WMH_SEGM)$', 'once'))
+	elseif ~isempty(regexpi(scan_name, '^(T1.*|T2.*|FLAIR|WMH_SEGM)$', 'once'))
 		%             bPutInSessionFolder = false;
 		bAnatomical = true;
 	else
