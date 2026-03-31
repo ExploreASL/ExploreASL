@@ -174,7 +174,7 @@ else
                         
                         if bLockedFolders
     
-                            fprintf(['ERROR in module_' x.ModuleName ', there is another module locked for the same subject: ' checkModuleName '\n']);
+                            fprintf(['\nERROR in ' x.ModuleName ' module, ' checkModuleName ' module is locked for the same subject:' subjectName '\n']);
                             fprintf('\n');
 	                        fprintf('This means that this module is currently being parallel processed by another Matlab instance/worker\n');
 	                        fprintf('If this is not the case, the locked folder needs to be removed before proceeding\n');
