@@ -68,8 +68,15 @@ end
 % data value
 if x.dataset.nSessions>1
     % Sessions found
-    if size(DataIn,2)<3 % A session column should exist
-        if contains(DataName, 'vol') || contains(DataName, 'ICV') || contains(DataName, 'WMH')
+    if size(DataIn,2)<3 % If a session column doesn't exist
+        % First get the parameter name
+        indicesAre = regexp(DataName, '_');
+        indicesAre(end+1) = length(DataName);
+        parameterName = DataName(1:indicesAre(1));
+
+        if contains(parameterName, {'GM','WM','CSF','T1','FLAIR','ICV','WMH'})
+            % If a session column doesn't exist, it has to be volumetric data
+
             % if this is a volumetric metric from the structural module,
             % we assume this should be the same for all sessions
             DataIn = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(DataIn, x.SESSIONS);
