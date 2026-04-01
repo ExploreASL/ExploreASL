@@ -101,10 +101,8 @@ end
 
 %% ----------------------------------------------------------------------------------
 %% 5) File management
-if x.settings.DELETETEMP
-    xASL_delete(rWMHPath);
-    xASL_adm_DeleteFileList(Fpath, '^LST_.*FLAIR\.mat$', false, [0 Inf]); % LST mat-file
-end
+xASL_delete(rWMHPath);
+xASL_adm_DeleteFileList(Fpath, '^LST_.*FLAIR\.mat$', false, [0 Inf]); % LST mat-file
 
 % Rename lesion filled T1w
 % If both lesion-filled & original T1 exist, rename original T1 to T1w_ORI,

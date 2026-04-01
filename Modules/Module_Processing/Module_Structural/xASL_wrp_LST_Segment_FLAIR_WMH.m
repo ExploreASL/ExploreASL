@@ -119,6 +119,10 @@ end
 %% ----------------------------------------------------------
 %% 3. Run the segmentation
 fprintf('\n');
+
+xASL_wrp_LST_Segment_FLAIR_WMH_deleteLSTderivatives(x);
+
+xASL_delete(rWMHPath);
 spm_jobman('run',matlabbatch); close all
 
 
@@ -131,7 +135,7 @@ if xASL_exist(x.P.Path_WMH_SEGM,'file')
     FaultyIM = xASL_io_ReadNifti(rWMHPath);
     CorrectIM = xASL_io_Nifti2Im(x.P.Path_WMH_SEGM);
 
-    if  min(size(FaultyIM.dat)==size(CorrectIM)) % first verify whether image sizes are identical
+    if isequal(size(FaultyIM.dat), size(CorrectIM)) % first verify whether image sizes are identical
         xASL_io_SaveNifti(rWMHPath, rWMHPath, CorrectIM, [], false);
     end
 else % if no externally provided WMH_SEGM
@@ -142,22 +146,10 @@ end
 
 %% ----------------------------------------------------------
 %% 5. File management
-% Delete the LST folder & its contents
-CleanUpDir = xASL_adm_GetFileList(x.dir.SUBJECTDIR,'^LST_tmp_.*$','List',[0 Inf], true);
-nList = length(CleanUpDir);
-for iD=1:nList
-    xASL_adm_DeleteFileList(fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}), '^.*\.nii$', [], [0 Inf]);
-    xASL_adm_DeleteFileList(fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}), '^.*\.mat$', [], [0 Inf]);
-    rmdir( fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}),'s' );
-end
+xASL_wrp_LST_Segment_FLAIR_WMH_deleteLSTderivatives(x);
 
-if x.settings.DELETETEMP
-    xASL_delete(x.P.Path_mrFLAIR); % LPA
-    xASL_delete(x.P.Path_rmrFLAIR); % LGA
-
-    if ~x.settings.bReproTesting
-        xASL_delete(x.P.Path_rFLAIR);
-    end
+if ~x.settings.bReproTesting
+    xASL_delete(x.P.Path_rFLAIR);
 end
 
 
@@ -221,8 +213,25 @@ if xASL_exist(x.P.Path_FLAIR, 'file') && ~xASL_exist(x.P.Path_WMH_SEGM, 'file')
 elseif xASL_exist(x.P.Path_WMH_SEGM, 'file')
     % Set WMH_SEGM nii.mat0 to T1 nii.mat0 (it had the FLAIR nii.mat0)
     nii_T1 = xASL_io_ReadNifti(x.P.Path_T1);
-    xASL_io_SaveNifti(x.P.Path_WMH_SEGM, x.P.Path_WMH_SEGM, xASL_io_Nifti2Im(nii_WMH.dat(:,:,:,:)), [], [], [], [], [], [], [], nii_T1.mat0, false);
+    xASL_io_SaveNifti(x.P.Path_WMH_SEGM, x.P.Path_WMH_SEGM, xASL_io_Nifti2Im(x.P.Path_WMH_SEGM), [], [], [], [], [], [], [], nii_T1.mat0, false);
 end
 
+
+end
+
+
+function xASL_wrp_LST_Segment_FLAIR_WMH_deleteLSTderivatives(x)
+% Delete the LST folder & its contents
+
+    CleanUpDir = xASL_adm_GetFileList(x.dir.SUBJECTDIR,'^LST_tmp_.*$','List',[0 Inf], true);
+    nList = length(CleanUpDir);
+    for iD=1:nList
+        xASL_adm_DeleteFileList(fullfile(x.dir.SUBJECTDIR, CleanUpDir{iD}), '^.*\.nii$', [], [0 Inf]);
+        xASL_adm_DeleteFileList(fullfile(x.dir.SUBJECTDIR, CleanUpDir{iD}), '^.*\.mat$', [], [0 Inf]);
+        rmdir(fullfile(x.dir.SUBJECTDIR,CleanUpDir{iD}), 's');
+    end
+    
+    xASL_delete(x.P.Path_mrFLAIR); % LPA
+    xASL_delete(x.P.Path_rmrFLAIR); % LGA
 
 end
