@@ -77,7 +77,7 @@ for iSubject=1:x.dataset.nSubjects
 		if exist(PathJSON, 'file')
 			% Load the file
             Parms = xASL_io_ReadJson(PathJSON);
-            if isfield(Parms,'ASL')
+            if isfield(Parms,'ASL') && isfield(Parms.ASL, x.SESSIONS{iSession})
                 Parms = Parms.ASL.(x.SESSIONS{iSession});
     
 			    % print all fields for subject_session into the TSV array
