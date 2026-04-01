@@ -98,12 +98,12 @@ for iImage=1:length(iSubjectSession)
         ASLcolumnNorm = max(TemplateColumn).*ASLcolumnNorm./max(ASLcolumnNorm);
 
         DiffColumnNorm = ASLcolumnNorm-TemplateColumn;
-        MeanASLNorm = xASL_stat_MeanNan(ASLcolumnNorm) + xASL_stat_MeanNan(TemplateColumn) /2;
+        MeanASLNorm = (xASL_stat_MeanNan(ASLcolumnNorm) + xASL_stat_MeanNan(TemplateColumn)) / 2;
         QC.nRMSE_Perc = xASL_round(100 * xASL_stat_MeanNan(DiffColumnNorm.^2).^0.5 / MeanASLNorm,4); % normalized RootMeanSquare (%)
 
 
         DiffColumn = ASLcolumn-TemplateColumn;        
-        MeanASL = xASL_stat_MeanNan(ASLcolumn) + xASL_stat_MeanNan(TemplateColumn) /2;
+        MeanASL = (xASL_stat_MeanNan(ASLcolumn) + xASL_stat_MeanNan(TemplateColumn)) / 2;
         QC.RMSE_Perc = xASL_round(100 * xASL_stat_MeanNan(DiffColumn.^2).^0.5 / MeanASL,4); % RootMeanSquare (%)
         
 
