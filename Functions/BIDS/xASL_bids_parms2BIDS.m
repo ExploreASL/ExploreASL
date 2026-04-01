@@ -1,6 +1,6 @@
 function outParms = xASL_bids_parms2BIDS(inXasl, inBids, bOutBids, bPriorityBids, bVerbose)
 % Takes the input parameters from xASL legacy format (inXasl) and BIDS format, merges them and converts to either xASL legacy or BIDS format.
-% FORMAT: outBids = xASL_bids_parms2BIDS(inXasl[, inBids, bOutBids, priorityBids])
+% FORMAT: outBids = xASL_bids_parms2BIDS(inXasl[, inBids, bOutBids, priorityBids, bVerbose])
 % 
 % INPUT:
 %   inXasl       - a structure with input parameters in the legacy xASL format (REQUIRED)
