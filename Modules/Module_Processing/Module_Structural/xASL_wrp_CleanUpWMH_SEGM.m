@@ -95,8 +95,8 @@ WMHnew = zeros(size(WMHim)); % create dummy WMHmask
 GMroi = pGMim>0.05; % find any GM that is an island
 GMLabels = spm_bwlabel(double(GMroi)); % create labels for all connected GM regions
 
-if max(size(WMHim)~=size(pGMim)) % if FLAIR & T1w werent same voxelsize
-    error('FLAIR wasnt resampled to T1w space');
+if ~isequal(size(WMHim), size(pGMim)) % if FLAIR & T1w werent same voxelsize
+    error('Something went wrong with the WMH segmentation or FLAIR resampling');
 end
 
 if xASL_stat_SumNan(GMLabels(:))==0
