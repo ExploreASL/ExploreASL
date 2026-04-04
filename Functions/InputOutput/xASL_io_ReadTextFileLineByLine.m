@@ -15,6 +15,7 @@ function textArray = xASL_io_ReadTextFileLineByLine(pathTextFile)
 % EXAMPLE:        textArray = xASL_io_ReadTextFileLineByLine(pathTextFile);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

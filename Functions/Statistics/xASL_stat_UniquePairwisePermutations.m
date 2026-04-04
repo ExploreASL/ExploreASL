@@ -27,6 +27,7 @@ function [PermutationList] = xASL_stat_UniquePairwisePermutations(GroupA, GroupB
 %            TWO SAMPLES: PermutationList = xASL_stat_UniquePairwisePermutations([1 2 3], [4 5 6]);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

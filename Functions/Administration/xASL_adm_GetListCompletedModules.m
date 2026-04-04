@@ -17,6 +17,7 @@ function [listStructDone, listASLDone] = xASL_adm_GetListCompletedModules(x)
 % EXAMPLE:      [listStructDone, listASLDone] = xASL_adm_GetListCompletedModules(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

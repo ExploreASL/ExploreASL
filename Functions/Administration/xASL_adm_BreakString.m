@@ -24,6 +24,7 @@ function [resultText] = xASL_adm_BreakString(textToPrint, SymbolToFill, bColor, 
 % EXAMPLE:        [resultText] = xASL_adm_BreakString('DCM2NII','=');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

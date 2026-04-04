@@ -5,6 +5,7 @@ function xASL_adm_AtlasConvert_LeftRight2Bilateral(pathNiftii, pathTSVin, pathTS
 % Load image and label information
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

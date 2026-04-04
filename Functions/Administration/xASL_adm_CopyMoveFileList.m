@@ -25,6 +25,7 @@ function [List] = xASL_adm_CopyMoveFileList(OriDir, DstDir, StrRegExp, bMove, bD
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 %

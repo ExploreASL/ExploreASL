@@ -47,6 +47,7 @@ function  RES = xASL_adm_GetFsList(strDirectory, strRegEx, bGetDirNames, bExclud
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

@@ -21,6 +21,7 @@ function mergedStruct = xASL_adm_MergeStructs(mainStruct, secondaryStruct)
 % REFERENCES:  n/a
 %
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

@@ -27,6 +27,7 @@ function UnitTest = xASL_ut_master_xASL_ExploreASL(TestRepository)
 % EXAMPLE:      UnitTests(1) = xASL_ut_master_xASL_ExploreASL(TestRepository);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

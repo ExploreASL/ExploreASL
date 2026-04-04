@@ -21,6 +21,7 @@ function parms = xASL_bids_Par2JSON(pathPar, pathJSON)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

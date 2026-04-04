@@ -1,4 +1,5 @@
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 function [ImageOut] = xASL_vis_Transparency(ForegroundImage, BackgroundImage, Transparency, bWhite)

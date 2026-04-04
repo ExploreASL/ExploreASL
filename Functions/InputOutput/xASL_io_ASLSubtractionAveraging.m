@@ -47,6 +47,7 @@ function xASL_io_ASLSubtractionAveraging(x, saveWhichNifti, bCopyOrigJson, varar
 %     Inside xASL_wrp_RegisterASL: xASL_io_ASLSubtractionAveraging(x, {1, x.P.Path_mean_PWI_Clipped;4, x.P.Path_mean_control}, 0, x.P.Path_despiked_ASL4D);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

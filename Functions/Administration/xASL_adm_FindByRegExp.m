@@ -33,6 +33,7 @@ function [tree, optionalTokens] = xASL_adm_FindByRegExp(root, dirSpecs, varargin
 % EXAMPLE: ...
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

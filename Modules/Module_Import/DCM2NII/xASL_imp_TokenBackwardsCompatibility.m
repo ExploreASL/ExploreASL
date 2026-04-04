@@ -17,6 +17,7 @@ function imPar = xASL_imp_TokenBackwardsCompatibility(imPar)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

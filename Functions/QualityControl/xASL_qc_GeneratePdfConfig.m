@@ -20,6 +20,7 @@ function [config] = xASL_qc_GeneratePdfConfig(x, subject, bOverwrite, modules)
 % EXAMPLE: xASL_qc_GeneratePdfConfig(x, 'sub-001');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

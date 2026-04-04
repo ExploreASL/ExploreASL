@@ -24,6 +24,7 @@ function [ImageOut] = xASL_im_Column2IM(ColumnIn, BrainMask)
 % EXAMPLE: ImageOut = xASL_im_Column2IM(ColumnIn, BrainMask);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

@@ -19,6 +19,7 @@ function x = xASL_qc_CollectParameters(x, iSubject, Module, iSession)
 %          x = xASL_qc_CollectParameters(x, 10, 'ASL', 4);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

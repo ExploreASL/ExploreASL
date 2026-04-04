@@ -16,6 +16,7 @@ function [s, FieldNames] = xASL_imp_AppendParmsParameters(parms)
 % EXAMPLE:     [s, FieldNames] = xASL_imp_AppendParmsParameters(parms);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

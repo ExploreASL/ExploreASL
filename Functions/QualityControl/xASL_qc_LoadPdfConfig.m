@@ -27,6 +27,7 @@ function [config] = xASL_qc_LoadPdfConfig(x, configPath, bOverWrite, bVerbose, m
 % EXAMPLE: [config] = xASL_qc_LoadPdfConfig(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

@@ -15,6 +15,7 @@ function s = xASL_imp_AppendNiftiParameters(nii_files)
 % EXAMPLE:     s = xASL_imp_AppendNiftiParameters(nii_files);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

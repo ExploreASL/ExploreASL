@@ -1,4 +1,5 @@
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 addpath(genpath('c:\ASL_pipeline_HJ'))

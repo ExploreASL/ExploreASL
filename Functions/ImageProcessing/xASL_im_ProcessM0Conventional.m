@@ -22,6 +22,7 @@ function [Corr_M0] = xASL_im_ProcessM0Conventional(ImIn, x)
 % EXAMPLE:      ...
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

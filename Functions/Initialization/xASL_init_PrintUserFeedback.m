@@ -17,6 +17,7 @@ function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
 % EXAMPLE:        xASL_init_PrintUserFeedback(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

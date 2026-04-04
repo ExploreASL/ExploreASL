@@ -17,6 +17,7 @@ function [flavors,flavorList] = xASL_test_Flavors_Compare(testConfig,flavors,fol
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

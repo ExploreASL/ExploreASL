@@ -19,6 +19,7 @@ function xASL_MoveDirMerge(SrcDir, DstDir, bOverwrite, bVerbose)
 %          xASL_MoveDirMerge('c:\User\path1', 'c:\User\path2',true);  Merge contents, overwriting
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

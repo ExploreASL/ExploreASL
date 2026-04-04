@@ -22,6 +22,7 @@ function T = xASL_stat_ticdf(P,nu)
 %             http://people.math.sfu.ca/~cbm/aands/abramowitz_and_stegun.pdf
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

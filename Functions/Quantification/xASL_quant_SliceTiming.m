@@ -42,6 +42,7 @@ function SliceTiming = xASL_quant_SliceTiming(x, inputIm)
 %            SliceTiming = xASL_quant_SliceTiming(x, 'ASL4D.nii')
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

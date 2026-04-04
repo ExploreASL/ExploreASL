@@ -40,6 +40,7 @@ function xASL_spm_deformations(x, PathIn, PathOut, Interpolation, InverseSpace, 
 % EXAMPLE: xASL_spm_deformations(x, '/MyStudy/Subject1/T1.nii.gz', '/MyStudy/Population/rT1.nii.gz');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

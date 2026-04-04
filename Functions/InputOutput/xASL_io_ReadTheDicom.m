@@ -20,6 +20,7 @@ function [Info] = xASL_io_ReadTheDicom(bUseDCMTK, DicomPath)
 % EXAMPLE: [Info] = xASL_io_ReadTheDicom(bUseDCMTK, DicomPath)
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

@@ -20,6 +20,7 @@ function OutputIM = xASL_im_ProjectLabelsOverData(DataIM,LabelIM,x,ScaleFactorDa
 % EXAMPLE:      ...
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

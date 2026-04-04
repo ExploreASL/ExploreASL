@@ -13,6 +13,7 @@ function xASL_io_RepairSiemensASL(InputPath)
 % EXAMPLE: xASL_io_RepairSiemensASL(AnalysisDir);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

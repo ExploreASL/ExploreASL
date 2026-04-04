@@ -28,6 +28,7 @@ function [resFWHM, resSigma, resErr, imSmo, imMask] = xASL_im_EstimateResolution
 % EXAMPLE: [resFWHM, resSigma, resErr, imSmo, imMask] = xASL_im_EstimateResolution(imCBF, imGM, imWM, [], {'gaussian' 'gaussian' 'gaussian'}, 5);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

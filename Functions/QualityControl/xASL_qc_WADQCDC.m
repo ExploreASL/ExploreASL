@@ -40,6 +40,7 @@ function xASL_qc_WADQCDC(x, iSubject, ScanType)
 % EXAMPLE: xASL_qc_WADQCDC(x, 10, 'ASL');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

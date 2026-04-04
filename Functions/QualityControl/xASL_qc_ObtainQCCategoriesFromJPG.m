@@ -15,6 +15,7 @@ function xASL_qc_ObtainQCCategoriesFromJPG(x)
 % EXAMPLE: xASL_qc_ObtainQCCategoriesFromJPG(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

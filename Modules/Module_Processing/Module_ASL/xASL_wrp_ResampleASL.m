@@ -32,6 +32,7 @@ function xASL_wrp_ResampleASL(x)
 % EXAMPLE: xASL_wrp_ResampleASL(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

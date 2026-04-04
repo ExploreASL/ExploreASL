@@ -26,6 +26,7 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
     %% Start the conversion if this scan should not be skipped

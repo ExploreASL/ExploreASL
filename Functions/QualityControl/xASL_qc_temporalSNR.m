@@ -38,6 +38,7 @@ function tSNR = xASL_qc_temporalSNR(pathIm4D,pathImTissueProb)
 % EXAMPLE: tSNR = xASL_qc_temporalSNR(x.P.Path_PWI4D,{x.P.Path_PVgm x.P.Path_PVwm});
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

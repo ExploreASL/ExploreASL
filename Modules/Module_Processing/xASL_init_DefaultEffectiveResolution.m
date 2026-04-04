@@ -31,6 +31,7 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 % REFERENCES: Petr, 2018 MAGMA; Vidorreta 2013 Neuroimage
 %
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

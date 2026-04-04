@@ -17,6 +17,7 @@ function x = xASL_adm_DefineASLResolution(x)
 % EXAMPLE: x = xASL_adm_DefineASLResolution(x)
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

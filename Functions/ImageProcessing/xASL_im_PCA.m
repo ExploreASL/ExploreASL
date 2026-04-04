@@ -19,6 +19,7 @@ function [pc, score, eigenvalues, tsquare, loadings, Xmean] = xASL_im_PCA(dataIn
 % EXAMPLE:      ...
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

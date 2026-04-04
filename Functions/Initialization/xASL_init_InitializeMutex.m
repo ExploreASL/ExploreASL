@@ -25,13 +25,10 @@ function [x] = xASL_init_InitializeMutex(x, ModuleName)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: [x] = xASL_init_InitializeMutex(x, 'xASL_module_Structural')
 % __________________________________
-<<<<<<< HEAD
 % SPDX-License-Identifier: Apache-2.0
-% https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% you may only use this file in compliance with the License.
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
-% SPDX-License-Identifier: Apache-2.0
-% __________________________________
+
 
 % Check inputs
 if ~isfield(x.settings,'RERUN') || ~isfield(x.settings,'MUTEXID') || ~isfield(x.dir,'LockDir')

@@ -23,6 +23,7 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
 % EXAMPLE: x = xASL_qc_CollectSoftwareVersions(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

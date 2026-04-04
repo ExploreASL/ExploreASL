@@ -19,6 +19,7 @@ function mssim=xASL_stat_MeanSSIM(imRef,imSrc,dynRange)
 %            visibility to structural similarity, IEEE Transactions on Image Processing, 13(4):600-612, 2004.
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 %

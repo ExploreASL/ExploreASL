@@ -29,6 +29,7 @@ function xASL_bids_DRO2BIDS(droTestPatient, droSubject, deleteGroundTruth, explo
 %               
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

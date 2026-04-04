@@ -42,6 +42,7 @@ function [result, x] = xASL_module_LongReg(x)
 % Ashburner J. A fast diffeomorphic image registration algorithm. Neuroimage. 2007;38(1):95
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

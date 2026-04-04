@@ -21,6 +21,7 @@ function xASL_test_SPM(TestDirDest, bTestDataUsed)
 %           xASL_test_SPM('<dir>/TestDataSets/');
 %           xASL_test_SPM('<dir>/ExploreASL/External', 1);
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

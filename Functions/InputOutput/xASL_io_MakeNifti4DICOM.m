@@ -30,6 +30,7 @@ function xASL_io_MakeNifti4DICOM(PathIn, x, DataType, OrientationPath, ResampleP
 % EXAMPLE: xASL_io_MakeNifti4DICOM(x.P.PathCBF, x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

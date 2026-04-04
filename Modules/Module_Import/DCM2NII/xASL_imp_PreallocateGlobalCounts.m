@@ -19,6 +19,7 @@ function [subject,visit] = xASL_imp_PreallocateGlobalCounts(nSubjects, subject, 
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

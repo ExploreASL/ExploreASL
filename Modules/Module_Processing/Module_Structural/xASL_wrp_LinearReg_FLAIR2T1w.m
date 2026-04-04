@@ -20,6 +20,7 @@ function xASL_wrp_LinearReg_FLAIR2T1w(x, bAutoACPC)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

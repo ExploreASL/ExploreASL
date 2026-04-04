@@ -18,6 +18,7 @@ function [IM] = xASL_im_ZeroEdges(IM, EdgeThicknessPerc)
 % EXAMPLE: ImOut = xASL_im_ZeroEdges(ImIn);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 %

@@ -16,6 +16,7 @@ function imageType = xASL_bids_determineImageTypeGE(jsonPar)
 %              imageType = xASL_bids_determineImageTypeGE(iHeader);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

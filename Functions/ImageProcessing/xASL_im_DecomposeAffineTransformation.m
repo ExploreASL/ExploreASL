@@ -99,6 +99,7 @@ function [M, P] = xASL_im_DecomposeAffineTransformation(Mtransformation)
 %          0         0         0    1.0000
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

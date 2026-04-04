@@ -16,6 +16,7 @@ function logTable = xASL_test_AddLoggingEntryToTable(nameFlavor,logTable,logStru
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

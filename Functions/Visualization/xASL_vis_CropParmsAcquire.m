@@ -19,6 +19,7 @@ function [xmin xmax ymin ymax] = xASL_vis_CropParmsAcquire(temp_image)
 % EXAMPLE:      ...
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

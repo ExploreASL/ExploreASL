@@ -26,6 +26,7 @@ function [x] = xASL_qc_GenerateReport(x, subject, modules, bOverWrite)
 %          xASL_qc_GenerateReport(x, [], false);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 %% 0. Admin

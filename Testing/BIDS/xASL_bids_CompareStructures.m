@@ -30,6 +30,7 @@ function [identical,results,reportTable] = xASL_bids_CompareStructures(pathDatas
 % REFERENCES:       ...
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

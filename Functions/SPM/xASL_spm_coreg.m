@@ -31,6 +31,7 @@ function xASL_spm_coreg(refPath, srcPath, OtherList, x, sep, FastReg)
 % EXAMPLE: xASL_spm_coreg('/MyStudy/Subject1/T1.nii.gz', '/MyStudy/Subject1/mean_control.nii', {'/MyStudy/Subject1/M0.nii'});
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

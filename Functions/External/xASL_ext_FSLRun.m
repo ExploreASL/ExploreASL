@@ -34,6 +34,7 @@ function [x, Result1] = xASL_ext_FSLRun(FSLCommand, x, OutputZipping, NicenessVa
 % EXAMPLE: xASL_ext_FSLRun(FSLCommand, x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 %% Admin

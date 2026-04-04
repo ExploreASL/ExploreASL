@@ -35,6 +35,7 @@ function xASL_im_CreateASLDeformationField(x, bOverwrite, EstimatedResolution, P
 %               xASL_im_CreateASLDeformationField(x, 1, [3 3 7]);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

@@ -42,6 +42,7 @@ function [x] = xASL_wrp_SegmentT1w(x, bSegmentSPM12)
 % Mendrik AM, Vincken KL, Kuijf HJ, et al. MRBrainS Challenge: Online Evaluation Framework for Brain Image Segmentation in 3T MRI Scans. Comput.Intell.Neurosci. 2015. p. 813696-mrbrains13.isi.uu.nl/results.php.
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

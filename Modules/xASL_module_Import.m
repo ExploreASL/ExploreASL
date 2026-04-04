@@ -117,6 +117,7 @@ function [result, x] = xASL_module_Import(x)
 % EXAMPLE: [~, x] = xASL_init_Iteration(x,'xASL_module_Import');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

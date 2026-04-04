@@ -17,6 +17,7 @@ function [Nr DayInYear] = xASL_adm_ConvertDate2Nr(TempDate)
 % EXAMPLE:      ...
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

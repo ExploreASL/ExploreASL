@@ -16,6 +16,7 @@ function INDEX = xASL_adm_FindStrIndex(ARRAY, STRING)
 % EXAMPLE:      ...
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

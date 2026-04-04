@@ -29,6 +29,7 @@ function xASL_wrp_VisualQC_ASL(x)
 % EXAMPLE: xASL_wrp_VisualQC_ASL(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

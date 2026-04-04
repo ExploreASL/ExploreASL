@@ -25,6 +25,7 @@ function [LR_flip_YesNo] = xASL_im_DetermineFlip(PathOrientationResults)
 % EXAMPLE: LR_flip_YesNo = xASL_im_DetermineFlip(PathOrientationResults);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

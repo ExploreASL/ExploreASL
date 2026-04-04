@@ -18,6 +18,7 @@ function xASL_im_Move3DVolume(pathNifti, pathResult, dim, volNum, numVoxel)
 % EXAMPLE:      n/a
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

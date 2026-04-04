@@ -21,6 +21,7 @@ function [xQ] = xASL_adm_DefineASLReadout(xQ, bVerbose)
 % EXAMPLE: xQ = xASL_adm_DefineASLReadout(xQ);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

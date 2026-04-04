@@ -20,6 +20,7 @@ function [jsonOut,reportOut] = xASL_bids_JsonCheck(jsonIn,fileType)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

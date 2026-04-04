@@ -17,6 +17,7 @@ function xASL_im_dilateROI(PathIn, PathOut, minVolume)
 % EXAMPLE:      xASL_im_dilateROI('test.nii', [], 40)
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

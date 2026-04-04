@@ -20,6 +20,7 @@ function F = xASL_stat_tcdf(T,nu)
 %             http://inspirehep.net/record/1389910/files/suf9601.pdf
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

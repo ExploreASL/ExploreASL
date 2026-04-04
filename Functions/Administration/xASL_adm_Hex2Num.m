@@ -27,6 +27,7 @@ function outNum = xASL_adm_Hex2Num(inStr, type, endian)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 % Not enough input parameters

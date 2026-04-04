@@ -40,6 +40,7 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite, PathTSV)
 % EXAMPLE: xASL_bids_Add2ParticipantsTSV(MeanMotion, 'MeanMotion', x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

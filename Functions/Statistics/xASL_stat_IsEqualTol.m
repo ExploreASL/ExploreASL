@@ -23,6 +23,7 @@ function bIsnear = xASL_stat_IsEqualTol(x, y, tol)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

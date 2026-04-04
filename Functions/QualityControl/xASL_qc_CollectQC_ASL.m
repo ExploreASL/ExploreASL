@@ -49,6 +49,7 @@ function [x] = xASL_qc_CollectQC_ASL(x, iSubject, iSession)
 % EXAMPLE: x = xASL_qc_CollectQC_ASL(x, 10, 1);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

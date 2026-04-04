@@ -33,6 +33,7 @@ function [ControlIm, LabelIm, OrderContLabl, xQ] = xASL_quant_GetControlLabelOrd
 % 
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

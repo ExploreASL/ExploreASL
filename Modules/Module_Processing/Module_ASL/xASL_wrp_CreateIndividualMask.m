@@ -44,6 +44,7 @@ function xASL_wrp_CreateIndividualMask(x)
 % EXAMPLE: xASL_wrp_CreateIndividualMask(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 %
 %% 0. Create native space FoV mask

@@ -31,6 +31,7 @@ function [x, Result1] = xASL_ext_VABYRun(VABYCommand, x, NicenessValue, bVerbose
 % EXAMPLE: xASL_ext_VABYRun(VABYCommand, x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

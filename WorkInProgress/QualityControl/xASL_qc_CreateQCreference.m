@@ -1,5 +1,6 @@
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 % Generate value ranges for QC keys for ASPIRE PDF report

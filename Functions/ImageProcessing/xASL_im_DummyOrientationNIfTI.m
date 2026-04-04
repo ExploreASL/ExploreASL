@@ -56,6 +56,7 @@ function xASL_im_DummyOrientationNIfTI(PathSrc, PathRef, PathDummyOut, bApplyRot
 % And also the explanation inside xASL_im_DecomposeAffineTransformation.m
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

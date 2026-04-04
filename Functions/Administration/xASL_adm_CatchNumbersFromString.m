@@ -15,6 +15,7 @@ function [OutputNumber] = xASL_adm_CatchNumbersFromString(InputString)
 % EXAMPLE:        [OutputNumber] = xASL_adm_CatchNumbersFromString('test123test');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

@@ -17,6 +17,7 @@ function [MatrixOut] = xASL_im_Flip(MatrixIn, varargin)
 % EXAMPLE:      [MatrixOut] = xASL_im_Flip(MatrixIn, [dim])
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

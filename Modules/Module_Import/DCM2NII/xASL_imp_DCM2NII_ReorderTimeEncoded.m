@@ -22,6 +22,7 @@ function resultJSON = xASL_imp_DCM2NII_ReorderTimeEncoded(nii_files, bTimeEncode
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

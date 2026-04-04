@@ -17,6 +17,7 @@ function output_res = xASL_im_ResampleLinearFair(im_input, newsize)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

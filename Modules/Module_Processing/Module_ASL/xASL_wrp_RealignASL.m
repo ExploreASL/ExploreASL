@@ -34,6 +34,7 @@ function xASL_wrp_RealignASL(x, bASL)
 % EXAMPLE: xASL_wrp_RealignASL(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

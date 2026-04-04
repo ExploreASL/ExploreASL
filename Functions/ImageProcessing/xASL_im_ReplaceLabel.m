@@ -35,6 +35,7 @@ function xASL_im_ReplaceLabel(pathNifti, LabelNumbersOld, LabelNumbersNew, pathN
 % 
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

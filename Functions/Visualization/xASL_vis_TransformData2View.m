@@ -32,6 +32,7 @@ function FigureOut = xASL_vis_TransformData2View(ImagesIn, x)
 % EXAMPLE: FigureOut = xASL_vis_TransformData2View(ImagesIn);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

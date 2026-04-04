@@ -18,6 +18,7 @@ function [DiceCoeff] = xASL_im_ComputeDice(imA, imB)
 %          two voxels, of which 1 voxel overlaps, so DiceCoeff=0.5
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 
