@@ -26,6 +26,7 @@ function [x] = xASL_init_DefineStudyStats(x)
 % EXAMPLE: x = xASL_init_DefineStudyStats(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 

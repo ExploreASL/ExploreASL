@@ -95,6 +95,7 @@ function [x] = xASL_stat_GetROIstatistics(x)
 % EXAMPLE:      x = xASL_stat_GetROIstatistics(x);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 %% ------------------------------------------------------------------------------------------------------------

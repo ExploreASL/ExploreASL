@@ -6,7 +6,6 @@ function xASL_wrp_spm_GLM( x, InputDataStr,AsymIndex)
 % ASL     = the data to be analyzed. Could be ASL, or e.g. SD or SNR masks
 %
 %
-% By HJMM Mutsaerts, ExploreASL 2016
 %
 % AsymIndex==1 -> Asymmetry Index
 % AsymIndex==2 -> Average of left & right
@@ -240,6 +239,7 @@ function LoadFile = xASL_adm_Load4DMemMapping(x, WhichModality)
 % EXAMPLE:      ...
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
 
 
