@@ -48,11 +48,16 @@ for iS=1:length(Lesion_ROI_list)
 				warning('%s\n%s\n%s','The transformation matrix MAT and MAT0 of Lesion/ROI and the corresponding structural files differ. Please check the alignment of the files:', Lesion_ROI_list{iS}, fStructName);
 			else
 				% Option 4 - we report a difference and set MAT of the Lesion/ROI to that of T1
-				warning('%s\n%s\n%s','The transformation matrix MAT of Lesion/ROI and the corresponding structural files differ, but MAT0 are equal. Fixing MAT of the Lesion/ROI:', Lesion_ROI_list{iS}, fStructName);
+				fprintf('%s\n%s\n%s\n%s\n%s','The transformation matrix MAT of Lesion/ROI:', Lesion_ROI_list{iS}, ...
+					                   'and the corresponding structural file:', fStructName, ...
+									   ['differ, but MAT0 are equal. This means that the alignment is currently wrong, but was initially correct. The reason could be that Lesion/ROI was added after ExploreASL ' ...
+									   'was executed. We have now set the Lesion/ROI orientation (==MAT) to that of the structural file. Please ensure that the files are correctly aligned.']);
 
 				% Save the Lesion/ROI again with a correct MAT and assign a warning
 				imLesion = xASL_io_Nifti2Im(Lesion_ROI_list{iS});
 				xASL_io_SaveNifti(fStructName, Lesion_ROI_list{iS}, imLesion);
+
+				error('Misalignment detected, tried to fix this, but a user-check is required before rerunning! See details above.');
 			end
 		end
 	end
