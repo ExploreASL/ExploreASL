@@ -239,46 +239,44 @@ xASL_delete(rpfile);
 % average head position
 
 V = spm_vol(InputPath);
-unique_PLDs = unique(x.Q.Initial_PLD);
-TE_idx = zeros(numFrames,1);
 rp_all = zeros(numFrames, 6);
 
 if bMultiTE
-    % Hanldes Multi-TE dataset regardless of PLD
-    for p = 1:numel(unique_PLDs)
-        idxPLD = x.Q.Initial_PLD == unique_PLDs(p); % Creates a logical vector storing whether each image in x.Q.Initial_PLD belongs to the specific PLD called in unique_PLDs(p) or not
-        framesPLD = find(idxPLD); % Indices of the frames belonging to this PLD
-        [~, order] = sort(x.Q.EchoTime(framesPLD)); % Determine TE ordering within this PLD based on EchoTime (no frame reordering)
+    % Handles Multi-TE dataset regardless of PLD
     
-        TE_idx(framesPLD(order)) = 1:numel(framesPLD); % Assign index number to each TE based on the sorting
-    end
-    idx_firstTE = (TE_idx == 1); % Collect all of the first TEs
-    spm_realign(V(idx_firstTE), flags, bZigZag); % Run alignment on the first TEs only
+    % Find the start of each new PLD group by detecting changes in PLD value
+    PLD_starts = [1, find(diff(x.Q.Initial_PLD(:)') ~= 0) + 1];  % Finds the frame indices where a new PLD group begins
+    nPLD_Groups = numel(PLD_starts); % The number of PLD groups
+    PLD_ends = [PLD_starts(2:end) - 1, numel(x.Q.Initial_PLD)];  % Corresponding end indices to easily differentiate the PLDs
     
-    % Load RP file for TE1 frames
-    te1_frames = find(idx_firstTE); % Find() converts the logical vector to absolute frame numbers - translates dataset frame numbers into RP file row numbers
-    rp_te1 = load(rpfile);   % rows correspond to te1_frames now
+    idx_firstTE = false(1, numel(V)); % Sets up the logical vector. All zeroes.
+    idx_firstTE(PLD_starts) = true; % Logical vector that flags the first TEs frames. Since the start of each PLD group is assumed to be the first TE of that group.
+    
+    spm_realign(V(idx_firstTE), flags, bZigZag); % Realigns only the flagged frames
+    
+    rp_te1 = load(rpfile); % Load the rp file written by spm_realign
+    
 
-    for p = 1:numel(unique_PLDs)
-        idxPLD    = x.Q.Initial_PLD == unique_PLDs(p);
-        framesPLD = find(idxPLD);
-    
-        te1_candidates = framesPLD(TE_idx(framesPLD) == 1); % Identify first TE frame within this PLD
-        if numel(te1_candidates) ~= 1
-            warning('Expected exactly one TE1 frame for PLD %d, found %d. Using first occurrence.', unique_PLDs(p), numel(te1_candidates));
+    % Loop through PLD groups to apply the motion estimates from the first TE to the rest of the TEs
+    for p = 1:nPLD_Groups
+        framesPLD = PLD_starts(p):PLD_ends(p); % Collates all the frame indices of the PLD group 
+        
+        % Checks that the first frame in the PLD group has the lowest echo time
+        if x.Q.EchoTime(PLD_starts(p)) ~= min(x.Q.EchoTime(framesPLD))
+            warning('Group %d: first frame is not the minimum TE. Check frame ordering. Processing continued.', p);
         end
-        firstTE_frame = te1_candidates(1);
-
-        row_in_rp = find(te1_frames == firstTE_frame); % Identify in which row of the rpfile the identified fist TE frame sits
-        rp_first_PLD = rp_te1(row_in_rp,:); % Select the correct motion row
+        
+        firstTE_frame = PLD_starts(p); % Frame index of the first TE in this PLD group 
+        rp_first_PLD = rp_te1(p, :);   % Selects the corresponding line in the rp file
     
-        rp_all(framesPLD, :) = repmat(rp_first_PLD, numel(framesPLD), 1); % Propagate motion numerically to all TEs
+        % Repeats the motion estimates extracted from the rp file for the rest of the TEs in the PLD group and is written to the corresponding rows in rp_all
+        rp_all(framesPLD, :) = repmat(rp_first_PLD, numel(framesPLD), 1); 
     
-        remaining_frames = framesPLD(TE_idx(framesPLD) > 1);
-        ref_affine = spm_get_space([V(firstTE_frame).fname ',' num2str(V(firstTE_frame).n(1))] ); % Read the affine exactly as SPM wrote it
+        ref_affine = spm_get_space([V(firstTE_frame).fname ',' num2str(V(firstTE_frame).n(1))]); % Stores the affine matrix from the first TE 
     
-        for f = 1:numel(remaining_frames) % Apply motion to NIfTI headers for remaining TEs
-            Vframe = V(remaining_frames(f));
+        % Propagates the affine matrix to the rest of the TEs in this PLD group
+        for f = framesPLD(2:end)
+            Vframe = V(f);
             spm_get_space([Vframe.fname ',' num2str(Vframe.n(1))], ref_affine);
         end
     end
@@ -328,8 +326,8 @@ MeanRadius = 50; % typical distance center head to cerebral cortex (Power et al.
 % PM: assess this from logical ASL EPI mask? This does influence the weighting of rotations compared to translations
 
 if bMultiTE
-    rp_te1_only = rp(te1_frames, :);  % extract only the TE1 rows
-    FD{1} = rp_te1_only;              
+    rp_te1_only = rp(PLD_starts, :);  % extract only the TE1 rows
+    FD{1} = rp_te1_only;
     FD{2} = diff(rp_te1_only);
 
     % Calculate FD for all-frames plot
@@ -545,7 +543,7 @@ function fig = xASL_plot_motion(NDV, mean_NDV, bENABLE, bSpikeRemoval, bWithin, 
 
 		    title(pTitle2);
 		    ylabel('NDV (mm)');
-	        xlabel('frame #');
+	        xlabel('Frame #');
 
             axis([1 length(NDV_allTE{1}) 0 max(NDV_allTE{1})*1.05]);
 
@@ -564,7 +562,7 @@ function fig = xASL_plot_motion(NDV, mean_NDV, bENABLE, bSpikeRemoval, bWithin, 
     end
 end
 
-% Assigning titles to the plots depending on motion correction approach
+% Assigning titles to the plots depending on motion correction approach and plotting the Position and Motion plots
 bWithin = false;
 if bMultiTE
     pTitle = ['TE position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame'];
