@@ -52,8 +52,8 @@ end
 
 [Fpath, Ffile, Fext] = fileparts(InputPath);
 rpfile = fullfile( Fpath, ['rp_' Ffile '.txt']);
-rpfile_within  = fullfile(Fpath, ['within_rp_'  Ffile '.txt']);
-rpfile_between = fullfile(Fpath, ['between_rp_' Ffile '.txt']);
+rpfile_within  = fullfile(Fpath, ['rp_within_'  Ffile '.txt']);
+rpfile_between = fullfile(Fpath, ['rp_between_' Ffile '.txt']);
 rInputPath = fullfile( Fpath, ['r' Ffile Fext]);
 InputPathJson = fullfile( Fpath, [Ffile '.json']);
 rInputPathJson = fullfile( Fpath, ['r' Ffile '.json']);
@@ -67,13 +67,10 @@ MinimumtValue = NaN;
 
 %% Read basic image information
 tempnii = xASL_io_ReadNifti(InputPath);
-nFrames = double(tempnii.hdr.dim(5));
-numFrames = nFrames;
-if length(x.Q.EchoTime)>1
-    nFrames=nFrames/numel(unique(x.Q.EchoTime));
-end
-minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
+nFrames = double(tempnii.hdr.dim(5)); % Total number of frames
+nFramesPerTE=nFrames/numel(unique(x.Q.EchoTime)); % Number of frames per unique TE
 
+minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
 
 %% Define motion correction options
 % bMoCoPossible boolean states if it is possible to perform motion correction with the given data 
@@ -82,11 +79,11 @@ if x.modules.asl.bContainsSubtracted
 	% Motion correction is disabled, potentially insufficient contrast
 	bMoCoPossible = false;
 	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it only has DeltaM volumes, which may contain insufficient contrast']);
-elseif nFrames > 1
+elseif nFramesPerTE > 1
 	bMoCoPossible = true;
 else
 	bMoCoPossible = false;
-	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it had only ' num2str(nFrames) ' 3D frames.']);
+	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it had only ' num2str(nFramesPerTE) ' 3D frames.']);
 end
 
 if isfield(x.Q,'LookLocker') && x.Q.LookLocker
@@ -95,13 +92,14 @@ if isfield(x.Q,'LookLocker') && x.Q.LookLocker
 end
 
 % Set flags for multi-TE and multi-PLD datasets
-if x.Q.nUniqueInitial_PLD>2
+if x.Q.nUniqueInitial_PLD>1 && (~isfield(x.modules.asl, 'bTimeEncoded') || ~x.modules.asl.bTimeEncoded)
+	% Here, we consider only simple multiPLD for averaging across PLDs. TimeEncoded is treated as singlePLD - because there are usually not many repetitions
     bMultiPLD = 1;
 else
     bMultiPLD = 0;
 end
 
-if x.Q.nUniqueEchoTime>2
+if x.Q.nUniqueEchoTime>1
     bMultiTE = 1;
 else
     bMultiTE = 0;
@@ -137,7 +135,7 @@ end
 % SpikeRemovalThreshold is an optional field, by default we use ENABLE
 % So, here we check if it exists, but otherwise we default to disabling it
 
-if x.Q.nUniqueInitial_PLD>1 || x.Q.nUniqueEchoTime>1
+if bMultiPLD || bMultiTE
     % outlier exclusion is temporarily disabled for multiPLD/TE
     % as we are still developing this feature
     fprintf('%s\n', 'multi-PLD or multi-TE detected, disabling outlier exclusion, not yet implemented');
@@ -173,19 +171,19 @@ else % Here it is clear that SpikeRemovalThreshold exists, and has a correct val
     bENABLE = false;
 end
 
-if nFrames < 10 % Only execute ENABLE if we have at least 5 control-label pairs (==10 volumes)
+if nFramesPerTE < 10 % Only execute ENABLE if we have at least 5 control-label pairs (==10 volumes)
 	bENABLE = false;
 end
 
 
 %% Manage zig-zag in motion correction
-if x.Q.nUniqueInitial_PLD>1 || x.Q.nUniqueEchoTime>1
-    % ZigZag are temporarily disabled for multiPLD/TE
+if bMultiTE || x.modules.asl.bTimeEncoded
+    % ZigZag are temporarily disabled for multiTE and TimeEncoded
     % as we are still developing this feature
     fprintf('%s\n', 'multi-PLD or multi-TE detected, disabling zig-zag motion estimation, not yet implemented');    
     bZigZag = false;
 
-elseif bASL && nFrames > 2
+elseif bASL && nFramesPerTE > 2
     % we use zig-zag motion regression for ASL
     % Minimum number of frames for ZigZag is > 2 (1 control-label pair)
 	bZigZag = true;
@@ -204,9 +202,9 @@ end
 %% ----------------------------------------------------------------------------------------
 %% 1. Estimate motion
 if bMultiTE
-    fprintf('SPM motion estimation in multi-TE data');
+    fprintf('SPM motion estimation in multi-TE data: Aligning shortest TEs only');
 elseif bMultiPLD
-    fprintf('SPM motion estimation in multi-PLD data: within PLDs');
+    fprintf('SPM motion estimation in multi-PLD data: Aligning within PLDs only');
 else
     fprintf('Standard SPM motion estimation');
 end
@@ -226,61 +224,64 @@ switch x.settings.Quality
 		flags.sep = minVoxelSize*2;
 end
 
-flags.rtm = 1; % realign to mean
+if bMultiTE || bMultiPLD 
+	flags.rtm = 0; % disable realign to mean
+else
+	flags.rtm = 1; % realign to mean
+end
+
 flags.interp = 1;
 flags.graphics = 0;
 
 % If previous realign parameters exist, delete them
 xASL_delete(rpfile);
+xASL_delete(rpfile_within);
+xASL_delete(rpfile_between);
 
 % Run motion correction for corresponding case
 % Note that this is the adapted spm_realign, including zig-zag
 % regression to account for ASL's potential control-label difference in
 % average head position
 
-V = spm_vol(InputPath);
-rp_all = zeros(numFrames, 6);
+V = spm_vol(InputPath); 
+Y = spm_read_vols(V); % Read the image
+rp_all = zeros(nFrames, 6); 
 
 if bMultiTE
     % Handles Multi-TE dataset regardless of PLD
+	% Registers all frames with the shortest PLDs and then applies the same transformation to all the longer PLDs
+	% It assumes that the volume is sorted in the order of acquisition with blocks of increasing TEs
     
-    % Find the start of each new PLD group by detecting changes in PLD value
-    PLD_starts = [1, find(diff(x.Q.Initial_PLD(:)') ~= 0) + 1];  % Finds the frame indices where a new PLD group begins
-    nPLD_Groups = numel(PLD_starts); % The number of PLD groups
-    PLD_ends = [PLD_starts(2:end) - 1, numel(x.Q.Initial_PLD)];  % Corresponding end indices to easily differentiate the PLDs
+	% Indexes that flags the first/shortest TEs frames
+    idx_firstTE = find((x.Q.EchoTime == min(x.Q.EchoTime)));
+	idx_lastTE =  find((x.Q.EchoTime == max(x.Q.EchoTime)));
     
-    idx_firstTE = false(1, numel(V)); % Sets up the logical vector. All zeroes.
-    idx_firstTE(PLD_starts) = true; % Logical vector that flags the first TEs frames. Since the start of each PLD group is assumed to be the first TE of that group.
-    
-    spm_realign(V(idx_firstTE), flags, bZigZag); % Realigns only the flagged frames
-    
-    rp_te1 = load(rpfile); % Load the rp file written by spm_realign
-    
+	if length(idx_firstTE) ~= length(idx_lastTE)
+		% TEs should form blocks and thus have the same lengths
+		error('Number of shortest TEs and longest TEs do not match');
+	end
 
-    % Loop through PLD groups to apply the motion estimates from the first TE to the rest of the TEs
-    for p = 1:nPLD_Groups
-        framesPLD = PLD_starts(p):PLD_ends(p); % Collates all the frame indices of the PLD group 
+	% Realigns only the flagged frames
+    spm_realign(V(idx_firstTE), flags, bZigZag); 
+	% This affects the ASL4D.mat file, rp_ASL4D.txt file and MAT within the ASL4D.nii volume
+    
+    rp_firstTE = load(rpfile); % Load the rp file written by spm_realign
+
+	V = spm_vol(InputPath); % Read the updated volumes
+    % Loop through TE groups
+    for idxTE = 1:length(idx_firstTE)
+        % Repeats the motion estimates extracted from the rp file for the rest of the TEs and writes to the corresponding rows in rp_all
+        rp_all(idx_firstTE(idxTE):idx_lastTE(idxTE), :) = repmat(rp_firstTE(idxTE,:), x.Q.nUniqueEchoTime, 1); 
+    
+		for idxAllTE = (idx_firstTE(idxTE)+1):idx_lastTE(idxTE)
+			V(idxAllTE).mat = V(idx_firstTE(idxTE)).mat;
+		end
         
-        % Checks that the first frame in the PLD group has the lowest echo time
-        if x.Q.EchoTime(PLD_starts(p)) ~= min(x.Q.EchoTime(framesPLD))
-            warning('Group %d: first frame is not the minimum TE. Check frame ordering. Processing continued.', p);
-        end
-        
-        firstTE_frame = PLD_starts(p); % Frame index of the first TE in this PLD group 
-        rp_first_PLD = rp_te1(p, :);   % Selects the corresponding line in the rp file
-    
-        % Repeats the motion estimates extracted from the rp file for the rest of the TEs in the PLD group and is written to the corresponding rows in rp_all
-        rp_all(framesPLD, :) = repmat(rp_first_PLD, numel(framesPLD), 1); 
-    
-        ref_affine = spm_get_space([V(firstTE_frame).fname ',' num2str(V(firstTE_frame).n(1))]); % Stores the affine matrix from the first TE 
-    
-        % Propagates the affine matrix to the rest of the TEs in this PLD group
-        for f = framesPLD(2:end)
-            Vframe = V(f);
-            spm_get_space([Vframe.fname ',' num2str(Vframe.n(1))], ref_affine);
-        end
     end
-    writematrix(rp_all, rpfile, 'delimiter', '\t');
+    writematrix(rp_all, rpfile, 'delimiter', '\t'); % Save the updated matrix TXT
+	spm_write_vol(V, Y); % Save the updated volume
+
+	% We need to update the ASL4D.mat
 
 elseif bMultiPLD
     % Handles only Multi-PLD datasets
@@ -302,8 +303,8 @@ elseif bMultiPLD
 
     rp_within = load(rpfile_within, '-ascii');
     rp_between = load(rpfile_between, '-ascii');
-    rp_multi = zeros(nFrames, 12); % because for some reason spm_imatrix outputs 12 columns despite only having inputs with 6 columns
-    for i = 1:nFrames
+    rp_multi = zeros(nFramesPerTE, 12); % because for some reason spm_imatrix outputs 12 columns despite only having inputs with 6 columns
+    for i = 1:nFramesPerTE
         rp_within_matrix = spm_matrix(rp_within(i,:)); 
         rp_between_matrix = spm_matrix(rp_between(i,:)); 
         rp_overall = rp_between_matrix * rp_within_matrix;
