@@ -35,7 +35,7 @@ function [result, x] = xASL_module_Population(x)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % SPDX-License-Identifier: Apache-2.0
 % ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
-% __________________________________
+% __________________________________ti
 
 
 %% ------------------------------------------------------------------------------------------------------------
@@ -53,9 +53,19 @@ end
 % Check again for Atlases (main checking is done when loading dataPar)
 if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking')
 	% If no values are provided, then we provide the defaults
-	x.S.Atlases = {'Total','DeepWM','Tatu_ACA_MCA_PCA'}; % Default
-    x.S.TissueMasking = {'GM' 'WM','GM'}; % GM WM GM, fits with the Total & DeepWM & Tatu_ACA_MCA_PCA above
-    % Note that this should be in the same order as the atlases/ROIs
+	% GM WM GM tissues with the Total & DeepWM & Tatu_ACA_MCA_PCA
+	
+	if isfield(x.S, 'TissueThreshold')
+		% If TissueThresholds is set, then add Total-GM, Total-WM, and vascular territory atlas
+		x.S.Atlases = {'Total', 'DeepWM', 'Tatu_ACA_MCA_PCA'}; 
+		x.S.TissueMasking = {'GM', 'WM', 'GM'};
+	else
+		x.S.Atlases = {'Total', 'Total', 'DeepWM', 'Tatu_ACA_MCA_PCA', 'Tatu_ACA_MCA_PCA'}; 
+		x.S.TissueMasking = {'GM', 'GM', 'WM', 'GM', 'GM'};
+		x.S.TissueThreshold = [0.7, 0.5, 0.7, 0.7, 0.5];
+	end
+
+    % Note that Atlases and TissueMasking  should be in the same order as the atlases/ROIs
     % A mismatch (e.g. TissueMasking=GM for Atlases=deepWM) would result in an empty ROI, producing a NaN in the .tsv table
     % You can also use CSF or combinations like GM+WM or GM+CSF
 elseif ~isfield(x.S, 'Atlases') || ~isfield(x.S, 'TissueMasking') || length(x.S.Atlases)~=length(x.S.TissueMasking)
