@@ -490,7 +490,7 @@ if bCreatePWI
     % For most 3D spiral sequences (==GE), we do not have individual control-label pairs anyway.
 
     if isfield(x.Q, 'PulseSequenceType') && ~isempty(regexpi(x.Q.PulseSequenceType, 'spiral', 'once')) &&  strcmpi(x.Q.MRAcquisitionType, '3D')
-        T2_factor = x.Q.TissueT2;
+        T2_factor = x.Q.T2GM;
     else
         T2_factor = x.Q.T2star;
     end

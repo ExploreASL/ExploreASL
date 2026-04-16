@@ -448,7 +448,7 @@ switch (lower(localQuantificationType))
 
 		% T2-times needed for multi-TE quantification
 		fprintf(FIDoptionFile, '--t2b=%f\n', x.Q.T2art/1000);
-		fprintf(FIDoptionFile, '--t2=%f\n', x.Q.TissueT2/1000);
+		fprintf(FIDoptionFile, '--t2=%f\n', x.Q.T2tissue/1000);
 	case 'basil'
 		% Basic tissue parameters
 		fprintf(FIDoptionFile, '--t1b=%f\n', x.Q.BloodT1/1000);
@@ -461,7 +461,7 @@ switch (lower(localQuantificationType))
 
 		% T2-times needed for multi-TE quantification
 		ExternalOptions = [ExternalOptions, sprintf(' --t2b=%f', x.Q.T2art/1000)];
-		ExternalOptions = [ExternalOptions, sprintf(' --t2=%f', x.Q.TissueT2/1000)];
+		ExternalOptions = [ExternalOptions, sprintf(' --t2=%f', x.Q.T2tissue/1000)];
 end
 
 %% 3. Basic acquisition parameters

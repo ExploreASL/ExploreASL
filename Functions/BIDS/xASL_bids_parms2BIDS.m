@@ -63,13 +63,13 @@ end
 %% 1) Define field names that need to be convert/renamed/merged
 
 % Fields with these names need to have the time converted between XASL legacy and BIDS, and define their recommended range in ms
-convertTimeFieldsXASL =       {'EchoTime' 'uniqueEchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'GEPrivateCV4' 'GEPrivateCV5' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'TissueT2'  'T2art' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
-convertTimeFieldsRange =       [0.5        0.5              5                0             10                 10                   10             10             10              5                  100       10          10      100        5                  5;...% Minimum in ms
-                                500        500              20000            10000         5000               5000                 5000           5000           5000            400                5000      500         50      5000       400                10000];% Maximum in ms   
-convertTimeFieldsAllowOutliers=[0          0                0                1             1                  1                    1              1              0               0                  0         0           0       0          0                  0]; % For multiple values, don't print a warning if mean value is within the range
+convertTimeFieldsXASL =       {'EchoTime' 'uniqueEchoTime' 'RepetitionTime' 'Initial_PLD' 'LabelingDuration' 'GELabelingDuration' 'GEPrivateCV4' 'GEPrivateCV5' 'InversionTime' 'SliceReadoutTime' 'BloodT1' 'T2GM' 'T2tissue' 'T2art' 'TissueT1' 'SiemensSliceTime' 'BackgroundSuppressionPulseTime'};
+convertTimeFieldsRange =       [0.5        0.5              5                0             10                 10                   10             10             10              5                  100       10     10         10      100        5                  5;...% Minimum in ms
+                                500        500              20000            10000         5000               5000                 5000           5000           5000            400                5000      500    4000       500      5000       400                10000];% Maximum in ms   
+convertTimeFieldsAllowOutliers=[0          0                0                1             1                  1                    1              1              0               0                  0         0      0          0       0          0                  0]; % For multiple values, don't print a warning if mean value is within the range
 					  
 % Fields that are entered under the subfield 'Q' for xASL on the output
-xASLqFields = {'EchoTime' 'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LookLocker' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1' 'TissueT2' 'T2art' 'MRAcquisitionType' 'PulseSequenceType' ...
+xASLqFields = {'EchoTime' 'LabelingType' 'Initial_PLD' 'BackGrSupprPulses' 'LookLocker' 'LabelingDuration' 'SliceReadoutTime' 'NumberOfAverages' 'BloodT1' 'T2tissue' 'T2GM' 'T2art' 'MRAcquisitionType' 'PulseSequenceType' ...
 	           'BackgroundSuppressionPulseTime' 'BackgroundSuppressionNumberPulses' 'TimeEncodedMatrixSize' 'nUniqueEchoTime' 'TimeEncodedMatrixType' 'SoftwareVersions' 'TimeEncodedMatrix'};
 
 % Some JSON fields need to be updated to fit the BIDS definition
