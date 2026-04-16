@@ -1,7 +1,7 @@
-function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xASL_quant_External(path_PWI4D, x)
+function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal, Res_map, Fit_map, Log] = xASL_quant_External(path_PWI4D, x)
 %xASL_quant_External Perform quantification using FSL BASIL/FABBER/VABY
 %
-% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xASL_quant_External(path_PWI4D, x)
+% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal, Res_map, Fit_map, Log] = xASL_quant_External(path_PWI4D, x)
 % 
 % INPUT:
 %   path_PWI4D      - path to PWI4D (OPTIONAL, defaults to x.P.Path_PWI4D)
@@ -15,6 +15,9 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xAS
 % ABV_map           - arterial blood volume map (if possible to calculate with multi-PLD, otherwise empty)
 % Tex_map           - Time of exchange map of transport across BBB (if possible to calculate with multi-TE, otherwise empty)
 % ITT_map           - Intravoxel transit time (if possible to calculate with multi-TE, otherwise empty)
+% Res_map           - Residuals of the fit
+% Fit_map           - Model fit 4D image
+% Log               - Log-file of the external quantification
 % resultExternal    - describes if the execution was successful
 %                     (0 = successful, NaN = no BASIL/FABBER/VABY found, 1 or other = something failed)
 %
@@ -54,6 +57,9 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xAS
 	ATT_map = [];
 	ABV_map = [];
 	ITT_map = [];
+	Res_map = [];
+	Fit_map = [];
+	Log     = [];
 
 	if ~isfield(x.modules.asl, 'bCleanUpExternal') || isempty(x.modules.asl.bCleanUpExternal)
 		x.modules.asl.bCleanUpExternal = true;
@@ -169,12 +175,18 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xAS
 			pathExternalITT = xASL_adm_GetFileList(pathExternalOutput, '^mean_itt\.nii$', 'FPListRec');
 			pathExternalABV = xASL_adm_GetFileList(pathExternalOutput, '^mean_fblood\.nii$', 'FPListRec');
 			pathExternalTex = xASL_adm_GetFileList(pathExternalOutput, '^mean_T_exch\.nii$', 'FPListRec');
+			pathExternalLog = xASL_adm_GetFileList(pathExternalOutput, '^logfile$', 'FPListRec');
+			pathExternalRes = xASL_adm_GetFileList(pathExternalOutput, '^residuals\.nii$', 'FPListRec');
+			pathExternalFit = xASL_adm_GetFileList(pathExternalOutput, '^modelfit\.nii$', 'FPListRec');
 		case 'vaby'
 			pathExternalCBF = xASL_adm_GetFileList(pathExternalOutput, '^mean_cbf\.nii$', 'FPListRec');
 			pathExternalATT = xASL_adm_GetFileList(pathExternalOutput, '^mean_att\.nii$', 'FPListRec');
 			pathExternalITT = xASL_adm_GetFileList(pathExternalOutput, '^mean_itt\.nii$', 'FPListRec');
 			pathExternalABV = xASL_adm_GetFileList(pathExternalOutput, '^mean_fblood\.nii$', 'FPListRec');
 			pathExternalTex = xASL_adm_GetFileList(pathExternalOutput, '^mean_texch\.nii$', 'FPListRec');
+			pathExternalLog = xASL_adm_GetFileList(pathExternalOutput, '^logfile$', 'FPListRec');
+			pathExternalRes = xASL_adm_GetFileList(pathExternalOutput, '^residuals\.nii$', 'FPListRec');
+			pathExternalFit = xASL_adm_GetFileList(pathExternalOutput, '^modelfit\.nii$', 'FPListRec');
 	end
 
 	% Check and load all output files
@@ -204,7 +216,21 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal] = xAS
 	if ~isempty(pathExternalTex)
 		Tex_map = xASL_io_Nifti2Im(pathExternalTex{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
-	
+
+	% Residuals
+	if ~isempty(pathExternalRes)
+		Res_map = xASL_io_Nifti2Im(pathExternalRes{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+	end
+
+	% Model fit
+	if ~isempty(pathExternalFit)
+		Fit_map = xASL_io_Nifti2Im(pathExternalFit{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+	end
+
+	if ~isempty(pathExternalLog)
+		Log = fileread(pathExternalLog{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+	end
+		
     %% 6. Scaling to physiological units
     % Note different to xASL_quant_ASL since BASIL/FABBER/VABY have T1 in seconds
     % and does not take into account labeling efficiency

@@ -64,6 +64,9 @@ pathOutputATT = [pathOutputCBF(1:(iStringCBF-1)) 'ATT' pathOutputCBF((iStringCBF
 pathOutputTex = [pathOutputCBF(1:(iStringCBF-1)) 'Tex' pathOutputCBF((iStringCBF+3):end)];
 pathOutputABV = [pathOutputCBF(1:(iStringCBF-1)) 'ABV' pathOutputCBF((iStringCBF+3):end)];
 pathOutputITT = [pathOutputCBF(1:(iStringCBF-1)) 'ITT' pathOutputCBF((iStringCBF+3):end)];
+pathOutputRes = [pathOutputCBF(1:(iStringCBF-1)) 'Res' pathOutputCBF((iStringCBF+3):end)];
+pathOutputFit = [pathOutputCBF(1:(iStringCBF-1)) 'Fit' pathOutputCBF((iStringCBF+3):end)];
+pathOutputLog = [pathOutputCBF(1:(iStringCBF-1)) 'ExternalLog.txt'];
 
 if nargin<4 || isempty(M0Path)
     M0Path = x.P.Pop_Path_M0;
@@ -99,6 +102,9 @@ xASL_delete(pathOutputATT);
 xASL_delete(pathOutputTex);
 xASL_delete(pathOutputABV);
 xASL_delete(pathOutputITT);
+xASL_delete(pathOutputRes);
+xASL_delete(pathOutputFit);
+xASL_delete(pathOutputLog);
 
 % For external quantification, only native images are processed and standard space images are not directly quantified, but only transformed
 % So that's why we need to delete both the native and standard space images at once
@@ -350,7 +356,7 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
 if ~x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bUseExternalQuantification % multi-PLD with External quantification or single-PLD
-    [~, CBF, ATT, ABV, Tex, ITT] = xASL_quant_ASL(PWI4D_Path, M0_im, SliceGradient, x, x.modules.asl.bUseExternalQuantification, bSaveCBF4D); % also runs external quantification, but only in native space!
+    [~, CBF, ATT, ABV, Tex, ITT, Res, Fit, Log] = xASL_quant_ASL(PWI4D_Path, M0_im, SliceGradient, x, x.modules.asl.bUseExternalQuantification, bSaveCBF4D); % also runs external quantification, but only in native space!
 else
     % multi-PLD quantification without external quantification
     error('Multi PLD quantification without external quantification is not yet implemented.');
@@ -391,6 +397,24 @@ if numel(ITT) > 1
 	% Save the ATT file
 	xASL_io_SaveNifti(PWI4D_Path, pathOutputITT, ITT, 32, 0);
 end
+
+if numel(Res) > 1
+	% Save the ATT file
+	xASL_io_SaveNifti(PWI4D_Path, pathOutputRes, Res, 32, 0);
+end
+
+if numel(Fit) > 1
+	% Save the ATT file
+	xASL_io_SaveNifti(PWI4D_Path, pathOutputFit, Fit, 32, 0);
+end
+
+if numel(Log) > 1
+	% Save the log file
+	fid = fopen(pathOutputLog, 'w');
+	fprintf(fid, Log);
+	fclose(fid);
+end
+
 %% 9.b Save files in standard space for external-quantification native space output
 % Transform externally-quantified CBF to standard space as external quantification only works in native space
 if x.modules.asl.bUseExternalQuantification && strcmp(x.P.Path_CBF, pathOutputCBF)
