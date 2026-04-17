@@ -50,13 +50,12 @@ else
     InputPath = x.P.Path_func_bold;
 end
 
-[Fpath, Ffile, Fext] = fileparts(InputPath);
+[Fpath, Ffile, Fext] = xASL_fileparts(InputPath);
 rpfile = fullfile( Fpath, ['rp_' Ffile '.txt']);
-rpfile_within  = fullfile(Fpath, ['rp_within_'  Ffile '.txt']);
-rpfile_between = fullfile(Fpath, ['rp_between_' Ffile '.txt']);
 rInputPath = fullfile( Fpath, ['r' Ffile Fext]);
 InputPathJson = fullfile( Fpath, [Ffile '.json']);
 rInputPathJson = fullfile( Fpath, ['r' Ffile '.json']);
+matFile = fullfile(Fpath, [Ffile '.mat']);
 
 
 %% Set defaults
@@ -235,8 +234,6 @@ flags.graphics = 0;
 
 % If previous realign parameters exist, delete them
 xASL_delete(rpfile);
-xASL_delete(rpfile_within);
-xASL_delete(rpfile_between);
 
 % Run motion correction for corresponding case
 % Note that this is the adapted spm_realign, including zig-zag
@@ -244,8 +241,13 @@ xASL_delete(rpfile_between);
 % average head position
 
 V = spm_vol(InputPath); 
-Y = spm_read_vols(V); % Read the image
-rp_all = zeros(nFrames, 6); 
+
+if bMultiTE || bMultiPLD
+	% Prepare for updating the volumes - this is not necessary for the simple case where all is handeled by spm_realign
+	Y = spm_read_vols(V); % Read the image
+	rp_all = zeros(nFrames, 6); % The final aggregate RP-file
+	mat_all = zeros(4, 4, size(Y,4)); % The final aggregate MAT-file
+end
 
 if bMultiTE
     % Handles Multi-TE dataset regardless of PLD
@@ -265,58 +267,63 @@ if bMultiTE
     spm_realign(V(idx_firstTE), flags, bZigZag); 
 	% This affects the ASL4D.mat file, rp_ASL4D.txt file and MAT within the ASL4D.nii volume
     
-    rp_firstTE = load(rpfile); % Load the rp file written by spm_realign
+    rp_temp = load(rpfile); % Load the rp file written by spm_realign
 
 	V = spm_vol(InputPath); % Read the updated volumes
     % Loop through TE groups
     for idxTE = 1:length(idx_firstTE)
         % Repeats the motion estimates extracted from the rp file for the rest of the TEs and writes to the corresponding rows in rp_all
-        rp_all(idx_firstTE(idxTE):idx_lastTE(idxTE), :) = repmat(rp_firstTE(idxTE,:), x.Q.nUniqueEchoTime, 1); 
+        rp_all(idx_firstTE(idxTE):idx_lastTE(idxTE), :) = repmat(rp_temp(idxTE,:), x.Q.nUniqueEchoTime, 1); 
     
 		for idxAllTE = (idx_firstTE(idxTE)+1):idx_lastTE(idxTE)
-			V(idxAllTE).mat = V(idx_firstTE(idxTE)).mat;
+			mat_all(:, :, idxAllTE) = V(idx_firstTE(idxTE)).mat;
 		end
         
     end
-    writematrix(rp_all, rpfile, 'delimiter', '\t'); % Save the updated matrix TXT
-	spm_write_vol(V, Y); % Save the updated volume
-
-	% We need to update the ASL4D.mat
-
+    
 elseif bMultiPLD
-    % Handles only Multi-PLD datasets
-    rp_files_perPLD = cell(length(unique_PLDs), 1);
-    for p = 1:numel(unique_PLDs)
-        idx = x.Q.Initial_PLD == unique_PLDs(p); 
-        spm_realign(V(idx), flags, bZigZag);
+    % Handles only Multi-PLD datasets - aligns only between the same PLDs
+	% Motion correction across all PLDs is not really necessary as that can be done with the simple motion correction
+	% Note that we handle normal mutli-PLD (not TimeEncoded), so there are still control and label images and we can thus do ZigZag
+
+    for pld = x.Q.uniqueInitial_PLD(:)'
+        idxSinglePLD = find(x.Q.Initial_PLD == pld); % Finds the same PLDs
+        spm_realign(V(idxSinglePLD), flags, bZigZag);
         
-        temp_rp = load(rpfile);
-        rp_all(idx, :) = temp_rp; % Update the rp array to hold the new motion estimates
-        rp_files_perPLD{p} = fullfile(Fpath, ['within_rp_' Ffile '_' num2str(unique_PLDs(p)) '.txt']); % Set the filename and filepath for the within PLD rpfiles
-        movefile(rpfile, rp_files_perPLD{p}); % Rename the most recently outputed rpfile so that it doesn get overwritten by the next iteration
+        rp_temp = load(rpfile); % Load the rp file written by spm_realign
+		V = spm_vol(InputPath); % Read the updated volumes
+
+		% Loop through TE groups
+		rp_all(idxSinglePLD, :) = rp_temp;
+
+		for idxPLD = idxSinglePLD(:)'
+			mat_all(:, :, idxPLD) = V(idxPLD).mat;
+		end
     end
-    writematrix(rp_all, rpfile_within, 'delimiter', '\t'); % Write out all the motion estimates into one rpfile - the rpfile
-
-    fprintf('SPM motion estimation in multi-PLD data: between PLDs');
-    spm_realign(V, flags, bZigZag);
-    movefile(rpfile, rpfile_between);
-
-    rp_within = load(rpfile_within, '-ascii');
-    rp_between = load(rpfile_between, '-ascii');
-    rp_multi = zeros(nFramesPerTE, 12); % because for some reason spm_imatrix outputs 12 columns despite only having inputs with 6 columns
-    for i = 1:nFramesPerTE
-        rp_within_matrix = spm_matrix(rp_within(i,:)); 
-        rp_between_matrix = spm_matrix(rp_between(i,:)); 
-        rp_overall = rp_between_matrix * rp_within_matrix;
-        rp_multi(i,:) = spm_imatrix(rp_overall);
-    end
-    writematrix(rp_multi, rpfile, 'delimiter', '\t');
-
 else
     % Handles simple datasets
     spm_realign(V, flags, bZigZag);
 end
  
+% For these special cases, we need to save the updated transformation matrices
+if bMultiTE || bMultiPLD
+	% Save the updated matrix TXT
+	writematrix(rp_all, rpfile, 'delimiter', '\t'); 
+
+	% Generate also the MAT file - so remove the MAT file first. The values are already stored in mat_all
+	xASL_delete(matFile);
+
+	% Save the updated volume, one by one
+	for t = 1:size(Y,4)
+		Vt = V(t);                
+		Vt.n = [t 1];
+		Vt.mat = mat_all(:,:,t);
+		spm_write_vol(Vt, Y(:,:,:,t)); % Save one 3D volume
+	end
+	mat = mat_all;
+	save(matFile, 'mat'); % Save also the MAT file - NIfTI header and MAT-file contain the same information, but that's what normally happens after spm_realign
+end
+
 %% ----------------------------------------------------------------------------------------
 %% 2. Calculate position and motion parameters
 fprintf('%s\n','Calculate & plot position & motion parameters');
@@ -350,15 +357,15 @@ if max(rp(:))==0
 end
 
 if bMultiPLD && ~bMultiTE
-    for p = 1:numel(rp_files_perPLD)
-        rp_per_PLD = load(rp_files_perPLD{p});
+    %for p = 1:numel(rp_files_perPLD)
+    %    rp_per_PLD = load(rp_files_perPLD{p});
     
-        FD_within = cell(1,2);
-        FD_within{1}=rp_per_PLD;
-        FD_within{2} = diff(rp_per_PLD);
+    %    FD_within = cell(1,2);
+    %    FD_within{1}=rp_per_PLD;
+    %    FD_within{2} = diff(rp_per_PLD);
         
-        [within_NDV{p}, within_median_NDV{p}, within_mean_NDV{p}, within_max_NDV{p}, within_SD_NDV{p}, within_MAD_NDV{p}] = xASL_compute_NDV(FD_within, MeanRadius);
-    end
+    %    [within_NDV{p}, within_median_NDV{p}, within_mean_NDV{p}, within_max_NDV{p}, within_SD_NDV{p}, within_MAD_NDV{p}] = xASL_compute_NDV(FD_within, MeanRadius);
+    %end
 end
 
 function [NDV, median_NDV, mean_NDV, max_NDV, SD_NDV, MAD_NDV] = xASL_compute_NDV(FD, MeanRadius)
@@ -583,7 +590,7 @@ elseif bMultiPLD
         outFile = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID, '_', x.P.SessionID '_PLD' num2str(unique_PLDs(p)) '_motion.jpg']);
         pTitle = ['PLD' num2str(unique_PLDs(p)) ' Position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first PLD frame'];
         mTitle = ['PLD' num2str(unique_PLDs(p)) ' Motion plot of ' x.P.SubjectID '-' x.P.SessionID];
-        xASL_plot_motion(within_NDV{p}, within_mean_NDV{p}, bENABLE, bSpikeRemoval, bWithin, exclusion, outFile, pTitle, mTitle);
+       % xASL_plot_motion(within_NDV{p}, within_mean_NDV{p}, bENABLE, bSpikeRemoval, bWithin, exclusion, outFile, pTitle, mTitle);
     end
 
 else
