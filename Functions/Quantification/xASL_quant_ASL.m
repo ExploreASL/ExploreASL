@@ -1,6 +1,6 @@
-function [ScaleImage, CBF, ATT, ABV, Tex, ITT, Res, Fit, Log] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseExternalQuantification, bSaveCBF4D)
+function [ScaleImage, CBF, ATT, ABV, Tex, ITT, Residuals, Fit, Log] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x, bUseExternalQuantification, bSaveCBF4D)
 %xASL_quant_ASL Perform a multi-step quantification of single or multi-PLD with or without external quantification
-% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex, ITT, Res, Fit, Log]] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x[, bUseExternalQuantification, bSaveCBF4D])
+% FORMAT: [ScaleImage[, CBF, ATT, ABV, Tex, ITT, Residuals, Fit, Log]] = xASL_quant_ASL(PWI4D_Path, M0_im, imSliceNumber, x[, bUseExternalQuantification, bSaveCBF4D])
 %
 % INPUT:
 %   PWI4D           - Path to the 4D timeseries of (control-label subtracted) perfusion-weighted images (REQUIRED)
@@ -18,7 +18,7 @@ function [ScaleImage, CBF, ATT, ABV, Tex, ITT, Res, Fit, Log] = xASL_quant_ASL(P
 % ABV               - Estimated arterial blood volume map (if multi-PLD, otherwise empty)
 % Tex               - Estimated map of time of exchange across BBB (if multi-TE is available, otherwise empty)
 % ITT               - Estimated map of intravoxel transit time (if multi-TE is available, otherwise empty)
-% Res               - Residuals of the fit (for multi-timepoint quantification)
+% Residuals         - Residuals of the fit (for multi-timepoint quantification)
 % Fit               - Model fit 4D image (for multi-timepoint quantification)
 % Log               - Log-file of the external quantification (for external quantification)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ ATT = [];
 Tex = [];
 ABV = [];
 ITT = [];
-Res = [];
+Residuals = [];
 Fit = [];
 Log = [];
 
@@ -197,7 +197,7 @@ else
     if bUseExternalQuantification
         % Here we perform FSL quantification
 		% We pass the path to the image and do all the Image and JSON reading inside the function
-		[PWI, ATT, ABV, Tex, ITT, ~, Res, Fit, Log] = xASL_quant_External(PWI4D_Path, x); 
+		[PWI, ATT, ABV, Tex, ITT, ~, Residuals, Fit, Log] = xASL_quant_External(PWI4D_Path, x); 
 		
 		% If resultFSL is not 0, something went wrong
         % This will issue a warning inside xASL_quant_External

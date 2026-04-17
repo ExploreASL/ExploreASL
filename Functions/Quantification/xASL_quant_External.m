@@ -1,7 +1,7 @@
-function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal, Res_map, Fit_map, Log] = xASL_quant_External(path_PWI4D, x)
+function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal, Residuals_map, Fit_map, Log] = xASL_quant_External(path_PWI4D, x)
 %xASL_quant_External Perform quantification using FSL BASIL/FABBER/VABY
 %
-% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal, Res_map, Fit_map, Log] = xASL_quant_External(path_PWI4D, x)
+% FORMAT: [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal, Residuals_map, Fit_map, Log] = xASL_quant_External(path_PWI4D, x)
 % 
 % INPUT:
 %   path_PWI4D      - path to PWI4D (OPTIONAL, defaults to x.P.Path_PWI4D)
@@ -15,7 +15,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal, Res_m
 % ABV_map           - arterial blood volume map (if possible to calculate with multi-PLD, otherwise empty)
 % Tex_map           - Time of exchange map of transport across BBB (if possible to calculate with multi-TE, otherwise empty)
 % ITT_map           - Intravoxel transit time (if possible to calculate with multi-TE, otherwise empty)
-% Res_map           - Residuals of the fit
+% Residuals_map     - Residuals of the fit
 % Fit_map           - Model fit 4D image
 % Log               - Log-file of the external quantification
 % resultExternal    - describes if the execution was successful
@@ -57,7 +57,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal, Res_m
 	ATT_map = [];
 	ABV_map = [];
 	ITT_map = [];
-	Res_map = [];
+	Residuals_map = [];
 	Fit_map = [];
 	Log     = [];
 
@@ -219,7 +219,7 @@ function [CBF_nocalib, ATT_map, ABV_map, Tex_map, ITT_map, resultExternal, Res_m
 
 	% Residuals
 	if ~isempty(pathExternalRes)
-		Res_map = xASL_io_Nifti2Im(pathExternalRes{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
+		Residuals_map = xASL_io_Nifti2Im(pathExternalRes{end}); % we assume the latest iteration (alphabetically) is optimal. also converting cell to char array
 	end
 
 	% Model fit

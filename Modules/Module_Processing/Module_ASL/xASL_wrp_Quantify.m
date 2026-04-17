@@ -356,7 +356,7 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 8.   Perform Quantification
 if ~x.modules.asl.bQuantifyMultiPLD || x.modules.asl.bUseExternalQuantification % multi-PLD with External quantification or single-PLD
-    [~, CBF, ATT, ABV, Tex, ITT, Res, Fit, Log] = xASL_quant_ASL(PWI4D_Path, M0_im, SliceGradient, x, x.modules.asl.bUseExternalQuantification, bSaveCBF4D); % also runs external quantification, but only in native space!
+    [~, CBF, ATT, ABV, Tex, ITT, Residuals, Fit, Log] = xASL_quant_ASL(PWI4D_Path, M0_im, SliceGradient, x, x.modules.asl.bUseExternalQuantification, bSaveCBF4D); % also runs external quantification, but only in native space!
 else
     % multi-PLD quantification without external quantification
     error('Multi PLD quantification without external quantification is not yet implemented.');
@@ -398,9 +398,9 @@ if numel(ITT) > 1
 	xASL_io_SaveNifti(PWI4D_Path, pathOutputITT, ITT, 32, 0);
 end
 
-if numel(Res) > 1
+if numel(Residuals) > 1
 	% Save the ATT file
-	xASL_io_SaveNifti(PWI4D_Path, pathOutputRes, Res, 32, 0);
+	xASL_io_SaveNifti(PWI4D_Path, pathOutputRes, Residuals, 32, 0);
 end
 
 if numel(Fit) > 1
