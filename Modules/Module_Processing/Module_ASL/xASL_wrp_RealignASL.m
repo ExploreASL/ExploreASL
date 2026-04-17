@@ -275,7 +275,7 @@ if bMultiTE
         % Repeats the motion estimates extracted from the rp file for the rest of the TEs and writes to the corresponding rows in rp_all
         rp_all(idx_firstTE(idxTE):idx_lastTE(idxTE), :) = repmat(rp_temp(idxTE,:), x.Q.nUniqueEchoTime, 1); 
     
-		for idxAllTE = (idx_firstTE(idxTE)+1):idx_lastTE(idxTE)
+		for idxAllTE = idx_firstTE(idxTE):idx_lastTE(idxTE)
 			mat_all(:, :, idxAllTE) = V(idx_firstTE(idxTE)).mat;
 		end
         
@@ -333,65 +333,24 @@ rp = load(rpfile, '-ascii'); % load the 3 translation and 3 rotation values
 MeanRadius = 50; % typical distance center head to cerebral cortex (Power et al., NeuroImage 2012)
 % PM: assess this from logical ASL EPI mask? This does influence the weighting of rotations compared to translations
 
-if bMultiTE
-    rp_te1_only = rp(PLD_starts, :);  % extract only the TE1 rows
-    FD{1} = rp_te1_only;
-    FD{2} = diff(rp_te1_only);
-
-    % Calculate FD for all-frames plot
-    FD_allTE{1} = rp;
-    FD_allTE{2} = diff(rp);
-    
-    [NDV, median_NDV, mean_NDV, max_NDV, SD_NDV, MAD_NDV] = xASL_compute_NDV(FD, MeanRadius);
-    [NDV_allTE, mean_NDV_allTE] = xASL_compute_NDV(FD_allTE, MeanRadius);
-else
-    FD{1}=rp; % position (absolute displacement)
-    FD{2} = diff(rp); % motion (relative displacement)
-
-    [NDV, median_NDV, mean_NDV, max_NDV, SD_NDV, MAD_NDV] = xASL_compute_NDV(FD, MeanRadius);
-end
-
 if max(rp(:))==0
 	warning('Something wrong with motion parameters, skipping');
 	return;
 end
 
-if bMultiPLD && ~bMultiTE
-    %for p = 1:numel(rp_files_perPLD)
-    %    rp_per_PLD = load(rp_files_perPLD{p});
-    
-    %    FD_within = cell(1,2);
-    %    FD_within{1}=rp_per_PLD;
-    %    FD_within{2} = diff(rp_per_PLD);
-        
-    %    [within_NDV{p}, within_median_NDV{p}, within_mean_NDV{p}, within_max_NDV{p}, within_SD_NDV{p}, within_MAD_NDV{p}] = xASL_compute_NDV(FD_within, MeanRadius);
-    %end
-end
+% Calculate the mean displacements
+FD{1}=rp; % position (absolute displacement)
+FD{2} = diff(rp); % motion (relative displacement)
+	
+[NDV, median_NDV, mean_NDV, max_NDV, SD_NDV, MAD_NDV] = xASL_wrp_RealignASL_compute_NDV(FD, MeanRadius);
 
-function [NDV, median_NDV, mean_NDV, max_NDV, SD_NDV, MAD_NDV] = xASL_compute_NDV(FD, MeanRadius)
-    for ii = 1:2 % 1 = absolute displacement 2 = relative displacement==motion
-	    tx{ii} = FD{ii}(:,1); ty{ii} = FD{ii}(:,2); tz{ii}  = FD{ii}(:,3); % translations
-	    rx{ii} = FD{ii}(:,4); ry{ii} = FD{ii}(:,5); rz{ii}  = FD{ii}(:,6); % rotations (pitch, roll, yaw)
-	    
-	    PartTranslation{ii} = tx{ii}.^2 + ty{ii}.^2 + tz{ii}.^2;
-	    PartRotation{ii} = 0.2*MeanRadius^2* ((cos(rx{ii})-1).^2 + (sin(rx{ii})).^2 + (cos(ry{ii})-1).^2 + (sin(ry{ii})).^2 + (cos(rz{ii})-1).^2 + (sin(rz{ii})).^2);
-	    try
-		    NDV{ii} = sqrt(PartTranslation{ii} + PartRotation{ii});
-	    catch
-		    
-	    end
-	    
-	    if ii==2
-		    NDV{2} = [0; NDV{2}]; % add leading zero difference
-	    end
-	    
-	    % Descriptives
-	    median_NDV{ii} = median(NDV{ii});
-	    mean_NDV{ii} = mean(NDV{ii});
-	    max_NDV{ii} = max(NDV{ii});
-	    SD_NDV{ii} = std(NDV{ii});
-	    MAD_NDV{ii} = xASL_stat_MadNan(NDV{ii},0); % median absolute deviation from median
-    end
+if bMultiTE
+	% For MultiTE, recalculate the means and SD from the first echo only. But keep the vectors of all displacements as they were
+	idx_firstTE = find((x.Q.EchoTime == min(x.Q.EchoTime)));
+    FD_firstTE{1} = rp(idx_firstTE, :); % position (absolute displacement) for first TEs only
+    FD_firstTE{2} = diff(rp(idx_firstTE, :)); % motion (relative displacement) for first TEs only
+
+	[~, median_NDV, mean_NDV, max_NDV, SD_NDV, MAD_NDV] = xASL_wrp_RealignASL_compute_NDV(FD_firstTE, MeanRadius);
 end
 
 %% ----------------------------------------------------------------------------------------
@@ -503,102 +462,12 @@ end
 
 %% ----------------------------------------------------------------------------------------
 %% 5. Plot motion 
-function fig = xASL_plot_motion(NDV, mean_NDV, bENABLE, bSpikeRemoval, bWithin, exclusion, outFile, pTitle, mTitle, varargin)
-    if usejava('jvm') % only if JVM loaded
-        fig = figure('Visible','off');
-        for FD_idx = 1:2 % 1 = absolute displacement 2 = relative displacement==motion
-		    subplot(3,1,FD_idx); % plot position (subplot 1) & motion (subplot 2)
-		    plot(NDV{FD_idx},'Color',[0.4,0.4,0.4]); % lines between frames
-		    hold on
-		    plot(NDV{FD_idx},'o','MarkerSize',5); % circles for frames
-		    hold on
-		    
-		    plot(repmat(mean_NDV{FD_idx},length(NDV{FD_idx}),1),'Color',[0,0,1]); % mean NDV in blue
-		    hold on
-
-		    if FD_idx==1
-			    title(pTitle);
-			    ylabel('NDV (mm)');
-			    
-		    elseif FD_idx==2
-			    title(mTitle);
-			    ylabel('NDV/frame (mm//frame)');
-		    end
-		    
-            if bMultiTE
-                xlabel('TE #');
-            else
-		        xlabel('Frame #');
-            end
-
-            axis([1 length(NDV{FD_idx}) 0 max(NDV{FD_idx})*1.05]); % axis fixing
-        end
-        
-
-        if bMultiTE
-            NDV_allTE = varargin{1};
-            mean_NDV_allTE = varargin{2};
-            pTitle2 = varargin{3};
-
-            subplot(3,1,3);
-            plot(NDV_allTE{1},'Color',[0.4,0.4,0.4]);
-            hold on
-		    plot(NDV_allTE{1},'o','MarkerSize',5);
-		    hold on
-		    
-		    plot(repmat(mean_NDV_allTE{1},length(NDV_allTE{1}),1),'Color',[0,0,1]);
-		    hold on
-
-		    title(pTitle2);
-		    ylabel('NDV (mm)');
-	        xlabel('Frame #');
-
-            axis([1 length(NDV_allTE{1}) 0 max(NDV_allTE{1})*1.05]);
-
-        elseif (bENABLE || bSpikeRemoval) && ~bWithin
-            subplot(3,1,3);
-            plot(exclusion,'r');
-            ylabel('Exclusion matrix');
-            axis([1 length(NDV{FD_idx}) 0 max(NDV{2})*1.05]);
-        end
-        
-        fprintf('Saving motion plot to %s\n', outFile);
-        
-        xASL_adm_CreateDir(fileparts(outFile));
-        saveas(fig, outFile, 'jpg');
-        close (fig);
-    end
-end
 
 % Assigning titles to the plots depending on motion correction approach and plotting the Position and Motion plots
-bWithin = false;
-if bMultiTE
-    pTitle = ['TE position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame'];
-    pTitle2 = ['Overall position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame'];
-    mTitle = ['Overall motion plot of ' x.P.SubjectID '-' x.P.SessionID];
+pTitle = ['Position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame'];
+mTitle = ['Motion plot of ' x.P.SubjectID '-' x.P.SessionID];
 
-    xASL_plot_motion(NDV, mean_NDV, bENABLE, bSpikeRemoval, bWithin, exclusion, jpgfile_Motion, pTitle, mTitle, NDV_allTE, mean_NDV_allTE, pTitle2);
-
-elseif bMultiPLD
-    pTitle = ['Overall position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame'];
-    mTitle = ['Overall motion plot of ' x.P.SubjectID '-' x.P.SessionID];
-
-    xASL_plot_motion(NDV, mean_NDV, bENABLE, bSpikeRemoval, bWithin, exclusion, jpgfile_Motion, pTitle, mTitle);
-
-    bWithin = true;
-    for p = 1:length(unique_PLDs)
-        outFile = fullfile(x.D.MotionDir, ['rp_' x.P.SubjectID, '_', x.P.SessionID '_PLD' num2str(unique_PLDs(p)) '_motion.jpg']);
-        pTitle = ['PLD' num2str(unique_PLDs(p)) ' Position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first PLD frame'];
-        mTitle = ['PLD' num2str(unique_PLDs(p)) ' Motion plot of ' x.P.SubjectID '-' x.P.SessionID];
-       % xASL_plot_motion(within_NDV{p}, within_mean_NDV{p}, bENABLE, bSpikeRemoval, bWithin, exclusion, outFile, pTitle, mTitle);
-    end
-
-else
-    pTitle = ['Position plot of ' x.P.SubjectID '-' x.P.SessionID ' relative to first frame'];
-    mTitle = ['Motion plot of ' x.P.SubjectID '-' x.P.SessionID];
-
-    xASL_plot_motion(NDV, mean_NDV, bENABLE, bSpikeRemoval, bWithin, exclusion, jpgfile_Motion, pTitle, mTitle);
-end
+xASL_wrp_RealignASL_plot_motion(NDV, mean_NDV, bENABLE, bSpikeRemoval, exclusion, jpgfile_Motion, pTitle, mTitle);
 
 
 %% ----------------------------------------------------------------------------------------
@@ -735,4 +604,72 @@ save(pathSave_NDV, 'NDV','median_NDV','mean_NDV','max_NDV','SD_NDV','MAD_NDV','e
     end
 
     
+end
+
+function [NDV, median_NDV, mean_NDV, max_NDV, SD_NDV, MAD_NDV] = xASL_wrp_RealignASL_compute_NDV(FD, MeanRadius)
+    for ii = 1:2 % 1 = absolute displacement 2 = relative displacement==motion
+	    tx{ii} = FD{ii}(:,1); ty{ii} = FD{ii}(:,2); tz{ii}  = FD{ii}(:,3); % translations
+	    rx{ii} = FD{ii}(:,4); ry{ii} = FD{ii}(:,5); rz{ii}  = FD{ii}(:,6); % rotations (pitch, roll, yaw)
+	    
+	    PartTranslation{ii} = tx{ii}.^2 + ty{ii}.^2 + tz{ii}.^2;
+	    PartRotation{ii} = 0.2*MeanRadius^2* ((cos(rx{ii})-1).^2 + (sin(rx{ii})).^2 + (cos(ry{ii})-1).^2 + (sin(ry{ii})).^2 + (cos(rz{ii})-1).^2 + (sin(rz{ii})).^2);
+	    try
+		    NDV{ii} = sqrt(PartTranslation{ii} + PartRotation{ii});
+	    catch
+		    
+	    end
+	    
+	    if ii==2
+		    NDV{2} = [0; NDV{2}]; % add leading zero difference
+	    end
+	    
+	    % Descriptives
+	    median_NDV{ii} = median(NDV{ii});
+	    mean_NDV{ii} = mean(NDV{ii});
+	    max_NDV{ii} = max(NDV{ii});
+	    SD_NDV{ii} = std(NDV{ii});
+	    MAD_NDV{ii} = xASL_stat_MadNan(NDV{ii},0); % median absolute deviation from median
+    end
+end
+
+function fig = xASL_wrp_RealignASL_plot_motion(NDV, mean_NDV, bENABLE, bSpikeRemoval, exclusion, outFile, pTitle, mTitle)
+    if usejava('jvm') % only if JVM loaded
+        fig = figure('Visible','off');
+        for FD_idx = 1:2 % 1 = absolute displacement 2 = relative displacement==motion
+		    subplot(3,1,FD_idx); % plot position (subplot 1) & motion (subplot 2)
+		    plot(NDV{FD_idx},'Color',[0.4,0.4,0.4]); % lines between frames
+		    hold on
+		    plot(NDV{FD_idx},'o','MarkerSize',5); % circles for frames
+		    hold on
+		    
+		    plot(repmat(mean_NDV{FD_idx},length(NDV{FD_idx}),1),'Color',[0,0,1]); % mean NDV in blue
+		    hold on
+
+		    if FD_idx==1
+			    title(pTitle);
+			    ylabel('NDV (mm)');
+			    
+		    elseif FD_idx==2
+			    title(mTitle);
+			    ylabel('NDV/frame (mm//frame)');
+		    end
+		    
+			xlabel('Frame #');
+			axis([1 length(NDV{FD_idx}) 0 max(NDV{FD_idx})*1.05]); % axis fixing
+        end
+        
+        if (bENABLE || bSpikeRemoval)
+            subplot(3,1,3);
+			hold on
+            plot(exclusion,'r');
+            ylabel('Exclusion matrix');
+            axis([1 length(NDV{FD_idx}) 0 max(NDV{FD_idx})*1.05]);
+        end
+        
+        fprintf('Saving motion plot to %s\n', outFile);
+        
+        xASL_adm_CreateDir(fileparts(outFile));
+        saveas(fig, outFile, 'jpg');
+        close (fig);
+    end
 end
