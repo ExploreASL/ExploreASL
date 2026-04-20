@@ -62,7 +62,7 @@ if ~isfield(x.S,'Atlases') && ~isfield(x.S, 'TissueMasking')
 	else
 		x.S.Atlases = {'Total', 'Total', 'DeepWM', 'Tatu_ACA_MCA_PCA', 'Tatu_ACA_MCA_PCA'}; 
 		x.S.TissueMasking = {'GM', 'GM', 'WM', 'GM', 'GM'};
-		x.S.TissueThreshold = [0.7, 0.5, 0.7, 0.7, 0.5];
+		x.S.TissueThreshold = [0.7, 0.5, 0.5, 0.7, 0.5];
 	end
 
     % Note that Atlases and TissueMasking  should be in the same order as the atlases/ROIs
