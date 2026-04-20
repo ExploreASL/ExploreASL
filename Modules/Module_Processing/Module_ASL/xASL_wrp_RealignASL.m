@@ -27,6 +27,10 @@ function xASL_wrp_RealignASL(x, bASL)
 % This submodule performs the following steps:
 %
 % 1. Estimate motion
+%    Several options are distinguished for ASL and non-ASL image with the following options
+%    A. Standard ASL with control-label pairs (opposed to non-ASL images such as fMRI/DTI), uses the zig-zag approach in which the average control vs label intensity differences are disregarded (not erroneously seen as motion)
+%    B. If multiple TEs are acquired, only the shortest TE (with the highest SNR) is used for motion estimation and the same motion is applied to longer TEs in the same block
+%    C. Motion outlier detection is skipped for multiple PLDs and/or multiple TEs
 % 2. Calculate and plot position and motion parameters
 % 3. Threshold-free spike definition (based on ENABLE, but with t-stats rather than the threshold p<0.05)
 % 4. Remove spike frames from nifti
@@ -67,7 +71,7 @@ MinimumtValue = NaN;
 %% Read basic image information
 tempnii = xASL_io_ReadNifti(InputPath);
 nFrames = double(tempnii.hdr.dim(5)); % Total number of frames
-nFramesPerTE=nFrames/numel(unique(x.Q.EchoTime)); % Number of frames per unique TE
+nFramesPerTE=nFrames/numel(unique(x.Q.EchoTime)); % Number of frames per unique TE. Note that for most cases, where we only have a single TE, nFramesPerTE==nFrames
 
 minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
 
@@ -245,13 +249,13 @@ V = spm_vol(InputPath);
 if bMultiTE || bMultiPLD
 	% Prepare for updating the volumes - this is not necessary for the simple case where all is handeled by spm_realign
 	Y = spm_read_vols(V); % Read the image
-	rp_all = zeros(nFrames, 6); % The final aggregate RP-file
-	mat_all = zeros(4, 4, size(Y,4)); % The final aggregate MAT-file
+	rp_all = zeros(nFrames, 6); % rp_all is what ends up in the rp*.txt sidecar, rp=realign parameters
+	mat_all = zeros(4, 4, size(Y,4)); % mat_all is what ends up in the ASL*.mat sidecar, containing the orientation matrices for each frame/volume
 end
 
 if bMultiTE
     % Handles Multi-TE dataset regardless of PLD
-	% Registers all frames with the shortest PLDs and then applies the same transformation to all the longer PLDs
+	% Registers all frames with the shortest TEs and then applies the same transformation to all the longer TEs
 	% It assumes that the volume is sorted in the order of acquisition with blocks of increasing TEs
     
 	% Indexes that flags the first/shortest TEs frames
@@ -259,8 +263,8 @@ if bMultiTE
 	idx_lastTE =  find((x.Q.EchoTime == max(x.Q.EchoTime)));
     
 	if length(idx_firstTE) ~= length(idx_lastTE)
-		% TEs should form blocks and thus have the same lengths
-		error('Number of shortest TEs and longest TEs do not match');
+		% TEs should all have the same number of blocks (e.g., control-label repetitions and/or PLDs)
+		error('Number of shortest TEs and longest TEs do not match, check if there are missing frames/volumes.');
 	end
 
 	% Realigns only the flagged frames

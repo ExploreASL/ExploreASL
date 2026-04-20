@@ -114,7 +114,9 @@ end
 %--------------------------------------------------------------------------
 def_flags          = spm_get_defaults('realign.estimate'); % Loads SPM's default realignment settings.
 def_flags.PW       = '';
-if bZigzag % Zig-zag modifies defaults — zig-zag regression assumes a fixed reference image, not a moving mean.
+if bZigzag 
+	% bZigZag is an option introduced for ASL-MRI, because the consistent control-label intensity differences in ASL can create a false zig-zag motion pattern.
+	% To avoid this false motion estimation, bZigZag regresses out consistent intensity differences between odd and even repetitions that are attirbute to control-label intensity difference and not due to motion
 	def_flags.graphics = 1; % Graphics on
 	def_flags.quality  = 1; % Highest quality
 	def_flags.rtm      = 0; % Disables rference to mean
@@ -165,10 +167,9 @@ if numel(P)==1 % Single session
         P{1}=cleanandsave_parameters(P{1},ref); % This is where zig-zag regression happens
     end 
 elseif numel(P) > 1
-      %  Multiple sessions
-      %  This block:
-      %  Aligns the first volume of each session
-      %  Applies that transform to all volumes in each session
+      %  Multiple sessions:
+      %  Aligns the first volumes of each session together. 
+      %  Applies the same transformation of the first volume to all remaining volumes in each session
       %  Runs realignment within each session
       %  Applies zig-zag cleaning per session
     Ptmp = P{1}(1);
@@ -627,9 +628,9 @@ Vo=V;
 Q = zeros(n,6);
 clQ=zeros(n,6);
 for j=1:n
-	qq     = spm_imatrix(V(j).mat/V(1).mat); % Extract motion parameters
-	Q(j,:) = qq(1:6); % original motion (6 columns)
-    clQ(j,:)=qq(1:6); % copy to be cleaned
+	qq     = spm_imatrix(V(j).mat/V(1).mat); % Extract motion parameters from the MAT of NII. Relative motion compared to the first frame
+	Q(j,:) = qq(1:6); % Create a 6 column motion matrix
+    clQ(j,:)=qq(1:6); % Motion matrix for later cleaning
 end
 for j=1:6
     refval=clQ(:,j);
