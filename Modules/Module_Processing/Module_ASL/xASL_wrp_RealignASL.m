@@ -78,26 +78,31 @@ minVoxelSize = double(min(tempnii.hdr.pixdim(2:4)));
 %% Define motion correction options
 % bMoCoPossible boolean states if it is possible to perform motion correction with the given data 
 % x.asl.module.motionCorrection states if the motion correction is wanted by the user
-if x.modules.asl.bContainsSubtracted
+if isfield(x.Q,'LookLocker') && x.Q.LookLocker
+	bMoCoPossible = false;
+	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' as Look-Locker correction is not implemented.']);
+elseif x.modules.asl.bContainsSubtracted
 	% Motion correction is disabled, potentially insufficient contrast
 	bMoCoPossible = false;
 	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it only has DeltaM volumes, which may contain insufficient contrast']);
 elseif nFramesPerTE > 1
+	% We only do motion correction when the number of frames is higher than one. For multi-TE, we count number of frames per TE.
 	bMoCoPossible = true;
 else
 	bMoCoPossible = false;
 	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' because it had only ' num2str(nFramesPerTE) ' 3D frames.']);
 end
 
-if isfield(x.Q,'LookLocker') && x.Q.LookLocker
-	bMoCoPossible = false;
-	fprintf('%s\n',['Skipping motion correction for ' x.P.SubjectID '_' x.P.SessionID ' as Look-Locker correction is not implemented.']);
-end
-
 % Set flags for multi-TE and multi-PLD datasets
-if x.Q.nUniqueInitial_PLD>1 && (~isfield(x.modules.asl, 'bTimeEncoded') || ~x.modules.asl.bTimeEncoded)
-	% Here, we consider only simple multiPLD for averaging across PLDs. TimeEncoded is treated as singlePLD - because there are usually not many repetitions
+
+if x.Q.nUniqueInitial_PLD>1
+	% Here, we consider only simple multiPLD for averaging across PLDs
     bMultiPLD = 1;
+
+	% Note that TimeEncoded is a special case and needs to be treated separately. Therefore, we make sure this flag is initialized
+	if ~isfield(x.modules.asl, 'bTimeEncoded')
+		x.modules.asl.bTimeEncoded = false;
+	end
 else
     bMultiPLD = 0;
 end
@@ -139,7 +144,7 @@ end
 % So, here we check if it exists, but otherwise we default to disabling it
 
 if bMultiPLD || bMultiTE
-    % outlier exclusion is temporarily disabled for multiPLD/TE
+    % outlier exclusion is temporarily disabled for multiPLD (including Time-encoded) or multi-TE
     % as we are still developing this feature
     fprintf('%s\n', 'multi-PLD or multi-TE detected, disabling outlier exclusion, not yet implemented');
     bSpikeRemoval = false;
@@ -183,6 +188,7 @@ end
 if bMultiTE || x.modules.asl.bTimeEncoded
     % ZigZag are temporarily disabled for multiTE and TimeEncoded
     % as we are still developing this feature
+	% Note that for standard multi-PLD, Zig-zag can be applied because standard multi-PLD still has controls and labels
     fprintf('%s\n', 'multi-PLD or multi-TE detected, disabling zig-zag motion estimation, not yet implemented');    
     bZigZag = false;
 
@@ -207,7 +213,11 @@ end
 if bMultiTE
     fprintf('SPM motion estimation in multi-TE data: Aligning shortest TEs only');
 elseif bMultiPLD
-    fprintf('SPM motion estimation in multi-PLD data: Aligning within PLDs only');
+	if x.modules.asl.bTimeEncoded
+		fprintf('SPM motion estimation in single-TE Time-encoded data: Aligning all')
+	else
+		fprintf('SPM motion estimation in multi-PLD data: Aligning within PLDs only');
+	end
 else
     fprintf('Standard SPM motion estimation');
 end
@@ -222,15 +232,11 @@ switch x.settings.Quality
 	case 1 % normal quality
 		flags.quality = 1;
 		flags.sep = minVoxelSize;
+		flags.rtm = 1; % realign to mean
 	case 0 % low quality for fast try-out
 		flags.quality = 0.01;
+		flags.rtm = 0; % disable realign to mean
 		flags.sep = minVoxelSize*2;
-end
-
-if bMultiTE || bMultiPLD 
-	flags.rtm = 0; % disable realign to mean
-else
-	flags.rtm = 1; % realign to mean
 end
 
 flags.interp = 1;
@@ -246,7 +252,7 @@ xASL_delete(rpfile);
 
 V = spm_vol(InputPath); 
 
-if bMultiTE || bMultiPLD
+if bMultiTE || (bMultiPLD && ~x.modules.asl.bTimeEncoded)
 	% Prepare for updating the volumes - this is not necessary for the simple case where all is handeled by spm_realign
 	Y = spm_read_vols(V); % Read the image
 	rp_all = zeros(nFrames, 6); % rp_all is what ends up in the rp*.txt sidecar, rp=realign parameters
@@ -259,33 +265,33 @@ if bMultiTE
 	% It assumes that the volume is sorted in the order of acquisition with blocks of increasing TEs
     
 	% Indexes that flags the first/shortest TEs frames
-    idx_firstTE = find((x.Q.EchoTime == min(x.Q.EchoTime)));
-	idx_lastTE =  find((x.Q.EchoTime == max(x.Q.EchoTime)));
+    idx_minTE = find((x.Q.EchoTime == min(x.Q.EchoTime)));
+	idx_maxTE =  find((x.Q.EchoTime == max(x.Q.EchoTime)));
     
-	if length(idx_firstTE) ~= length(idx_lastTE)
+	if length(idx_minTE) ~= length(idx_maxTE)
 		% TEs should all have the same number of blocks (e.g., control-label repetitions and/or PLDs)
 		error('Number of shortest TEs and longest TEs do not match, check if there are missing frames/volumes.');
 	end
 
 	% Realigns only the flagged frames
-    spm_realign(V(idx_firstTE), flags, bZigZag); 
+    spm_realign(V(idx_minTE), flags, bZigZag); 
 	% This affects the ASL4D.mat file, rp_ASL4D.txt file and MAT within the ASL4D.nii volume
     
     rp_temp = load(rpfile); % Load the rp file written by spm_realign
 
 	V = spm_vol(InputPath); % Read the updated volumes
     % Loop through TE groups
-    for idxTE = 1:length(idx_firstTE)
+    for idxTE = 1:length(idx_minTE)
         % Repeats the motion estimates extracted from the rp file for the rest of the TEs and writes to the corresponding rows in rp_all
-        rp_all(idx_firstTE(idxTE):idx_lastTE(idxTE), :) = repmat(rp_temp(idxTE,:), x.Q.nUniqueEchoTime, 1); 
+        rp_all(idx_minTE(idxTE):idx_maxTE(idxTE), :) = repmat(rp_temp(idxTE,:), x.Q.nUniqueEchoTime, 1); 
     
-		for idxAllTE = idx_firstTE(idxTE):idx_lastTE(idxTE)
-			mat_all(:, :, idxAllTE) = V(idx_firstTE(idxTE)).mat;
+		for idxAllTE = idx_minTE(idxTE):idx_maxTE(idxTE)
+			mat_all(:, :, idxAllTE) = V(idx_minTE(idxTE)).mat;
 		end
         
     end
     
-elseif bMultiPLD
+elseif bMultiPLD && ~x.modules.asl.bTimeEncoded
     % Handles only Multi-PLD datasets - aligns only between the same PLDs
 	% Motion correction across all PLDs is not really necessary as that can be done with the simple motion correction
 	% Note that we handle normal mutli-PLD (not TimeEncoded), so there are still control and label images and we can thus do ZigZag
@@ -310,7 +316,7 @@ else
 end
  
 % For these special cases, we need to save the updated transformation matrices
-if bMultiTE || bMultiPLD
+if bMultiTE || (bMultiPLD && ~x.modules.asl.bTimeEncoded)
 	% Save the updated matrix TXT
 	writematrix(rp_all, rpfile, 'delimiter', '\t'); 
 
@@ -350,9 +356,9 @@ FD{2} = diff(rp); % motion (relative displacement)
 
 if bMultiTE
 	% For MultiTE, recalculate the means and SD from the first echo only. But keep the vectors of all displacements as they were
-	idx_firstTE = find((x.Q.EchoTime == min(x.Q.EchoTime)));
-    FD_firstTE{1} = rp(idx_firstTE, :); % position (absolute displacement) for first TEs only
-    FD_firstTE{2} = diff(rp(idx_firstTE, :)); % motion (relative displacement) for first TEs only
+	idx_minTE = find((x.Q.EchoTime == min(x.Q.EchoTime)));
+    FD_firstTE{1} = rp(idx_minTE, :); % position (absolute displacement) for first TEs only
+    FD_firstTE{2} = diff(rp(idx_minTE, :)); % motion (relative displacement) for first TEs only
 
 	[~, median_NDV, mean_NDV, max_NDV, SD_NDV, MAD_NDV] = xASL_wrp_RealignASL_compute_NDV(FD_firstTE, MeanRadius);
 end
