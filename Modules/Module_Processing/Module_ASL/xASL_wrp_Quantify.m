@@ -159,9 +159,9 @@ elseif isnumeric(x.Q.M0)
             % in case of separate M0, or M0 because of no background suppression,
             % T2* effect is similar in both images and hence removed by division
 			if ~isempty(ASLshortestTE)
-				T2_star_factor = exp(ASLshortestTE/x.Q.T2star);
+				T2_star_factor = exp(ASLshortestTE/x.Q.T2starGM);
 				M0_im = M0_im./T2_star_factor;
-				fprintf('%s\n',['M0 image corrected for T2* decay during TE in PWI, TE was ' xASL_num2str(ASLshortestTE) ' ms, using T2* ' xASL_num2str(x.Q.T2star) ' ms, this resulting in factor ' xASL_num2str(T2_star_factor)]);
+				fprintf('%s\n',['M0 image corrected for T2* decay during TE in PWI, TE was ' xASL_num2str(ASLshortestTE) ' ms, using T2* ' xASL_num2str(x.Q.T2starGM) ' ms, this resulting in factor ' xASL_num2str(T2_star_factor)]);
 				% If obtained by e.g. CSF inversion recovery, make sure that this is corrected for blood-water partition coefficient (0.76) and density of brain tissue (1.05 g/mL)
 			else
 				error('EchoTime unknown for ASL, but it is needed for the quantification to correct for ASL vs M0 signal differences.');
@@ -216,8 +216,8 @@ if strcmpi(x.Q.M0,'separate_scan')
 			CorrFactor = x.Q.T2GM;
 			CorrName = 'T2GM';
         else % assume T2* signal decay 2D_EPI or 3D GRASE
-			CorrFactor = x.Q.T2star;
-			CorrName = 'T2star';
+			CorrFactor = x.Q.T2starGM;
+			CorrName = 'T2starGM';
         end
 
         % Correct M0 for any EchoTime differences between ASL & M0
@@ -277,8 +277,8 @@ else
 
 
     % Check correct order of magnitude blood T1 (this value should be around 1700, or ~ 1000-3000)
-    if x.Q.BloodT1<10
-        x.Q.BloodT1 = x.Q.BloodT1.*1000;
+    if x.Q.T1blood<10
+        x.Q.T1blood = x.Q.T1blood.*1000;
     end
 
 	if ~isfield(x.Q,'LabelingType')

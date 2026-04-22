@@ -70,7 +70,7 @@ for iSession=1:2
 	SliceNumber(SliceNumber>length(SliceReadoutTime)) = length(SliceReadoutTime);
 	
 	PLD{iSession} = x.Q.uniqueInitial_PLD + SliceReadoutTime(SliceNumber);
-	CBF{iSession} = CBF{iSession}./(exp(PLD{iSession}./x.Q.BloodT1) / (2.*x.Q.LabelingEfficiency.*x.Q.BloodT1 .* (1- exp(-x.Q.uniqueLabelingDuration./x.Q.BloodT1)) ));
+	CBF{iSession} = CBF{iSession}./(exp(PLD{iSession}./x.Q.T1blood) / (2.*x.Q.LabelingEfficiency.*x.Q.T1blood .* (1- exp(-x.Q.uniqueLabelingDuration./x.Q.T1blood)) ));
 end
 % Average different PLD scales
 PLD_combined= (PLD{1}+PLD{2})./2;
@@ -92,9 +92,9 @@ FEAST_ratio(FEAST_ratio<0) = 0; % clip @ 0 (== infinite ATT)
 
 %% -------------------------------------------------------------
 %% 5. Compute TT maps
-qnt_PLDdecay = exp(-PLD_combined/x.Q.BloodT1);
-qnt_combidecay = exp( (-x.Q.uniqueLabelingDuration - PLD_combined) / x.Q.BloodT1);
-TT = -x.Q.BloodT1 .* reallog( FEAST_ratio .* (qnt_PLDdecay  - qnt_combidecay ) + qnt_combidecay );
+qnt_PLDdecay = exp(-PLD_combined/x.Q.T1blood);
+qnt_combidecay = exp( (-x.Q.uniqueLabelingDuration - PLD_combined) / x.Q.T1blood);
+TT = -x.Q.T1blood .* reallog( FEAST_ratio .* (qnt_PLDdecay  - qnt_combidecay ) + qnt_combidecay );
 
 xASL_io_SaveNifti(PathCBF{1}, fullfile(x.D.PopDir, ['TT_'  x.P.SubjectID '.nii']), TT, 32);
 

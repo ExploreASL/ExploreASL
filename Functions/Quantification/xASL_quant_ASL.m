@@ -385,11 +385,11 @@ if x.modules.asl.ApplyQuantification(3)
     fprintf('\n%s',['labeling efficiency (neck*Bsup) = ' xASL_num2str(x.Q.LabEff_Orig) ' * ' xASL_num2str(x.Q.LabEff_Bsup) ', ']);
     fprintf('\n%s','assuming ');
     fprintf('%s',['labda = ' xASL_num2str(x.Q.Lambda) ', ']);
-    fprintf('%s\n',['T1 arterial blood = ' xASL_num2str(x.Q.BloodT1) ' ms']);
+    fprintf('%s\n',['T1 arterial blood = ' xASL_num2str(x.Q.T1blood) ' ms']);
 
     if x.Q.nCompartments==2
         fprintf('%s',['ATT = ' xASL_num2str(x.Q.ATT) ' ms, ']);
-        fprintf('%s\n',['T1tissue = ' xASL_num2str(x.Q.TissueT1) ' ms']);
+        fprintf('%s\n',['T1tissue = ' xASL_num2str(x.Q.T1GM) ' ms']);
     end
 end
 
@@ -414,21 +414,21 @@ function ScaleImage = xASL_sub_ApplyLabelDecayScaleFactor(x, ScaleImage)
                     DivisionFactor = x.Q.uniqueLabelingDuration;
                     fprintf('%s\n','Using a single-compartment PASL model');
                 case 'casl'
-                    DivisionFactor = x.Q.BloodT1 .* (1 - exp(-x.Q.uniqueLabelingDuration./x.Q.BloodT1));
+                    DivisionFactor = x.Q.T1blood .* (1 - exp(-x.Q.uniqueLabelingDuration./x.Q.T1blood));
                     fprintf('%s\n','Using a single-compartment CASL model');
             end
 
-            ScaleImage = exp((ScaleImage./x.Q.BloodT1)) ./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
+            ScaleImage = exp((ScaleImage./x.Q.T1blood)) ./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
 
         case 2 % dual-compartment model
             switch lower(x.Q.LabelingType)
                 case 'pasl'
                     DivisionFactor = x.Q.uniqueLabelingDuration;
-                    ScaleImage = exp((x.Q.ATT./x.Q.BloodT1)).*exp(((ScaleImage-x.Q.ATT)./x.Q.TissueT1))./ (2.*x.Q.LabelingEfficiency.*DivisionFactor);
+                    ScaleImage = exp((x.Q.ATT./x.Q.T1blood)).*exp(((ScaleImage-x.Q.ATT)./x.Q.T1GM))./ (2.*x.Q.LabelingEfficiency.*DivisionFactor);
                     fprintf('%s\n','Using a dual-compartment PASL model');
                 case 'casl'
-                    DivisionFactor = x.Q.TissueT1 .* (exp((min(x.Q.ATT-ScaleImage,0))./x.Q.TissueT1) - exp((min(x.Q.ATT-x.Q.uniqueLabelingDuration-ScaleImage,0))./x.Q.TissueT1));
-                    ScaleImage = exp((x.Q.ATT./x.Q.BloodT1))./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
+                    DivisionFactor = x.Q.T1GM .* (exp((min(x.Q.ATT-ScaleImage,0))./x.Q.T1GM) - exp((min(x.Q.ATT-x.Q.uniqueLabelingDuration-ScaleImage,0))./x.Q.T1GM));
+                    ScaleImage = exp((x.Q.ATT./x.Q.T1blood))./ (2.*x.Q.LabelingEfficiency.* DivisionFactor);
                     fprintf('%s\n','Using a dual-compartment CASL model');
             end
 

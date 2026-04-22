@@ -14,8 +14,8 @@ function [x] = xASL_quant_DefineQuantificationParameters(x)
 % 1.   Hematocrit
 % 2.   Arterial blood T1
 % 3.   Arterial blood T2
-% 4.   Tissue T1
-% 5.   Tissue T2(*)
+% 4.   GM and WM T1
+% 5.   GM and WM T2(*) and T2 of extravascular compartment for multiTE fitting
 %
 % REFERENCES: 
 %     Gregori, Johannes et al. “T2-based arterial spin labeling measurements of blood to tissue water transfer 
@@ -66,9 +66,9 @@ end
 %% ------------------------------------------------------------------------------------------------
 %% 1.   Hematocrit
 % Here, we check if the user has provided a hematocrit value for this
-% subject_session_run. Only then, we create a x.Q.BloodT1.
+% subject_session_run. Only then, we create a x.Q.T1blood.
 % Below, at the quantification section, this is only taken into account
-% when x.Q.BloodT1 exists, otherwise default Blood T1 values are used based
+% when x.Q.T1blood exists, otherwise default Blood T1 values are used based
 % on MagneticFieldStrength.
 
 IndexSetsAge = find(strcmpi(x.S.SetsName, 'age'));
@@ -149,39 +149,39 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 2.   Arterial blood T1
-% We convert x.Q.Hematocrit -> x.Q.BloodT1
+% We convert x.Q.Hematocrit -> x.Q.T1blood
 if isfield(x.Q, 'Hematocrit')
-    x.Q.BloodT1 = xASL_quant_Hct2BloodT1(x.Q.Hematocrit, [], x.MagneticFieldStrength);
+    x.Q.T1blood = xASL_quant_Hct2BloodT1(x.Q.Hematocrit, [], x.MagneticFieldStrength);
 end
 
-if ~isfield(x.Q, 'BloodT1') || isempty(x.Q.BloodT1)
+if ~isfield(x.Q, 'T1blood') || isempty(x.Q.T1blood)
     % T1 relaxation time of arterial blood
-    % There are 3 options for x.Q.BloodT1:
-    % A) users have provided x.Q.BloodT1
-    % B) users have provided x.Hematocrit (in any of the forms defined in xASL_wrp_Quantify 3.a-c), which is converted to x.Q.BloodT1 there
+    % There are 3 options for x.Q.T1blood:
+    % A) users have provided x.Q.T1blood
+    % B) users have provided x.Hematocrit (in any of the forms defined in xASL_wrp_Quantify 3.a-c), which is converted to x.Q.T1blood there
     % C) it doesn't exist and is defaulted here based on MagneticFieldStrength
     switch(x.MagneticFieldStrength)
 	    case 0.2 
-		    x.Q.BloodT1 = 776; % Rooney 2007 MRM
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 776 ms for 0.2T (Rooney 2007 MRM)');
+		    x.Q.T1blood = 776; % Rooney 2007 MRM
+            fprintf('%s\n', 'Defaulting x.Q.T1blood to 776 ms for 0.2T (Rooney 2007 MRM)');
 	    case 1
-		    x.Q.BloodT1 = 1350; % Rooney 2007 MRM
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1350 ms for 1T (Rooney 2007 MRM)');
+		    x.Q.T1blood = 1350; % Rooney 2007 MRM
+            fprintf('%s\n', 'Defaulting x.Q.T1blood to 1350 ms for 1T (Rooney 2007 MRM)');
 	    case 1.5
-		    x.Q.BloodT1 = 1540; % Rooney 2007 MRM
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1540 ms for 1.5T (Rooney 2007 MRM)');
+		    x.Q.T1blood = 1540; % Rooney 2007 MRM
+            fprintf('%s\n', 'Defaulting x.Q.T1blood to 1540 ms for 1.5T (Rooney 2007 MRM)');
 	    case 3
-		    x.Q.BloodT1 = 1650; % Alsop 2015 MRM
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1650 ms for 3T (Alsop 2015 MRM)');
+		    x.Q.T1blood = 1650; % Alsop 2015 MRM
+            fprintf('%s\n', 'Defaulting x.Q.T1blood to 1650 ms for 3T (Alsop 2015 MRM)');
 	    case 4
-		    x.Q.BloodT1 = 1914; % Rooney 2007
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 1914 ms for 4T (Rooney 2007 MRM)');
+		    x.Q.T1blood = 1914; % Rooney 2007
+            fprintf('%s\n', 'Defaulting x.Q.T1blood to 1914 ms for 4T (Rooney 2007 MRM)');
 	    case 7
-		    %x.Q.BloodT1 = 2578; % Rooney 2007 MRM
-		    x.Q.BloodT1 = 2100; % Ivanov 2017 NeuroImage
-            fprintf('%s\n', 'Defaulting x.Q.BloodT1 to 2100 ms for 7T (Ivanov 2007 NeuroImage)');
+		    %x.Q.T1blood = 2578; % Rooney 2007 MRM
+		    x.Q.T1blood = 2100; % Ivanov 2017 NeuroImage
+            fprintf('%s\n', 'Defaulting x.Q.T1blood to 2100 ms for 7T (Ivanov 2007 NeuroImage)');
 	    otherwise
-		    x.Q.BloodT1 = 1650; % Alsop 2015 MRM - assuming default 3 T
+		    x.Q.T1blood = 1650; % Alsop 2015 MRM - assuming default 3 T
 		    fprintf('%s\n',['Warning: Unknown T1-blood for ' xASL_num2str(x.MagneticFieldStrength) 'T scanner, using 3T value (Alsop 2015 MRM)']);
             % PM: NOTE that this situation is unlikely, given that we
             % default to x.MagneticFieldStrength = 3 at section 0
@@ -213,54 +213,74 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 4.   Tissue T1
-if ~isfield(x.Q,'TissueT1')
+if ~isfield(x.Q,'T1GM')
 	switch(x.MagneticFieldStrength)
 		% T1 GM tissue
 		case 0.2
-			x.Q.TissueT1 =  635; % Rooney 2007
+			x.Q.T1GM =  635; % Rooney 2007
 		case 1
-			x.Q.TissueT1 = 1036; % Rooney 2007
+			x.Q.T1GM = 1036; % Rooney 2007
 		case 1.5
-			x.Q.TissueT1 = 1188; % Rooney 2007
+			x.Q.T1GM = 1188; % Rooney 2007
 		case 3
-			x.Q.TissueT1 = 1240; % Alsop 2015
+			x.Q.T1GM = 1240; % Alsop 2015
 		case 4
-			x.Q.TissueT1 = 1530; % Rooney 2000
+			x.Q.T1GM = 1723; % Rooney 2007
 		case 7
-			x.Q.TissueT1 = 1920; % Marques 2010
+			x.Q.T1GM = 1920; % Marques 2010
 		otherwise
-			x.Q.TissueT1 = 1240;
+			x.Q.T1GM = 1240;
 			fprintf('%s\n',['Warning: Unknown T1 GM for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 	end
 end
 
+if ~isfield(x.Q,'T1WM')
+	switch(x.MagneticFieldStrength)
+		% T1 WM tissue
+		case 0.2
+			x.Q.T1WM =  361; % Rooney 2007
+		case 1
+			x.Q.T1WM = 555; % Rooney 2007
+		case 1.5
+			x.Q.T1WM = 656; % Rooney 2007
+		case 3
+			x.Q.T1WM = 800; % average of frontal & occipital WM from Lu et al., JMRI 2005 & 3 studies they refer to
+		case 4
+			x.Q.T1WM = 1010; % Rooney 2007
+		case 7
+			x.Q.T1WM = 1150; % Marques 2010
+		otherwise
+			x.Q.T1WM = 800;
+			fprintf('%s\n',['Warning: Unknown T1 WM for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+	end
+end
 
 %% ------------------------------------------------------------------------------------------------
-%% 5.   Tissue T2(*)
-if ~isfield(x.Q,'T2star') || isempty(x.Q.T2star)
+%% 5.   Tissue T2(*) in GM
+if ~isfield(x.Q,'T2starGM') || isempty(x.Q.T2starGM)
     switch(x.MagneticFieldStrength)
 		case 3
-			x.Q.T2star = 47.3; % default for 3T; Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
+			x.Q.T2starGM = 47.3; % default for 3T; Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
 		case 7
-			x.Q.T2star = 35.6; % Voelker 2021
+			x.Q.T2starGM = 35.6; % Voelker 2021
 		case 1.5
-			x.Q.T2star = 62.0; % Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
+			x.Q.T2starGM = 62.0; % Lu and van Zijl, MRM 2005, DOI: 10.1002/mrm.20379
 		otherwise
-			x.Q.T2star = 47.3;
-			fprintf('%s\n',['Warning: Unknown T2star for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+			x.Q.T2starGM = 47.3;
+			fprintf('%s\n',['Warning: Unknown T2starGM for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
     end
 end
-if ~isfield(x.Q,'T2tissue') || isempty(x.Q.T2tissue)
-	% T2tissue is used for 2-compartment fitting with mutli-TE acquisition. By default, we assume GM
+if ~isfield(x.Q,'T2tissueMultiTE') || isempty(x.Q.T2tissueMultiTE)
+	% T2tissueMultiTE is used for 2-compartment fitting with mutli-TE acquisition. By default, we assume GM
     switch(x.MagneticFieldStrength)
 		case 3
-			x.Q.T2tissue = 85; % in ms - default for 3T (ref Johannes Gregori, JMRI 2013) 88 for frontal GM, 79 for occipital GM (Lu et al, 2005 JMRI)
+			x.Q.T2tissueMultiTE = 85; % in ms - default for 3T (ref Johannes Gregori, JMRI 2013) 88 for frontal GM, 79 for occipital GM (Lu et al, 2005 JMRI)
 			% Hct specific values are in 10.1002/mrm.21342
 		case 1.5
-			x.Q.T2tissue = 95; % in ms - 99 for frontal GM, 90 for occipital GM (Lu et al, 2005 JMRI).
+			x.Q.T2tissueMultiTE = 95; % in ms - 99 for frontal GM, 90 for occipital GM (Lu et al, 2005 JMRI).
 		otherwise
-			x.Q.T2tissue = 85;
-			fprintf('%s\n',['Warning: Unknown T2tissue for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+			x.Q.T2tissueMultiTE = 85;
+			fprintf('%s\n',['Warning: Unknown T2tissueMultiTE for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
     end
 end
 
@@ -274,6 +294,18 @@ if ~isfield(x.Q,'T2GM') || isempty(x.Q.T2GM)
 		otherwise
 			x.Q.T2GM = 85;
 			fprintf('%s\n',['Warning: Unknown T2GM for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
+    end
+end
+
+if ~isfield(x.Q,'T2WM') || isempty(x.Q.T2WM)
+    switch(x.MagneticFieldStrength)
+		case 3
+			x.Q.T2WM = 75;? % in ms - 69 for frontal WM, 81 for occipital WM (Lu et al, 2005 JMRI)
+		case 1.5
+			x.Q.T2WM = 86;? % in ms - 79 for frontal WM, 92 for occipital WM (Lu et al, 2005 JMRI)
+		otherwise
+			x.Q.T2WM = 75;
+			fprintf('%s\n',['Warning: Unknown T2WM for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
     end
 end
 

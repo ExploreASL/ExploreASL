@@ -59,7 +59,7 @@ end
 	   
 % Names of files for data sets and older names for backwards compatibility
 namesFieldsOld = {'qnt_ATT' 'qnt_T1a' 'qnt_lab_eff'        'LabelingEfficiency' 'Hematocrit' 'BackGrSupprPulses'};
-namesFieldsNew = {'ATT'     'BloodT1' 'LabelingEfficiency' 'LabelingEfficiency' 'Hematocrit' 'BackgroundSuppressionNumberPulses'};
+namesFieldsNew = {'ATT'     'T1blood' 'LabelingEfficiency' 'LabelingEfficiency' 'Hematocrit' 'BackgroundSuppressionNumberPulses'};
 
 %% ------------------------------------------------------------------------
 %% 1. Load .mat parameter file (if exists)

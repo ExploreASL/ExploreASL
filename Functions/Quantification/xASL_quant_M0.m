@@ -12,7 +12,7 @@ function [M0IM] = xASL_quant_M0(inputM0, x)
 %                 x.M0_usesASLtiming - is 1 when the start of M0 readout is set to TR-labdur-PLD+slice*SliceReadoutTime for 2D
 %                                    - is 0 when the start of M0 readout is set to TR-slice*SliceReadoutTime for 2D
 %                                    - set to 1 for M0 within ASL, 0 for standalone
-%                 x.Q.TissueT1 - is set to 800 when missing
+%                 x.Q.T1WM - default is set elsewhere
 %                 x.modules.asl.M0_GMScaleFactor - is set to 1 when missing
 %                 x.Q.PresaturationTime - when Bsup-M0 correction is on, and PreSat missing, then set to the start of the sequence
 %                 x.modules.asl.ApplyQuantification(4) - is set to 0 when BSup-M0 correction is done, because no further T1-relaxation compensation of M0 is necessary
@@ -105,11 +105,8 @@ else
     % Therefore, correct this (~2% decrease)
     % Using WM value here, since we used the M0 biasfield correction method
     % in which the M0 is roughly eroded to the WM
-    if ~isfield(x.Q,'TissueT1')
-        fprintf('%s\n','x.Q.TissueT1 did not exist, default=1240 used');
-        x.Q.TissueT1 = 800; % 800 ms for WM, average of frontal & occipital WM from Lu et al., JMRI 2005 & 3 studies they refer to
-        % for GM, this would be 1300 ms
-        % Here we use the WM T1, since we smooth a lot
+    if ~isfield(x.Q,'T1WM')
+        error('x.Q.T1WM not found but should have been set to a default value already')
     end
 
     %% ------------------------------------------------------------------------------------------------------
@@ -194,7 +191,7 @@ else
         error('Unknown x.Q.MRAcquisitionType specified');
     end
 
-    corr_T1 = 1 ./ (1-exp(-NetTR/x.Q.TissueT1));
+    corr_T1 = 1 ./ (1-exp(-NetTR/x.Q.T1WM));
     M0IM = M0IM .* corr_T1;
 
     min_TR = min(NetTR( NetTR~=0 & isfinite(NetTR)));
@@ -202,7 +199,7 @@ else
     minCorr_T1 = min(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
     maxCorr_T1 = max(corr_T1( corr_T1~=0 & isfinite(corr_T1)));
 
-    fprintf('%s\n', ['M0 correction of incomplete T1 relaxation: TR range ' xASL_num2str(min_TR) '-' xASL_num2str(max_TR) ' ms, T1 WM tissue ' xASL_num2str(x.Q.TissueT1) ' ms, gives factor ' xASL_num2str(minCorr_T1) '-' xASL_num2str(maxCorr_T1)]);
+    fprintf('%s\n', ['M0 correction of incomplete T1 relaxation: TR range ' xASL_num2str(min_TR) '-' xASL_num2str(max_TR) ' ms, T1 WM tissue ' xASL_num2str(x.Q.T1WM) ' ms, gives factor ' xASL_num2str(minCorr_T1) '-' xASL_num2str(maxCorr_T1)]);
 end
 
 %% ------------------------------------------------------------------------------------------------------
@@ -245,14 +242,14 @@ end
 % Here, we compare the difference between both equations.
 % E.g. suppose a Philips 3D GRASE M0 with TR=4035, x.Q.LabelingDuration =
 % 1800, x.Q.Initial_PLD = 1525, x.Q.SliceReadoutTime = 30,
-% x.Q.TissueT1 = 1240, nSlices=14, SliceN = [1:nSlices].
+% x.Q.T1GM = 1240, nSlices=14, SliceN = [1:nSlices].
 
 % Default Philips equation on the scanner:
 % NetTR = x.Q.LabelingDuration+x.Q.Initial_PLD+x.Q.SliceReadoutTime.*(SliceN-1)
 % gives [3600,3640,3680,3720,3760,3800,3840,3880,3920,3960,4000,4040,4080,4120;]
 
 % giving correction factor with equationa:
-% where corr_T1             = 1 ./ (1-exp(-NetTR/x.Q.TissueT1))
+% where corr_T1             = 1 ./ (1-exp(-NetTR/x.Q.T1GM))
 % gives
 % [1.05802865189666,1.05608332293690,1.05420654956043,1.05239569649126,1.05064824413736,1.04896178258070,1.04733400593878,1.04576270707089,1.04424577260449,1.04278117825921,1.04136698444764,1.04000133213376,1.03868243893151,1.03740859542711;]
 
@@ -260,7 +257,7 @@ end
 % NetTR     = TR - ((nSlices-SliceN).*qnt_PLDslicereadout)
 % gives
 % [3645,3675,3705,3735,3765,3795,3825,3855,3885,3915,3945,3975,4005,4035;]
-% where corr_T1             = 1 ./ (1-exp(-NetTR/x.Q.TissueT1));
+% where corr_T1             = 1 ./ (1-exp(-NetTR/x.Q.T1WM));
 % gives
 % [1.05584503232182,1.05443748830939,1.05306720374486,1.05173310385921,1.05043414927497,1.04916933462559,1.04793768723894,1.04673826588166,1.04557015956089,1.04443248638046,1.04332439244853,1.04224505083405,1.04119366056948,1.04016944569733;]
 % which is a overestimation of
@@ -297,14 +294,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 	end
 	
     SliceReadoutTime = xASL_quant_SliceTiming(x,M0IM);
-        
-    if ~isfield(x.Q, 'TissueT1') || isempty(x.Q.TissueT1)
-        fprintf('%s\n', 'Warning: WM T1 set to 900 ms for 3T');
-        % Here we use the WM T1, as we mask the M0 for the WM only, smooth it to a biasfield, 
-        % and then extrapolate this
-        x.Q.TissueT1 = 900;
-	end
-    
+           
     if ~isfield(x.Q, 'BackgroundSuppressionPulseTime') || isempty(x.Q.BackgroundSuppressionPulseTime)
         error('x.Q.BackgroundSuppressionPulseTime is missing or empty');
     elseif ~isfield(x.Q, 'PresaturationTime') || isempty(x.Q.PresaturationTime)
@@ -367,7 +357,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
 		FigureHandle = [];
 	end
 	
-    SignalPercentage = abs(xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, ReadoutTime, x.Q.PresaturationTime, x.Q.TissueT1, SliceReadoutTime, x.D.M0CheckDir, bCreateFigure));
+    SignalPercentage = abs(xASL_quant_BSupCalculation(x.Q.BackgroundSuppressionPulseTime, ReadoutTime, x.Q.PresaturationTime, x.Q.T1WM, SliceReadoutTime, x.D.M0CheckDir, bCreateFigure));
     
     %% Obtain the slice-wise median Control signal before correction
     % First create a reasonable mask
@@ -435,7 +425,7 @@ function [M0IM, x] = xASL_quant_RevertBsupFxControl(M0IM, x)
     fprintf('Control image divided by ');
     fprintf('%s\n', [xASL_num2str(mean(SignalPercentage)) ' to correct for background suppression']);
     fprintf('%s\n', ['Using BackgroundSuppressionPulseTime=' xASL_num2str(x.Q.BackgroundSuppressionPulseTime(:)')]);
-    fprintf('%s\n', ['with presaturation time=' xASL_num2str(x.Q.PresaturationTime) ', tissue T1=' xASL_num2str(x.Q.TissueT1)]);
+    fprintf('%s\n', ['with presaturation time=' xASL_num2str(x.Q.PresaturationTime) ', tissue T1=' xASL_num2str(x.Q.T1WM)]);
     fprintf('%s\n\n', ['And SliceReadoutTime=' xASL_num2str(SliceReadoutTime(:)')]);
     fprintf('%s\n', 'This converts the control image to allow its use as a pseudo-M0 image');
     

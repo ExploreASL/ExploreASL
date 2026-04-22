@@ -1,4 +1,4 @@
-function [pc, score, eigenvalues, tsquare, loadings, Xmean] = xASL_im_PCA(dataIn)
+function [pc, score, eigenvalues, tsquare, loadings, Xmean, U] = xASL_im_PCA(dataIn)
 %xASL_im_PCA Perform a Principal Component Analysis.
 %
 % FORMAT:       [pc, score, eigenvalues, tsquare, loadings, Xmean] = xASL_im_PCA(dataIn)
@@ -35,7 +35,7 @@ Xmean = mean(dataIn,1);
 dataIn = (dataIn - Xmean(ones(nM,1),:));
 
 % U E W^T = X, svd(X) = [U,E,W]
-[~,eigenvalues,pc] = svd(dataIn./sqrt(nM-1),0);
+[U,eigenvalues,pc] = svd(dataIn./sqrt(nM-1),0);
 
 % Scores T = XW
 score = dataIn*pc;
@@ -57,3 +57,6 @@ tmp = sqrt(diag(1./eigenvalues(1:nR)))*score(:,1:nR)';
 tsquare = sum(tmp.*tmp)';
 
 return;
+
+% Reconstruction
+% Rec = U * eigenvalues_filtered * pc' + Xmean

@@ -492,7 +492,7 @@ if bCreatePWI
     if isfield(x.Q, 'PulseSequenceType') && ~isempty(regexpi(x.Q.PulseSequenceType, 'spiral', 'once')) &&  strcmpi(x.Q.MRAcquisitionType, '3D')
         T2_factor = x.Q.T2GM;
     else
-        T2_factor = x.Q.T2star;
+        T2_factor = x.Q.T2starGM;
     end
 
     nsrTE = exp(x.Q.EchoTime_PWI3D ./T2_factor); % for each volume, get the EchoTime weighting
@@ -500,9 +500,9 @@ if bCreatePWI
 
     % PLD & LD weighting
 	if isempty(x.Q.LabelingDuration_PWI3D)
-		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.BloodT1);
+		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.T1blood);
 	else
-		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.BloodT1) ./ (1-exp(-x.Q.LabelingDuration_PWI3D ./x.Q.BloodT1));
+		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.T1blood) ./ (1-exp(-x.Q.LabelingDuration_PWI3D ./x.Q.T1blood));
 	end
     % e.g., exp(1525/1650) / (1-exp(-1650/1650) = 3.9865
 
