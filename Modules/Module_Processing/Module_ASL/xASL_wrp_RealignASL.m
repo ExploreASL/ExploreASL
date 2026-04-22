@@ -208,26 +208,7 @@ if ~usejava('jvm')
 end
 
 
-%% ----------------------------------------------------------------------------------------
-%% 1. Estimate motion
-if bMultiTE
-    fprintf('SPM motion estimation in multi-TE data: Aligning shortest TEs only');
-elseif bMultiPLD
-	if x.modules.asl.bTimeEncoded
-		fprintf('SPM motion estimation in single-TE Time-encoded data: Aligning all')
-	else
-		fprintf('SPM motion estimation in multi-PLD data: Aligning within PLDs only');
-	end
-else
-    fprintf('Standard SPM motion estimation');
-end
-
-% Issue warning if empty image
-if max(max(max(max(tempnii.dat(:)))))==0 || numel(unique(tempnii.dat(:)))==1
-	warning('Invalid input image, skipping');
-	return;
-end
-
+%% Manage quality settings
 switch x.settings.Quality
 	case 1 % normal quality
 		flags.quality = 1;
@@ -242,6 +223,21 @@ end
 flags.interp = 1;
 flags.graphics = 0;
 
+
+%% ----------------------------------------------------------------------------------------
+%% 1. Estimate motion
+fprintf('\nSPM motion estimation:\n');
+fprintf('ExploreASL estimates motion and aligns based on the first TEs (in the case of multiTE)\n');
+fprintf('ExploreASL estimates motion and aligns within PLD only (in the case of multiPLD (excluding Hadamard))\n');
+
+
+% Issue warning if empty image
+if max(max(max(max(tempnii.dat(:)))))==0 || numel(unique(tempnii.dat(:)))==1
+	warning('Invalid input image, skipping');
+	return;
+end
+
+
 % If previous realign parameters exist, delete them
 xASL_delete(rpfile);
 
@@ -250,16 +246,14 @@ xASL_delete(rpfile);
 % regression to account for ASL's potential control-label difference in
 % average head position
 
-V = spm_vol(InputPath); 
+V = spm_vol(InputPath); % load the path
+Y = spm_read_vols(V); % Read the image
+rp_all = zeros(nFrames, 6); % rp_all is what ends up in the rp*.txt sidecar, rp=realign parameters
+mat_all = zeros(4, 4, size(Y,4)); % mat_all is what ends up in the ASL*.mat sidecar, containing the orientation matrices for each frame/volume
 
-if bMultiTE || (bMultiPLD && ~x.modules.asl.bTimeEncoded)
-	% Prepare for updating the volumes - this is not necessary for the simple case where all is handeled by spm_realign
-	Y = spm_read_vols(V); % Read the image
-	rp_all = zeros(nFrames, 6); % rp_all is what ends up in the rp*.txt sidecar, rp=realign parameters
-	mat_all = zeros(4, 4, size(Y,4)); % mat_all is what ends up in the ASL*.mat sidecar, containing the orientation matrices for each frame/volume
-end
 
 if bMultiTE
+    fprintf('Multi-TE data detected: aligning based on shortest TEs only\n');
     % Handles Multi-TE dataset regardless of PLD
 	% Registers all frames with the shortest TEs and then applies the same transformation to all the longer TEs
 	% It assumes that the volume is sorted in the order of acquisition with blocks of increasing TEs
@@ -270,7 +264,7 @@ if bMultiTE
     
 	if length(idx_minTE) ~= length(idx_maxTE)
 		% TEs should all have the same number of blocks (e.g., control-label repetitions and/or PLDs)
-		error('Number of shortest TEs and longest TEs do not match, check if there are missing frames/volumes.');
+		error('Number of shortest TEs and longest TEs do not match, check if there are missing frames/volumes');
 	end
 
 	% Realigns only the flagged frames
@@ -292,6 +286,7 @@ if bMultiTE
     end
     
 elseif bMultiPLD && ~x.modules.asl.bTimeEncoded
+    fprintf('MultiPLD detected, aligning within PLDs only\n');
     % Handles only Multi-PLD datasets - aligns only between the same PLDs
 	% Motion correction across all PLDs is not really necessary as that can be done with the simple motion correction
 	% Note that we handle normal mutli-PLD (not TimeEncoded), so there are still control and label images and we can thus do ZigZag
@@ -311,28 +306,31 @@ elseif bMultiPLD && ~x.modules.asl.bTimeEncoded
 		end
     end
 else
+    fprintf('Standard SPM motion estimation\n');
     % Handles simple datasets
     spm_realign(V, flags, bZigZag);
 end
  
+
 % For these special cases, we need to save the updated transformation matrices
 if bMultiTE || (bMultiPLD && ~x.modules.asl.bTimeEncoded)
 	% Save the updated matrix TXT
 	writematrix(rp_all, rpfile, 'delimiter', '\t'); 
 
-	% Generate also the MAT file - so remove the MAT file first. The values are already stored in mat_all
+	% Also generate the MAT file - so remove the MAT file first. The values are already stored in mat_all
 	xASL_delete(matFile);
 
 	% Save the updated volume, one by one
-	for t = 1:size(Y,4)
-		Vt = V(t);                
-		Vt.n = [t 1];
-		Vt.mat = mat_all(:,:,t);
-		spm_write_vol(Vt, Y(:,:,:,t)); % Save one 3D volume
+	for iVolume = 1:size(Y,4)
+		Vt = V(iVolume);                
+		Vt.n = [iVolume 1];
+		Vt.mat = mat_all(:,:,iVolume);
+		spm_write_vol(Vt, Y(:,:,:,iVolume)); % Save one 3D volume
 	end
 	mat = mat_all;
 	save(matFile, 'mat'); % Save also the MAT file - NIfTI header and MAT-file contain the same information, but that's what normally happens after spm_realign
 end
+
 
 %% ----------------------------------------------------------------------------------------
 %% 2. Calculate position and motion parameters
