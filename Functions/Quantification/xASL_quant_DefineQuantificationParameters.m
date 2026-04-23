@@ -300,9 +300,9 @@ end
 if ~isfield(x.Q,'T2WM') || isempty(x.Q.T2WM)
     switch(x.MagneticFieldStrength)
 		case 3
-			x.Q.T2WM = 75;? % in ms - 69 for frontal WM, 81 for occipital WM (Lu et al, 2005 JMRI)
+			x.Q.T2WM = 75; % in ms - 69 for frontal WM, 81 for occipital WM (Lu et al, 2005 JMRI)
 		case 1.5
-			x.Q.T2WM = 86;? % in ms - 79 for frontal WM, 92 for occipital WM (Lu et al, 2005 JMRI)
+			x.Q.T2WM = 86; % in ms - 79 for frontal WM, 92 for occipital WM (Lu et al, 2005 JMRI)
 		otherwise
 			x.Q.T2WM = 75;
 			fprintf('%s\n',['Warning: Unknown T2WM for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
