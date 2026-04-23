@@ -228,7 +228,7 @@ flags.graphics = 0;
 %% 1. Estimate motion
 fprintf('\nSPM motion estimation:\n');
 fprintf('ExploreASL estimates motion and aligns based on the first TEs (in the case of multiTE)\n');
-fprintf('ExploreASL estimates motion and aligns within PLD only (in the case of multiPLD (excluding Hadamard))\n');
+%fprintf('ExploreASL estimates motion and aligns within PLD only (in the case of multiPLD (excluding Hadamard))\n');
 
 
 % Issue warning if empty image
@@ -285,26 +285,26 @@ if bMultiTE
         
     end
     
-elseif bMultiPLD && ~x.modules.asl.bTimeEncoded
-    fprintf('MultiPLD detected, aligning within PLDs only\n');
-    % Handles only Multi-PLD datasets - aligns only between the same PLDs
-	% Motion correction across all PLDs is not really necessary as that can be done with the simple motion correction
-	% Note that we handle normal mutli-PLD (not TimeEncoded), so there are still control and label images and we can thus do ZigZag
-
-    for pld = x.Q.uniqueInitial_PLD(:)'
-        idxSinglePLD = find(x.Q.Initial_PLD == pld); % Finds the same PLDs
-        spm_realign(V(idxSinglePLD), flags, bZigZag);
-        
-        rp_temp = load(rpfile); % Load the rp file written by spm_realign
-		V = spm_vol(InputPath); % Read the updated volumes
-
-		% Loop through TE groups
-		rp_all(idxSinglePLD, :) = rp_temp;
-
-		for idxPLD = idxSinglePLD(:)'
-			mat_all(:, :, idxPLD) = V(idxPLD).mat;
-		end
-    end
+% elseif bMultiPLD && ~x.modules.asl.bTimeEncoded
+%     fprintf('MultiPLD detected, aligning within PLDs only\n');
+%     % Handles only Multi-PLD datasets - aligns only between the same PLDs
+% 	% Motion correction across all PLDs is not really necessary as that can be done with the simple motion correction
+% 	% Note that we handle normal mutli-PLD (not TimeEncoded), so there are still control and label images and we can thus do ZigZag
+% 
+%     for pld = x.Q.uniqueInitial_PLD(:)'
+%         idxSinglePLD = find(x.Q.Initial_PLD == pld); % Finds the same PLDs
+%         spm_realign(V(idxSinglePLD), flags, bZigZag);
+% 
+%         rp_temp = load(rpfile); % Load the rp file written by spm_realign
+% 		V = spm_vol(InputPath); % Read the updated volumes
+% 
+% 		% Loop through TE groups
+% 		rp_all(idxSinglePLD, :) = rp_temp;
+% 
+% 		for idxPLD = idxSinglePLD(:)'
+% 			mat_all(:, :, idxPLD) = V(idxPLD).mat;
+% 		end
+%     end
 else
     fprintf('Standard SPM motion estimation\n');
     % Handles simple datasets
@@ -313,7 +313,7 @@ end
  
 
 % For these special cases, we need to save the updated transformation matrices
-if bMultiTE || (bMultiPLD && ~x.modules.asl.bTimeEncoded)
+if bMultiTE %|| (bMultiPLD && ~x.modules.asl.bTimeEncoded)
 	% Save the updated matrix TXT
 	writematrix(rp_all, rpfile, 'delimiter', '\t'); 
 
