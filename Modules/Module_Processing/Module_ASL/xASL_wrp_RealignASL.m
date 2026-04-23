@@ -189,7 +189,7 @@ if bMultiTE || x.modules.asl.bTimeEncoded
     % ZigZag are temporarily disabled for multiTE and TimeEncoded
     % as we are still developing this feature
 	% Note that for standard multi-PLD, Zig-zag can be applied because standard multi-PLD still has controls and labels
-    fprintf('%s\n', 'multi-PLD or multi-TE detected, disabling zig-zag motion estimation, not yet implemented');    
+	fprintf('%s\n', 'Time-encoded or multi-TE detected, disabling zig-zag motion estimation');
     bZigZag = false;
 
 elseif bASL && nFramesPerTE > 2
