@@ -60,6 +60,8 @@ elseif ~isfield(x,'M0_usesASLtiming')
     M0ParmsMat  = x.P.Path_M0_parms_mat;
 end
 
+x = xASL_quant_DefineQuantificationParameters(x);
+
 % Allow inputting path instead of image
 [M0IM, jsonM0] = xASL_io_Nifti2Im(inputM0, [], [], true);
 
