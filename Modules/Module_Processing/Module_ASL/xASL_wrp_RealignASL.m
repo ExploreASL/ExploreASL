@@ -270,15 +270,78 @@ rpPath = rpfile; % Path to the RP-file
 
 if x.modules.asl.bMoCoEdgeEnhanced
 	% Edge-enhancement 
-	sigmaEdge = 1.5; % STD of smoothing kernel in voxels
-
+	
+	%gradient is suboptimal, as the edge slope is contrast dependent. we want to first detect edges - derivative 0 - and then smooth edges for better convergence, but ont just gradients.
 	for iVol = 1:numel(Vorig)
 		% Modify the path of the smoothed image
 		Vreg(iVol).fname = InputPathReg;
 		Vreg(iVol).descrip = 'Gaussian-smoothed gradient magnitude';
-		imSmooth = imgaussfilt3(Yorig(:,:,:,iVol), sigmaEdge); % Gaussian smoothing
-		[Gx, Gy, Gz] = gradient(imSmooth); % Computes spatial gradients
-		imEdge = sqrt(Gx.^2 + Gy.^2 + Gz.^2); % Computes gradient magnitude
+		switch(3)
+			case 1
+				% Sobel with 0.5STD presmoothing
+				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
+				imSmooth = imgaussfilt3(Yorig(:,:,:,iVol), sigmaEdge); % Gaussian smoothing
+				[Gx, Gy, Gz] = gradient(imSmooth); % Computes spatial gradients
+				imEdge = sqrt(Gx.^2 + Gy.^2 + Gz.^2); % Computes gradient magnitude
+			case 2
+				% Sobel with 1.5STD presmoothing
+				sigmaEdge = 1.5; % STD of smoothing kernel in voxels
+				imSmooth = imgaussfilt3(Yorig(:,:,:,iVol), sigmaEdge); % Gaussian smoothing
+				[Gx, Gy, Gz] = gradient(imSmooth); % Computes spatial gradients
+				imEdge = sqrt(Gx.^2 + Gy.^2 + Gz.^2); % Computes gradient magnitude
+			case 3
+				% Sobel with 0.5STD presmoothing, thresholding and further smoothing
+				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
+				imSmooth = imgaussfilt3(Yorig(:,:,:,iVol), sigmaEdge); % Gaussian smoothing
+				[Gx, Gy, Gz] = gradient(imSmooth); % Computes spatial gradients
+				imEdge = sqrt(Gx.^2 + Gy.^2 + Gz.^2); % Computes gradient magnitude
+				imThreshold = sort(imEdge(:)); % Calculate 95th percentile
+				imThreshold = imThreshold(ceil(numel(imThreshold)*0.95));
+				imEdge = imEdge > imThreshold; % Threshold to avoid intensity scale differences
+				imEdge = imgaussfilt3(double(imEdge), sigmaEdge); % Gaussian smoothing 
+			case 4
+				% LoG - Laplacian of Gaussian filter, 0.5STD Gaussian, then Laplacian
+				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
+				imSmooth = imgaussfilt3(Yorig(:,:,:,iVol), sigmaEdge); % Gaussian smoothing
+
+				imLoG = zeros(3,3,3);% 3D Laplacian kernel: 6-neighbour stencil
+				imLoG(:,2,2) = 1;
+				imLoG(2,:,2) = 1;
+				imLoG(2,2,:) = 1;
+				imLoG(2,2,2) = -6; 
+
+				imEdge = convn(imSmooth, imLoG, 'same');
+			case 5
+				% LoG - Laplacian of Gaussian filter, 0.5STD Gaussian, then Laplacian, zero-crossings of second derivative
+				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
+				imSmooth = imgaussfilt3(Yorig(:,:,:,iVol), sigmaEdge); % Gaussian smoothing
+
+				imLoG = zeros(3,3,3);% 3D Laplacian kernel: 6-neighbour stencil
+				imLoG(:,2,2) = 1;
+				imLoG(2,:,2) = 1;
+				imLoG(2,2,:) = 1;
+				imLoG(2,2,2) = -6; 
+
+				imSmooth = convn(imSmooth, imLoG, 'same');
+				imEdge = zeros(size(imSmooth));
+				shifts = [1 0 0; -1 0 0; 0 1 0; 0 -1 0; 0 0 1; 0 0 -1];
+
+				imThreshold = sort(imSmooth(:)); % Calculate 98th percentile
+				imThreshold = imThreshold(ceil(numel(imThreshold)*0.98));
+
+				for k = 1:size(shifts,1)
+					S = circshift(imSmooth, shifts(k,:));
+					crossing = (imSmooth .* S) < 0;
+					strong = abs(imSmooth - S) > imThreshold;
+					imEdge = imEdge | (crossing & strong);
+				end
+
+				% Avoid wrapped boundary artefacts from circshift
+				imEdge([1,end],:,:) = 0;
+				imEdge(:,[1,end],:) = 0;
+				imEdge(:,:,[1,end]) = 0;
+				imEdge = imgaussfilt3(double(imEdge), sigmaEdge); % Gaussian smoothing 
+		end
 		spm_write_vol(Vreg(iVol), imEdge); % Save to the gradient enhanced image
 	end
 	rpPath = rpfileReg;
