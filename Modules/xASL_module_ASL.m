@@ -184,7 +184,9 @@ if ~x.mutex.HasState(StateName{1}) && ~x.mutex.HasState(StateName{2}) && ~x.mute
 	end
 	% Split the M0 and dummy scans from the ASL time-series
 	xASL_io_SplitASL(x.P.Path_ASL4D, x.modules.asl.M0PositionInASL4D, x.modules.asl.DummyScanPositionInASL4D);
-	
+	tempASL = xASL_io_Nifti2Im(x.P.Path_ASL4D);
+    nVolumes = size(tempASL, 4);
+
 	% Do the same for the ancillary files
 	FileList = xASL_adm_GetFileList(x.dir.SESSIONDIR, '(.*ASL4D.*run.*|.*run.*ASL4D.*)_parms\.mat$','FPList',[0 Inf]);
 	if ~isempty(FileList)
