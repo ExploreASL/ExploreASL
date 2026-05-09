@@ -56,10 +56,6 @@ end
 Result1 = NaN;
 
 %% Find FSL directory
-if ~isfield(x.external,'bAutomaticallyDetectFSL')
-    x.external.bAutomaticallyDetectFSL = 0;
-end
-
 [FSLdir, x, RootFSLdir] = xASL_ext_FSLSetDir(x);
 
 if isempty(FSLdir)

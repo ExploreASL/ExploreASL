@@ -83,10 +83,6 @@ switch lower(ScanType)
 end
 
 %% Admin: set paths
-if ~isfield(x.external,'bAutomaticallyDetectFSL')
-    x.external.bAutomaticallyDetectFSL = 0;
-end
-
 [FSLdir, x] = xASL_ext_FSLSetDir(x); % Find the FSL directory
 if isempty(FSLdir)
     % Script will return empty FSLdir to show that there is no FSL installation found

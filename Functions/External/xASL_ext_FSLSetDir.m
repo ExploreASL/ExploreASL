@@ -32,12 +32,6 @@ if nargin<1
     x = struct;
 end
 
-if isfield(x,'external') && isfield(x.external,'bAutomaticallyDetectFSL')
-	bAutomaticallyDetectFSL = x.external.bAutomaticallyDetectFSL;
-else
-	bAutomaticallyDetectFSL = false;
-end
-
 FSLdir = '';
 RootWSLdir = '';
 RootFSLdir = '';
@@ -108,6 +102,17 @@ if bSuccess
     end
 
 end
+
+% Check if we should automatically search for FSL
+if isfield(x,'external') && isfield(x.external,'bAutomaticallyDetectFSL')
+    bAutomaticallyDetectFSL = x.external.bAutomaticallyDetectFSL;
+elseif isempty(FSLdir)
+    % Default to automatically search for FSL if it wasn't specified or found yet
+    bAutomaticallyDetectFSL = true;
+else
+    bAutomaticallyDetectFSL = false;
+end
+
 
 if bAutomaticallyDetectFSL
     %% 2) Try searching at different ROOT paths, first layer subfolder
