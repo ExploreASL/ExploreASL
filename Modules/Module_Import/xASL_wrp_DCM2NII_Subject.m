@@ -48,6 +48,17 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
     
 	x.modules.import.imPar.visitNames = thisSubject.visitIDs;
 
+    if isempty(thisSubject.visitIDs) || isempty(thisSubject.visitIDs{1})
+        if thisSubject.nVisits==1
+            % if we have no visits defined (de facto a single visit),
+            % we use visit name 1
+            x.modules.import.imPar.visitNames{1} = '1';
+        else
+            % If we have multiple visits, but their names are not defined, we cannot continue
+            error('Multiple visits expected, but names missing');
+        end
+    end
+
     %% 2. Iterate over visits
     for iVisit=1:thisSubject.nVisits
         

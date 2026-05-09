@@ -89,7 +89,13 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
         else
             printSession = scanFields.name;
         end
-        fprintf('Subject = %s, visit = %s, session = %s, scan = %s\n',scanFields.subjectID, scanFields.visitID, printSession, scan_name);
+        
+        visit2Print = scanFields.visitID;
+        if ~isempty(visit2Print)
+            visit2Print = ['visit = ' visit2Print ', '];
+        end
+        
+        fprintf('%s\n', ['Subject = ' scanFields.subjectID ', ' visit2Print 'session = ' printSession ', scan = ' scan_name]);
     end
 
 %     % Defaults

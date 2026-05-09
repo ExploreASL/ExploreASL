@@ -118,5 +118,10 @@ function bidsLabel = xASL_imp_CheckForAliasInSession(imPar, nameSubjectSession)
 		if bCorrected
 			warning([subjectName ', changed visit name: ' sessionName ' -> ' bidsLabel.visit]);
 		end
-	end
+    end
+
+    % If the session name is empty, we default to session 1
+    if isempty(bidsLabel.visit)
+        bidsLabel.visit = '1';
+    end
 end
