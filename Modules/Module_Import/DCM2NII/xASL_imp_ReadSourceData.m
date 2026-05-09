@@ -89,12 +89,11 @@ function xASL_imp_ReadSourceData_CheckFolderHierarchy(x) % PM: this should be re
     if x.modules.import.imPar.bMatchDirectories
         % Check that there is no extension in the last folderHierachy element
         % This extension should only be there if bMatchDirectories is set to false
-        [~, ~, Fext] = xASL_fileparts(lastElement);
         
-        if ~isempty(regexpi(Fext, conditionFile, 'once'))
+        if contains(lastElement, conditionExtension)
            warning('folderHierarchy includes a file extension but bMatchDirectories was set to true');
         end
-    elseif isempty(regexpi(lastElement, conditionFile, 'once'))
+    elseif ~isempty(regexpi(lastElement, conditionFile, 'once'))
         % Check for extension in last folder hierachy element
            if ~isempty(regexpi(lastElement, conditionExtension, 'once'))
               warning('Unknown extension in the last element of the folder hierarchy (%s)...',lastElement);
