@@ -453,7 +453,15 @@ function subject = parse_perf(subject)
                             % which is a safe option if no background suppression was used
                             if subject.perf(j).meta.BackgroundSuppression==true
                                 WarningID = 'BIDSLAYOUT:CautionControlAsM0Bsup';
-                                warning(WarningID, 'Caution when using control as M0, background suppression was applied'); % will print this warning unless WarningID has been set OFF
+                                warningState = warning('query',WarningID);
+
+                                if ~strcmp(warningState.state,'on')
+                                    fprintf('\n\n');
+                                    warning('Caution when using control as M0, background suppression was applied');
+                                    fprintf('%s\n', 'This warning may be ignored if a single M0 scan is used for multiple runs');
+                                    fprintf('%s\n', 'e.g., which is the case for FME/DEBBIE BBB-ASL');
+                                    fprintf('\n\n');
+                                end 
                                 warning('OFF', WarningID); % to print this warning only once
                             end
                             
