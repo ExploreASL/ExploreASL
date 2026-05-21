@@ -350,7 +350,7 @@ function subject = parse_perf(subject)
                 else
                     WarningID = ['BIDSLAYOUT:Missing' metafile];
                     warning(WarningID, ['Missing: ' metafile]); % will print this warning unless WarningID has been set OFF
-                    warning('OFF', WarningID); % to print this warning only once
+                    warning('off', WarningID); % to print this warning only once
                 end
                 
                 % Manage ASLCONTEXT-sidecar metadata (REQUIRED)
@@ -364,7 +364,7 @@ function subject = parse_perf(subject)
                 else
                     WarningID = ['BIDSLAYOUT:Missing' metafile];
                     warning(WarningID, ['Missing: ' metafile]); % will print this warning unless WarningID has been set OFF
-                    warning('OFF', WarningID); % to print this warning only once
+                    warning('off', WarningID); % to print this warning only once
                 end                
                 
                 % Manage M0 (REQUIRED)
@@ -374,7 +374,7 @@ function subject = parse_perf(subject)
                 if ~isfield(subject.perf(j).meta, 'M0Type')
                     WarningID = 'BIDSLAYOUT:MissingM0TypeField';
                     warning(WarningID, ['M0Type field missing in ' subject.perf(j).json_sidecar_filename]); % will print this warning unless WarningID has been set OFF
-                    warning('OFF', WarningID); % to print this warning only once
+                    warning('off', WarningID); % to print this warning only once
                 else
                     switch subject.perf(j).meta.M0Type
                         case 'Separate'
@@ -394,7 +394,7 @@ function subject = parse_perf(subject)
                             if isempty(m0_filename)
                                 % WarningID = 'BIDSLAYOUT:Missing_M0';
                                 warning(['Missing: M0.nii for ' subject.perf(j).filename]); % will print this warning unless WarningID has been set OFF
-                                % warning('OFF', WarningID); % to print this warning only once
+                                % warning('off', WarningID); % to print this warning only once
                             else
                                 % subject.perf(j).m0_filename = m0_filename;
                                 % -> this is included in the same structure for the m0scan.nii
@@ -414,7 +414,7 @@ function subject = parse_perf(subject)
                             if ~exist(fullfile(pth, m0_json_sidecar_filename), 'file')
                                 WarningID = ['BIDSLAYOUT:Missing' m0_json_sidecar_filename'];
                                 warning(WarningID, ['Missing: ' m0_json_sidecar_filename]); % will print this warning unless WarningID has been set OFF
-                                warning('OFF', WarningID); % to print this warning only once
+                                warning('off', WarningID); % to print this warning only once
                             else
                                 % subject.perf(j).m0_json_sidecar_filename = m0_json_sidecar_filename;
                                  % -> this is included in the same structure for the m0scan.nii
@@ -429,7 +429,7 @@ function subject = parse_perf(subject)
                                 if isempty(m0indices)
                                     WarningID = 'BIDSLAYOUT:MissingM0InASLcontext';
                                     warning(WarningID, 'No M0 volume found in aslcontext'); % will print this warning unless WarningID has been set OFF
-                                    warning('OFF', WarningID); % to print this warning only once
+                                    warning('off', WarningID); % to print this warning only once
                                 else
                                     subject.perf(j).m0type = 'within_timeseries';
                                     subject.perf(j).m0explanation = 'M0 is one or more image(s) in the *asl.nii[.gz] timeseries';
@@ -455,20 +455,20 @@ function subject = parse_perf(subject)
                                 WarningID = 'BIDSLAYOUT:CautionControlAsM0Bsup';
                                 warningState = warning('query',WarningID);
 
-                                if ~strcmp(warningState.state,'on')
+                                if strcmp(warningState.state,'on')
                                     fprintf('\n\n');
                                     warning('Caution when using control as M0, background suppression was applied');
                                     fprintf('%s\n', 'This warning may be ignored if a single M0 scan is used for multiple runs');
                                     fprintf('%s\n', 'e.g., which is the case for FME/DEBBIE BBB-ASL');
                                     fprintf('\n\n');
                                 end 
-                                warning('OFF', WarningID); % to print this warning only once
+                                warning('off', WarningID); % to print this warning only once
                             end
                             
                         otherwise
                             WarningID = 'BIDSLAYOUT:M0TypeUnknown';
                             warning(WarningID, ['Unknown M0Type:' subject.perf(j).meta.M0Type ' in ' subject.perf(j).json_sidecar_filename]); % will print this warning unless WarningID has been set OFF
-                            warning('OFF', WarningID); % to print this warning only once
+                            warning('off', WarningID); % to print this warning only once
                     end
                 end
                     
@@ -531,7 +531,7 @@ function subject = parse_perf(subject)
                 if ~exist(metafile, 'file')
                     WarningID = ['BIDSLAYOUT:Missing' metafile];
                     warning(WarningID, ['Missing: ' metafile]); % will print this warning unless WarningID has been set OFF
-                    warning('OFF', WarningID); % to print this warning only once
+                    warning('off', WarningID); % to print this warning only once
                 else
                     [~, Ffile] = fileparts(metafile);
                     subject.perf(j).json_sidecar_filename = [Ffile '.json'];
@@ -556,7 +556,7 @@ function subject = parse_perf(subject)
                         if ~exist(fullfile(fileparts(pth), path_intended_for{iPath}), 'file')
                             WarningID = 'BIDSLAYOUT:MissingIntendedForField';
                             warning(WarningID, ['Missing: ' fullfile(fileparts(pth), path_intended_for{iPath})]);  % will print this warning unless WarningID has been set OFF
-                            warning('OFF', WarningID); % to print this warning only once
+                            warning('off', WarningID); % to print this warning only once
                         else
                             % also check that this NIfTI aims to the same m0scan
                             [~, path2check, ext2check] = fileparts(path_intended_for{iPath});
@@ -564,7 +564,7 @@ function subject = parse_perf(subject)
                             if ~filename_found
                                 WarningID = 'BIDSLAYOUT:MissingIntendedForNifTIFile';
                                 warning(WarningID, ['Did not find NIfTI for which is intended: ' subject.perf(j).filename]); % will print this warning unless WarningID has been set OFF
-                                warning('OFF', WarningID); % to print this warning only once
+                                warning('off', WarningID); % to print this warning only once
                             else
                                 subject.perf(j).intended_for = path_intended_for{iPath};
                             end

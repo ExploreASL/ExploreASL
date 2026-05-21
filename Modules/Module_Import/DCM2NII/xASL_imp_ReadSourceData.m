@@ -36,7 +36,7 @@ function x = xASL_imp_ReadSourceData(x)
 
 
     %% Check folderHierarchy
-    xASL_imp_ReadSourceData_CheckFolderHierarchy(x);
+    xASL_imp_ReadSourceData_CheckLastElement(x);
     
     
     %% Start with defining the subjects, visits, sessions (i.e. BIDS runs) and scans (i.e. ScanTypes) by listing or typing
@@ -74,32 +74,33 @@ end
 %% ==========================================================================================================================
 %% ==========================================================================================================================
 %% Check the last argument of folderHierarchy
-function xASL_imp_ReadSourceData_CheckFolderHierarchy(x) % PM: this should be renamed, we specifically check the last element only here!!!
+function xASL_imp_ReadSourceData_CheckLastElement(x)
 
     % Get last element
     lastElement = lower(x.modules.import.imPar.folderHierarchy{end});
 
     % Condition for file extension
-    conditionFile = '(zip|dcm|ima|xml|par|rec|nii|nii\.gz)';
-
-    % Other extension
     conditionExtension = '\.';
+    
+    % List of known file extensions (formatted as regular expression)
+    knownExtensions = '(zip|dcm|ima|xml|par|rec|nii|nii\.gz)';
+
+    hasExtension = length(lastElement)>1 && strcmp(lastElement(1:2), conditionExtension);
+    hasKnownExtension = ~isempty(regexpi(lastElement, knownExtensions, 'once'));
 
     % Check folderHierarchy based on bMatchDirectories
-    if x.modules.import.imPar.bMatchDirectories
+    if x.modules.import.imPar.bMatchDirectories && hasExtension
         % Check that there is no extension in the last folderHierachy element
         % This extension should only be there if bMatchDirectories is set to false
         
-        if contains(lastElement, conditionExtension)
            warning('folderHierarchy includes a file extension but bMatchDirectories was set to true');
-        end
-    elseif ~isempty(regexpi(lastElement, conditionFile, 'once'))
-        % Check for extension in last folder hierachy element
-           if ~isempty(regexpi(lastElement, conditionExtension, 'once'))
+
+    elseif ~x.modules.import.imPar.bMatchDirectories % if bMatchDirectories == false, we want a file extension
+        if ~hasExtension
+            warning('No extension used in the last element of the folder hierarchy (%s)...',lastElement);
+        elseif ~hasKnownExtension
               warning('Unknown extension in the last element of the folder hierarchy (%s)...',lastElement);
-           else
-              warning('No extension used in the last element of the folder hierarchy (%s)...',lastElement);
-           end
+        end
     end
 
 
