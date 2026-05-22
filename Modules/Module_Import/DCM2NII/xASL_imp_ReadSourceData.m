@@ -85,8 +85,12 @@ function xASL_imp_ReadSourceData_CheckLastElement(x)
     % List of known file extensions (formatted as regular expression)
     knownExtensions = '(zip|dcm|ima|xml|par|rec|nii|nii\.gz)';
 
-    hasExtension = length(lastElement)>1 && strcmp(lastElement(1:2), conditionExtension);
-    hasKnownExtension = ~isempty(regexpi(lastElement, knownExtensions, 'once'));
+    iExtension = regexp(lastElement, conditionExtension);
+
+    extensionIs = lastElement(iExtension+1:end);
+
+    hasExtension = ~isempty(extensionIs);
+    hasKnownExtension = ~isempty(regexpi(extensionIs, knownExtensions, 'once'));
 
     % Check folderHierarchy based on bMatchDirectories
     if x.modules.import.imPar.bMatchDirectories && hasExtension
