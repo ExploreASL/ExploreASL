@@ -272,7 +272,7 @@ else
     bTopUp = false;
 end
 
-if bTopUp && x.modules.asl.bMergingSessions
+if bTopUp && ~isempty(x.modules.asl.SessionMergingList)
         warning('TopUp for runs concatenation not implemented yet, disabled for now');
         bTopUp = false;
         % For now the default is to disable TopUp when bConcatenation
