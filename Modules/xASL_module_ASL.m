@@ -255,21 +255,41 @@ end
 
 
 %% ========================================================================================================================
-%% 1 TopUp (WIP, only supported if FSL installed)
+%% 1 TopUp (only supported if FSL installed)
 Path_RevPE = xASL_adm_GetFileList(x.dir.SESSIONDIR, '^(ASL4D|M0).*RevPE\.nii$', 'FPList', [0 Inf]);
 
+HasTopUpScans = xASL_exist(x.P.Path_M0, 'file') && ~isempty(Path_RevPE);
+
+if isfield(x.modules.asl, 'bTopUp')
+    bTopUp = x.modules.asl.bTopUp;
+    if bTopUp && ~HasTopUpScans
+        warning('TopUp requested but no TopUp scans detected');
+    end
+elseif HasTopUpScans
+    fprintf('\n%s\n', 'TopUp scans detected, enabling TopUp');
+    bTopUp = true;
+else
+    bTopUp = false;
+end
+
+if bTopUp && x.modules.asl.bMergingSessions
+        warning('TopUp for runs concatenation not implemented yet, disabled for now');
+        bTopUp = false;
+        % For now the default is to disable TopUp when bConcatenation
+end
+
 iState = 1;
-if xASL_exist(x.P.Path_M0,'file') && ~isempty(Path_RevPE)
+if bTopUp
     if ~x.mutex.HasState(StateName{iState}) || ~xASL_exist(fullfile(x.dir.SESSIONDIR, 'TopUp_fieldcoef.nii'),'file')
 
-        xASL_adm_DeleteFileList(x.dir.SESSIONDIR,'^(B0|Field|TopUp|Unwarped).*$',[],[0 Inf]); % delete previous TopUp stuff first
+        xASL_adm_DeleteFileList(x.dir.SESSIONDIR,' ^(B0|Field|TopUp|Unwarped).*$',[],[0 Inf]); % delete previous TopUp stuff first
         bSuccess = xASL_ext_FSLTopUp(x.dir.SESSIONDIR, 'asl', x, x.P.Path_ASL4D);
 
         if bSuccess
             x.mutex.AddState(StateName{iState});
             x.mutex.DelState(StateName{iState+1});
         else
-            warning('TopUp failed, may affect results rest of pipeline');
+            warning('TopUp failed, may affect the ASL module');
         end
     elseif bOutput; fprintf('%s\n',[StateName{iState} 'has already been performed, skipping...']);
     end
