@@ -260,7 +260,7 @@ Path_RevPE = xASL_adm_GetFileList(x.dir.SESSIONDIR, '^(ASL4D|M0).*RevPE\.nii$', 
 
 HasTopUpScans = xASL_exist(x.P.Path_M0, 'file') && ~isempty(Path_RevPE);
 
-if isfield(x.modules.asl, 'bTopUp')
+if isfield(x.modules.asl, 'bTopUp') && ~isempty(x.modules.asl.bTopUp)
     bTopUp = x.modules.asl.bTopUp;
     if bTopUp && ~HasTopUpScans
         warning('TopUp requested but no TopUp scans detected');
@@ -282,7 +282,7 @@ iState = 1;
 if bTopUp
     if ~x.mutex.HasState(StateName{iState}) || ~xASL_exist(fullfile(x.dir.SESSIONDIR, 'TopUp_fieldcoef.nii'),'file')
 
-        xASL_adm_DeleteFileList(x.dir.SESSIONDIR,' ^(B0|Field|TopUp|Unwarped).*$',[],[0 Inf]); % delete previous TopUp stuff first
+        xASL_adm_DeleteFileList(x.dir.SESSIONDIR, '^(B0|Field|TopUp|Unwarped).*$',[],[0 Inf]); % delete previous TopUp stuff first
         bSuccess = xASL_ext_FSLTopUp(x.dir.SESSIONDIR, 'asl', x, x.P.Path_ASL4D);
 
         if bSuccess
