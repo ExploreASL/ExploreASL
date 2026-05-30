@@ -46,7 +46,7 @@ function [ImOut, FileName] = xASL_vis_CreateVisualFig(x, ImIn, DirOut, IntScale,
 %
 %              1. Admin, deal with input arguments
 %              2. Process image layers separately
-%                 * xASL_im_TransformData2View: Reshapes image data into visualization figure
+%                 * xASL_vis_TransformData2View: Reshapes image data into visualization figure
 %                 * xASL_im_ClipExtremes: Clips image to given percentile
 %                   also we scale for peak intensity, we make sure that there is no
 %                   visible clipping/distortion

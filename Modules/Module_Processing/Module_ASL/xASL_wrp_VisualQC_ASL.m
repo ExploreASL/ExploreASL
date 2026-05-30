@@ -135,6 +135,40 @@ else
 end
 
 
+%% Visualize each individual PLD and TE
+if xASL_exist(x.P.Pop_Path_PWI3D, 'file')
+    imPWI3D = xASL_io_Nifti2Im(x.P.Pop_Path_PWI3D);
+    x.S.TraSlices = 53;
+    x.S.CorSlices = [];
+    x.S.SagSlices = [];
+
+    if size(imPWI3D, 4)>1
+        tempFigure = xASL_vis_TransformData2View(imPWI3D, x);
+        dimNumber = ceil(size(tempFigure,3).^0.5);
+    
+        imCounter = 1;
+        figureY = [];
+        for iImY=1:dimNumber
+            figureX{iImY} = [];
+            for iImX=1:dimNumber
+                if size(tempFigure, 3)<imCounter
+                    figureX{iImY} = [figureX{iImY} zeros(size(tempFigure, 1), size(tempFigure, 2))];
+                else
+                    figureX{iImY} = [figureX{iImY} tempFigure(:,:,imCounter)];
+                end
+                imCounter = imCounter+1;
+            end
+            figureY = [figureY; figureX{iImY}];
+        end
+        figureY = xASL_im_ClipExtremes(figureY, 0.99, 0.6);
+        x.D.PWI3DCheckDir = fullfile(x.D.PopDir, 'PWI3D');
+        xASL_adm_CreateDir(x.D.PWI3DCheckDir);
+        OutputFile = fullfile(x.D.PWI3DCheckDir,['PWI3D' x.P.SubjectID '_' x.P.SessionID '.jpg']);
+        xASL_vis_Imwrite(figureY, OutputFile);
+    end
+end
+
+
 %%  6. Temporal QC parameters, based on SPM Univariate+ Toolbox
 %  Run this part only if we have > 10 time points
 if nVolumes>10
