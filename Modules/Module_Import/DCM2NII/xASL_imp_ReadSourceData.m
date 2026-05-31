@@ -87,7 +87,11 @@ function xASL_imp_ReadSourceData_CheckLastElement(x)
 
     iExtension = regexp(lastElement, conditionExtension);
 
-    extensionIs = lastElement(iExtension+1:end);
+    if isempty(iExtension)
+        extensionIs = char;
+    else
+        extensionIs = lastElement(iExtension(1)+1:end);
+    end
 
     hasExtension = ~isempty(extensionIs);
     hasKnownExtension = ~isempty(regexpi(extensionIs, knownExtensions, 'once'));
