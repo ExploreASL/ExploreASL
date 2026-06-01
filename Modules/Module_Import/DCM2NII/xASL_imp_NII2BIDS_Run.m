@@ -32,7 +32,11 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 
     %% Print the run that is being converted
     xASL_adm_BreakString('CONVERT RUN');
-    fprintf('Converting subject %s, session %s, run %s, ', bidsLabel.subject, bidsLabel.visit, listRuns{iRun});
+    if ~isempty(bidsLabel.visit)
+        fprintf('Converting subject %s, session %s, run %s, ', bidsLabel.subject, bidsLabel.visit, listRuns{iRun});
+    else
+        fprintf('Converting subject %s, session %s, run %s, ', bidsLabel.subject, listRuns{iRun});
+    end
 
     %% 1. Make a subject directory with a correct session name
     if ~isempty(bidsLabel.visit)

@@ -48,17 +48,6 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
     
 	x.modules.import.imPar.visitNames = thisSubject.visitIDs;
 
-    if isempty(thisSubject.visitIDs) || isempty(thisSubject.visitIDs{1})
-        if thisSubject.nVisits==1
-            % if we have no visits defined (de facto a single visit),
-            % we use visit name 1
-            x.modules.import.imPar.visitNames{1} = '1';
-        else
-            % If we have multiple visits, but their names are not defined, we cannot continue
-            error('Multiple visits expected, but names missing');
-        end
-    end
-
     %% 2. Iterate over visits
     for iVisit=1:thisSubject.nVisits
         
@@ -78,7 +67,13 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
         
         % Display subject-visit ID and add lock dir
 		xASL_adm_BreakString('');
-        fprintf('Importing subject = %s:   \n', [thisSubject.subjectExport '_' x.modules.import.imPar.visitNames{iVisit}]);
+        
+        if ~isempty(x.modules.import.imPar.visitNames{iVisit})
+            fprintf('Importing subject = %s:   \n', [thisSubject.subjectExport '_' x.modules.import.imPar.visitNames{iVisit}]);
+        else
+            fprintf('Importing subject = %s:   \n', thisSubject.subjectExport);
+        end
+        
 
         %% 3. Loop over all sessions
         
