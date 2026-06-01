@@ -392,8 +392,8 @@ if bCreatePWI3D
 		[~, ~, iUnique_TE_PLD_LabDur_PWI4D] = unique([x.Q.EchoTime_PWI4D(:), x.Q.InitialPLD_PWI4D(:)], 'stable', 'rows');
 	else
 		[~, ~, iUnique_TE_PLD_LabDur_PWI4D] = unique([x.Q.EchoTime_PWI4D(:), x.Q.InitialPLD_PWI4D(:), x.Q.LabelingDuration_PWI4D(:)], 'stable', 'rows');
-	end
-    
+    end
+
     % MultiPLD-multiLabDur PWI3D after averaging
     for iTE_PLD_LabDur = 1:max(iUnique_TE_PLD_LabDur_PWI4D)
         indicesAre = iUnique_TE_PLD_LabDur_PWI4D == iTE_PLD_LabDur;
@@ -450,26 +450,6 @@ end
 
 %% 6. Create PWI AND/OR Control
 %% For Look-Locker, choosing the PLD closest to 2000 ms
-    % 
-	% % Get unique PLDs
-	% idealPLD = unique(Initial_PLD);
-    % 
-	% % Find the index of the one closest to 2000 ms
-	% [~, iPLD] = min(abs(idealPLD-2000));
-    % 
-	% % Pick up the ideal PLD as the one closest to 2000 ms
-	% idealPLD = idealPLD(iPLD(1));
-    % 
-	% if (isfield(x.Q,'LookLocker') && x.Q.LookLocker) || x.modules.asl.bContainsSubtracted
-	% 	% For Look-Locker, get the middle one
-	% 	idealPLD = idealPLD(round(numel(idealPLD)/2));
-	% else
-	% 	% For normal multi-PLD, get the latest PLD
-	% 	idealPLD = idealPLD(end);
-	% end
-    % 
-	% % Find all dynamics with that PLD
-	% imMeanControl = imMeanControl(:,:,:,Initial_PLD==idealPLD);
 
 if bCreatePWI
     % Verify that image matrix & parameter vectors are compatible
@@ -484,7 +464,7 @@ if bCreatePWI
     end
 
 
-    % EchoTime weighting
+    % EchoTime weighting, SNR-wise
     % We default to T2*, for 3D GRASE and 2D EPI.
     % If we detect 3D spiral, we go for T2 instead.
     % For most 3D spiral sequences (==GE), we do not have individual control-label pairs anyway.
@@ -497,18 +477,20 @@ if bCreatePWI
 
     nsrTE = exp(x.Q.EchoTime_PWI3D ./T2_factor); % for each volume, get the EchoTime weighting
     % e.g., exp(17/47.3) = 1.4325
+    % the higher the value, the lower the contribution below
 
-    % PLD & LD weighting
+    % PLD & LD weighting, SNR-wise
 	if isempty(x.Q.LabelingDuration_PWI3D)
 		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.T1blood);
 	else
 		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.T1blood) ./ (1-exp(-x.Q.LabelingDuration_PWI3D ./x.Q.T1blood));
 	end
     % e.g., exp(1525/1650) / (1-exp(-1650/1650) = 3.9865
+    % a higher value will result in a lower contribution below
 
     % Perfusion-weighting (PW) vs vascular weighting (range 1%-100%)
-    pwPLD = max((min(x.Q.InitialPLD_PWI3D, 2500) - 1000) ./ 15, 1) ./100;
-    % e.g., max((min(1525, 2500) - 1000) / 15, 1) / 100 = 0.35 for 35%
+    % OLD: pwPLD = max((min(x.Q.InitialPLD_PWI3D, 2500) - 1000) ./ 15, 1) ./100;
+    pwPLD = (min(x.Q.InitialPLD_PWI3D, 2500) ./ 2500).^2;
 
     % Joint estimated signal contribution per volume
     contributionVolume = pwPLD ./ (nsrTE .* nsrPLD);
