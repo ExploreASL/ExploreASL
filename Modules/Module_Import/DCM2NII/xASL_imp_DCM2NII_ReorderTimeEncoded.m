@@ -46,7 +46,8 @@ if numel(nii_files)>=1
 				numberRepetitions = int32(size(imASL,4)/numberTEs/numberPLDs);
 				% Check if the PLDs are interleaved or just repeated
 				% This is not done for gammastar version
-				if ~isfield(resultJSON, 'PulseSequenceDetails') || isempty(regexpi(resultJSON.PulseSequenceDetails, 'fme_gammastar', 'once'))
+				if (~isfield(resultJSON, 'PulseSequenceDetails') || isempty(regexpi(resultJSON.PulseSequenceDetails, 'fme_gammastar', 'once'))) &&...
+			       (~isfield(resultJSON, 'SequenceName') || isempty(regexpi(resultJSON.SequenceName, 'gammastar', 'once')))
 					if numel(vectorPLD) > numberPLDs
 						for iRepetition = 2:floor(numel(vectorPLD)/numberPLDs)
 							if ~isequal(vectorPLD(1:numberPLDs),vectorPLD((1:numberPLDs)+numberPLDs*(iRepetition-1)))
