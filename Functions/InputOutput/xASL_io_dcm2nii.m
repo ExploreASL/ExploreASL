@@ -352,14 +352,15 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                 % Fallback
                 niiInstanceNumber = [];
                 
-                % Check for files that are formatted like ..._InstanceNumber_eNumber instead of ..._InstanceNumber
+                % Check for files that are formatted like *_InstanceNumber_eNumber.nii OR *_InstanceNumber_eNumber.nii instead of *_InstanceNumber.nii
                 if isempty(niiInstanceNumber)
                     expression = '_(\d+)_e.+$';
                     [~, fileName, ~] = xASL_fileparts(fTempNii);
                     startIndex = regexp(fileName,expression);
                     if ~isempty(startIndex)
                         niiInstanceNumber = fileName(startIndex+1:end);
-                        niiInstanceNumber = niiInstanceNumber(1:strfind(niiInstanceNumber,'_')-1);
+                        iUnderscore = strfind(niiInstanceNumber,'_');
+                        niiInstanceNumber = niiInstanceNumber(1:iUnderscore(1)-1);
                     end
                 end
 				
