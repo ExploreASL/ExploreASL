@@ -425,7 +425,7 @@ for iSubject=1:x.dataset.nSubjects
 							else
 								numVoxels = sum(x.S.InputMasks(:,iROI,iMask)>0.5);
 								fprintf('\n');
-								warning('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
+								fprintf('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
 								fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
 							end
 						end
@@ -451,7 +451,7 @@ for iSubject=1:x.dataset.nSubjects
 							else
 								fprintf('\n');
 								numVoxels = sum(x.S.InputMasks(:,iROI,iMask));
-								warning('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
+								fprintf('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
 								fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
 							end
 						end
@@ -888,7 +888,7 @@ for iSubject=1:x.dataset.nSubjects
     
                         if sum(imMask)<MinVoxels
                             fprintf('\n');
-                            warning('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in sCoV calculations']);
+                            fprintf('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in sCoV calculations']);
                             fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
                         end
     
@@ -929,7 +929,7 @@ for iSubject=1:x.dataset.nSubjects
         
                             if sum(imMask)<MinVoxels
                                 fprintf('\n');
-                                warning('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in CBF calculations']);
+                                fprintf('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(sum(imMask)) ' voxels, so this ROI will be skipped in CBF calculations']);
                                 fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
                             end
     
