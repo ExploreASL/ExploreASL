@@ -147,18 +147,14 @@ if xASL_exist(x.P.Pop_Path_PWI3D, 'file')
         dimNumber = ceil(size(tempFigure,3).^0.5);
     
         imCounter = 1;
-        figureY = [];
+        figureY = zeros(size(tempFigure, 1), size(tempFigure, 2)*dimNumber); % Preallocation for speed
         for iImY=1:dimNumber
-            figureX{iImY} = [];
             for iImX=1:dimNumber
-                if size(tempFigure, 3)<imCounter
-                    figureX{iImY} = [figureX{iImY} zeros(size(tempFigure, 1), size(tempFigure, 2))];
-                else
-                    figureX{iImY} = [figureX{iImY} tempFigure(:,:,imCounter)];
-                end
+				if imCounter <= size(tempFigure, 3)
+					figureY((1:size(tempFigure, 1)) + (iImY-1)*size(tempFigure, 1), (1:size(tempFigure, 2)) + (iImX-1)*size(tempFigure, 2)) = tempFigure(:, :, imCounter);
+				end
                 imCounter = imCounter+1;
             end
-            figureY = [figureY; figureX{iImY}];
         end
         figureY = xASL_im_ClipExtremes(figureY, 0.99, 0.6);
         x.D.PWI3DCheckDir = fullfile(x.D.PopDir, 'PWI3D');
