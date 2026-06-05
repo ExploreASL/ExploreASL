@@ -462,7 +462,8 @@ if bCreatePWI
     if ~isempty(x.Q.LabelingDuration_PWI3D) && (size(PWI3D, 4) ~= length(x.Q.LabelingDuration_PWI3D))
         warning('Defined x.Q.LabelingDuration_PWI3D should have equal length as PWI3D image volumes');
     end
-
+	
+	% A weighted mean is created considering the importance of each volume based on SNR and the amount of artifacts
 
     % EchoTime weighting, SNR-wise
     % We default to T2*, for 3D GRASE and 2D EPI.
@@ -475,41 +476,46 @@ if bCreatePWI
         T2_factor = x.Q.T2starGM;
     end
 
-    nsrTE = exp(x.Q.EchoTime_PWI3D ./T2_factor); % for each volume, get the EchoTime weighting
-    % e.g., exp(17/47.3) = 1.4325
-    % the higher the value, the lower the contribution below
+    pwTE = exp(-x.Q.EchoTime_PWI3D ./T2_factor); % for each volume, get the EchoTime weighting
+    % e.g., exp(-17/47.3) = 0.6981, longer TE means lower weight in the weighted averaging below
 
-    % PLD & LD weighting, SNR-wise
+    % PLD weighting, SNR-wise
+	pwPLD = exp(-x.Q.InitialPLD_PWI3D ./ x.Q.T1blood);
+
+	% LD weighting, SNR-wise
 	if isempty(x.Q.LabelingDuration_PWI3D)
-		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.T1blood);
+		pwLD = 1;
 	else
-		nsrPLD = exp(x.Q.InitialPLD_PWI3D ./ x.Q.T1blood) ./ (1-exp(-x.Q.LabelingDuration_PWI3D ./x.Q.T1blood));
+		pwLD = 1-exp(-x.Q.LabelingDuration_PWI3D ./x.Q.T1blood);
 	end
-    % e.g., exp(1525/1650) / (1-exp(-1650/1650) = 3.9865
-    % a higher value will result in a lower contribution below
 
     % Perfusion-weighting (PW) vs vascular weighting (range 1%-100%)
-    % OLD: pwPLD = max((min(x.Q.InitialPLD_PWI3D, 2500) - 1000) ./ 15, 1) ./100;
-    pwPLD = (min(x.Q.InitialPLD_PWI3D, 2500) ./ 2500).^2;
+    % No penalization above PLD 1800 ms - this is penalized by PLD SNR
+	% Strong penalization under 1800 to counter the higher SNR of short PLD
+	% Joint pwVascular and pwPLD normalized to PLD = 2000 ms
+	% pwVascular*pwPLD 0.0066    0.0826    0.3257    0.8016    1.0000    0.7788    0.6065    0.4724    0.3679    0.2865 (.^4)
+	% pwVascular*pwPLD 0.1342    0.4182    0.7328    1.0145    1.0000    0.7788    0.6065    0.4724    0.3679    0.2865 (.^2)
+	% PLD     400       800       1200      1600      2000      2400      2800      3200      3600      4000 
 
-    % Joint estimated signal contribution per volume
-    contributionVolume = pwPLD ./ (nsrTE .* nsrPLD);
-    % e.g., 0.35 / (1.4325 * 3.9865) = 0.0613
+    pwVascular = (min(x.Q.InitialPLD_PWI3D, 1800) ./ 1800).^4;
 
-    % Make the sum contribution 1
-    contributionVolume = contributionVolume ./ sum(contributionVolume);
+    % Joint weighted
+    pwJoint = pwTE .* pwPLD .* pwLD .* pwVascular;
+    
+    % Normalize the sum of weighting to 1
+    pwJoint = pwJoint ./ sum(pwJoint);
 
     % Create the joined image & parameters
     PWI = zeros(size(PWI3D(:,:,:,1)));
     
     for iVolume=1:size(PWI3D, 4)
-        PWI = PWI + contributionVolume(iVolume) .* PWI3D(:,:,:,iVolume);
+        PWI = PWI + pwJoint(iVolume) .* PWI3D(:,:,:,iVolume);
     end
 
-    x.Q.EchoTime_PWI = sum(contributionVolume .* x.Q.EchoTime_PWI3D);
-    x.Q.InitialPLD_PWI = sum(contributionVolume .* x.Q.InitialPLD_PWI3D);
+    x.Q.EchoTime_PWI = sum(pwJoint .* x.Q.EchoTime_PWI3D);
+    x.Q.InitialPLD_PWI = sum(pwJoint .* x.Q.InitialPLD_PWI3D);
 	if ~isempty(x.Q.LabelingDuration_PWI3D)
-		x.Q.LabelingDuration_PWI = sum(contributionVolume .* x.Q.LabelingDuration_PWI3D);
+		x.Q.LabelingDuration_PWI = sum(pwJoint .* x.Q.LabelingDuration_PWI3D);
 	else
 		x.Q.LabelingDuration_PWI = [];
 	end
