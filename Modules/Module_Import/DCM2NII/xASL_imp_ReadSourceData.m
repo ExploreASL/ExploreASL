@@ -85,7 +85,7 @@ function xASL_imp_ReadSourceData_CheckLastElement(x)
     % List of known file extensions (formatted as regular expression)
     knownExtensions = '(zip|dcm|ima|xml|par|rec|nii|gz|nii\.gz)';
 
-    iExtension = regexp(lastElement, conditionExtension);
+    iExtension = strfind(lastElement, conditionExtension);
 
     if isempty(iExtension)
         extensionIs = char;
