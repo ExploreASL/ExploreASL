@@ -108,9 +108,18 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
             
             %% 4. Iterate over scans
 			% Safety-check, we can't allow multiple matches for the same sequence
-			if numel(thisRun.scanIDs) ~= numel(unique(thisRun.scanIDs))
-				fprintf('Detected duplicate scans: %s\n',strjoin(thisRun.scanIDs, ', '));
-				error('We do not allow multiple token matches per scantype. Please adjust sourcestructure.json');
+			uniqueScanIDs = unique(thisRun.scanIDs);
+            duplicateScans = cell(0);
+            if numel(thisRun.scanIDs) ~= numel(uniqueScanIDs)
+                % Get the duplicate scanIDs
+                for iID=1:numel(uniqueScanIDs)
+                     if xASL_stat_SumNan(xASL_str2num(strfind(thisRun.scanIDs, uniqueScanIDs{iID})))>1
+                         duplicateScans{end+1} = uniqueScanIDs{iID};
+                     end
+                end
+
+				fprintf('Detected duplicate scans: %s\n', strjoin(duplicateScans, ', '));
+				error('We do not allow duplicate scans (== multiple token matches per scantype); please adjust sourceStructure.json or fix it otherwise');
 			end
 
             for iScan=1:numel(thisRun.scanIDs)
