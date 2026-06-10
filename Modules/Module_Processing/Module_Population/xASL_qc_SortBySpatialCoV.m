@@ -116,7 +116,7 @@ for iSubject=1:x.dataset.nSubjects
                 bWarningIsEmptyJPG = false;
             end
 
-            fprintf('%s\n\n', ['Did something go wrong in the ASL module for ' NameSubjSess '?']);
+            fprintf('%s\n', ['Did something go wrong in the ASL module for ' NameSubjSess '?   ']);
         else
             if isempty(Index) % if we cannot determine the sCoV, copy this subject-session to 4_Unknown_sCoV
                 fprintf('\n');
