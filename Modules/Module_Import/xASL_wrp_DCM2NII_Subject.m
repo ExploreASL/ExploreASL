@@ -108,12 +108,12 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
             
             %% 4. Iterate over scans
 			% Safety-check, we can't allow multiple matches for the same sequence
-			uniqueScanIDs = unique(thisRun.scanIDs);
+			[uniqueScanIDs, ~, uniqueIndex] = unique(thisRun.scanIDs);
             duplicateScans = cell(0);
             if numel(thisRun.scanIDs) ~= numel(uniqueScanIDs)
                 % Get the duplicate scanIDs
-                for iID=1:numel(uniqueScanIDs)
-                     if xASL_stat_SumNan(xASL_str2num(strfind(thisRun.scanIDs, uniqueScanIDs{iID})))>1
+                for iID=1:numel(uniqueIndex)
+                     if sum(uniqueIndex==iID)>1
                          duplicateScans{end+1} = uniqueScanIDs{iID};
                      end
                 end
