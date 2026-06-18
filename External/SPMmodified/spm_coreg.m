@@ -139,6 +139,7 @@ end
 sc = flags.tol(:)'; % Required accuracy
 sc = sc(1:length(flags.params));
 xi = diag(sc*20);
+xi(4:6,4:6) = diag(sc(4:6)*5);
 x = zeros(numel(VF),numel(flags.params));
 
 for k=1:numel(VF)
@@ -158,10 +159,18 @@ for k=1:numel(VF)
 
     xk  = flags.params(:);
 	
+    % if ~isfield(flags, 'rotlim')
+    %     flags.rotlim = Inf; % radians, no restriction by default
+    % end
+
+    flags.rotlim = double(deg2rad(10));  % max ±10 degrees from starting rotation
+
+    x0 = xk;
+
 	disp(['Registering scan ' num2str(k) '...  ']);%%% ExploreASL fix
     for samp=flags.sep(:)'
 		xASL_TrackProgress(find(flags.sep(:)'==samp)-1,length(flags.sep(:)'));%%% ExploreASL fix
-        xk     = spm_powell(xk(:), xi,sc,mfilename,VG,VFk,samp,flags.cost_fun,flags.fwhm);
+        xk     = spm_powell(xk(:), xi,sc,mfilename,VG,VFk,samp,flags.cost_fun,flags.fwhm, flags.rotlim, double(x0));
         x(k,:) = xk(:)';
 		xASL_TrackProgress(find(flags.sep(:)'==samp),length(flags.sep(:)'));
 	end
@@ -176,11 +185,19 @@ fprintf('%-40s: %30s\n','Completed',spm('time'))                        %-#
 %==========================================================================
 % function o = optfun(x,VG,VF,s,cf,fwhm)
 %==========================================================================
-function o = optfun(x,VG,VF,s,cf,fwhm)
+function o = optfun(x,VG,VF,s,cf,fwhm, rotlim, x0)
 % The function that is minimised.
 if nargin<6, fwhm = [7 7];   end
 if nargin<5, cf   = 'mi';    end
 if nargin<4, s    = [1 1 1]; end
+
+if nargin<7 || isempty(rotlim)
+    rotlim = Inf;
+end
+
+if nargin < 8 || isempty(x0)
+    x0 = zeros(size(x));
+end
 
 % Voxel sizes
 vxg = sqrt(sum(VG.mat(1:3,1:3).^2));sg = s./vxg;
@@ -245,6 +262,12 @@ switch lower(cf)
         o     = -ncc;
     otherwise
         error('Invalid cost function specified');
+end
+
+% Soft rotation penalty
+if any(abs(x(4:6) - x0(4:6)) > rotlim)
+    excess = max(abs(x(4:6) - x0(4:6)) - rotlim, 0);
+    o = o + 1e6 * sum(excess.^2);
 end
 
 
