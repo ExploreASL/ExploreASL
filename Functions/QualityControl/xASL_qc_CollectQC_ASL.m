@@ -272,21 +272,19 @@ function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
         warning(['Missing: ' x.P.Path_MaskVascular]);
         fprintf('%s\n', 'Need vascular mask to calculate native space CBF values!');
     end
-
     
     %% 3. Calculations over full time-series, including vascular signal
-    
+	imMaskWB = (pGM+pWM)>0.5;
+
     % Spatial CoV
     CBFmasked = imCBF(imMaskWB);
     ASL.SpatialCoV_GM_Perc = 100*xASL_stat_ComputeSpatialCoV(CBFmasked, [], [], 0, 1);
-
 
     %% 4. Calculations across time, including vascular signal
     %% I. Admin
     if ~isempty(imCBF4D)
 		nPairs = size(imCBF4D, 4);
 
-		imMaskWB = (pGM+pWM)>0.5;
 		WBmasked = logical(ones([sum(imMaskWB(:)), 1]));
 		GMmasked = pGM(imMaskWB) > 0.7; % same as used above
 		WMmasked = pWM(imMaskWB) > 0.7; % fits approx. with pGM>0.5
