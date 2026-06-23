@@ -463,7 +463,7 @@ if bCreatePWI
         warning('Defined x.Q.LabelingDuration_PWI3D should have equal length as PWI3D image volumes');
     end
 	
-	% A weighted mean is created considering the importance of each volume based on SNR and the amount of artifacts
+	% A weighted mean is created considering the importance of each volume based on SNR and the strength of vascular vs tissue perfusion signal
 
     % EchoTime weighting, SNR-wise
     % We default to T2*, for 3D GRASE and 2D EPI.
@@ -479,10 +479,10 @@ if bCreatePWI
     pwTE = exp(-x.Q.EchoTime_PWI3D ./T2_factor); % for each volume, get the EchoTime weighting
     % e.g., exp(-17/47.3) = 0.6981, longer TE means lower weight in the weighted averaging below
 
-    % PLD weighting, SNR-wise
+    % PLD weighting, SNR-wise; Longer PLD means more label signal loss
 	pwPLD = exp(-x.Q.InitialPLD_PWI3D ./ x.Q.T1blood);
 
-	% LD weighting, SNR-wise
+	% LD weighting, SNR-wise; Longer labeling duration means higher SNR
 	if isempty(x.Q.LabelingDuration_PWI3D)
 		pwLD = 1;
 	else
@@ -490,14 +490,14 @@ if bCreatePWI
 	end
 
     % Perfusion-weighting (PW) vs vascular weighting (range 1%-100%)
-    % No penalization above PLD 1800 ms - this is penalized by PLD SNR
-	% Strong penalization under 1800 to counter the higher SNR of short PLD
+    % No penalization above PLD 2250 ms - this is penalized by PLD SNR
+	% Strong penalization under 2250 to counter the higher SNR of short PLD
 	% Joint pwVascular and pwPLD normalized to PLD = 2000 ms
-	% pwVascular*pwPLD 0.0066    0.0826    0.3257    0.8016    1.0000    0.7788    0.6065    0.4724    0.3679    0.2865 (.^4)
-	% pwVascular*pwPLD 0.1342    0.4182    0.7328    1.0145    1.0000    0.7788    0.6065    0.4724    0.3679    0.2865 (.^2)
-	% PLD     400       800       1200      1600      2000      2400      2800      3200      3600      4000 
+	% pwVascular*pwPLD 0.0042    0.0530    0.2105    0.5220    1.0000    1.2570    0.9864    0.7740    0.6074    0.4766 (.^4)
+	% pwVascular*pwPLD 0.1055    0.3311    0.5846    0.8156    1.0000    0.9932    0.7794    0.6116    0.4799    0.3766 (.^2)
+	% PLD              400       800       1200      1600      2000      2400      2800      3200      3600      4000 
 
-    pwVascular = (min(x.Q.InitialPLD_PWI3D, 1800) ./ 1800).^4;
+    pwVascular = (min(x.Q.InitialPLD_PWI3D, 2250) ./ 2250).^4;
 
     % Joint weighted
     pwJoint = pwTE .* pwPLD .* pwLD .* pwVascular;
