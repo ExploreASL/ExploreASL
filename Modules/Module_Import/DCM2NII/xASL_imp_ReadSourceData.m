@@ -79,19 +79,20 @@ function xASL_imp_ReadSourceData_CheckLastElement(x)
     % Get last element
     lastElement = lower(x.modules.import.imPar.folderHierarchy{end});
 
-    % Condition for file extension
-    conditionExtension = '\.';
-    
     % List of known file extensions (formatted as regular expression)
-    knownExtensions = '(zip|dcm|ima|xml|par|rec|nii|gz|nii\.gz)';
+    knownExtensions = '(zip|dcm|ima|xml|par|rec|nii|gz|nii\.gz|nii\\\.gz)';
 
-    iExtension = strfind(lastElement, conditionExtension);
-
-    if isempty(iExtension)
-        extensionIs = char;
-    else
-        extensionIs = lastElement(iExtension(end)+1:end);
-    end
+    iExtension = regexp(lastElement, '\\\.'); % First test extension defined properly for regexp as \.ext
+	if ~isempty(iExtension)
+		extensionIs = lastElement(iExtension(end)+2:end); % Need to count two characters \. before the extension
+	else
+		iExtension = regexp(lastElement, '\.'); % Afterwards, look for an extension defined .ext
+		if isempty(iExtension)
+			extensionIs = char;
+		else
+			extensionIs = lastElement(iExtension(end)+1:end); 
+		end
+	end
 
     hasExtension = ~isempty(extensionIs);
     hasKnownExtension = ~isempty(regexpi(extensionIs, knownExtensions, 'once'));
@@ -110,6 +111,5 @@ function xASL_imp_ReadSourceData_CheckLastElement(x)
               warning('Unknown extension in the last element of the folder hierarchy (%s)...',lastElement);
         end
     end
-
 
 end
