@@ -47,7 +47,64 @@ x.ROOT = subjectFolder;
 %% 2. Advanced parameter to enforce a subject list, without querying folder names
 x.dataset.TotalSubjects = cell(0);
 
-if isfield(x.dataset,'ForceInclusionList')
+if x.opts.bReadRawdata
+
+    %% 3. Load the BIDS structure of all subjects & translate to ExploreASL legacy
+    x.modules.bids2legacy.BIDS = bids.layout(subjectFolder);
+    
+    % Move the subjectRegexp default assignment outside the loop and respect user-provided one
+    if ~isfield(x.dataset, 'subjectRegexp')
+        x.dataset.subjectRegexp = '^sub-.*$';
+    else
+        % Do escapes and fixes (consistent with derivatives behavior)
+        x.dataset.subjectRegexp = strrep(x.dataset.subjectRegexp,'\\','\');
+        x.dataset.subjectRegexp = strrep(x.dataset.subjectRegexp,'$','');
+        x.dataset.subjectRegexp = [x.dataset.subjectRegexp '(|_\d+)$'];
+    end
+
+    % Now we translate the BIDS naming convention to ExploreASL's legacy name convention
+    translatedSubjects = cell(0);
+    for iSubj=1:length(x.modules.bids2legacy.BIDS.subjects)
+        subjectName = x.modules.bids2legacy.BIDS.subjects(iSubj).name;
+        visitName = x.modules.bids2legacy.BIDS.subjects(iSubj).session;
+        if isempty(visitName)
+            visitName = '1'; % we default to visit _1
+        elseif ~strcmp(visitName(1:4), 'ses-')
+            warning(['Illegal BIDS session definition for ' subjectName '_' visitName]);
+        else
+            visitName = visitName(5:end); % if we find a BIDS session, we add it as visit suffix in ExploreASL legacy format
+        end
+        
+        translatedSubjects{iSubj, 1} = [subjectName '_' visitName];
+    end
+
+    % Filter subjects if ForceInclusionList or subjectRegexp is set
+    keepIndices = true(length(translatedSubjects), 1);
+    if isfield(x.dataset, 'ForceInclusionList')
+        warning('Using custom list of subjects, on your own risk');
+        for iSubj = 1:length(translatedSubjects)
+            keepIndices(iSubj) = any(strcmp(translatedSubjects{iSubj}, x.dataset.ForceInclusionList));
+        end
+    elseif isfield(x.dataset, 'subjectRegexp')
+        for iSubj = 1:length(translatedSubjects)
+            keepIndices(iSubj) = ~isempty(regexp(translatedSubjects{iSubj}, x.dataset.subjectRegexp, 'once'));
+        end
+    end
+
+    % Apply filter to keep 1:1 positional alignment
+    keepIndices = find(keepIndices);
+    x.modules.bids2legacy.BIDS.subjects = x.modules.bids2legacy.BIDS.subjects(keepIndices);
+    x.dataset.TotalSubjects = translatedSubjects(keepIndices);
+
+    if isempty(x.dataset.TotalSubjects)
+        if isfield(x.dataset, 'ForceInclusionList')
+            error('No subjects found matching ForceInclusionList, check x.dataset.ForceInclusionList in dataPar.json');
+        else
+            error('No subjects found, check your rawdata folder for BIDS compatibility or subjectRegexp');
+        end
+    end
+
+elseif isfield(x.dataset,'ForceInclusionList')
     % This is an option if you want to select subjects yourself,
     % instead of using all the subjects that comply with the regular expression
     x.dataset.TotalSubjects = x.dataset.ForceInclusionList(:);
@@ -61,31 +118,6 @@ if isfield(x.dataset,'ForceInclusionList')
 
     if isempty(x.dataset.TotalSubjects)
         error('No subjects found, check x.dataset.ForceInclusionList in dataPar.json');
-    end
-
-elseif x.opts.bReadRawdata
-
-    %% 3. Load the BIDS structure of all subjects & translate to ExploreASL legacy
-    x.modules.bids2legacy.BIDS = bids.layout(subjectFolder);
-    
-    % Now we translate the BIDS naming convention to ExploreASL's legacy name convention
-    for iSubj=1:length(x.modules.bids2legacy.BIDS.subjects)
-        subjectName = x.modules.bids2legacy.BIDS.subjects(iSubj).name;
-        visitName = x.modules.bids2legacy.BIDS.subjects(iSubj).session;
-        if isempty(visitName)
-            visitName = '1'; % we default to visit _1
-        elseif ~strcmp(visitName(1:4), 'ses-')
-            warning(['Illegal BIDS session definition for ' subjectName '_' visitName]);
-        else
-            visitName = visitName(5:end); % if we find a BIDS session, we add it as visit suffix in ExploreASL legacy format
-        end
-        
-        x.dataset.TotalSubjects{iSubj} = [subjectName '_' visitName];
-        x.dataset.subjectRegexp = '^sub-.*$'; % defaulting to BIDS subject regexp
-    end
-
-    if isempty(x.dataset.TotalSubjects)
-        error('No subjects found, check your rawdata folder for BIDS compatibility');
     end
 
 else
