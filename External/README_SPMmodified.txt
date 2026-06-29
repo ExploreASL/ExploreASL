@@ -173,8 +173,8 @@ IMAGE PROCESSING IMPROVEMENT
 
 DATE+NAME:2026_06_29, HM
 DESCRIPTION: Maximize spm_coreg rotations to 20 degrees
-FILE:
-spm_coreg.m @ 139, 159, 170, 185, 264
+FILE: spm_coreg.m @ 139, 159, 170, 185, 264
+ISSUE: #2076
 
 DATE+NAME:2020_07_01, HM
 DESCRIPTION: Remove feedback missing log-file (we don't use catlog_txt in xASL)
