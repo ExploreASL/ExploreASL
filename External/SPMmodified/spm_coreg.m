@@ -163,7 +163,7 @@ for k=1:numel(VF)
     %     flags.rotlim = Inf; % radians, no restriction by default
     % end
 
-    flags.rotlim = double(deg2rad(10));  % max ±10 degrees from starting rotation
+    flags.rotlim = double(deg2rad(20));  % max ±20 degrees from starting rotation
 
     x0 = xk;
 
