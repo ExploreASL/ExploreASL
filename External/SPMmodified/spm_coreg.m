@@ -139,7 +139,7 @@ end
 sc = flags.tol(:)'; % Required accuracy
 sc = sc(1:length(flags.params));
 xi = diag(sc*20);
-xi(4:6,4:6) = diag(sc(4:6)*5);
+xi(4:6,4:6) = diag(sc(4:6)*5); %% ExploreASL fix max 20 degrees rotlim
 x = zeros(numel(VF),numel(flags.params));
 
 for k=1:numel(VF)
@@ -159,6 +159,7 @@ for k=1:numel(VF)
 
     xk  = flags.params(:);
 	
+    %% ExploreASL fix max 20 degrees rotlim
     % if ~isfield(flags, 'rotlim')
     %     flags.rotlim = Inf; % radians, no restriction by default
     % end
@@ -170,7 +171,7 @@ for k=1:numel(VF)
 	disp(['Registering scan ' num2str(k) '...  ']);%%% ExploreASL fix
     for samp=flags.sep(:)'
 		xASL_TrackProgress(find(flags.sep(:)'==samp)-1,length(flags.sep(:)'));%%% ExploreASL fix
-        xk     = spm_powell(xk(:), xi,sc,mfilename,VG,VFk,samp,flags.cost_fun,flags.fwhm, flags.rotlim, double(x0));
+        xk     = spm_powell(xk(:), xi,sc,mfilename,VG,VFk,samp,flags.cost_fun,flags.fwhm, flags.rotlim, double(x0));  %% ExploreASL fix max 20 degrees rotlim
         x(k,:) = xk(:)';
 		xASL_TrackProgress(find(flags.sep(:)'==samp),length(flags.sep(:)'));
 	end
@@ -185,17 +186,17 @@ fprintf('%-40s: %30s\n','Completed',spm('time'))                        %-#
 %==========================================================================
 % function o = optfun(x,VG,VF,s,cf,fwhm)
 %==========================================================================
-function o = optfun(x,VG,VF,s,cf,fwhm, rotlim, x0)
+function o = optfun(x,VG,VF,s,cf,fwhm, rotlim, x0)  %% ExploreASL fix max 20 degrees rotlim
 % The function that is minimised.
 if nargin<6, fwhm = [7 7];   end
 if nargin<5, cf   = 'mi';    end
 if nargin<4, s    = [1 1 1]; end
 
-if nargin<7 || isempty(rotlim)
+if nargin<7 || isempty(rotlim) %% ExploreASL fix max 20 degrees rotlim
     rotlim = Inf;
 end
 
-if nargin < 8 || isempty(x0)
+if nargin < 8 || isempty(x0) %% ExploreASL fix max 20 degrees rotlim
     x0 = zeros(size(x));
 end
 
@@ -264,7 +265,7 @@ switch lower(cf)
         error('Invalid cost function specified');
 end
 
-% Soft rotation penalty
+%% Soft rotation penalty (ExploreASL fix)
 if any(abs(x(4:6) - x0(4:6)) > rotlim)
     excess = max(abs(x(4:6) - x0(4:6)) - rotlim, 0);
     o = o + 1e6 * sum(excess.^2);
