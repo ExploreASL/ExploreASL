@@ -493,9 +493,12 @@ if bCreatePWI
     % No penalization above PLD 2250 ms - this is penalized by PLD SNR
 	% Strong penalization under 2250 to counter the higher SNR of short PLD
 	% Joint pwVascular and pwPLD normalized to PLD = 2000 ms
+
+	% PLD              400       800       1200      1600      2000      2400      2800      3200      3600      4000     
 	% pwVascular*pwPLD 0.0042    0.0530    0.2105    0.5220    1.0000    1.2570    0.9864    0.7740    0.6074    0.4766 (.^4)
+    % (the following is not used, ^2, just for reference:)
 	% pwVascular*pwPLD 0.1055    0.3311    0.5846    0.8156    1.0000    0.9932    0.7794    0.6116    0.4799    0.3766 (.^2)
-	% PLD              400       800       1200      1600      2000      2400      2800      3200      3600      4000 
+
 
     pwVascular = (min(x.Q.InitialPLD_PWI3D, 2250) ./ 2250).^4;
 
