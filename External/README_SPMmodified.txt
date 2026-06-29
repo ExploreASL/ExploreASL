@@ -9,6 +9,8 @@ Aside from the below list of code modifications,
 we have added new maps (//External/SPMmodified/MapsAdded/README_Maps.txt)
 as well as new code (//External/SPMmodified/xASL/README_Functions.txt)
 
+
+
 *********************************************************************************************************
 MACA64 SUPPORT (i.e., for running Matlab Apple Silicon Native, tested with Matlab 2022b beta and Matlab 2025b)
 DATE+Name: 2023-02-21 HM
@@ -22,12 +24,14 @@ cat_vol_qa: use Matlab version-dependent opengl & rendererinfo
 
 
 
+
 *********************************************************************************************************
 MAP CHANGES
 DATE+Name: 2021-07-07 HM
 DESCRIPTION:
 /External/SPMmodified/toolbox/cat12/templates_volumes/cat_wmh_miccai2017.nii
 Was cleaned up (lower slices contained some messy low probabilities)
+
 
 
 
@@ -45,6 +49,7 @@ Line 117,137,158,181,571: added extra routines for the Zigzag
 
 
 
+
 *********************************************************************************************************
 COST FUNCTION MASKING FOR LESIONS
 
@@ -53,6 +58,7 @@ DESCRIPTION:
 hotfix minor bug in loading NIfTIs containing lesion masks in CAT12 #28
 FILE:
 cat_run_job.m at 577
+
 
 
 
@@ -92,6 +98,7 @@ External/SPMmodified/toolbox/LST/ps_LST_lpa.m
 115: First loads the xasl_quality parameter from the job, or set to default == 1
 218: if xasl_quality is set to 0, load ps_LST_lpa_preproc_default_LowQ.m instead of ps_LST_lpa_preproc_default.m,
 likewise if xasl_quality is set to 2 (when WMH_SEGM pre-exists), load ps_LST_lpa_preproc_default_UltraLowQ.m
+
 
 
 
@@ -160,8 +167,14 @@ Line 135 - removed 'spm_cfg_eeg'
 
 
 
+
 *********************************************************************************************************
 IMAGE PROCESSING IMPROVEMENT
+
+DATE+NAME:2026_06_29, HM
+DESCRIPTION: Maximize spm_coreg rotations to 20 degrees
+FILE:
+spm_coreg.m @ 139, 159, 170, 185, 264
 
 DATE+NAME:2020_07_01, HM
 DESCRIPTION: Remove feedback missing log-file (we don't use catlog_txt in xASL)
@@ -274,6 +287,7 @@ External/SPMmodified/toolbox/cat12/cat_main_registration.m
 
 
 
+
 *********************************************************************************************************
 IMAGE PROCESSING REPRODUCIBILITY
 
@@ -351,6 +365,7 @@ toolbox/cat12/cat_vol_correct_slice_scaling line 425
 
 
 
+
 *********************************************************************************************************
 BIDS/JSON
 
@@ -411,6 +426,9 @@ DESCRIPTION:
 An entire file was added with extra DICOM tag names useful for ExploreASL
 FILE:
 External/SPMmodified/xASL_DICOMlibrary.txt 
+
+
+
 
 *********************************************************************************************************
 OTHER CODE HACKS
