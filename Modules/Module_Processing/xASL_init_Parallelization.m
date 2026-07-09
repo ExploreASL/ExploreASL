@@ -16,6 +16,10 @@ function [x] = xASL_init_Parallelization(x)
 %               started multiple times on a server, or alternatively running the
 %               ExploreASL compilation, and doesn't require the Matlab parallel toolbox.
 %
+%               IMPORTANT: xASL_init_Iteration processes x.SUBJECTS (not
+%               x.dataset.TotalSubjects). Both lists must be sliced for this worker,
+%               otherwise every worker still iterates the full subject list and
+%               collides on mutex locks.
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:        [x] = xASL_init_Parallelization(x);
@@ -38,15 +42,24 @@ if x.opts.nWorkers>1
     iStartSubject = round((x.opts.iWorker-1)*nSubjPerWorker+1);
     iEndSubject = min( round(x.opts.iWorker*nSubjPerWorker), x.dataset.nTotalSubjects);
 
-    if iStartSubject>x.dataset.nTotalSubjects
+    % Empty slice (iStart>iEnd) happens when nWorkers > nTotalSubjects and
+    % rounding assigns this worker no subjects. Treat like "too many workers".
+    if iStartSubject>x.dataset.nTotalSubjects || iStartSubject>iEndSubject
         warning('Closing down this worker, had too many workers');
         exit;
     end
     
-    % Adapt SUBJECTS
+    % Adapt both subject lists for this worker
     x.dataset.TotalSubjects = x.dataset.TotalSubjects(iStartSubject:iEndSubject);
     x.dataset.nTotalSubjects = length(x.dataset.TotalSubjects);
 
+    % Keep x.SUBJECTS in sync. Iteration uses x.SUBJECTS, not TotalSubjects.
+    if isfield(x, 'SUBJECTS') && ~isempty(x.SUBJECTS)
+        x.SUBJECTS = x.SUBJECTS(ismember(x.SUBJECTS, x.dataset.TotalSubjects));
+    else
+        x.SUBJECTS = x.dataset.TotalSubjects;
+    end
+    x.dataset.nSubjects = length(x.SUBJECTS);
     
     fprintf(['I am worker ' num2str(x.opts.iWorker) '/' num2str(x.opts.nWorkers) '\n']);
     fprintf(['I will process subjects ' num2str(iStartSubject) '-' num2str(iEndSubject) '\n']);
