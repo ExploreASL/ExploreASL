@@ -70,22 +70,33 @@ function [result, x] = xASL_module_BIDS2Legacy(x, bOverwrite, bVerbose)
         %% 1. Get subjectID & sessionID from x.modules.bids2legacy.BIDS
 
         %   !!!!! NOTE THAT SESSION (BIDS) IS A VISIT (LEGACY) HERE, NOT A RUN (BIDS) !!!!!
-        iSubjSess = find(strcmp(x.SUBJECTS, x.SUBJECT));
-        
-        % each index in x.modules.bids2legacy.BIDS.subjects has its unique subject-session combination
-        % which is identical to the order in ExploreASL legacy x.SUBJECTS
-        % which is defined in xASL_init_BIDS2Legacy, e.g.,
-        % x.modules.bids2legacy.BIDS.subjects(1) -> name = sub-10015124 session = ses-1, legacy sub-10015124_1
-        % x.modules.bids2legacy.BIDS.subjects(2) -> name = sub-10015124 session = ses-2, legacy sub-10015124_2
-        % x.modules.bids2legacy.BIDS.subjects(3) -> name = sub-10015125 session = ses-1, legacy sub-10015125_1
-        %
-        % Note that a subject-session combination can have multiple runs, e.g.,
-        % x.modules.bids2legacy.BIDS.subjects(1).perf(1) -> filename: 'sub-10015124_ses-1_run-1_asl.nii.gz'
-        % x.modules.bids2legacy.BIDS.subjects(1).perf(2) -> filename: 'sub-10015124_ses-1_run-2_asl.nii.gz'
-        % x.modules.bids2legacy.BIDS.subjects(1).perf(3) -> filename: 'sub-10015124_ses-1_run-1_m0scan.nii.gz'
-        % x.modules.bids2legacy.BIDS.subjects(1).perf(4) -> filename: 'sub-10015124_ses-1_run-2_m0scan.nii.gz'  
-		%
-		% Also note that sessions can now be any name, number, data, or a string and are always treated as a string
+
+        % Resolve iSubjSess by matching the legacy name (x.SUBJECT) against BIDS.subjects directly.
+        % x.SUBJECTS may be sliced per worker:
+        % - during parallelization (xASL_init_Parallelization) 
+        % - or shrunk by exclusions (xASL_init_SubjectList)
+        % These positional differences break the alignment with BIDS.subjects.
+        % A name-based lookup is more robust:
+        iSubjSess = [];
+        for iSubj = 1:length(x.modules.bids2legacy.BIDS.subjects)
+            tName    = x.modules.bids2legacy.BIDS.subjects(iSubj).name;
+            tSession = x.modules.bids2legacy.BIDS.subjects(iSubj).session;
+            if isempty(tSession)
+                tSession = '1';
+            else
+                tSession = tSession(5:end);
+            end
+            if strcmp([tName '_' tSession], x.SUBJECT)
+                if isempty(iSubjSess)
+                    iSubjSess = iSubj;
+                else
+                    error('Duplicate BIDS entries match legacy subject %s', x.SUBJECT);
+                end
+            end
+        end
+        if isempty(iSubjSess)
+            error('No BIDS subject entry matches legacy subject %s', x.SUBJECT);
+        end
 
         % Subject ID
         SubjectID = x.modules.bids2legacy.BIDS.subjects(iSubjSess).name;
