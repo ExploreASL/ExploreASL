@@ -70,8 +70,12 @@ if x.dataset.nSessions>1
         % First get the parameter name
         indicesAre = regexp(DataName, '_');
         indicesAre(end+1) = length(DataName);
-        parameterName = DataName(1:indicesAre(1));
-
+		if strcmpi(DataName(1:3), 'PV_')
+			parameterName = DataName(1:indicesAre(2));
+		else
+			parameterName = DataName(1:indicesAre(1));
+		end
+		
         if contains(parameterName, {'GM','WM','CSF','T1','FLAIR','ICV','WMH'})
             % If a session column doesn't exist, it has to be volumetric data
 
