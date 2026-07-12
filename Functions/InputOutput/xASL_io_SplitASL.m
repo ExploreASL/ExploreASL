@@ -375,6 +375,20 @@ function [jsonM0, jsonASL] = xASL_io_SplitASL_sub_SplitJSON(BackupJSONPath, indi
             end
         end
         
+		% Edge case: Repair a zero/absent RepetitionTimePreparation using a valid RepetitionTime.
+		% This prevents an unusably small M0 TR downstream in xASL_quant_M0.
+		% Done before xASL_bids_JsonCheck, which strips RepetitionTime from M0 JSONs.
+		bInvalidTRPrep = ~isfield(jsonM0,'RepetitionTimePreparation') || ...
+			isempty(jsonM0.RepetitionTimePreparation) || ...
+			~isnumeric(jsonM0.RepetitionTimePreparation) || ...
+			all(jsonM0.RepetitionTimePreparation(:)==0);
+		if bInvalidTRPrep && isfield(jsonM0,'RepetitionTime') && ...
+				isnumeric(jsonM0.RepetitionTime) && isscalar(jsonM0.RepetitionTime) && ...
+				isfinite(jsonM0.RepetitionTime) && jsonM0.RepetitionTime>0
+			warning('Zero/absent RepetitionTimePreparation, substituting RepetitionTime (%s s)', xASL_num2str(jsonM0.RepetitionTime));
+			jsonM0.RepetitionTimePreparation = jsonM0.RepetitionTime;
+		end
+
 		% Run a standard check on M0 files to remove extra fields
 		jsonM0 = xASL_bids_JsonCheck(jsonM0, 'M0');
 

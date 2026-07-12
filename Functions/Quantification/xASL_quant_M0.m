@@ -118,10 +118,28 @@ else
         fprintf('%s\n','GE M0 scan, so using 2 s as TR (GE inversion recovery M0)');
 	else
 		% Preferably load the TR from the rM0.json
-		if isempty(jsonM0) || ~isfield(jsonM0, 'RepetitionTime')
-			% Outdated and soon to be discontinued variant
-			M0_parms = xASL_adm_LoadParms(M0ParmsMat, x);
-			TR = M0_parms.RepetitionTime; % This will be either the separate M0-scan value or the ASL scan value (if UseControlAsM0)
+		% RepetitionTimePreparation=0 (becomes jsonM0.RepetitionTime=0) is valid for some source ASL sidecars,
+		% but is not a usable M0 TR after BIDS-to-legacy conversion. In this
+		% case, use the ASL RepetitionTime instead.
+		bInvalidM0TR = isempty(jsonM0) || ~isfield(jsonM0, 'RepetitionTime') || ...
+			isempty(jsonM0.RepetitionTime) || ~isnumeric(jsonM0.RepetitionTime) || ...
+			any(~isfinite(jsonM0.RepetitionTime(:))) || any(jsonM0.RepetitionTime(:)<=0);
+		if bInvalidM0TR
+			% Use the source ASL sidecar directly instead of loading legacy M0 parameters.
+			TR = 0;
+			if isfield(x.P, 'Path_ASL4D_json') && exist(x.P.Path_ASL4D_json, 'file')
+				ASL_json = xASL_io_ReadJson(x.P.Path_ASL4D_json);
+				if isfield(ASL_json, 'RepetitionTime') && isnumeric(ASL_json.RepetitionTime) && ...
+						all(isfinite(ASL_json.RepetitionTime(:))) && all(ASL_json.RepetitionTime(:)>0)
+					TR = ASL_json.RepetitionTime * 1000; % BIDS seconds to ExploreASL milliseconds
+					fprintf('%s\n','Invalid M0 TR found, using ASL RepetitionTime');
+				end
+			end
+			if isempty(TR) || TR<=0
+				% Final fallback: try loading legacy M0 parameters.
+				M0_parms = xASL_adm_LoadParms(M0ParmsMat, x);
+				TR = M0_parms.RepetitionTime; % This will be either the separate M0-scan value or the ASL scan value (if UseControlAsM0)
+			end
 		else
 			TR = jsonM0.RepetitionTime;
 		end
