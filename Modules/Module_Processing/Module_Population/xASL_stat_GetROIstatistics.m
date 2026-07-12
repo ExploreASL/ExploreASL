@@ -108,8 +108,25 @@ if nSessions~=x.dataset.nSessions
 end
 
 if x.S.InputNativeSpace
+	% For native space, it could happen that ROIs/Atlases are not saved for all subjects/sessions, so while setting up, 
+	% we need to load the first existing one
+	indExistSubject = 0;
+	bExistingSession = 0;
+
+	while (indExistSubject < x.dataset.nSubjects) && ~bExistingSession
+		% Go through subjects and sessions until we find an existing atlas/ROI
+		indExistSubject = indExistSubject + 1;
+		indExistSession = 0;
+		while (indExistSession < x.dataset.nSessions) && ~bExistingSession
+			indExistSession = indExistSession + 1;
+			if xASL_exist(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{indExistSubject},listSessions{indExistSession},[x.S.InputAtlasNativeName '.nii']), 'file')
+				bExistingSession = 1;
+			end
+		end
+	end
+
 	% Native space
-	x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
+	x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{indExistSubject},listSessions{indExistSession},[x.S.InputAtlasNativeName '.nii']));
 	x.S.masks.WBmask = sum(x.S.masks.WBmask,4) > 0;
 	x.LeftMask = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},'LeftRight_Atlas.nii'));
 	x.LeftMask = (x.S.masks.WBmask .* (x.LeftMask == 1)) > 0;
@@ -202,7 +219,7 @@ namesROIlocal = x.S.NamesROI;
 
 %% 0.b Native space atlas input
 if x.S.InputNativeSpace
-	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
+	inputAtlasTmp = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{indExistSubject},listSessions{indExistSession},[x.S.InputAtlasNativeName '.nii']));
 	if x.S.bSubjectSpecificROI
 		% For subject specific atlases - they are 4D probabilistic PV maps
 		atlasN = size(inputAtlasTmp, 4);
@@ -267,7 +284,7 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
     end
     
     if x.S.InputNativeSpace
-		VoxelSize = xASL_io_ReadNifti(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},[x.S.InputAtlasNativeName '.nii']));
+		VoxelSize = xASL_io_ReadNifti(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{indExistSubject},listSessions{indExistSession},[x.S.InputAtlasNativeName '.nii']));
 		VoxelSize = [norm(VoxelSize.mat(1:3,1)), norm(VoxelSize.mat(1:3,2)), norm(VoxelSize.mat(1:3,3))];
 	else
 		VoxelSize = [1.5 1.5 1.5];
