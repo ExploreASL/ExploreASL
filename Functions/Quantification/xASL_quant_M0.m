@@ -123,13 +123,17 @@ else
 			M0_parms = xASL_adm_LoadParms(M0ParmsMat, x);
 			TR = M0_parms.RepetitionTime; % This will be either the separate M0-scan value or the ASL scan value (if UseControlAsM0)
 		else
-			TR = jsonM0.RepetitionTime;
+			if isfield(jsonM0, 'RepetitionTimePreparation') && (jsonM0.RepetitionTimePreparation > 0)
+				TR = jsonM0.RepetitionTimePreparation;
+			else
+				TR = jsonM0.RepetitionTime;
+			end
 		end
     end
 
     %% ------------------------------------------------------------------------------------------------------
     % 5. Check for correct TR values
-    if TR<1000
+    if TR<300
         error(['Unusually small TR for ASL M0: ' xASL_num2str(TR)]);
     end
 

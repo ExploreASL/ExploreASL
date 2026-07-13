@@ -90,6 +90,12 @@ for iField = 1:length(bidsPar.datasetDescription.Optional)
     end
 end
 
+% Check overlap of RepetitionTime fields if they both exist and have equal length
+if isfield(jsonIn, 'RepetitionTime') && isfield(jsonIn, 'RepetitionTimePreparation') && (length(jsonIn.RepetitionTime)==length(jsonIn.RepetitionTimePreparation))
+	jsonIn.RepetitionTimePreparation(jsonIn.RepetitionTimePreparation==0) = jsonIn.RepetitionTime(jsonIn.RepetitionTimePreparation==0);
+	jsonIn.RepetitionTime(jsonIn.RepetitionTime==0) = jsonIn.RepetitionTimePreparation(jsonIn.RepetitionTime==0);
+end
+
 % Go through all input fields and copy to output, but skip those in jsonRemove
 for nameField = fieldnames(jsonIn)'
     if ~isfield(jsonRemove, nameField{1})

@@ -207,6 +207,7 @@ if ~isempty(inBids)
 			inBids = rmfield(inBids,'BackgroundSuppression');
 		end
 		
+		
 		FieldsA = fields(inBids);
 		for iA = 1:length(FieldsA)
 			% Rename all listed fields to XASL variant
