@@ -107,6 +107,7 @@ if nSessions~=x.dataset.nSessions
     warning('Not all sessions/runs seem correctly processed in the ASL module');
 end
 
+%%% Dealing with native space specific issues
 if x.S.InputNativeSpace
 	% For native space, it could happen that ROIs/Atlases are not saved for all subjects/sessions, so while setting up, 
 	% we need to load the first existing one
@@ -283,6 +284,7 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
         x.S.MinimalROIVolume = 1; % 1 mL
     end
     
+	% Initialize the voxel size, which is always the same for standard space, but study-specific for native space
     if x.S.InputNativeSpace
 		VoxelSize = xASL_io_ReadNifti(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{indExistSubject},listSessions{indExistSession},[x.S.InputAtlasNativeName '.nii']));
 		VoxelSize = [norm(VoxelSize.mat(1:3,1)), norm(VoxelSize.mat(1:3,2)), norm(VoxelSize.mat(1:3,3))];
