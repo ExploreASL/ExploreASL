@@ -133,20 +133,25 @@ for iField = 1:length(listConvert)
 	end
 end
 
-% Convert Acquisition matrix
-% Either given in a string with 4 numbers separated by slashes
+% Convert Acquisition matrix that might be a string or a numeric array
 if isfield(header, 'AcquisitionMatrix') && ~isempty(header.AcquisitionMatrix)
-	if length(strfind(header.AcquisitionMatrix, '\')) == 3
-		header.AcquisitionMatrix = xASL_str2num(strrep(header.AcquisitionMatrix, '\', ' '));
+	if isnumeric(header.AcquisitionMatrix)
+		% Pads the numeric vector with zeros to length 4
+		header.AcquisitionMatrix = [header.AcquisitionMatrix(:).' zeros(1, max(0, 4-numel(header.AcquisitionMatrix)))];
 	else
-		tempNum = strrep(header.AcquisitionMatrix, '\', '');
-		if length(tempNum) == 16
-			header.AcquisitionMatrix = [0 0 0 0];
-			for i=1:4
-				header.AcquisitionMatrix(i) = xASL_adm_Hex2Num(tempNum((1:4)+(i-1)*4), 'uint', 0);
-			end
+		% Given in a string with 4 numbers separated by slashes
+		if length(strfind(header.AcquisitionMatrix, '\')) == 3
+			header.AcquisitionMatrix = xASL_str2num(strrep(header.AcquisitionMatrix, '\', ' '));
 		else
-			header.AcquisitionMatrix = [];
+			tempNum = strrep(header.AcquisitionMatrix, '\', '');
+			if length(tempNum) == 16
+				header.AcquisitionMatrix = [0 0 0 0];
+				for i=1:4
+					header.AcquisitionMatrix(i) = xASL_adm_Hex2Num(tempNum((1:4)+(i-1)*4), 'uint', 0);
+				end
+			else
+				header.AcquisitionMatrix = [];
+			end
 		end
 	end
 end
