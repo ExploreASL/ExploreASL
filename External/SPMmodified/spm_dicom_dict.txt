@@ -1175,6 +1175,9 @@
 0020	9164	DimensionOrganizationUID	UI	1
 0020	9165	DimensionIndexPointer	AT	1
 0020	9167	FunctionalGroupPointer	AT	1
+0020	9170	UnassignedSharedConvertedAttributesSequence	SQ	1
+0020	9171	UnassignedPerFrameConvertedAttributesSequence	SQ	1
+0020	9172	ConversionSourceAttributesSequence	SQ	1
 0020	9213	DimensionIndexPrivateCreator	LO	1
 0020	9221	DimensionOrganizationSequence	SQ	1
 0020	9222	DimensionIndexSequence	SQ	1
