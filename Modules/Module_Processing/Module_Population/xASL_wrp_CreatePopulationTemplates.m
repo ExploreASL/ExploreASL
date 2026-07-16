@@ -295,7 +295,9 @@ end
 
 % ----------------------------------------------------------------------------------------------------
 %% 2. Iterate over scan types & sessions
+fprintf('\n\n%s', 'Creating population templates:    ');
 for iScanType=1:length(PreFixList)
+    xASL_TrackProgress(iScanType, length(PreFixList));
     UnAvailable = 0;
 
 	% Define sessions if relevant for the datatype
@@ -309,7 +311,8 @@ for iScanType=1:length(PreFixList)
 		nSessions = 1;
 	end
     
-    fprintf('%s\n', ['Searching ' TemplateNameList{iScanType} ' images:']);
+    % fprintf('%s\n', ['Searching ' TemplateNameList{iScanType} ' images:']);
+
     for iSession=1:nSessions % iterate over sessions
 
         if iSession==1 && ~SessionsExist(iScanType)
@@ -417,13 +420,13 @@ for iScanType=1:length(PreFixList)
                         if iCell==2 && AnyBilateralFound
                             % we skip the second cell for bilateral images
                         else
-                            fprintf('%s', ['Loading ' LoadString{iCell} ' images:   ']);
+                            % fprintf('%s', ['Loading ' LoadString{iCell} ' images:   ']);
                             nLoad = size(LoadFiles{iCell}, 1);
                             IM{iCell} = zeros(Size1, nLoad, 'single'); % pre-allocating for speed
                             if bSaveUnmasked; IM2noMask{iCell} = zeros(121,145,121,nLoad, 'single'); end
 
                             for iLoad=1:nLoad % add images
-                                xASL_TrackProgress(iLoad, nLoad);
+                                % xASL_TrackProgress(iLoad, nLoad);
                                 tempIM = xASL_io_Nifti2Im(LoadFiles{iCell}{iLoad, 1});
                                 tempImColumn = xASL_im_IM2Column(tempIM, x.S.masks.WBmask);
 
@@ -457,8 +460,6 @@ for iScanType=1:length(PreFixList)
                     %% Do some computations with the loaded maps, if requested
                     if bProceedComputationMaps
 
-
-
                         % initialize image indices that will be included
                         NotOutliers = true(1, size(IM{1}, 2));
 
@@ -467,7 +468,7 @@ for iScanType=1:length(PreFixList)
                         % ----------------------------------------------------------------------------------------------------
                         %% 4. Compute difference with averate template & store in participants.tsv
                         % PM: this assumes bilateral images, not left-right splits, hence it only takes IM{1}
-                        [theseAreNotOutliers, ~, RMS_output] = xASL_stat_RobustMean(IM{1});
+                        [theseAreNotOutliers, ~, RMS_output] = xASL_stat_RobustMean(IM{1}, [], false);
                         
                         rmsFieldName = strrep(PreFixList{iScanType}, '_', ''); 
                         % Avoid underscores, xASL_bids_Add2ParticipantsTSV uses this to separate
@@ -534,9 +535,9 @@ for iScanType=1:length(PreFixList)
 
         clear IM % Save each session independently
     end % for iSession=1:nSessions
-    fprintf('\n');
+
     if UnAvailable>0
-        fprintf('%s\n',[num2str(UnAvailable) ' ' PreFixList{iScanType} ' files missing']);
+        fprintf('\n%s\n',[num2str(UnAvailable) ' ' PreFixList{iScanType} ' files missing']);
     end
 end % for iScanType=1:length(PreFixList)
 
@@ -767,7 +768,7 @@ for iU=1:length(UniqueSet)
 
             if bRemoveOutliers
                 % Exclude outliers
-                NotOutliers = find(xASL_stat_RobustMean(CurrentIM))';
+                NotOutliers = find(xASL_stat_RobustMean(CurrentIM), [], false)';
             else
                 NotOutliers = 1:size(CurrentIM,2);
             end
@@ -861,7 +862,7 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
         IM = IM(:,:,:,logical(UseIM));
     end
 
-    fprintf(['Computing ' NameIM ' parametric map(s)...\n']);
+    % fprintf(['Computing ' NameIM ' parametric map(s)...\n']);
 
     for iFunction=1:length(FunctionsAre{1})
         
