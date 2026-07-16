@@ -25,6 +25,10 @@ function xASL_bids_Add2ParticipantsTSV(DataIn, DataName, x, bOverwrite, PathTSV)
 %               Empty data is filled in as 'n/a', and the first column "participants_id"
 %               is sorted for participants.
 %
+%               This function may also be used for TSV that is not participants.tsv, but it is optimized to take the participants.tsv structure and
+%               format into account.
+%               
+%
 % This function runs the following steps:
 %
 % 1. Admin - Validate that there are not too many columns
@@ -67,7 +71,10 @@ end
 if x.dataset.nSessions>1
     % Sessions found
     if size(DataIn,2)<3 % If a session column doesn't exist
-        % First get the parameter name
+        % First get the parameter name, we expect the format
+        % key_unit. 
+        % E.g., GM_mL
+
         indicesAre = regexp(DataName, '_');
         indicesAre(end+1) = length(DataName);
         parameterName = DataName(1:indicesAre(1));
@@ -79,7 +86,7 @@ if x.dataset.nSessions>1
             % we assume this should be the same for all sessions
             DataIn = xASL_bids_Add2ParticipantsTSV_AddSessionColumn(DataIn, x.SESSIONS);
         else
-            warning('Session column missing, too few columns, skipping');
+            warning(['Session column missing for ' parameterName ', too few columns, skipping']);
             return;
         end
     else % check if the sessions are the same in DataIn and x.SESSIONS
@@ -88,7 +95,11 @@ if x.dataset.nSessions>1
         if length(tempSessionNames)~=length(x.SESSIONS)
             % check if the number of defined sessions differ between DataIn
             % and x.SESSIONS
-            warning('Not the same number of sessions, might go wrong');
+            
+            % warning('Not the same number of sessions, might go wrong');
+
+            % ->>>>>>>>>> Suppress this warning for now, to allow for adding individual sessions one by one
+
         elseif ~min(strcmp(x.SESSIONS(:), tempSessionNames(:)))
             % check if any of the sessions definitions differ between
             % x.SESSIONS & DataIn
