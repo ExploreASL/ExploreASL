@@ -335,7 +335,6 @@ for iScanType=1:length(PreFixList)
             LoadFiles{2} = '';
             LoadSubjects = '';
             UnAvailable = 0;
-            NoImageN = 1;
             % Searching for available images
             
             if size(x.S.SetsID, 1) ~= x.dataset.nSubjects * x.dataset.nSessions
@@ -385,7 +384,6 @@ for iScanType=1:length(PreFixList)
                 else
                     % if doesnt exist, dont add to the list
                     UnAvailable = UnAvailable+1;
-                    NoImageN = NoImageN+1;
                 end
             end
             
@@ -402,13 +400,9 @@ for iScanType=1:length(PreFixList)
                     LoadString = {'bilateral'};
                 end
 
-                % determine whether we load one image per subject or one
-                % image per session (== multiple per subject)
-                if SessionsExist(iScanType)
-                    nSize = x.dataset.nSubjects * x.dataset.nSessions;
-                else
-                    nSize = x.dataset.nSubjects;
-                end
+                % Irrespective of the number of sessions, we use the number of subjects
+                % for checking missing scans (as we process each session independently)
+                nSize = x.dataset.nSubjects;
 
                 if bSkipWhenMissingScans && UnAvailable>0.10*nSize % we can allow for 10% unavailable scans
                     fprintf('\n%s',['More than 10% missing ' PreFixList{iScanType} ' files, skipping...']);
@@ -460,8 +454,11 @@ for iScanType=1:length(PreFixList)
                         CurrentSetsID = x.S.SetsID(LoadSetsID, :);
                     end
                     
-
+                    %% Do some computations with the loaded maps, if requested
                     if bProceedComputationMaps
+
+
+
                         % initialize image indices that will be included
                         NotOutliers = true(1, size(IM{1}, 2));
 
@@ -471,10 +468,20 @@ for iScanType=1:length(PreFixList)
                         %% 4. Compute difference with averate template & store in participants.tsv
                         % PM: this assumes bilateral images, not left-right splits, hence it only takes IM{1}
                         [theseAreNotOutliers, ~, RMS_output] = xASL_stat_RobustMean(IM{1});
-                        RMS.(PreFixList{iScanType}) = RMS_output;
-                        RMS.([PreFixList{iScanType} '_SUBJECTS']) = LoadSubjects';
+                        
+                        rmsFieldName = strrep(PreFixList{iScanType}, '_', ''); 
+                        % Avoid underscores, xASL_bids_Add2ParticipantsTSV uses this to separate
+                        % keys from units (e.g. GM_mL)
+                        RMS.(rmsFieldName) = RMS_output;
+                        RMS.([rmsFieldName '_SUBJECTS']) = LoadSubjects';
 
-                        xASL_bids_Add2ParticipantsTSV([LoadSubjects num2cell(RMS_output')], [PreFixList{iScanType} '_QC_RMS'], x, [], pathTSV);
+                        LoadSessions = repmat(listSessions(iSession),[nSize 1]);
+
+                        if SessionsExist(iScanType)
+                            xASL_bids_Add2ParticipantsTSV([LoadSubjects LoadSessions num2cell(RMS_output')], [rmsFieldName '_QC_RMS'], x, [], pathTSV);
+                        else
+                            xASL_bids_Add2ParticipantsTSV([LoadSubjects num2cell(RMS_output')], [rmsFieldName '_QC_RMS'], x, [], pathTSV);
+                        end
 
 
                         % ----------------------------------------------------------------------------------------------------
@@ -486,7 +493,11 @@ for iScanType=1:length(PreFixList)
                         TempOutliers = 1:size(IM{1}, 2);
                         NotOutliers = TempOutliers(NotOutliers);
 
-                        NameIM = [TemplateNameList{iScanType} x.S.TemplateNumberName];
+                        if SessionsExist(iScanType)
+                            NameIM = [TemplateNameList{iScanType} '_' listSessions{iSession} x.S.TemplateNumberName];
+                        else
+                            NameIM = [TemplateNameList{iScanType} x.S.TemplateNumberName];
+                        end
                         
                         % ----------------------------------------------------------------------------------------------------
                         %% 6. Compute templates for all subjects together (only for bilateral images)
@@ -520,6 +531,8 @@ for iScanType=1:length(PreFixList)
                 end % bSkipWhenMissingScans && UnAvailable>0.10*nSize
             end % bSkipWhenMissingScans && isempty(LoadFiles)
         end % if bProceedThisSession
+
+        clear IM % Save each session independently
     end % for iSession=1:nSessions
     fprintf('\n');
     if UnAvailable>0
