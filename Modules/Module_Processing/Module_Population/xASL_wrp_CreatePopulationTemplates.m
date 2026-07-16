@@ -536,6 +536,36 @@ for iScanType=1:length(PreFixList)
         clear IM % Save each session independently
     end % for iSession=1:nSessions
 
+    % Now, we average over multiple sessions/runs, e.g., for creating analyses masks
+    if SessionsExist(iScanType)
+        IM_Masked = [];
+        IM_Unmasked = [];
+        includeSess_Masked = 1;
+        includeSess_Unmasked = 1;
+        for iSession=1:length(listSessions)
+            fileList = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^' TemplateNameList{iScanType} '_' listSessions{iSession} x.S.TemplateNumberName '_bs-mean\.nii']);
+            if ~isempty(fileList)
+                IM_Masked(:,:,:,includeSess_Masked) = xASL_io_Nifti2Im(fileList{1});
+                includeSess_Masked = includeSess_Masked+1;
+            end
+            fileList = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^' TemplateNameList{iScanType} '_' listSessions{iSession} x.S.TemplateNumberName '_bs-mean_Unmasked\.nii']);
+            if ~isempty(fileList)
+                IM_Unmasked(:,:,:,includeSess_Unmasked) = xASL_io_Nifti2Im(fileList{1});
+                includeSess_Unmasked = includeSess_Unmasked+1;
+            end
+        end
+        if ~isempty(IM_Masked)
+            IM_Masked = mean(IM_Masked, 4);
+            saveFile = fullfile(x.D.TemplatesStudyDir, [TemplateNameList{iScanType} x.S.TemplateNumberName '_bs-mean.nii']);
+            xASL_io_SaveNifti(fileList{1}, saveFile, IM_Masked)
+        end
+        if ~isempty(IM_Unmasked)
+            IM_Unmasked = mean(IM_Unmasked, 4);
+            saveFile = fullfile(x.D.TemplatesStudyDir, [TemplateNameList{iScanType} x.S.TemplateNumberName '_bs-mean_Unmasked.nii']);
+            xASL_io_SaveNifti(fileList{1}, saveFile, IM_Unmasked)
+        end
+    end
+
     if UnAvailable>0
         fprintf('\n%s\n',[num2str(UnAvailable) ' ' PreFixList{iScanType} ' files missing']);
     end
