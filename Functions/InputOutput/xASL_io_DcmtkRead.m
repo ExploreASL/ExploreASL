@@ -146,8 +146,8 @@ if isfield(header, 'AcquisitionMatrix') && ~isempty(header.AcquisitionMatrix)
 			tempNum = strrep(header.AcquisitionMatrix, '\', '');
 			if length(tempNum) == 16
 				header.AcquisitionMatrix = [0 0 0 0];
-				for i=1:4
-					header.AcquisitionMatrix(i) = xASL_adm_Hex2Num(tempNum((1:4)+(i-1)*4), 'uint', 0);
+				for ii=1:4
+					header.AcquisitionMatrix(ii) = xASL_adm_Hex2Num(tempNum((1:4)+(ii-1)*4), 'uint', 0);
 				end
 			else
 				header.AcquisitionMatrix = [];
