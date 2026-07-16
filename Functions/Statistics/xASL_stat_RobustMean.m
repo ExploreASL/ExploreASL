@@ -1,4 +1,4 @@
-function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunction)
+function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunction, bVerbose)
 % Submodule of ExploreASL Structural module, that obtains volumes from the tissue segmentations
 % (& FLAIR WMH segmentations if they exist)
 %
@@ -10,6 +10,7 @@ function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunct
 %                        of an image: options:
 %                                     SoS - sum of squared errors (DEFAULT)
 %                                     AI  - average relative asymmetry index
+%   bVerbose           - boolean for verbose output to the screen (DEFAULT=true)
 %
 % OUTPUT:
 %   NotOutliers         - vector, true for images that were not outliers
@@ -37,12 +38,18 @@ function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunct
 %     fprintf('Outlier exclusion skipped, too small dataset\n');
 %     return;
 % end
+
+if nargin<3 || isempty(bVerbose)
+    bVerbose = true;
+end
+
 if nargin<2 || isempty(ParameterFunction)
     ParameterFunction = 'SoS';
 elseif isempty(regexpi(ParameterFunction, '^(SoS|AI)$'))
     warning(['Unknown ParameterFunction: ' ParameterFunction ', using SoS']);
     ParameterFunction = 'SoS';
 end
+
 if size(IM,2)>size(IM,1)
     warning('Input IM has incorrect dimensions');
 end
@@ -53,7 +60,7 @@ end
 Size4 = size(IM, 2);
 
 % Create template image, to compare with
-fprintf('%s\n',['QC: detecting outliers for n=' num2str(Size4)]);
+if bVerbose; fprintf('%s\n',['QC: detecting outliers for n=' num2str(Size4)]); end
 
 MedianIM = repmat(xASL_stat_MedianNan(IM, 2), [1 Size4]);
 
@@ -77,7 +84,7 @@ ThresholdDeviation = MedianDeviation+3.*MadDeviation;
 NotOutliers = ~(Deviation>ThresholdDeviation)';
 iOutliers = find(Deviation>ThresholdDeviation)';
 
-if iOutliers>0
+if ~isempty(iOutliers) && numel(iOutliers)>0 && bVerbose
     fprintf(['Detected ' num2str(numel(iOutliers)) ' outliers\n']);
 end
 
