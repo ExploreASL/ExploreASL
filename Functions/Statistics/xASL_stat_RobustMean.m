@@ -2,7 +2,7 @@ function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunct
 % Submodule of ExploreASL Structural module, that obtains volumes from the tissue segmentations
 % (& FLAIR WMH segmentations if they exist)
 %
-% FORMAT: [NoOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunction)
+% FORMAT: [NoOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunction [, bVerbose])
 %
 % INPUT:
 %   IM                 - input images, should be masked with xASL_im_IM2Column: vector image (REQUIRED)
@@ -84,7 +84,7 @@ ThresholdDeviation = MedianDeviation+3.*MadDeviation;
 NotOutliers = ~(Deviation>ThresholdDeviation)';
 iOutliers = find(Deviation>ThresholdDeviation)';
 
-if ~isempty(iOutliers) && numel(iOutliers)>0 && bVerbose
+if numel(iOutliers)>0 && bVerbose
     fprintf(['Detected ' num2str(numel(iOutliers)) ' outliers\n']);
 end
 
