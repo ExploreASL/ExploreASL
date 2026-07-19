@@ -94,7 +94,7 @@ function x = xASL_io_CheckDeprecatedFieldsX(x, bVerbose)
     
     if bOldFieldsDetected && bVerbose
         % Print warning and individual fields
-        fprintf(2,'Detected and corrected deprecated fields in dataPar.json. Please modify the file accordingly:\n');
+        fprintf(2,'Detected and corrected deprecated fields. Please modify accordingly:\n');
         for iField = 1:size(detectedFields,1)
             fprintf(2,'%s -> %s\n', detectedFields{iField,1}, renamedFields{iField,1});
         end
