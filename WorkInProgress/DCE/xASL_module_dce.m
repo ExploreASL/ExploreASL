@@ -68,15 +68,10 @@ end
 % end
 
 % Skip if existing
-if x.mutex.HasState('010_TopUp_dwi') && x.mutex.HasState('030_RegistrationDWI2T1w')
-    if x.mutex.HasState('020_EddyCurrent') && x.mutex.HasState('040_dtiFit')
-        if x.mutex.HasState('050_resliceDWI') && x.mutex.HasState('060_visualize')
-            if x.mutex.HasState('999_ready')
-                result = true;
-                return;
-            end
-        end
-    end
+if x.mutex.HasState('999_ready')
+    result = true;
+    x.mutex.Unlock();
+    return;
 end
 
 
@@ -135,6 +130,9 @@ x.P.Path_DCE4D_Concentration = fullfile(x.dir.SESSIONDIR, 'DCE4D_Concentration.n
 x.P.Path_Ktrans = fullfile(x.dir.SESSIONDIR, 'Ktrans.nii');
 x.P.Path_Vp = fullfile(x.dir.SESSIONDIR, 'Vp.nii');
 
+x.P.Path_DCE_RSquared = fullfile(x.dir.SESSIONDIR, 'DCE_RSquared.nii');
+x.P.Path_DCE_FitMask = fullfile(x.dir.SESSIONDIR, 'DCE_FitMask.nii');
+
 x.D.DCECheckDir = fullfile(x.D.PopDir, 'DCECheck');
 
 % Standard space
@@ -162,8 +160,8 @@ json_dceOrig = xASL_adm_GetFileList(dir_dceOrig, ['^' subject '_ses-' visit '_dc
 % Despot T1 mapping
 dir_despotOrig = fullfile(x.dir.RawData, subject, ['ses-' visit], 'anat');
 nii_despotOrig_despotIR = xASL_adm_GetFileList(dir_despotOrig, ['^' subject '_ses-' visit '_acq-despotIR.*\.nii'], 'FPList');
-nii_despotOrig_despotFA1 = xASL_adm_GetFileList(dir_despotOrig, ['^' subject '_ses-' visit '_acq-despotFAflip01.*\.nii'], 'FPList');
-nii_despotOrig_despotFA2 = xASL_adm_GetFileList(dir_despotOrig, ['^' subject '_ses-' visit '_acq-despotFAflip02.*\.nii'], 'FPList');
+nii_despotOrig_despotFA1 = xASL_adm_GetFileList(dir_despotOrig, ['^' subject '_ses-' visit '_acq-despotFA_flip-01.*\.nii'], 'FPList');
+nii_despotOrig_despotFA2 = xASL_adm_GetFileList(dir_despotOrig, ['^' subject '_ses-' visit '_acq-despotFA_flip-02.*\.nii'], 'FPList');
 
 
 %% -----------------------------------------------------------------------------
@@ -234,6 +232,8 @@ end
 nii = xASL_io_ReadNifti(x.P.Path_DCE4D);
 nVolumes = nii.hdr.dim(5);
 optimFWHM_Res_mm = nii.hdr.pixdim(2:4);
+
+
 
 %% -----------------------------------------------------------------------------
 %% 1    Motion estimation
@@ -308,7 +308,7 @@ if ~x.mutex.HasState('030_MotionCorrection')
     matlabbatch = cell(0);
 
     x.mutex.AddState('030_MotionCorrection');
-    x.mutex.DelState('040_PVmapsMasks');
+    x.mutex.DelState('040_PVmaps');
 elseif   bO; fprintf('%s\n','030_MotionCorrection has already been performed, skipping...');
 end
 
@@ -491,7 +491,7 @@ if ~x.mutex.HasState('070_OSIPY')
     % -> Convert concentration 2 Ktrans & Vp
     mod = py.importlib.import_module('Step5_Concentration2Ktrans');
     % mod = py.importlib.reload(mod);
-    mod.concentration_to_ktrans(x.P.Path_DCE4D_Concentration, x.P.Path_Ktrans, x.P.Path_Vp, concentrationAIF);
+    mod.concentration_to_ktrans(x.P.Path_DCE4D_Concentration, x.P.Path_Ktrans, x.P.Path_Vp, concentrationAIF, x.P.Path_DCE_RSquared, x.P.Path_DCE_FitMask);
 
     x.mutex.AddState('070_OSIPY');
 elseif   bO; fprintf('%s\n','070_OSIPY has already been performed, skipping...');
@@ -521,7 +521,6 @@ if ~x.mutex.HasState('080_QC')
     maskGM = pvGM>(pvWM+pvCSF) & (pvGM+pvWM+pvCSF)>0.1;
     maskWM = pvWM>(pvGM+pvCSF) & (pvGM+pvWM+pvCSF)>0.1;
     maskWB = (pvGM+pvWM)>pvCSF & (pvGM+pvWM+pvCSF)>0.1;
-
 
     % A. Mean, SD, SNR of DCE
     IM_rDCE4D = xASL_io_Nifti2Im(x.P.Path_rDCE4D);
@@ -603,30 +602,62 @@ if ~x.mutex.HasState('080_QC')
     x.Output.DCE.AIF_relativePeak_Ratio = (max(AIF) - min(AIF)) / std(AIF); % how much larger is max-min signal than SD signal
 
 
-    %% H. Ktrans & Vp
+    %% H. Ktrans
+
+    % Use R^2 as goodness-of-fit parameter
+    Rsquared = xASL_io_Nifti2Im(x.P.Path_DCE_RSquared);
+    x.Output.DCE.DCE_Ktrans_GM_R_squaredMean_Perc = xASL_stat_MeanNan(Rsquared(maskGM));
+    x.Output.DCE.DCE_Ktrans_WM_R_squaredMean_Perc = xASL_stat_MeanNan(Rsquared(maskWM));
+
+    Rsquared(Rsquared<0) = 0;
+
     imKtrans = xASL_io_Nifti2Im(x.P.Path_Ktrans);
     
+    robustGMMask = maskGM & isfinite(imKtrans);
+    kTransValues = imKtrans(robustGMMask);
+    kTransWeights = Rsquared(robustGMMask);
+
+    x.Output.DCE.DCE_Ktrans_GM_robustMean = sum(kTransValues.*kTransWeights)./sum(kTransWeights(:));
     x.Output.DCE.DCE_Ktrans_GM_mean = xASL_stat_MeanNan(imKtrans(maskGM));
     x.Output.DCE.DCE_Ktrans_GM_SD = xASL_stat_StdNan(imKtrans(maskGM));
     x.Output.DCE.DCE_Ktrans_GM_min = min(imKtrans(maskGM));
     x.Output.DCE.DCE_Ktrans_GM_max = max(imKtrans(maskGM));
     
+    robustWMMask = maskWM & isfinite(imKtrans);
+    kTransValues = imKtrans(robustWMMask);
+    kTransWeights = Rsquared(robustWMMask);
+
+    x.Output.DCE.DCE_Ktrans_WM_robustMean = sum(kTransValues.*kTransWeights)./sum(kTransWeights(:));
     x.Output.DCE.DCE_Ktrans_WM_mean = xASL_stat_MeanNan(imKtrans(maskWM));
     x.Output.DCE.DCE_Ktrans_WM_SD = xASL_stat_StdNan(imKtrans(maskWM));
     x.Output.DCE.DCE_Ktrans_WM_min = min(imKtrans(maskWM));
     x.Output.DCE.DCE_Ktrans_WM_max = max(imKtrans(maskWM));
     
+    %% I. Vp 
     imVp = xASL_io_Nifti2Im(x.P.Path_Vp);
     
+    robustGMMask = maskGM & isfinite(imVp);
+    VpValues = imVp(robustGMMask);
+    VpWeights = Rsquared(robustGMMask);
+
+    x.Output.DCE.DCE_Vp_GM_robustMean = sum(VpValues.*VpWeights)./sum(VpWeights(:));
     x.Output.DCE.DCE_Vp_GM_mean = xASL_stat_MeanNan(imVp(maskGM));
     x.Output.DCE.DCE_Vp_GM_SD = xASL_stat_StdNan(imVp(maskGM));
     x.Output.DCE.DCE_Vp_GM_min = min(imVp(maskGM));
     x.Output.DCE.DCE_Vp_GM_max = max(imVp(maskGM));
     
+    robustWMMask = maskWM & isfinite(imVp);
+    VpValues = imVp(robustWMMask);
+    VpWeights = Rsquared(robustWMMask);
+
+    x.Output.DCE.DCE_Vp_WM_robustMean = sum(VpValues.*VpWeights)./sum(VpWeights(:));
     x.Output.DCE.DCE_Vp_WM_mean = xASL_stat_MeanNan(imVp(maskWM));
     x.Output.DCE.DCE_Vp_WM_SD = xASL_stat_StdNan(imVp(maskWM));
     x.Output.DCE.DCE_Vp_WM_min = min(imVp(maskWM));
     x.Output.DCE.DCE_Vp_WM_max = max(imVp(maskWM));
+
+    x.Output.DCE.DCE_nVolumes = nVolumes;
+
 
     save(PathX, 'x'); % future: do this in each xWrapper
 
