@@ -250,7 +250,7 @@ if UsePredefined
     PreFixList{end+1}   = 'PV_pWM';                             TemplateNameList{end+1}    = 'PV_pWM';      SessionsExist(end+1) =  0;
 	PreFixList{end+1}   = 'PV_pCSF';                            TemplateNameList{end+1}    = 'PV_pCSF';      SessionsExist(end+1) =  0;
     PreFixList{end+1}   = 'R1';                                 TemplateNameList{end+1}    = 'R1';          SessionsExist(end+1) =  0;
-    %
+
     % ASL images
     % SessionsExist should be 0 for structural scans, since we only use 1
     % per patient, irrespective of number of functional scans
@@ -289,6 +289,13 @@ if UsePredefined
 	PreFixList{end+1}   = 'Tex';                                TemplateNameList{end+1}  = 'Tex';              SessionsExist(end+1)    = 1;
 	PreFixList{end+1}   = 'ABV';                                TemplateNameList{end+1}  = 'ABV';              SessionsExist(end+1)    = 1;
 	PreFixList{end+1}   = 'ITT';                                TemplateNameList{end+1}  = 'ITT';              SessionsExist(end+1)    = 1;
+
+    % DCE images
+    PreFixList{end+1}   = 'DCE_CoV';                   TemplateNameList{end+1}    = 'DCE_CoV';       SessionsExist(end+1)        =  0;
+    PreFixList{end+1}   = 'DCE_Ktrans';                TemplateNameList{end+1}    = 'DCE_Ktrans';    SessionsExist(end+1)        =  0;
+    PreFixList{end+1}   = 'DCE_mean';                  TemplateNameList{end+1}    = 'DCE_mean';      SessionsExist(end+1)        =  0;
+    PreFixList{end+1}   = 'DCE_Vp';                    TemplateNameList{end+1}    = 'DCE_Vp';        SessionsExist(end+1)        =  0;
+
     % % PM: Let this search for different scantypes in /PopDir NIfTIs, & run within those
 end
 
