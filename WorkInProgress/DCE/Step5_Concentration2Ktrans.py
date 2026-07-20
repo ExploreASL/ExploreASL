@@ -3,7 +3,7 @@ import osipy
 import nibabel as nib
 from osipy.common.types import AIFType
 
-def concentration_to_ktrans(pathConcentration, pathOut_Ktrans, pathOut_vp, AIF):
+def concentration_to_ktrans(pathConcentration, pathOut_Ktrans, pathOut_vp, AIF, pathOut_r_squared, pathOut_valid_fit):
     """Fit a Patlak model to concentration values and return Ktrans and vp maps.
 
     Parameters
@@ -60,11 +60,32 @@ def concentration_to_ktrans(pathConcentration, pathOut_Ktrans, pathOut_vp, AIF):
     )
 
 
+
+
     # Extract parameter maps (result is a DCEFitResult object)
     ktrans = result.parameter_maps["Ktrans"].values
     vp = result.parameter_maps["vp"].values
     r_squared = result.r_squared_map
     quality_mask = result.quality_mask
+    fit_completed = np.asarray(result.quality_mask, dtype=bool)
+
+
+    # Reject optimizer-bound solutions using a small tolerance.
+    ktrans_upper = 5.0
+    bound_tolerance = 1e-4
+
+    valid_fit = (
+        fit_completed
+        & np.isfinite(ktrans)
+        & np.isfinite(vp)
+        & np.isfinite(r_squared)
+        & (r_squared >= 0.5)
+        & (ktrans > bound_tolerance)
+        & (ktrans < ktrans_upper - bound_tolerance)
+        & (vp >= 0.0)
+        & (vp < 1.0 - bound_tolerance)
+    )
+
 
     # Save Ktrans and vp maps as NIfTI files
     img = nib.Nifti1Image(ktrans.astype(np.float32),
@@ -75,4 +96,15 @@ def concentration_to_ktrans(pathConcentration, pathOut_Ktrans, pathOut_vp, AIF):
     img = nib.Nifti1Image(vp.astype(np.float32),
                         affine=dce_dataset.affine)
 
-    nib.save(img, pathOut_vp)    
+    nib.save(img, pathOut_vp)
+
+
+    img = nib.Nifti1Image(r_squared.astype(np.float32),
+                        affine=dce_dataset.affine)
+
+    nib.save(img, pathOut_r_squared)
+
+    img = nib.Nifti1Image(valid_fit.astype(np.float32),
+                        affine=dce_dataset.affine)
+
+    nib.save(img, pathOut_valid_fit)
