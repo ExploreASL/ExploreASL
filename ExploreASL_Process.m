@@ -134,11 +134,12 @@ function [x] = ExploreASL_Process(x)
         [~, x] = xASL_init_Iteration(x,'xASL_module_DARTEL');
     end
 
-    if isfield(x.modules, 'bRunDCE') && x.modules.bRunDCE
-        addpath(genpath('WorkInProgress'));
-        xASL_init_Iteration(x,'xASL_module_dce');
+    if x.opts.bProcess(2)==1
+        if isfield(x.modules, 'bRunDCE') && x.modules.bRunDCE
+            addpath(genpath('WorkInProgress'));
+            xASL_init_Iteration(x,'xASL_module_dce');
+        end
     end
-
 
     % -----------------------------------------------------------------------------
     %% 2    xASL_module_ASL  
