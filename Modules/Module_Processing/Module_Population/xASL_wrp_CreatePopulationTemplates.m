@@ -171,6 +171,16 @@ end
 
 Size1 = sum(x.S.masks.WBmask(:));
 
+% Create parenchyma mask for QC purposes
+pathGM = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii');
+pathWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii');
+imGM = xASL_io_Nifti2Im(pathGM);
+imWM = xASL_io_Nifti2Im(pathWM);
+
+x.S.masks.Parenchyma = (imGM+imWM)>0.5;
+x.S.masks.Parenchyma(:,:,1:15) = 0; % remove the lower end of the cerebellum
+
+
 x.D.TemplatesStudyDir = fullfile(x.D.PopDir, 'Templates');
 xASL_adm_CreateDir(x.D.TemplatesStudyDir);
 
@@ -477,7 +487,17 @@ for iScanType=1:length(PreFixList)
                         % ----------------------------------------------------------------------------------------------------
                         %% 4. Compute difference with averate template & store in participants.tsv
                         % PM: this assumes bilateral images, not left-right splits, hence it only takes IM{1}
-                        [theseAreNotOutliers, ~, RMS_output] = xASL_stat_RobustMean(IM{1});
+                        
+                        % for sessions, let's use a parenchymal mask, as the CSF is not so interesting for fits such as 
+                        % CBF, ATT, Tex, DCE Ktrans
+                        
+                        if SessionsExist(iScanType) || ~isempty(regexpi(PreFixList{iScanType}, '(DCE|CBF|ATT|Tex)', 'once'))
+
+                            [theseAreNotOutliers, ~, RMS_output] = xASL_stat_RobustMean(IM{1}, [], xASL_im_IM2Column(x.S.masks.Parenchyma, x.S.masks.WBmask));
+                        else
+                            [theseAreNotOutliers, ~, RMS_output] = xASL_stat_RobustMean(IM{1}); % default is to use no mask
+                        end
+
                         RMS.(PreFixList{iScanType}) = RMS_output;
                         RMS.([PreFixList{iScanType} '_SUBJECTS']) = LoadSubjects';
 
@@ -651,6 +671,7 @@ elseif length(IM)==2 && ~bFlipHemisphere
 else
     error('Incorrect IM matrix size, skipping');
 end
+
 
 if bFlipHemisphere
     fprintf('%s\n', 'Hemisphere encoding (left-right designations) detected, flipping images with designation right');
