@@ -379,11 +379,11 @@ if ~x.mutex.HasState('050_AIF')
     nVoxels = ceil(targetVolume_mL/voxelVolume_mL);
 
     % Properties AIF: 1. largest signal difference
-    deltaVoxels = max(voxelTimeCurves, [], 2) - min(voxelTimeCurves, [], 2);
-    deltaVoxels(:,2) = 1:length(deltaVoxels);
-    deltaVoxels = sortrows(deltaVoxels, 1, 'descend');
-    deltaVoxels(:,3) = 1:length(deltaVoxels);
-    deltaVoxels = sortrows(deltaVoxels, 2, 'ascend');    
+    deltaVoxels = max(voxelTimeCurves, [], 2) - min(voxelTimeCurves, [], 2); % difference
+    deltaVoxels(:,2) = 1:length(deltaVoxels); % voxel indices
+    deltaVoxels = sortrows(deltaVoxels, 1, 'descend'); % largest differences first
+    deltaVoxels(:,3) = 1:length(deltaVoxels); % large difference indices (smallest is largest)
+    deltaVoxels = sortrows(deltaVoxels, 2, 'ascend'); % sort back to voxel indices
 
     % Properties AIF: 2. early enhancement (after injection, first 1/3 of frames should have higher intensity than last 1/3 of frames)
     nFramesAfterInjection = nVolumes-x.modules.dce.InjectionFrame-2;
@@ -393,16 +393,16 @@ if ~x.mutex.HasState('050_AIF')
     sumEarlySignal = sum(voxelTimeCurves(:, earlyFrames), 2);
     sumLateSignal = sum(voxelTimeCurves(:, lateFrames), 2);
     
-    diffEarlyLate = sumEarlySignal - sumLateSignal;
-    diffEarlyLate(:,2) = 1:length(diffEarlyLate);
-    diffEarlyLate = sortrows(diffEarlyLate, 1, 'descend');
-    diffEarlyLate(:,3) = 1:length(diffEarlyLate);
-    diffEarlyLate = sortrows(diffEarlyLate, 2, 'ascend');
+    diffEarlyLate = sumEarlySignal - sumLateSignal; % difference
+    diffEarlyLate(:,2) = 1:length(diffEarlyLate); % voxel indices
+    diffEarlyLate = sortrows(diffEarlyLate, 1, 'descend'); % largest differences first
+    diffEarlyLate(:,3) = 1:length(diffEarlyLate); % large difference indices (smallest is largest)
+    diffEarlyLate = sortrows(diffEarlyLate, 2, 'ascend'); % sort back to voxel indices
 
     % 3. Voxels that fullfill both criteria, are low on the ranks (:,3) of both
-    voxelCandidate = deltaVoxels(:,3).*diffEarlyLate(:,3);
-    voxelCandidate(:,2) = 1:length(voxelCandidate);
-    voxelCandidate = sortrows(voxelCandidate, 1, 'ascend');
+    voxelCandidate = deltaVoxels(:,3).*diffEarlyLate(:,3); % multiply both ranks
+    voxelCandidate(:,2) = 1:length(voxelCandidate); % voxel indices
+    voxelCandidate = sortrows(voxelCandidate, 1, 'ascend'); % sort based on being low on both criteria (i.e., scoring high on both criteria)
 
     % % % Select by properties AIF: precontrast stability
     % % sdPreContrast = std(voxelTimeCurves(:,1:injectionFrame-1), [], 2);
