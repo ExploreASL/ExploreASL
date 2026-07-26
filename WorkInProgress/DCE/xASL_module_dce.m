@@ -632,6 +632,17 @@ if ~x.mutex.HasState('080_QC')
     x.Output.DCE.DCE_Ktrans_WM_SD = xASL_stat_StdNan(imKtrans(maskWM));
     x.Output.DCE.DCE_Ktrans_WM_min = min(imKtrans(maskWM));
     x.Output.DCE.DCE_Ktrans_WM_max = max(imKtrans(maskWM));
+
+    robustParenchymaMask = maskWB & isfinite(imKtrans);
+    kTransValues = imKtrans(robustParenchymaMask);
+    kTransWeights = Rsquared(robustParenchymaMask);
+
+    x.Output.DCE.DCE_Ktrans_Parenchyma_robustMean = sum(kTransValues.*kTransWeights)./sum(kTransWeights(:));
+    x.Output.DCE.DCE_Ktrans_Parenchyma_mean = xASL_stat_MeanNan(imKtrans(maskWB));
+    x.Output.DCE.DCE_Ktrans_Parenchyma_SD = xASL_stat_StdNan(imKtrans(maskWB));
+    x.Output.DCE.DCE_Ktrans_Parenchyma_min = min(imKtrans(maskWB));
+    x.Output.DCE.DCE_Ktrans_Parenchyma_max = max(imKtrans(maskWB));
+
     
     %% I. Vp 
     imVp = xASL_io_Nifti2Im(x.P.Path_Vp);
@@ -656,8 +667,17 @@ if ~x.mutex.HasState('080_QC')
     x.Output.DCE.DCE_Vp_WM_min = min(imVp(maskWM));
     x.Output.DCE.DCE_Vp_WM_max = max(imVp(maskWM));
 
-    x.Output.DCE.DCE_nVolumes = nVolumes;
+    robustParenchymaMask = maskWB & isfinite(imVp);
+    VpValues = imVp(robustParenchymaMask);
+    VpWeights = Rsquared(robustParenchymaMask);
 
+    x.Output.DCE.DCE_Vp_Parenchyma_robustMean = sum(VpValues.*VpWeights)./sum(VpWeights(:));
+    x.Output.DCE.DCE_Vp_Parenchyma_mean = xASL_stat_MeanNan(imVp(maskWB));
+    x.Output.DCE.DCE_Vp_Parenchyma_SD = xASL_stat_StdNan(imVp(maskWB));
+    x.Output.DCE.DCE_Vp_Parenchyma_min = min(imVp(maskWB));
+    x.Output.DCE.DCE_Vp_Parenchyma_max = max(imVp(maskWB));
+
+    x.Output.DCE.DCE_nVolumes = nVolumes;
 
     save(PathX, 'x'); % future: do this in each xWrapper
 
