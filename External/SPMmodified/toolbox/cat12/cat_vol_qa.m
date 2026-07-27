@@ -587,9 +587,7 @@ function varargout = cat_vol_qa(action,varargin)
 
 
       %% EXPLOREASL HACK for Matlab 2025 and further
-      matlabVersion             = version;
-      matlabVersion             = str2num(matlabVersion(end-5:end-2));
-      if matlabVersion>=2025
+      if xASL_adm_MatlabVersionYear()>=2025
           QAS.software.opengl = rendererinfo;
           QAS.software.opengldata = rendererinfo;
       else
