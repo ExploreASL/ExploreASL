@@ -21,7 +21,7 @@ function [EffectiveResolution] = xASL_init_DefaultEffectiveResolution(PathASL, x
 % segments can affect the smoothness.
 %
 % This function conducts the following steps:
-% 1. Basic cases when resolution is not calculated
+% 1. Missing information about the sequence
 % 2. Educated-guess FWHM
 % 3. Attempt accounting for in-plane interpolation in reconstruction
 % 4. Calculate and report effective spatial resolution
@@ -64,17 +64,21 @@ else
 	x.Q.AcquisitionVoxelSize = [];
 end
 
-%% Obtain the effective resolution
-%% 1. Basic cases when resolution is not calculated
+% If the AcquisitionVoxelSize is specified then it overrides the values from NIfTI. This can be the case when
+% the resolution is upsampled during the reconstruction. This is still just the native resolution and does not consider
+% any point-spread function imperfections.
 if ~isempty(x.Q.AcquisitionVoxelSize) && numel(x.Q.AcquisitionVoxelSize) == 3
 	% If estimated effective resolution is given in JSON-sidecar, then we use it
-	EffectiveResolution = x.Q.AcquisitionVoxelSize;
-	fprintf('%s\n', ['Assume effective resolution ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(3)) ' as provided in the JSON-sidecar'])
-elseif x.MagneticFieldStrength > 3
-	% For more than 3T scanners, we don't have this estimated as the resolutions are much higher
-	EffectiveResolution = NativeResolution;
-	fprintf('%s\n', ['Assume effective resolution equal to voxel size ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(3))]);
-elseif ~isfield(x.Q, 'PulseSequenceType') || ~isfield(x.Q, 'MRAcquisitionType') || ~isfield(x.Q, 'Vendor')
+	NativeResolution = x.Q.AcquisitionVoxelSize;
+	fprintf('%s\n', ['Assume native resolution ' num2str(NativeResolution(1)) ' ' num2str(NativeResolution(1)) ' ' num2str(NativeResolution(3)) ' as provided in the JSON-sidecar'])
+else
+	% For incomplete vectors, set the vector to empty as this is then checked later
+	x.Q.AcquisitionVoxelSize = [];
+end
+
+%% Obtain the effective resolution
+%% 1. Missing information about the sequence
+if ~isfield(x.Q, 'PulseSequenceType') || ~isfield(x.Q, 'MRAcquisitionType') || ~isfield(x.Q, 'Vendor')
 	% If sequence or vendor are still missing we skip this function
 	error('Settings of x.Q.PulseSequenceType or x.Q.MRAcquisitionType or x.Q.Vendor are missing');
 else	
@@ -108,8 +112,10 @@ else
 
 	%% ----------------------------------------------------------------------------------------
 	%% 2) Attempt accounting for in-plane interpolation in reconstruction
-	if strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D')
-		% GE tends to upsample their spiral acquisitions to 1.6-1.9mm voxels
+	% This is done only for 1.5T and 3T as for high fields, high resolution is normal. Also, check that Acquisition voxel size was not provided manually
+	if x.MagneticFieldStrength < 3.1 && isempty(x.Q.AcquisitionVoxelSize)
+	if strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D') 
+		% GE tends to upsample their spiral acquisitions 2 times from acquisition resolution of 3.2-3.8 to reconstructed resolution of 1.6-1.9mm voxels
 		% For non-GE, or in-plane resolution higher than 2mm, we can't assume that the reconstruction was upsampled and we leave the native resolution intact
 		if regexpi(x.Q.Vendor, 'GE') && NativeResolution(1) < 2
 			% The individual resolution will also depend on the FOV, so we cannot set a fixed resolution but rather modify it based on the native resolution
@@ -126,8 +132,10 @@ else
 				warning('Number of spirals for a GE sequence is not in the common range of 4 or 8')
 			end
 		end
-	elseif strcmpi(x.Q.PulseSequenceType, 'GRASE') && strcmpi(x.Q.MRAcquisitionType, '3D') && NativeResolution(1)<3
-		NativeResolution(1:2) = max(NativeResolution(1:2),[3.8 3.8]);
+	elseif strcmpi(x.Q.PulseSequenceType, 'GRASE') && strcmpi(x.Q.MRAcquisitionType, '3D') && NativeResolution(1)<2
+		% For native resolution below 2mm, we consider 2 times upsampling in-plane during the reconstruction
+		NativeResolution(1:2) = 2* NativeResolution(1:2);
+	end
 	end
 
 	%% ----------------------------------------------------------------------------------------
