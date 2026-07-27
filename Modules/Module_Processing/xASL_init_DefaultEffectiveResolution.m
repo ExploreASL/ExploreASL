@@ -81,40 +81,41 @@ end
 if ~isfield(x.Q, 'PulseSequenceType') || ~isfield(x.Q, 'MRAcquisitionType') || ~isfield(x.Q, 'Vendor')
 	% If sequence or vendor are still missing we skip this function
 	error('Settings of x.Q.PulseSequenceType or x.Q.MRAcquisitionType or x.Q.Vendor are missing');
-else	
-	%% ----------------------------------------------------------------------------------------
-	%% Use precalculated values
-	%% 1) Educated-guess FWHM
-	if strcmpi(x.Q.PulseSequenceType, 'EPI') && strcmpi(x.Q.MRAcquisitionType, '2D')
-		% for 2D EPI the PSF is effectively negligible
-		Estimated_FWHM = [1 1 1];
-	elseif strcmpi(x.Q.PulseSequenceType, 'spiral_wip') && strcmpi(x.Q.MRAcquisitionType, '3D')
-		% educated guess: 3D spiral acquision has large through-plane PSF
-		Estimated_FWHM = [1.1158 1.1289 1.9525]; % average between 3D_spiral & 3D_GRASE
-	elseif strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D')
-		% estimation by Petr, MAGMA
-		% Paper Jan Petr, 4.9 & 5.1 where X Y, which should be similar
-		% difference with 3D_spiral WIP is that this product sequence applies a
-		% Fermi filter in reconstruction
-		EstimatedEffectiveResolution = [4.3 4.4 10.1];
-		BasedOnResolution = [3.8 3.8 4];
-		Estimated_FWHM = EstimatedEffectiveResolution./BasedOnResolution;
-	elseif strcmpi(x.Q.PulseSequenceType, 'GRASE') && strcmpi(x.Q.MRAcquisitionType, '3D')
-		Estimated_FWHM = [1.1 1.1 1.38]; % KISS, Vidoretta, NeuroImage 2013
-		% The in-plane 2 translates the reconstruction resolution into
-		% acquisition resolution. A lot still depends on the actual readout
-		% used, this is perhaps the most variable sequence in terms of PSF
-		% FWHM. Roughly speaking, the 3d_grase PSF should be somewhere between the 2d_epi
-		% and 3d_spiral.
-	else
-		warning(['Unknown setting x.Q.PulseSequenceType=' xASL_num2str(x.Q.PulseSequenceType) ', x.Q.MRAcquisitionType=' xASL_num2str(x.Q.MRAcquisitionType)]);
-	end
+end	
 
-	%% ----------------------------------------------------------------------------------------
-	%% 2) Attempt accounting for in-plane interpolation in reconstruction
-	% This is done only for 1.5T and 3T as for high fields, high resolution is normal. Also, check that Acquisition voxel size was not provided manually
-	if x.MagneticFieldStrength < 3.1 && isempty(x.Q.AcquisitionVoxelSize)
-	if strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D') 
+%% ----------------------------------------------------------------------------------------
+%% Use precalculated values
+%% 1) Educated-guess FWHM
+if strcmpi(x.Q.PulseSequenceType, 'EPI') && strcmpi(x.Q.MRAcquisitionType, '2D')
+	% for 2D EPI the PSF is effectively negligible
+	Estimated_FWHM = [1 1 1];
+elseif strcmpi(x.Q.PulseSequenceType, 'spiral_wip') && strcmpi(x.Q.MRAcquisitionType, '3D')
+	% educated guess: 3D spiral acquision has large through-plane PSF
+	Estimated_FWHM = [1.1158 1.1289 1.9525]; % average between 3D_spiral & 3D_GRASE
+elseif strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D')
+	% estimation by Petr, MAGMA
+	% Paper Jan Petr, 4.9 & 5.1 where X Y, which should be similar
+	% difference with 3D_spiral WIP is that this product sequence applies a
+	% Fermi filter in reconstruction
+	EstimatedEffectiveResolution = [4.3 4.4 10.1];
+	BasedOnResolution = [3.8 3.8 4];
+	Estimated_FWHM = EstimatedEffectiveResolution./BasedOnResolution;
+elseif strcmpi(x.Q.PulseSequenceType, 'GRASE') && strcmpi(x.Q.MRAcquisitionType, '3D')
+	Estimated_FWHM = [1.1 1.1 1.38]; % KISS, Vidoretta, NeuroImage 2013
+	% The in-plane 2 translates the reconstruction resolution into
+	% acquisition resolution. A lot still depends on the actual readout
+	% used, this is perhaps the most variable sequence in terms of PSF
+	% FWHM. Roughly speaking, the 3d_grase PSF should be somewhere between the 2d_epi
+	% and 3d_spiral.
+else
+	warning(['Unknown setting x.Q.PulseSequenceType=' xASL_num2str(x.Q.PulseSequenceType) ', x.Q.MRAcquisitionType=' xASL_num2str(x.Q.MRAcquisitionType)]);
+end
+
+%% ----------------------------------------------------------------------------------------
+%% 2) Attempt accounting for in-plane interpolation in reconstruction
+% This is done only for 1.5T and 3T as for high fields, high resolution is normal. Also, check that Acquisition voxel size was not provided manually
+if x.MagneticFieldStrength < 3.1 && isempty(x.Q.AcquisitionVoxelSize)
+	if strcmpi(x.Q.PulseSequenceType, 'spiral') && strcmpi(x.Q.MRAcquisitionType, '3D')
 		% GE tends to upsample their spiral acquisitions 2 times from acquisition resolution of 3.2-3.8 to reconstructed resolution of 1.6-1.9mm voxels
 		% For non-GE, or in-plane resolution higher than 2mm, we can't assume that the reconstruction was upsampled and we leave the native resolution intact
 		if regexpi(x.Q.Vendor, 'GE') && NativeResolution(1) < 2
@@ -136,12 +137,11 @@ else
 		% For native resolution below 2mm, we consider 2 times upsampling in-plane during the reconstruction
 		NativeResolution(1:2) = 2* NativeResolution(1:2);
 	end
-	end
-
-	%% ----------------------------------------------------------------------------------------
-	%% 3) Calculate and report effective spatial resolution
-	EffectiveResolution = NativeResolution.*Estimated_FWHM;
-	fprintf('%s\n',[x.Q.PulseSequenceType ' NIfTI has native resolution ' num2str(NativeResolution(1)) ' ' num2str(NativeResolution(2)) ' ' num2str(NativeResolution(3)) ', assuming PSF ' num2str(Estimated_FWHM(1)) ' ' num2str(Estimated_FWHM(2)) ' ' num2str(Estimated_FWHM(3)) ' this gives estimated effective resolution ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(3))])
 end
+
+%% ----------------------------------------------------------------------------------------
+%% 3) Calculate and report effective spatial resolution
+EffectiveResolution = NativeResolution.*Estimated_FWHM;
+fprintf('%s\n',[x.Q.PulseSequenceType ' NIfTI has native resolution ' num2str(NativeResolution(1)) ' ' num2str(NativeResolution(2)) ' ' num2str(NativeResolution(3)) ', assuming PSF ' num2str(Estimated_FWHM(1)) ' ' num2str(Estimated_FWHM(2)) ' ' num2str(Estimated_FWHM(3)) ' this gives estimated effective resolution ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(1)) ' ' num2str(EffectiveResolution(3))])
 
 end
