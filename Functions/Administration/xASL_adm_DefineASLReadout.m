@@ -17,14 +17,13 @@ function [xQ] = xASL_adm_DefineASLReadout(xQ, bVerbose)
 % being processed, if this was not already defined in xQ.PulseSequenceType.
 % It does so by checking known combinations of readout dimensionality
 % (xQ.MRAcquisitionType) and Vendor, knowing the product sequences of the Vendors.
+% Tolerance for typos and standard variations of sequence names for specific vendors is implemented.
 %
 % EXAMPLE: xQ = xASL_adm_DefineASLReadout(xQ);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % SPDX-License-Identifier: Apache-2.0
 % ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
-
-
 
 %% Check quantification fields MRAcquisitionType & xQ.PulseSequenceType
 if nargin<2 || isempty(bVerbose)
@@ -50,7 +49,7 @@ if isfield(xQ, 'PulseSequenceType') && ~isempty(xQ.PulseSequenceType)
         pstCorrected = 'GRASE';
     elseif ~isempty(regexpi(pstLower, 'spiral', 'once'))
         pstCorrected = 'spiral';
-    end
+	end
 
     %% Tier 2: fuzzy match against normalized keywords (typo fallback)
     if isempty(pstCorrected)
@@ -58,11 +57,11 @@ if isfield(xQ, 'PulseSequenceType') && ~isempty(xQ.PulseSequenceType)
         if isempty(pstStripped)
             pstStripped = pstLower;
         end
-        keywords = {'epi', 'grase', 'spiral'};
+        keywords = {'EPI', 'GRASE', 'spiral'};
         bestDist = inf;
         bestKey  = '';
         for k = 1:length(keywords)
-            d = xASL_stat_EditDistance(pstStripped, keywords{k});
+            d = xASL_stat_EditDistance(pstStripped, lower(keywords{k}));
             if d < bestDist
                 bestDist = d;
                 bestKey  = keywords{k};
@@ -94,7 +93,7 @@ knownVendors = {'GE', 'Philips', 'Siemens', 'Gold Standard Phantoms'};
 if ~isfield(xQ, 'Vendor') || isempty(xQ.Vendor)
     if isfield(xQ, 'Manufacturer') && ~isempty(xQ.Manufacturer)
         % Manufacturer is BIDS: use it to set Vendor
-        mfrLower = xQ.Manufacturer;
+        mfrLower = lower(xQ.Manufacturer);
         xQ.Vendor = '';
         % Substring match first (handles "Siemens Healthineers" etc.)
         for v = 1:length(knownVendors)
@@ -108,7 +107,7 @@ if ~isfield(xQ, 'Vendor') || isempty(xQ.Vendor)
             bestDist = inf;
             bestV    = '';
             for v = 1:length(knownVendors)
-                d = xASL_stat_EditDistance(lower(mfrLower), lower(knownVendors{v}));
+                d = xASL_stat_EditDistance(mfrLower, lower(knownVendors{v}));
                 if d < bestDist
                     bestDist = d;
                     bestV    = knownVendors{v};
