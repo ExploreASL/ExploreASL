@@ -5,11 +5,11 @@ function xASL_im_dilateROI(PathIn, PathOut, minVolume)
 % 
 % INPUT:        PathIn    - Path to input NIfTI image (REQUIRED)
 %               PathOut   - Path to output NIfTI image (OPTIONAL, DEFAULT = PathIn)
-%               minVolume - The ROI is dilated until reaching this volume in ml (OPTIONAL, DEFAULT 40ml)
+%               minVolume - The ROI is dilated until reaching this volume in mm^3 (OPTIONAL, DEFAULT 40mm^3)
 % OUTPUT:       n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  The function loads a binary image from PathIn and if smaller than the defined volume (40 mL by default) it 
+% DESCRIPTION:  The function loads a binary image from PathIn and if smaller than the defined volume (40 mm^3 by default) it 
 %               dilates it with a 3x3 sphere element until a minimal volume is reached. When it is small enough, it is saved to PathOut.
 %               40 mm^3 is equal to 3 voxels in all directions in DARTEL space, or around the highest obtainable ASL effective resolution (3x3x4 mm).
 %
@@ -40,9 +40,12 @@ pixdim  = prod(HDR.hdr.pixdim(2:4));
 IMvol   = sum(IM(:)).*pixdim;
 
 %% Iteratively dilate until the minimal volume value is reached
-while  IMvol<minVolume
-       IM = xASL_im_DilateErodeFull(IM,'dilate',xASL_im_DilateErodeSphere(2));
-       IMvol   = sum(IM(:)).*pixdim;
+if IMvol > 0
+	% Only do iterative dilation when the Lesion is not empty
+	while  IMvol<minVolume
+		IM = xASL_im_DilateErodeFull(IM,'dilate',xASL_im_DilateErodeSphere(2));
+		IMvol   = sum(IM(:)).*pixdim;
+	end
 end
 
 %% Saves the dilated ROI
