@@ -414,7 +414,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     const mwSize  *cdim = NULL;
     mwSize        dim[3];
 	int           window[3];
-	double        *kernel[3];	
+	double        *kernel[3] = {NULL, NULL, NULL};	
 	double        kernelSum;
     double        *iima = NULL;
     double        *oima = NULL;
@@ -456,7 +456,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     plhs[0] = mxCreateNumericArray(mxGetNumberOfDimensions(prhs[0]),
                                    mxGetDimensions(prhs[0]),mxDOUBLE_CLASS,mxREAL);
     oima = mxGetPr(plhs[0]);
-
+	
+	/* For empty vector of sigma, skip convolution and return the same image */
+	if (mxIsEmpty(prhs[1]))
+	{
+		memcpy(oima, iima, sizeof(double) * (dim[0]*dim[1]*dim[2]));
+		return;
+	}
+	
 	cdim = mxGetDimensions(prhs[1]);
 	sigma = mxGetPr(prhs[1]);
 	
@@ -525,6 +532,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	for (i=0;i<(dim[0]*dim[1]*dim[2]);i++)
 	{
 		wima[i] = iima[i];
+	}
+	
+	/* Do not run the convolution when all kernels are empty. Only copy the input image to the output image */
+	if ((window[0] == 0) && (window[1] == 0) && (window[2] == 0))
+	{
+		memcpy(oima, wima, sizeof(double) * (dim[0]*dim[1]*dim[2]));
+		mxFree(wima);
+		return;
 	}
 	
 	/* Execute the convolution */

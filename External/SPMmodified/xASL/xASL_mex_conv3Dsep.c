@@ -494,7 +494,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	}
 	
 	/* Same thing for kernelY, but it also checks the existence of the field  */
-	if ( (nrhs<3) | mxIsEmpty(prhs[2]))
+	if ( (nrhs<3) || mxIsEmpty(prhs[2]))
 	{
 		window[1] = 0;
 	}
@@ -521,7 +521,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	}
 	
 	/* Same thing for kernelZ, but it also checks the existence of the field  */
-	if ( (nrhs<4) | mxIsEmpty(prhs[3]))
+	if ( (nrhs<4) || mxIsEmpty(prhs[3]))
 	{
 		window[2] = 0;
 	}
@@ -547,17 +547,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		}
 	}
 	
-	if ( (window[0]>0) & ( (window[0] + 2) > dim[0]))
+	if ( (window[0]>0) && ( (window[0] + 2) > dim[0]))
 	{
 		mexErrMsgTxt("xASL_mex_conv3Dsep: Kernel dimension 1 too large.");
 	}
 	
-	if ( (window[1]>0) & ( (window[1] + 2) > dim[1]))
+	if ( (window[1]>0) && ( (window[1] + 2) > dim[1]))
 	{
 		mexErrMsgTxt("xASL_mex_conv3Dsep: Kernel dimension 2 too large.");
 	}
 	
-	if ( (window[2]>0) & ( (window[2] + 2) > dim[2]))
+	if ( (window[2]>0) && ( (window[2] + 2) > dim[2]))
 	{
 		mexErrMsgTxt("xASL_mex_conv3Dsep: Kernel dimension 3 too large.");
 	}
@@ -570,6 +570,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	for (i=0;i<(dim[0]*dim[1]*dim[2]);i++)
 	{
 		wima[i] = iima[i];
+	}
+	
+	/* Do not run the convolution when all kernels are empty. Only copy the input image to the output image */
+	if ((window[0] == 0) && (window[1] == 0) && (window[2] == 0))
+	{
+		memcpy(oima, wima, sizeof(double) * (dim[0]*dim[1]*dim[2]));
+		mxFree(wima);
+		return;
 	}
 	
 	/* Execute the convolution */
