@@ -68,9 +68,13 @@ void do_it(double  *iima,
 		for (i=1;i<=nkx;i++)  kernelNorm[i] = kernelNorm[i-1] + kernelX[nkx-i];
 		for (i=1;i<=nkx;i++)  kernelNormEnd[i] = kernelNormEnd[i-1] + kernelX[nkx+i];
 		
+		/* Sometimes, the dimension is smaller than the kernel - then we cannot filter over the whole
+		 * kernel, not even in the middle of the dimension */
+		nkMar = MIN(nkx,nx-nkx);
+		
 		/* In case the kernel is larger than the dimension, then we need to start subtracting - only from the starting
 		 * one, the endnorm is not going to be used*/
-		if (nx < (2*nkx-1))
+		if (nx < (2*nkx+1))
 		{
 			/* For all those missing, we can calculate the norm with cutting the filter at both ends */
 			for (i=nkMar;i<nx-nkMar;i++)
@@ -99,7 +103,7 @@ void do_it(double  *iima,
 			}
 			
 			/* In case the kernel does not fit entirely, we have to do an extra filtering of the center */
-			if (nx < (2*nkx-1))
+			if (nx < (2*nkx+1))
 			{
 				for (i=nkMar;i<nx-nkMar;i++)
 				{
@@ -177,7 +181,7 @@ void do_it(double  *iima,
 		
 		/* In case the kernel is larger than the dimension, then we need to start subtracting - only from the starting
 		 * one, the endnorm is not going to be used*/
-		if (ny < (2*nky-1))
+		if (ny < (2*nky+1))
 		{
 			/* For all those missing, we can calculate the norm with cutting the filter at both ends */
 			for (i=nkMar;i<ny-nkMar;i++)
@@ -212,7 +216,7 @@ void do_it(double  *iima,
 				}
 				
 				/* In case the kernel does not fit entirely, we have to do an extra filtering of the center */
-				if (ny < (2*nky-1))
+				if (ny < (2*nky+1))
 				{
 					for (i=nkMar;i<ny-nkMar;i++)
 					{
@@ -303,7 +307,7 @@ void do_it(double  *iima,
 		
 		/* In case the kernel is larger than the dimension, then we need to start subtracting - only from the starting
 		   one, the endnorm is not going to be used*/
-		if (nz < (2*nkz-1))
+		if (nz < (2*nkz+1))
 		{
 			/* For all those missing, we can calculate the norm with cutting the filter at both ends */
 			for (i=nkMar;i<nz-nkMar;i++)
@@ -325,7 +329,7 @@ void do_it(double  *iima,
 				pkernel = kernelZ - i + nkz;
 				piimaloc = piima - i*nxy;
 				// Go across the kernel 
-				for (k=-i;k<nkz;k++)
+				for (k=-i;k<=nkz;k++)
 				{
 					sum += (*piimaloc)*(*pkernel++);
 					piimaloc += nxy;
@@ -336,7 +340,7 @@ void do_it(double  *iima,
 				piima += nxy;
 			}
 			/* In case the kernel does not fit entirely, we have to do an extra filtering of the center */
-			if (nz < (2*nkz-1))
+			if (nz < (2*nkz+1))
 			{
 				for (i=nkMar;i<nz-nkMar;i++)
 				{
@@ -364,7 +368,7 @@ void do_it(double  *iima,
 					pkernel = kernelZ;
 					piimaloc = piima - nxy*nkz;
 					// Go across the kernel
-					for (k=-nkz;k<nkz;k++)
+					for (k=-nkz;k<=nkz;k++)
 					{
 						sum += (*piimaloc)*(*pkernel++);
 						piimaloc += nxy;
@@ -457,15 +461,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	sigma = mxGetPr(prhs[1]);
 	
 	window[0] = (mwSize)ceil(3*sigma[0]);
-	if ((sigma[0]>0) & ((2*3*sigma[0]) > dim[0]))
+	if ((sigma[0]>0) && ((2*3*sigma[0]) > dim[0]))
 	{
 		mexErrMsgTxt("xASL_mex_conv3DsepGauss: Kernel dimension 1 too large.");
 	}
 	
-	if ( (cdim[0]>1) | (cdim[1]>1) )
+	if ( (cdim[0]>1) || (cdim[1]>1) )
 	{
 		window[1] = (mwSize)ceil(3*sigma[1]);
-		if ((sigma[1]>0) & ((2*3*sigma[1]) > dim[1]))
+		if ((sigma[1]>0) && ((2*3*sigma[1]) > dim[1]))
 		{
 			mexErrMsgTxt("xASL_mex_conv3DsepGauss: Kernel dimension 2 too large.");
 		}
@@ -475,10 +479,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		window[1] = 0;
 	}
 	
-	if ( (cdim[0]>2) | (cdim[1]>2) )
+	if ( (cdim[0]>2) || (cdim[1]>2) )
 	{
 		window[2] = (mwSize)ceil(3*sigma[2]);
-		if ((sigma[2]>0) & ((2*3*sigma[2]) > dim[2]))
+		if ((sigma[2]>0) && ((2*3*sigma[2]) > dim[2]))
 		{
 			mexErrMsgTxt("xASL_mex_conv3DsepGauss: Kernel dimension 3 too large.");
 		}

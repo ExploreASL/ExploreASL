@@ -79,7 +79,7 @@ void do_it(double  *iima,
 		
 		/* In case the kernel is larger than the dimension, then we need to start subtracting - only from the starting
 		 * one, the endnorm is not going to be used*/
-		if (nx < (2*nkx-1))
+		if (nx < (2*nkx+1))
 		{
 			/* For all those missing, we can calculate the norm with cutting the filter at both ends */
 			for (i=nkMar;i<nx-nkMar;i++)
@@ -107,7 +107,7 @@ void do_it(double  *iima,
 			}
 			
 			/* In case the kernel does not fit entirely, we have to do an extra filtering of the center */
-			if (nx < (2*nkx-1))
+			if (nx < (2*nkx+1))
 			{
 				for (i=nkMar;i<nx-nkMar;i++)
 				{
@@ -187,7 +187,7 @@ void do_it(double  *iima,
 		
 		/* In case the kernel is larger than the dimension, then we need to start subtracting - only from the starting
 		 * one, the endnorm is not going to be used*/
-		if (ny < (2*nky-1))
+		if (ny < (2*nky+1))
 		{
 			/* For all those missing, we can calculate the norm with cutting the filter at both ends */
 			for (i=nkMar;i<ny-nkMar;i++)
@@ -222,7 +222,7 @@ void do_it(double  *iima,
 				}
 				
 				/* In case the kernel does not fit entirely, we have to do an extra filtering of the center */
-				if (ny < (2*nky-1))
+				if (ny < (2*nky+1))
 				{
 					for (i=nkMar;i<ny-nkMar;i++)
 					{
@@ -313,7 +313,7 @@ void do_it(double  *iima,
 		
 		/* In case the kernel is larger than the dimension, then we need to start subtracting - only from the starting
 		   one, the endnorm is not going to be used*/
-		if (nz < (2*nkz-1))
+		if (nz < (2*nkz+1))
 		{
 			/* For all those missing, we can calculate the norm with cutting the filter at both ends */
 			for (i=nkMar;i<nz-nkMar;i++)
@@ -335,7 +335,7 @@ void do_it(double  *iima,
 				pkernel = kernelZ - i + nkz;
 				piimaloc = piima - i*nxy;
 				// Go across the kernel 
-				for (k=-i;k<nkz;k++)
+				for (k=-i;k<=nkz;k++)
 				{
 					sum += (*piimaloc)*(*pkernel++);
 					piimaloc += nxy;
@@ -346,7 +346,7 @@ void do_it(double  *iima,
 				piima += nxy;
 			}
 			/* In case the kernel does not fit entirely, we have to do an extra filtering of the center */
-			if (nz < (2*nkz-1))
+			if (nz < (2*nkz+1))
 			{
 				for (i=nkMar;i<nz-nkMar;i++)
 				{
@@ -374,7 +374,7 @@ void do_it(double  *iima,
 					pkernel = kernelZ;
 					piimaloc = piima - nxy*nkz;
 					// Go across the kernel
-					for (k=-nkz;k<nkz;k++)
+					for (k=-nkz;k<=nkz;k++)
 					{
 						sum += (*piimaloc)*(*pkernel++);
 						piimaloc += nxy;
@@ -486,6 +486,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		{
 			window[0] = (kdim-1)/2;
 			kernelX = mxGetPr(prhs[1]);
+			if ((kdim % 2) == 0)
+			{
+				mexErrMsgTxt("xASL_mex_conv3Dsep: Kernel X must have an odd number of elements.");
+			}
 		}
 	}
 	
@@ -509,6 +513,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		{
 			window[1] = (kdim-1)/2;
 			kernelY = mxGetPr(prhs[2]);
+			if ((kdim % 2) == 0)
+			{
+				mexErrMsgTxt("xASL_mex_conv3Dsep: Kernel Y must have an odd number of elements.");
+			}
 		}
 	}
 	
@@ -532,6 +540,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		{
 			window[2] = (kdim-1)/2;
 			kernelZ = mxGetPr(prhs[3]);
+			if ((kdim % 2) == 0)
+			{
+				mexErrMsgTxt("xASL_mex_conv3Dsep: Kernel Z must have an odd number of elements.");
+			}
 		}
 	}
 	

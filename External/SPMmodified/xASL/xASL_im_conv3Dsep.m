@@ -23,7 +23,8 @@ function imConv = xASL_im_conv3Dsep(im, kX, varargin)
 % 
 % EXAMPLE: n/a
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 % Get the kY and kZ from the varargin
 if nargin < 1
