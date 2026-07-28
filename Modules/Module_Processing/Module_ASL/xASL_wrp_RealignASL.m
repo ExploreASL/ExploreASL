@@ -280,29 +280,29 @@ if x.modules.asl.bMoCoEdgeEnhanced
 			case 1
 				% Sobel with 0.5STD presmoothing
 				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
-				imSmooth = imgaussfilt3(Yorig(:,:,:,iVol), sigmaEdge); % Gaussian smoothing
+				imSmooth = xASL_im_Smooth3D(Yorig(:,:,:,iVol), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing
 				[Gx, Gy, Gz] = gradient(imSmooth); % Computes spatial gradients
 				imEdge = sqrt(Gx.^2 + Gy.^2 + Gz.^2); % Computes gradient magnitude
 			case 2
 				% Sobel with 1.5STD presmoothing
 				sigmaEdge = 1.5; % STD of smoothing kernel in voxels
-				imSmooth = imgaussfilt3(Yorig(:,:,:,iVol), sigmaEdge); % Gaussian smoothing
+				imSmooth = xASL_im_Smooth3D(Yorig(:,:,:,iVol), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing
 				[Gx, Gy, Gz] = gradient(imSmooth); % Computes spatial gradients
 				imEdge = sqrt(Gx.^2 + Gy.^2 + Gz.^2); % Computes gradient magnitude
 			case 3
 				% Sobel with 0.5STD presmoothing, thresholding and further smoothing
 				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
-				imSmooth = imgaussfilt3(Yorig(:,:,:,iVol), sigmaEdge); % Gaussian smoothing
+				imSmooth = xASL_im_Smooth3D(Yorig(:,:,:,iVol), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing
 				[Gx, Gy, Gz] = gradient(imSmooth); % Computes spatial gradients
 				imEdge = sqrt(Gx.^2 + Gy.^2 + Gz.^2); % Computes gradient magnitude
 				imThreshold = sort(imEdge(:)); % Calculate 95th percentile
 				imThreshold = imThreshold(ceil(numel(imThreshold)*0.95));
 				imEdge = imEdge > imThreshold; % Threshold to avoid intensity scale differences
-				imEdge = imgaussfilt3(double(imEdge), sigmaEdge); % Gaussian smoothing 
+				imEdge = xASL_im_Smooth3D(double(imEdge), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing 
 			case 4
 				% LoG - Laplacian of Gaussian filter, 0.5STD Gaussian, then Laplacian
 				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
-				imSmooth = imgaussfilt3(Yorig(:,:,:,iVol), sigmaEdge); % Gaussian smoothing
+				imSmooth = xASL_im_Smooth3D(Yorig(:,:,:,iVol), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing
 
 				imLoG = zeros(3,3,3);% 3D Laplacian kernel: 6-neighbour stencil
 				imLoG(:,2,2) = 1;
@@ -314,7 +314,7 @@ if x.modules.asl.bMoCoEdgeEnhanced
 			case 5
 				% LoG - Laplacian of Gaussian filter, 0.5STD Gaussian, then Laplacian, zero-crossings of second derivative
 				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
-				imSmooth = imgaussfilt3(Yorig(:,:,:,iVol), sigmaEdge); % Gaussian smoothing
+				imSmooth = xASL_im_Smooth3D(Yorig(:,:,:,iVol), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing
 
 				imLoG = zeros(3,3,3);% 3D Laplacian kernel: 6-neighbour stencil
 				imLoG(:,2,2) = 1;
@@ -340,7 +340,7 @@ if x.modules.asl.bMoCoEdgeEnhanced
 				imEdge([1,end],:,:) = 0;
 				imEdge(:,[1,end],:) = 0;
 				imEdge(:,:,[1,end]) = 0;
-				imEdge = imgaussfilt3(double(imEdge), sigmaEdge); % Gaussian smoothing 
+				imEdge = xASL_im_Smooth3D(double(imEdge), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing 
 		end
 		spm_write_vol(Vreg(iVol), imEdge); % Save to the gradient enhanced image
 	end
