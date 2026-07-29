@@ -69,7 +69,7 @@ end
 % any point-spread function imperfections.
 if ~isempty(x.Q.AcquisitionVoxelSize) && numel(x.Q.AcquisitionVoxelSize) == 3
 	% If estimated effective resolution is given in JSON-sidecar, then we use it
-	NativeResolution = x.Q.AcquisitionVoxelSize;
+	NativeResolution = x.Q.AcquisitionVoxelSize(:)';
 	fprintf('%s\n', ['Assume native resolution ' num2str(NativeResolution(1)) ' ' num2str(NativeResolution(1)) ' ' num2str(NativeResolution(3)) ' as provided in the JSON-sidecar'])
 else
 	% For incomplete vectors, set the vector to empty as this is then checked later
