@@ -15,7 +15,7 @@ function xASL_im_SaveOriginal4CAT(Ycls, PathIn)
 % EXAMPLE:     n/a
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 %%%   If there are no lesions found, the images are untouched
 

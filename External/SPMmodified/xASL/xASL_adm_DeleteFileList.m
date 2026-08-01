@@ -35,7 +35,7 @@ function [filepaths, pathsNotDeleted] = xASL_adm_DeleteFileList(strDirectory, st
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
     % Check the input arguments
 	if nargin<2

@@ -25,7 +25,7 @@ function [PathTSV, CellContents] = xASL_bids_csv2tsvReadWrite(PathIn, bDeleteCSV
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_adm_tsvWrite(ParticipantsMetadata, '/MyStudy/participants.tsv');
 % __________________________________
-% Copyright 2015-2023 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 
 

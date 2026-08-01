@@ -17,7 +17,7 @@ function [CellContents] = xASL_tsvRead(PathTSV, bStruct)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: ParticipantsMetadata = xASL_tsvRead('/MyStudy/participants.tsv');
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 
 %% -------------------------------------------------------

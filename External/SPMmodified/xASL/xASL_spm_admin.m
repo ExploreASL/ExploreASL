@@ -22,7 +22,7 @@ function [pathOut] = xASL_spm_admin(pathIn, bPadComma1)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_spm_admin('/MyStudy/Subject1/T1.nii.gz');
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 
     if nargin<1 || isempty(pathIn)

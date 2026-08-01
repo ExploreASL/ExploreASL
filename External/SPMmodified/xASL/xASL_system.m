@@ -33,7 +33,7 @@ function [result1, result2] = xASL_system(Command, bVerbose)
 % 3. [Result1, Result2] = xASL_system('git pull');
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 
 

@@ -58,7 +58,7 @@ function filepaths = xASL_adm_GetFileList(strDirectory, strRegEx, mode, nRequire
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
     % Checks the input arguments
 	if nargin<2 || isempty(strRegEx)

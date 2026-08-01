@@ -34,7 +34,7 @@ function [imOut, json] = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle, bBI
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: imOut = xASL_io_Nifti2Im('/analysis/Sub-001/ASL_1/CBF.nii');
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 % Admin
 if nargin < 1 || isempty(niftiIn)

@@ -18,7 +18,7 @@ function xASL_tsvWrite(InputCell, PathTSV, bOverwrite, bCSV)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_tsvWrite(ParticipantsMetadata, '/MyStudy/participants.tsv');
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 %% -------------------------------------------------------
 %% Admin

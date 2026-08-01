@@ -31,7 +31,7 @@ function [DataOut] = xASL_str2num(DataIn, bKeepCell, bReplaceNonNumerical)
 %          {[5 6 NaN]} = xASL_str2num({'5' '6' 'Weird'}, 1)
 %          {[5 6 'Weird']} = xASL_str2num({'5' '6' 'Weird'}, 1, 0)
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 
 %% -------------------------------------------------------

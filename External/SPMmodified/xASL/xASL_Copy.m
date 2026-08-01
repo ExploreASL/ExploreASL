@@ -27,7 +27,7 @@ function xASL_Copy(SrcPath, DstPath, bOverwrite, bVerbose)
 %          xASL_Copy('c:\User\path', 'c:\User\path2');                               Copying directories
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
     %% Check input parameters
 	if nargin<3 || isempty(bOverwrite)

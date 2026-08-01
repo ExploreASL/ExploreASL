@@ -28,7 +28,7 @@ function xASL_wrp_DARTELSaveIntermedTrans(Yy, u, odim, rdim, idim, Mar, mat, M0,
 % EXAMPLE: xASL_wrp_DARTELSaveIntermedTrans(Yy, u, odim, rdim, idim, Mar, mat, M0, M1, 'T1',3)
 %          Saves a file in ./mri/y_T1_3.nii
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 if nargin <11
 	error('Requires 11 input parameters');

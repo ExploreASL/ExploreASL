@@ -21,7 +21,7 @@ function [newString] = xASL_adm_ConvertSlash(StringOriginal, ForceUnix)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 if ~exist('ForceUnix','var')
     ForceUnix   = 0;

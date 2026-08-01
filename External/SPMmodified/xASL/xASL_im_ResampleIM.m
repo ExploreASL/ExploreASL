@@ -26,7 +26,7 @@ function [imOut] = xASL_im_ResampleIM(imIn, matIn, matOut, dimOut, interpolation
 % EXAMPLE:     imOut = xASL_im_ResampleIM(imIn,[1 0 0 10;0 1 0 2;0 0 1 3; 0 0 0 1],[31 0 0 0;0 2 0 2;0 0 2 3; 0 0 0 1],[50 50 50], 'linear')
 %
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 % Input parameter admin
 if nargin < 4

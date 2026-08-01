@@ -20,7 +20,7 @@ function xASL_TrackProgress(iCurrent, iMax)
 % And reset the diary back to this after the break/crash:
 % diary(PathDiary);
 % __________________________________
-% Copyright 2015-2020 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
     HasDiary = strcmp(get(0, 'Diary'), 'on');
     

@@ -57,7 +57,7 @@ function [IMout] = xASL_im_ConvertMap2Mask(IMin)
 % fprintf('%s\n','Map thresholded to mask, at "robust 50%" (i.e. 50% of the robust max (95%) ROI value');
 %
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 if  xASL_stat_SumNan(IMin(:))>0
 

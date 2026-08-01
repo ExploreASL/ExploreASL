@@ -15,7 +15,7 @@ function [CellContents] = xASL_csvRead(PathCSV)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: ParticipantsMetadata = xASL_csvRead('/MyStudy/participants.csv');
 % __________________________________
-% Copyright 2015-2022 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 
 %% -------------------------------------------------------

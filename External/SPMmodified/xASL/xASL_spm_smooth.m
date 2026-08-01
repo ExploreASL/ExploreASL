@@ -20,7 +20,7 @@ function xASL_spm_smooth(pathIn, fwhmSmooth, pathNew)
 % EXAMPLE: xASL_spm_smooth('/MyStudy/Subject1/T1.nii.gz', [8 8 8]);
 %          xASL_spm_smooth('/MyStudy/Subject1/T1.nii.gz', [8 8 8],'newName.nii');
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
 % ------------------------------------------------------------------------------------------
 % Admin

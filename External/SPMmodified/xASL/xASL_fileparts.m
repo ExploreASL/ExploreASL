@@ -25,7 +25,7 @@ function [Fpath, Ffile, Fext, SuffixSPM] = xASL_fileparts(InputPath)
 %          ['/path' 'file' '.nii.gz' ',2'] = xASL_fileparts('/path/file.nii.gz,2');
 %          ['c:\path' 'file' '.nii']       = xASL_fileparts('c:\path\file.nii') (on Windows)
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 
     %% Admin
     % First catch cell

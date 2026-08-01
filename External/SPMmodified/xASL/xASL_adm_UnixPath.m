@@ -34,7 +34,7 @@ function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL, bUseQuotes)
 % EXAMPLE: xASL_adm_UnixPath('   \Users/User/Google Drive\My      Photos\Name(With)Brackets)  ');
 % This should output '/Users/User/Google\ Drive/My\ \ \ \ \ \ Photos/Name\(With\)Brackets\)'
 % __________________________________
-% Copyright 2015-2025 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
         
     %% ===================================================================================
 	%% Input parameter administration

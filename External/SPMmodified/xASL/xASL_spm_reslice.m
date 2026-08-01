@@ -40,7 +40,7 @@ function xASL_spm_reslice(refPath, srcPath, srcAffinePath, bInvAffine, bQuality,
 %          xASL_spm_reslice('/TestDataSet/Sub-001/c1T1.nii,3', '/TestDataSet/Sub-001/CBF.nii,2', '/TestDataSet/Sub-001/CBF_sn.mat')
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright 2015-2019 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
 %
 % 2019-08-01 HJM
 

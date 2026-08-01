@@ -23,7 +23,7 @@ function [dist, x, y, z] = xASL_im_DistanceTransform(im)
 % doi:10.1006/cviu.2002.0976
 %
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
  
 imBin = double( im > 0);
 
