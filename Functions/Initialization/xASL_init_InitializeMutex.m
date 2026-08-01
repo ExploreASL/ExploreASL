@@ -144,7 +144,7 @@ else
 									if ~isempty(xASL_adm_GetFileList(fullfile(checkModulePath{iVisit}, ['xASL_module_' checkModuleName]), '^locked$', 'FPListRec', [], 1))
 										bLockedFolders = true;
 									end
-								elseif strcmpi(checkModuleName, 'asl') || strcmpi(checkModuleName, 'func') || strcmpi(checkModuleName, 'dwi') 
+								elseif strcmpi(checkModuleName, 'asl') || strcmpi(checkModuleName, 'func') || strcmpi(checkModuleName, 'dwi') || strcmpi(checkModuleName, 'dce')
 									% For other modules, we check for multiple sessions
 									checkSessionPath = xASL_adm_GetFileList(checkModulePath{iVisit}, ['xASL_module_' checkModuleName '_' checkModuleName '_\d+$'], 'FPListRec', [], 1);
 									for iSession = 1:length(checkSessionPath)

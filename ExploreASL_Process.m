@@ -133,7 +133,14 @@ function [x] = ExploreASL_Process(x)
         % Use this module for additional additional -subject registration/creating templates
         [~, x] = xASL_init_Iteration(x,'xASL_module_DARTEL');
     end
-    
+
+    if x.opts.bProcess(2)==1
+        if isfield(x.modules, 'bRunDCE') && x.modules.bRunDCE
+            addpath(genpath('WorkInProgress'));
+            xASL_init_Iteration(x,'xASL_module_dce');
+        end
+    end
+
     % -----------------------------------------------------------------------------
     %% 2    xASL_module_ASL  
     if x.opts.bProcess(2)==1

@@ -126,7 +126,7 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
 
     
     % SESSION, MUTEXID & SESSIONDIR
-    if ~isempty(regexpi(ModName,'(ASL|func|dwi)', 'once'))
+    if ~isempty(regexpi(ModName,'(ASL|func|dwi|dce)', 'once'))
         dbSettings.sets.SESSION = x.SESSIONS;
         dbSettings.x.settings.MUTEXID = [dbSettings.x.settings.MUTEXID '_<SESSION>'];
         dbSettings.x.dir.SESSIONDIR = fullfile(x.dir.xASLDerivatives, '<SUBJECT>', '<SESSION>');
@@ -143,7 +143,7 @@ function [bAborted, xOut] = xASL_init_Iteration(x, moduleName, dryRun, stopAfter
         dbSettings.diaryFile = fullfile(x.dir.xASLDerivatives ,'log', [moduleName '_sub-<SUBJECT>.log']);
     elseif ~isempty(regexpi(ModName,'(BIDS2Legacy|Structural|LongReg)', 'once'))
         dbSettings.diaryFile = fullfile(x.dir.xASLDerivatives, 'log', [moduleName '_<SUBJECT>.log']);
-    elseif ~isempty(regexpi(ModName,'(ASL|func|dwi)', 'once'))        
+    elseif ~isempty(regexpi(ModName,'(ASL|func|dwi|dce)', 'once'))        
         dbSettings.diaryFile = fullfile(x.dir.xASLDerivatives, 'log', [moduleName '_<SUBJECT>_<SESSION>.log']);
     else
         warning(['Unknown module name: ' moduleName]);

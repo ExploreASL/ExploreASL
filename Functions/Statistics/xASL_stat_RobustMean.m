@@ -1,4 +1,4 @@
-function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunction)
+function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunction, imMask)
 % Submodule of ExploreASL Structural module, that obtains volumes from the tissue segmentations
 % (& FLAIR WMH segmentations if they exist)
 %
@@ -10,6 +10,8 @@ function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunct
 %                        of an image: options:
 %                                     SoS - sum of squared errors (DEFAULT)
 %                                     AI  - average relative asymmetry index
+%   imMask             - for parametric maps (e.g. CBF, ATT, Tex, DCE Ktrans) it can be more useful to only inspect within the GM and WM
+%                        as poor fits in the CSF or outside the brain are less interesting (OPTIONAL, DEFAULT=whole image)
 %
 % OUTPUT:
 %   NotOutliers         - vector, true for images that were not outliers
@@ -37,25 +39,39 @@ function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunct
 %     fprintf('Outlier exclusion skipped, too small dataset\n');
 %     return;
 % end
+if nargin<3 || isempty(imMask)
+    imMask = true([size(IM, 1), 1]);
+end
+
 if nargin<2 || isempty(ParameterFunction)
     ParameterFunction = 'SoS';
 elseif isempty(regexpi(ParameterFunction, '^(SoS|AI)$'))
     warning(['Unknown ParameterFunction: ' ParameterFunction ', using SoS']);
     ParameterFunction = 'SoS';
 end
-if size(IM,2)>size(IM,1)
+if size(IM,2)>size(IM,1) || ndims(IM)>2
     warning('Input IM has incorrect dimensions');
 end
+
+nScans = size(IM, 2);
+
+%% Mask the image
+if size(imMask, 1)~= size(IM, 1)
+    error('Image has a different size than the mask, different spaces?');
+elseif ndims(imMask)>2 || size(imMask, 2)~=1
+    error('Mask should have a single dimension');
+end
+
+IM = IM(imMask, :);
 
 
 %% Compute median, MAD, & deviations
 
-Size4 = size(IM, 2);
 
 % Create template image, to compare with
-fprintf('%s\n',['QC: detecting outliers for n=' num2str(Size4)]);
+fprintf('%s\n',['QC: detecting outliers for n=' num2str(nScans)]);
 
-MedianIM = repmat(xASL_stat_MedianNan(IM, 2), [1 Size4]);
+MedianIM = repmat(xASL_stat_MedianNan(IM, 2), [1 nScans]);
 
 if strcmpi(ParameterFunction,'SoS')
      DiffIm = (IM - MedianIM).^2;
@@ -63,7 +79,7 @@ if strcmpi(ParameterFunction,'SoS')
      Deviation = sqrt(Deviation);
      RMS = Deviation;
 elseif strcmpi(ParameterFunction,'AI')
-     DiffIm = abs(IM - repmat(IMtemp,[1 Size4])) ./ (0.5.*(IM + repmat(IMtemp,[1 Size4]))); % weighted SoS, AI
+     DiffIm = abs(IM - repmat(IMtemp,[1 nScans])) ./ (0.5.*(IM + repmat(IMtemp,[1 nScans]))); % weighted SoS, AI
      Deviation = xASL_stat_MeanNan(DiffIm, 1); % gives deviation sum per image, higher is worse quality
 end
 

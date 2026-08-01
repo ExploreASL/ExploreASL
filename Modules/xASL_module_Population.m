@@ -208,6 +208,11 @@ if ~x.mutex.HasState(StateName{4})
     ScanType = {'ASL4D' 'M0'};
     HasSessions = {1 1};
 
+    %     % Hack for DCE
+    %     x.SESSIONS = {'DCE_1'};
+    %     ScanType = {'DCE4D'};
+    %     HasSessions = {1};
+
     for iType=1:length(ScanType)
         xASL_stat_GetDICOMStatistics(x, ScanType{iType}, HasSessions{iType});
     end
@@ -239,6 +244,9 @@ end
 if ~x.mutex.HasState(StateName{6}) && bHasASL
     try
         xASL_stat_GetMotionStatistics(x);
+
+        % xASL_stat_GetDCEstatistics(x);
+
         x.mutex.AddState(StateName{6});
         fprintf('%s\n',[StateName{6} ' was performed']);
     catch ME
