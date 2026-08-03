@@ -5,13 +5,13 @@ function xASL_im_dilateROI(PathIn, PathOut, minVolume)
 % 
 % INPUT:        PathIn    - Path to input NIfTI image (REQUIRED)
 %               PathOut   - Path to output NIfTI image (OPTIONAL, DEFAULT = PathIn)
-%               minVolume - The ROI is dilated until reaching this volume in mm^3 (OPTIONAL, DEFAULT 40mm^3)
+%               minVolume - The ROI is dilated until reaching this volume in mm^3 (OPTIONAL, DEFAULT 40mm^3 == 0.4 mL)
 % OUTPUT:       n/a
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% DESCRIPTION:  The function loads a binary image from PathIn and if smaller than the defined volume (40 mm^3 by default) it 
+% DESCRIPTION:  The function loads a binary image from PathIn and if smaller than the defined volume (40 mm^3 == 0.4 mL by default) it 
 %               dilates it with a 3x3 sphere element until a minimal volume is reached. When it is small enough, it is saved to PathOut.
-%               40 mm^3 is equal to 3 voxels in all directions in DARTEL space, or around the highest obtainable ASL effective resolution (3x3x4 mm).
+%               40 mm^3 (0.4 mL) is equal to 3 voxels in all directions in DARTEL space, or around the highest obtainable ASL effective resolution (3x3x4 mm).
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:      xASL_im_dilateROI('test.nii', [], 40)
@@ -37,14 +37,14 @@ IM      = xASL_im_ConvertMap2Mask(IM);
 %% Obtains the voxel volume
 HDR     = xASL_io_ReadNifti(PathIn);
 pixdim  = prod(HDR.hdr.pixdim(2:4));
-IMvol   = sum(IM(:)).*pixdim;
+IMvol   = xASL_stat_SumNan(IM(:)).*pixdim;
 
 %% Iteratively dilate until the minimal volume value is reached
 if IMvol > 0
 	% Only do iterative dilation when the Lesion is not empty
 	while  IMvol<minVolume
-		IM = xASL_im_DilateErodeFull(IM,'dilate',xASL_im_DilateErodeSphere(2));
-		IMvol   = sum(IM(:)).*pixdim;
+		IM = xASL_im_DilateErodeFull(IM, 'dilate', xASL_im_DilateErodeSphere(2));
+		IMvol   = xASL_stat_SumNan(IM(:)).*pixdim;
 	end
 end
 
