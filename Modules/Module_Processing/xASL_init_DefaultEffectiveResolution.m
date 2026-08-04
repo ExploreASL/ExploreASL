@@ -127,6 +127,8 @@ if x.MagneticFieldStrength < 3.1 && isempty(x.Q.AcquisitionVoxelSize)
 			if x.Q.NumberOfArms == 8
 				% For the standard number of spirals, we use 2 times the native resolution
 				NativeResolution(1:2) = 2 * NativeResolution(1:2);
+			elseif x.Q.NumberOfArms == 6
+				NativeResolution(1:2) = 2.5 * NativeResolution(1:2);
 			elseif x.Q.NumberOfArms == 4
 				NativeResolution(1:2) = 3 * NativeResolution(1:2);
 			else
