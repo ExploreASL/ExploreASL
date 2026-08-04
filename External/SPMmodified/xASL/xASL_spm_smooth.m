@@ -21,6 +21,7 @@ function xASL_spm_smooth(pathIn, fwhmSmooth, pathNew)
 %          xASL_spm_smooth('/MyStudy/Subject1/T1.nii.gz', [8 8 8],'newName.nii');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 % ------------------------------------------------------------------------------------------
 % Admin

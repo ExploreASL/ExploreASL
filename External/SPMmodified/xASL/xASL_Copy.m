@@ -28,6 +28,7 @@ function xASL_Copy(SrcPath, DstPath, bOverwrite, bVerbose)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
     %% Check input parameters
 	if nargin<3 || isempty(bOverwrite)

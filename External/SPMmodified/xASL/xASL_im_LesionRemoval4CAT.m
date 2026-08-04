@@ -19,6 +19,7 @@ function [Ycls, LesionImOut] = xASL_im_LesionRemoval4CAT(Ycls, PathIn)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 %%%   If there are no lesions found, the images are untouched
 

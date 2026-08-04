@@ -16,6 +16,7 @@ function xASL_delete(InputPath, bFolderContent)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 %
 % 2019-09-29 HJ allow deleting folder including its contents
 

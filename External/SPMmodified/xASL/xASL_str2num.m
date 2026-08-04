@@ -32,6 +32,7 @@ function [DataOut] = xASL_str2num(DataIn, bKeepCell, bReplaceNonNumerical)
 %          {[5 6 'Weird']} = xASL_str2num({'5' '6' 'Weird'}, 1, 0)
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 
 %% -------------------------------------------------------

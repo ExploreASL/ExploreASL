@@ -24,6 +24,7 @@ function [dist, x, y, z] = xASL_im_DistanceTransform(im)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
  
 imBin = double( im > 0);
 

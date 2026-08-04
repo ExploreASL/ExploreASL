@@ -35,6 +35,7 @@ function [imOut, json] = xASL_io_Nifti2Im(niftiIn, ImageSize, bLoadAsSingle, bBI
 % EXAMPLE: imOut = xASL_io_Nifti2Im('/analysis/Sub-001/ASL_1/CBF.nii');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 % Admin
 if nargin < 1 || isempty(niftiIn)

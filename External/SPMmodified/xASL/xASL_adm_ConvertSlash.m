@@ -22,6 +22,7 @@ function [newString] = xASL_adm_ConvertSlash(StringOriginal, ForceUnix)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 if ~exist('ForceUnix','var')
     ForceUnix   = 0;

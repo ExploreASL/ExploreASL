@@ -41,6 +41,7 @@ function xASL_spm_reslice(refPath, srcPath, srcAffinePath, bInvAffine, bQuality,
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 %
 % 2019-08-01 HJM
 

@@ -21,6 +21,7 @@ function xASL_TrackProgress(iCurrent, iMax)
 % diary(PathDiary);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
     HasDiary = strcmp(get(0, 'Diary'), 'on');
     

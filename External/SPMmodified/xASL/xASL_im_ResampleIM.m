@@ -27,6 +27,7 @@ function [imOut] = xASL_im_ResampleIM(imIn, matIn, matOut, dimOut, interpolation
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 % Input parameter admin
 if nargin < 4

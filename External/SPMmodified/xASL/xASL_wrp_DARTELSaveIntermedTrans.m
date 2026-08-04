@@ -29,6 +29,7 @@ function xASL_wrp_DARTELSaveIntermedTrans(Yy, u, odim, rdim, idim, Mar, mat, M0,
 %          Saves a file in ./mri/y_T1_3.nii
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 if nargin <11
 	error('Requires 11 input parameters');

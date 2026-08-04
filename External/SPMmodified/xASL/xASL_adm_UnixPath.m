@@ -35,6 +35,7 @@ function [PathIs] = xASL_adm_UnixPath(PathIs, bTryWSL, bUseQuotes)
 % This should output '/Users/User/Google\ Drive/My\ \ \ \ \ \ Photos/Name\(With\)Brackets\)'
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
         
     %% ===================================================================================
 	%% Input parameter administration

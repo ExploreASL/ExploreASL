@@ -26,6 +26,7 @@ function [Fpath, Ffile, Fext, SuffixSPM] = xASL_fileparts(InputPath)
 %          ['c:\path' 'file' '.nii']       = xASL_fileparts('c:\path\file.nii') (on Windows)
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
     %% Admin
     % First catch cell

@@ -36,6 +36,7 @@ function [filepaths, pathsNotDeleted] = xASL_adm_DeleteFileList(strDirectory, st
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
     % Check the input arguments
 	if nargin<2

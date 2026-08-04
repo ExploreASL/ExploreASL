@@ -22,6 +22,7 @@ function TimeString = xASL_adm_ConvertSeconds2TimeString(Seconds)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 if ~isnumeric(Seconds)
     error('Input parameter Seconds should be numeric');

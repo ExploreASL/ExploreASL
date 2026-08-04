@@ -16,6 +16,7 @@ function [CellContents] = xASL_csvRead(PathCSV)
 % EXAMPLE: ParticipantsMetadata = xASL_csvRead('/MyStudy/participants.csv');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 
 %% -------------------------------------------------------

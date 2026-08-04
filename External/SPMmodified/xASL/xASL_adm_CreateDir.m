@@ -23,6 +23,7 @@ function status = xASL_adm_CreateDir(varargin)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
    % Admin
    warning('off','MATLAB:MKDIR:DirectoryExists'); % suppress this warning in case of parallel processing

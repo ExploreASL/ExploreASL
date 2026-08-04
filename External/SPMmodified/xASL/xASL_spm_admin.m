@@ -23,6 +23,7 @@ function [pathOut] = xASL_spm_admin(pathIn, bPadComma1)
 % EXAMPLE: xASL_spm_admin('/MyStudy/Subject1/T1.nii.gz');
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 
     if nargin<1 || isempty(pathIn)

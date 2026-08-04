@@ -34,6 +34,7 @@ function [result1, result2] = xASL_system(Command, bVerbose)
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 
 
