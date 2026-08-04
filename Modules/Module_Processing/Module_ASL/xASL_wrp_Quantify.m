@@ -364,7 +364,7 @@ end
 
 if x.modules.asl.ApplyQuantification(5)==0
     MeanCBF = xASL_stat_MeanNan(CBF(:));
-    if MeanCBF>666 % this is the average including air
+    if MeanCBF>2000 % this is the average including air
         CBF = CBF .* (10./MeanCBF); % protection against extremely high values
         warning('M0 division was disabled & CBF image had too high values');
         fprintf('%s\n',['mean whole image CBF normalized from ' xASL_num2str(MeanCBF) ' to 10 mL/100g/min']);
