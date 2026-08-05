@@ -19,7 +19,8 @@ function OutputArg = xASL_exist(PathIn, Type)
 %              xASL_exist('/path/file.nii.gz','file');
 %              xASL_exist('image','var');
 % __________________________________
-% Copyright (c) 2015-2022 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 % Default output
 OutputArg = false;

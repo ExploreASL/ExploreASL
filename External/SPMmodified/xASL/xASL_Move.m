@@ -19,13 +19,14 @@ function xASL_Move(SrcPath, DstPath, bOverwrite, bVerbose)
 %              Run xASL_SysMove instead of xASL_Move if you don't want the
 %              .nii|.nii.gz management/checking
 % 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_Move('c:\User\path\file.nii', 'c:\User\path2\file.nii');             No overwriting
 %          xASL_Move('c:\User\path\file.nii.gz', 'c:\User\path2\file.nii.gz',true);  Overwriting and simple copying
 %          xASL_Move('c:\User\path\file.nii', 'c:\User\path2\file.nii.gz',true);     Overwriting and zipping
 %          xASL_Move('c:\User\path', 'c:\User\path2',[],false);                      Moving directories, no overwrite, verbose off
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % __________________________________
-% Copyright (C) 2015-2021 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
     %% Manage input arguments
 	if nargin<4 || isempty(bVerbose)

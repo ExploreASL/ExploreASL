@@ -49,14 +49,13 @@ function xASL_io_SaveNifti(pathOrigNifti, pathNewNifti, imNew, nBits, bGZip, cha
 %              4. Remove redundant .mat orientation files
 %              5. Manage scale slopes
 %              6. Save new NIfTI
-%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_io_SaveNifti('c:\User\path\old.nii', 'c:\User\path\new.nii', im)
 %          xASL_io_SaveNifti('c:\User\path\old.nii', 'c:\User\path\new.nii', im, [], 0)
 %          xASL_io_SaveNifti('c:\User\path\old.nii', 'c:\User\path\new.nii', im, 32, 0)
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
 % __________________________________
-% Copyright 2015-2024 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 %% ----------------------------------------------------------------------------
 %% Admin

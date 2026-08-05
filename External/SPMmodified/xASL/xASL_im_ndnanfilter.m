@@ -64,11 +64,11 @@ function [Y,fil] = xASL_im_ndnanfilter(X,filterType,F,WNAN)
 % - N=20 ~ FWHM 18.84
 % - N=10/2.355 ~ FWHM 4
 % - Basically divide by 1.06
-%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:     n/a
-%
 % __________________________________
-% Copyright 2015-2021 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 
 % Check inputs and sets defaults of main input arguments:

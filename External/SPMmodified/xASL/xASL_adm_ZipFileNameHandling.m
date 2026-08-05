@@ -17,14 +17,11 @@ function [srcOut, dstOut] = xASL_adm_ZipFileNameHandling(srcIn, dstIn, bDeleteOl
 % DESCRIPTION: Adjusts the source and destination filenames of a nifti file to reflect if NII or NII.GZ exist on the input.
 %              If either .nii or .nii.gz is corrupt, it automatically deletes the corrupt one and keeps the healthy one, 
 %              while reporting a warning. This happens when you restart the pipeline after it crashed, if it crashed while unzipping. 
-%
-% EXAMPLE: xASL_adm_ZipFileNameHandling('c:\User\path\file.nii.gz', 'c:\User\path2\file.nii');
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
+% EXAMPLE: xASL_adm_ZipFileNameHandling('c:\User\path\file.nii.gz', 'c:\User\path2\file.nii');
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
-%
-% 2018-01-01 JP, HM
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
     % Admin
     if nargin<2 || isempty(dstIn)

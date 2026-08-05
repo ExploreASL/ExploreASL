@@ -14,17 +14,16 @@ function [OutputN] = xASL_round(InputN, PrecisionN)
 % DESCRIPTION: Recent Matlab versions support a second input that specifies that number of decimals to round at,
 % but earlier Matlab versions do not support this. For backward compatibility, use this wrapper instead of round.
 %
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: 
 % xASL_round(10.5897, 2)
 % ans = 10.5900
 % 
 % xASL_round(10.5897)
 % ans = 11
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright (C) 2015-2019 ExploreASL
-%
-% 2019-05-02 HJM
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% __________________________________
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 if nargin<2 || isempty(PrecisionN)
     PrecisionN = 0;

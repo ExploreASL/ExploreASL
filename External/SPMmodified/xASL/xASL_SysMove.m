@@ -13,11 +13,13 @@ function xASL_SysMove(SrcPath, DstPath, bForce,bSourceCheck)
 %                
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Moves a file to a file, a file to a directory, or a directory to a directory. SBypass inefficient matlab stuff on linux and windows, but can only move on same file system!
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_SysMove('c:\User\path\file.nii', 'c:\User\path2\file.nii'); No overwriting
 %          xASL_SysMove('c:\User\path\file.nii', 'c:\User\path2\file.nii',true);  Overwriting
 %          xASL_SysMove('c:\User\path\file.nii', 'c:\User\path2\file.nii',[],false);  Do not check if the source exists
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright (C) 2015-2019 ExploreASL
+% __________________________________
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
     %% Manage input arguments
     if nargin<2

@@ -46,7 +46,8 @@ function [IMout] = xASL_im_FillNaNs(InputPath, UseMethod, bQuality, VoxelSize, b
 % EXAMPLE:   for filling NaNs in an image: xASL_im_FillNaNs('/MyStudy/sub-001/ASL_1/M0.nii');
 % EXAMPLE2:  for fixing flowfield edges: xASL_im_FillNaNs('/MyStudy/sub-001/y_T1.nii', 3);
 % __________________________________
-% Copyright (C) 2015-2024 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 %% Admin
 IMout = NaN;

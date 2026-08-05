@@ -11,15 +11,13 @@ function y = xASL_stat_MeanNan(x,dim)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: It calculates the sum using the SUM functions and divides by the number of values but ignoring NaNs.
 %
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: y = xASL_stat_MeanNan([2 3 1; 0 -1 3])
 %          y = xASL_stat_MeanNan([2 3 1; 0 -1 3],1)
 %          y = xASL_stat_MeanNan([2 3 1; 0 -1 3],2)
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
 % __________________________________
-% Copyright © 2015-2019 ExploreASL
-%
-% 2017-00-00 JP
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 x = double(x); % Single failed in large arrays according to CAT12
 

@@ -11,10 +11,12 @@ function xASL_SysCopy(SrcPath, DstPath, bOverwrite, bVerbose)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Copies a file to a file or a directory to a directory. Bypass inefficient matlab stuff on linux and windows,
 %              but can only move on the same file system.
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_SysCopy('c:\User\path\file.nii', 'c:\User\path2\file.nii'); No overwriting
 %          xASL_SysCopy('c:\User\path\file.nii', 'c:\User\path2\file.nii',true);  Overwriting
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright (C) 2015-2019 ExploreASL
+% __________________________________
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
     %% Check input parameters
 	if nargin<3 || isempty(bOverwrite)

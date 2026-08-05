@@ -10,12 +10,11 @@ function pathOut = xASL_adm_GzipNifti(pathIn, bOverwrite)
 %   pathOut    - path to the zipped file
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Take the input file, zips it, overwriting any existing zipped file and return the path of the zipped file.
-%
-% EXAMPLE: pathOut = xASL_adm_GzipNifti('test.nii',1)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
+% EXAMPLE: pathOut = xASL_adm_GzipNifti('test.nii',1)
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 
 %% ------------------------------------------------------

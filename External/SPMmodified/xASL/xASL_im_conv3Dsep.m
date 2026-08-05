@@ -14,13 +14,13 @@ function imConv = xASL_im_conv3Dsep(im, kX, varargin)
 %
 % OUTPUT:
 % imConv - convolved image
-%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: 3D separable convolution with a supplied kernel
 % It converts the results to double
 % Returned is the convoluted image
 % The wrapper makes sure that kX are Nx1 format, removes nan, and removes
 % excessive zeros at the ends.
-% 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: n/a
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0

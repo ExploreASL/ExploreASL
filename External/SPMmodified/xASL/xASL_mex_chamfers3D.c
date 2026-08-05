@@ -12,6 +12,9 @@
  * Implemented by Jan Petr
  * According to: Stina Svensson and Gunilla Borgefors, Computer Vision and Image Understanding 88, 24–53 (2002)
  * doi:10.1006/cviu.2002.0976
+ * 
+ * SPDX-License-Identifier: Apache-2.0
+ * ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
  */
 
 #include <string.h>

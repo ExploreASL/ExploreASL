@@ -14,12 +14,11 @@ function pathOut = xASL_adm_UnzipNifti(pathIn, bOverwrite)
 %              can be run just to be sure a file is unzipped without much overhead.
 %              Returns error if more than one file is in the archive, if the filename does not exist, is a directory etc.
 %              If there's a NII and NII.GZ already existing, then return error, or just overwrite in case overwrite is set to 1
-%
-% EXAMPLE: pathOut = xASL_adm_UnzipNifti('test.nii',1)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
+% EXAMPLE: pathOut = xASL_adm_UnzipNifti('test.nii',1)
 % __________________________________
-% Copyright (C) 2015-2020 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 % Check for the optional parameter overwrite
 if nargin < 2 || isempty(bOverwrite)

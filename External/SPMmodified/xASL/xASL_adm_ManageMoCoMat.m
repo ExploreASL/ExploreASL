@@ -24,10 +24,11 @@ function xASL_adm_ManageMoCoMat(PathIn)
 %              - D) If this is true for the first volume only, the .mat is
 %                   retained but the first volume orientation is overwritten
 %                   with a zero matrix
-%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: xASL_adm_ManageMoCoMat('/analysis/Sub-001/ASL_1/ASL4D.nii');
 % __________________________________
-% Copyright (C) 2015-2019 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 % ------------------------------------------------------------------------------------------------------------
 % Admin, input arguments & file loading

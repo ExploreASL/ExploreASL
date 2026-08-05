@@ -16,15 +16,13 @@ function [NiftiObject, pathOut, json] = xASL_io_ReadNifti(pathIn, bBIDS2Legacy)
 % DESCRIPTION: Read Nifti file given by the path. Return the NII object. And also return the actual path to the loaded 
 %              Nifti if by any reason the name changed during the function runtime (e.g. unzipping). JSON can be also read and can be converted
 %              from BIDS to Legacy
-%
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:  
 %   NiftiObject = xASL_io_ReadNifti('/home/tmp/CBF.nii'); % for only loading the nifti
 %   [NiftiObject, ~, json] = xASL_io_ReadNifti('/home/tmp/CBF.nii'); % for also loading the json sidecar
-% 
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
 % __________________________________
-% Copyright ExploreASL 2015-2024 ExploreASL
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 % Admin
 if nargin < 1 || isempty(pathIn)

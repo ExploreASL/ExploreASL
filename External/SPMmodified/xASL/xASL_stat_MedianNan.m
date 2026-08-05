@@ -11,15 +11,13 @@ function y = xASL_stat_MedianNan(x,dim)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: It calculates the MEDIAN along the given dimension, but it sets all the NaNs to zero before calling it.
 %
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: y = xASL_stat_MedianNan([2 3 1; 0 -1 3])
 %          y = xASL_stat_MedianNan([2 3 1; 0 -1 3],1)
 %          y = xASL_stat_MedianNan([2 3 1; 0 -1 3],2)
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-%
 % __________________________________
-% Copyright © 2015-2019 ExploreASL
-%
-% 2017-00-00 JP
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 if isempty(x)
   if nargin < 2 || isempty(dim)

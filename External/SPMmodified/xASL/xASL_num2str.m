@@ -25,6 +25,7 @@ function [DataOut] = xASL_num2str(DataIn, stringFormat, bConcatenate, stringDeli
 %              first row, and then going across the rows. See builtin num2str for more details. 
 %              Column vectors are converted to row vectors.
 %   
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE:
 %
 % xASL_num2str(10.5798)
@@ -42,9 +43,9 @@ function [DataOut] = xASL_num2str(DataIn, stringFormat, bConcatenate, stringDeli
 % Automatic mode (remove trailing zeros)
 % DataOut = xASL_num2str(1.23456789000, 'auto')
 % DataOut = '1.23456789'
-%
-% -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright (c) 2015-2021 ExploreASL
+% __________________________________
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 % Check input
 if isnumeric(DataIn)
