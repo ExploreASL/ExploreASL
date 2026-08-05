@@ -605,104 +605,42 @@ end
 
 %% ==========================================================================================================
 %% ==========================================================================================================
-function [TanimotoCoeff, DiceCoeff] = xASL_im_GetSpatialOverlapASL(x, bControlPWI)
+function [TanimotoCoeff, DiceCoeff] = xASL_im_GetSpatialOverlapASL(x)
 %xASL_im_GetSpatialOverlapASL Compute the overlap between two images (using
 % TC by default)
-%   x           - structure containing fields with all information required to run this submodule (REQUIRED)
-%   bControlPWI - boolean for estimating TC for control (0) or PWI (1) (OPTIONAL, DEFAULT=PWI)
 
-%% Admin
-if nargin<2 || isempty(bControlPWI)
-    bControlPWI = true;
-end
-
-PathMaskTemplate = fullfile(x.dir.SESSIONDIR, 'Mask_Template.nii'); % mask MNI
-pathMaskNative = x.D.PathMask; % mask native space
-
-if bControlPWI % PWI-based TC
-    PathImageTemplate = fullfile(x.dir.SESSIONDIR, 'Mean_CBF_Template.nii'); % template image MNI
-    pathImageNative = fullfile(x.dir.SESSIONDIR, 'LowRes_Mean_CBF_Template.nii'); % template image native space
-    pathInputImage = x.P.Path_mean_PWI_Clipped;
-else % control-based TC
-    PathImageTemplate = fullfile(x.dir.SESSIONDIR, 'Mean_CBF_Template.nii'); % template image MNI
-    pathImageNative = fullfile(x.dir.SESSIONDIR, 'LowRes_Mean_Control_Template.nii'); % template image native space
-    pathInputImage = x.P.Path_mean_control;
-end
-
-if ~xASL_exist(pathInputImage) % Only compute spatial overlap if the input image exist (e.g., skipping this function for non-existing mean control images
-    TanimotoCoeff = NaN;
-    DiceCoeff = NaN;
-    return
-end
-
-% Downsample images from MNI to native space, if needed
-if ~xASL_exist(pathMaskNative, 'file') % ASLmask
-    xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, pathMaskNative, 0);
-end
-
-if bControlPWI % PWI-based TC
-    if ~xASL_exist(pathImageNative, 'file') % LowRes_template PWI
-        xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathImageTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, pathImageNative, 1);
-    end
-
-    % Load images
-    inputImage = xASL_io_Nifti2Im(pathInputImage);
-    MaskImage = xASL_io_Nifti2Im(pathMaskNative)>0.5;
-    templateImage = xASL_io_Nifti2Im(pathImageNative);
-else
-    % We create a pseudo meanControl based on T1w segmentations
-
-    % Resample c1T1, c2T1, c3T1 to pvGM pvWM pvCSF
-            % PM: estimate effective spatial resolution?
-    xASL_im_PreSmooth(x.P.Path_mean_control, x.P.Path_c1T1, x.P.Path_PVgm, [4 4 4], [], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-    xASL_im_PreSmooth(x.P.Path_mean_control, x.P.Path_c2T1, x.P.Path_PVwm, [4 4 4], [], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-    xASL_im_PreSmooth(x.P.Path_mean_control, x.P.Path_c3T1, x.P.Path_PVcsf, [4 4 4], [], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-
-    xASL_spm_reslice(x.P.Path_mean_control, x.P.Path_PVgm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVgm);
-    xASL_spm_reslice(x.P.Path_mean_control, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwm);
-    xASL_spm_reslice(x.P.Path_mean_control, x.P.Path_PVcsf, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVcsf);
-
-    % Multiply with mean tissue value within meanControl
-    pvGM = xASL_io_Nifti2Im(x.P.Path_PVgm);
-    pvWM = xASL_io_Nifti2Im(x.P.Path_PVwm);
-    pvCSF = xASL_io_Nifti2Im(x.P.Path_PVcsf);
-    meanControl = xASL_io_Nifti2Im(x.P.Path_mean_control);
-    
-    maskGM = pvGM>0.75;
-    maskWM = pvWM>0.75;
-    maskCSF = pvCSF>0.75;
-
-    meanGM = xASL_stat_MeanNan(meanControl(maskGM));
-    meanWM = xASL_stat_MeanNan(meanControl(maskWM));
-    meanCSF = xASL_stat_MeanNan(meanControl(maskCSF));
-
-    templateImage = meanGM.*pvGM + meanWM.*pvWM + meanCSF.*pvCSF;
-
-    % Load images
-    inputImage = xASL_io_Nifti2Im(pathInputImage);
-    MaskImage = xASL_io_Nifti2Im(pathMaskNative)>0.5;
-end
-
-
-%% Compute Tanimoto coefficient
-TanimotoCoeff = xASL_qc_TanimotoCoeff(inputImage, templateImage, MaskImage, 3, 0.975);
-fprintf('%s\n',['Tanimoto Coeff=' num2str(100*TanimotoCoeff,3)]);
-
-
-%% Dice coefficient
 if ~isfield(x,'ComputeDiceCoeff')
     x.ComputeDiceCoeff = 0; % the PWI masking doesnt really work
     DiceCoeff = NaN;
 end
 
+%% Admin
+PathMaskTemplate = fullfile(x.dir.SESSIONDIR, 'Mask_Template.nii');
+PathTemplate = fullfile(x.dir.SESSIONDIR, 'Mean_CBF_Template.nii');
+[Fpath, Ffile] = xASL_fileparts(x.D.PathMask);
+x.D.PathMask2 = fullfile(Fpath, [Ffile '2.nii']);
+x.D.PathCBF = fullfile(x.dir.SESSIONDIR, 'LowRes_Mean_CBF_Template.nii');
+if ~xASL_exist(x.D.PathMask,'file')
+    xASL_Copy(PathMaskTemplate, x.D.PathMask);
+end
+PWIim = xASL_io_Nifti2Im(x.P.Path_mean_PWI_Clipped);
+
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathMaskTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.D.PathMask, 0);
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.D.PathCBF, 1);
+
+MaskFromTemplate = xASL_io_Nifti2Im(x.D.PathMask)>0.5;
+TemplateIm = xASL_io_Nifti2Im(x.D.PathCBF);
+
+
+%% Compute wholebrain Tanimoto coefficient
+TanimotoCoeff = xASL_qc_TanimotoCoeff(PWIim, TemplateIm, MaskFromTemplate, 3, 0.975);
+fprintf('%s\n',['Tanimoto Coeff=' num2str(100*TanimotoCoeff,3)]);
+
 if x.ComputeDiceCoeff
-    [Fpath, Ffile] = xASL_fileparts(pathMaskNative); % native space mask
-    pathMaskNative2 = fullfile(Fpath, [Ffile '2.nii']); % native space mask for Dice coefficient
+    xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.D.Mean_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.D.PathMask2 ,0);
 
-    xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.D.Mean_Native, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, pathMaskNative2, 0);
-
-    GMIM = xASL_io_Nifti2Im(pathMaskNative2);
-    xASL_delete(pathMaskNative2);
+    GMIM = xASL_io_Nifti2Im(x.D.PathMask2);
+    xASL_delete(x.D.PathMask2);
 
     %% Compute Dice coefficient
     % Mask the GMIM
@@ -711,20 +649,17 @@ if x.ComputeDiceCoeff
     GMIM = GMIM>ThrInt;
 
     % Ensure that the mask is binary
-    MaskImage = MaskImage & GMIM;
+    MaskFromTemplate = MaskFromTemplate & GMIM;
 
     %% Simple intersection check
-    sortInt = sort(inputImage(isfinite(inputImage)));
+    sortInt = sort(PWIim(isfinite(PWIim)));
     ThrInt = sortInt(round(0.75*length(sortInt)));
-    maskPWI = inputImage>ThrInt;
+    maskPWI = PWIim>ThrInt;
 
-    DiceCoeff = xASL_im_ComputeDice(maskPWI,MaskImage);
+    DiceCoeff = xASL_im_ComputeDice(maskPWI,MaskFromTemplate);
     fprintf('%s\n',['Joint brainmask Dice= ' num2str(100*DiceCoeff,3) '%']);
 end
 xASL_delete(x.D.PathCBF);
-xASL_delete(x.P.Path_PVgm);
-xASL_delete(x.P.Path_PVwm);
-xASL_delete(x.P.Path_PVcsf);
 
 
 end
