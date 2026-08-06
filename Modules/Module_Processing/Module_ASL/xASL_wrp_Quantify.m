@@ -365,7 +365,9 @@ end
 if x.modules.asl.ApplyQuantification(5)==0
     MeanCBF = xASL_stat_MeanNan(CBF(:));
     if MeanCBF>666 % this is the average including air
+		fprintf('\n\n\n\n');
         warning('M0 division was disabled & CBF image had too high values');
+		fprintf('\n\n\n\n');
     end
 end
 
