@@ -762,7 +762,6 @@ end
 x.mutex.AddState('999_ready');
 
 x.mutex.Unlock();
-x.result  = true;
-result    = true;
+result = true;
 
 end
