@@ -33,7 +33,8 @@ function [result, x] = xASL_module_dce(x)
 %
 % EXAMPLE: [~, x] = xASL_module_dce(x);
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% Copyright 2026-... ExploreASL
+% SPDX-License-Identifier: Apache-2.0
+% ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 
 
 
@@ -74,12 +75,25 @@ if x.mutex.HasState('999_ready')
     return;
 end
 
+if ~isfield(x.modules, 'dce')
+    x.modules.dce = struct();
+end
 
 %% Parameters
-x.modules.dce.InjectionFrame = 4;
+% Temporarily, we default here to the parameters used in TheriniBio, for which this module was written
+% and initially used
+if ~isfield(x.modules.dce, 'InjectionFrame') || isempty(x.modules.dce.InjectionFrame)
+    % This is the start of the contrast agent injection
+    % In TheriniBio, after 3 baseline scans, the radiographers were asked to start the contrast injection
+    x.modules.dce.InjectionFrame = 4; % TheriniBio value
+end
 
-% Python
-x.modules.dce.PathPython = '/Users/hjmutsaerts/venvs/py312/bin/python3.12';
+% Path to the Python venv (note that OSIPY works with python3.12)
+if ~isfield(x.modules.dce, 'PathPython') || isempty(x.modules.dce.PathPython)
+    x.modules.dce.PathPython = '/Users/hjmutsaerts/venvs/py312/bin/python3.12';
+end
+
+% Python code from OSIPI/OSIPY
 x.modules.dce.PythonCodePath = fullfile(x.opts.MyPath, 'WorkInProgress', 'DCE');
 
 
@@ -90,11 +104,6 @@ PathX = fullfile(x.dir.SUBJECTDIR, 'x.mat');
 x.SESSIONS = {'DCE_1'};
 x.SESSION = 'DCE_1';
 x.dir.SESSIONDIR = fullfile(x.dir.SUBJECTDIR, x.SESSION);
-
-% destination paths
-% dir_dceDest -> x.SESSIONDIR
-% nii_dceDest = x.P.Path_DCE4D
-% json_dceDest = x.P.Path_DCE4D_json
 
 x.P.Path_DCE4D = fullfile(x.dir.SESSIONDIR, 'DCE4D.nii');
 x.P.Path_DCE4D_json = fullfile(x.dir.SESSIONDIR, 'DCE4D.json');

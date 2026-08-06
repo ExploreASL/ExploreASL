@@ -2,7 +2,7 @@ function [NotOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunct
 % Submodule of ExploreASL Structural module, that obtains volumes from the tissue segmentations
 % (& FLAIR WMH segmentations if they exist)
 %
-% FORMAT: [NoOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunction)
+% FORMAT: [NoOutliers, iOutliers, RMS] = xASL_stat_RobustMean(IM, ParameterFunction, imMask)
 %
 % INPUT:
 %   IM                 - input images, should be masked with xASL_im_IM2Column: vector image (REQUIRED)
