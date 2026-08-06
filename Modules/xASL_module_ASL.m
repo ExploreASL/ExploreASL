@@ -555,9 +555,9 @@ x.mutex.AddState('999_ready');
 cd(oldFolder);
 
 x.mutex.Unlock();
-x.result = true;
 result = true;
 close all;
+
 
 end
 

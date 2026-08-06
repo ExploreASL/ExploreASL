@@ -415,7 +415,7 @@ function [bAborted, x] = runIteration(db)
             if  db.settings.dryRun
                 fprintf('\nDRYRUN: skipping %s\n',func2str(jobfn));
             else 
-				[result, x] = jobfn(x); % [result, x] = jobfn(x, job_ex);
+				[result, x] = jobfn(x);
                 if ~result
                     error('xASL_Iteration:jobfnFailed', 'job function returned failed');
                 end

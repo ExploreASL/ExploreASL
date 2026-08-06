@@ -186,10 +186,8 @@ function [result, x] = xASL_module_Import(x)
     end
     
     x.mutex.Unlock();
-    x.result = true;
+    result = true;
     close all;
-    
-    % Return the results
-    result = x.result;
-end
 
+    
+end
