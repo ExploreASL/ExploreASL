@@ -91,6 +91,7 @@ end
 % Path to the Python venv (note that OSIPY works with python3.12)
 if ~isfield(x.modules.dce, 'PathPython') || isempty(x.modules.dce.PathPython)
     x.modules.dce.PathPython = '/Users/hjmutsaerts/venvs/py312/bin/python3.12';
+    % ->>>>>>>>>>>>>>>>>>>>>>>>>> PM: REMOVE THIS HARD-CODED PATH
 end
 
 % Python code from OSIPI/OSIPY
