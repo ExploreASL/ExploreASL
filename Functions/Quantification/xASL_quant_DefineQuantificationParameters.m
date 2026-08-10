@@ -68,7 +68,7 @@ end
 % Here, we check if the user has provided a hematocrit value for this
 % subject_session_run. Only then, we create a x.Q.T1blood.
 % Below, at the quantification section, this is only taken into account
-% when x.Q.T1blood exists, otherwise default Blood T1 values are used based
+% when x.Q.BloodT1 exists, otherwise default Blood T1 values are used based
 % on MagneticFieldStrength.
 
 IndexSetsAge = find(strcmpi(x.S.SetsName, 'age'));
@@ -149,19 +149,20 @@ end
 
 %% ------------------------------------------------------------------------------------------------
 %% 2.   Arterial blood T1
+% T1 relaxation time of arterial blood
+% There are 3 options for x.Q.T1blood (A has the highest priority:
+% A) users have provided x.Hematocrit (in any of the forms defined in xASL_wrp_Quantify 3.a-c), which is converted to x.Q.T1blood there
+% B) users have provided x.Q.T1blood
+% C) it doesn't exist and is defaulted here based on MagneticFieldStrength
+
 % We convert x.Q.Hematocrit -> x.Q.T1blood
 if isfield(x.Q, 'Hematocrit')
     x.Q.T1blood = xASL_quant_Hct2BloodT1(x.Q.Hematocrit, [], x.MagneticFieldStrength);
 end
 
 if ~isfield(x.Q, 'T1blood') || isempty(x.Q.T1blood)
-    % T1 relaxation time of arterial blood
-    % There are 3 options for x.Q.T1blood:
-    % A) users have provided x.Q.T1blood
-    % B) users have provided x.Hematocrit (in any of the forms defined in xASL_wrp_Quantify 3.a-c), which is converted to x.Q.T1blood there
-    % C) it doesn't exist and is defaulted here based on MagneticFieldStrength
-    switch(x.MagneticFieldStrength)
-	    case 0.2 
+	switch(x.MagneticFieldStrength)
+		case 0.2
 		    x.Q.T1blood = 776; % Rooney 2007 MRM
             fprintf('%s\n', 'Defaulting x.Q.T1blood to 776 ms for 0.2T (Rooney 2007 MRM)');
 	    case 1

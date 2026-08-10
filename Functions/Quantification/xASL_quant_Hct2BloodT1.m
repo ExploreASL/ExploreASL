@@ -13,7 +13,7 @@ function BloodT1 = xASL_quant_Hct2BloodT1(Hematocrit, Y, B0, bVerbose)
 % --------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function converts hematocrit to blood T1, according to
 %              calculations defined by Patrick Hales. With courtesy and thanks!
-%              Note that we assume a venous O2 saturation of 68% (Yv=0.68)
+%              Note that we assume a arterial O2 saturation of 97% (Y=0.97)
 %
 %              This function performs the following steps:
 %
@@ -81,7 +81,7 @@ end
 
 if Y>0 && Y<1
     % this is fine, just continue
-elseif Y>1 && y<100
+elseif Y>1 && Y<100
     % we have percentages, correct
     Y = Y/100;
 else
@@ -123,7 +123,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function xASL_quant_Hct2BloodT1_printMissingHctWarning(x)
+function xASL_quant_Hct2BloodT1_printMissingHctWarning
 %xASL_quant_Hct2BloodT1_printMissingHctWarning We may print this message in
 %different cases, which is why this subfunction comes in handy
 
