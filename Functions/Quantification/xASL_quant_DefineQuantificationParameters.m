@@ -151,12 +151,12 @@ end
 %% 2.   Arterial blood T1
 % T1 relaxation time of arterial blood
 % There are 3 options for x.Q.T1blood (A has the highest priority:
-% A) users have provided x.Hematocrit (in any of the forms defined in xASL_wrp_Quantify 3.a-c), which is converted to x.Q.T1blood there
-% B) users have provided x.Q.T1blood
+% A) users have provided x.Q.T1blood
+% B) users have provided x.Hematocrit (in any of the forms defined in xASL_wrp_Quantify 3.a-c), which is converted to x.Q.T1blood there
 % C) it doesn't exist and is defaulted here based on MagneticFieldStrength
 
 % We convert x.Q.Hematocrit -> x.Q.T1blood
-if isfield(x.Q, 'Hematocrit')
+if isfield(x.Q, 'Hematocrit') && (~isfield(x.Q, 'T1blood') || isempty(x.Q.T1blood))
     x.Q.T1blood = xASL_quant_Hct2BloodT1(x.Q.Hematocrit, [], x.MagneticFieldStrength);
 end
 
