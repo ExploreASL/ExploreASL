@@ -343,7 +343,7 @@ end
 % ATT biasfield and vascular peaks
 xASL_im_CreatePseudoCBF(x, 0);
 
-[RegStep_TC_ControlPerc, RegStep_TC_PWIPerc] = xASL_im_GetSpatialOverlapASL(x);
+[RegStep_TC_ControlPerc, RegStep_TC_PWIPerc, ~, regStepsImage] = xASL_im_GetSpatialOverlapASL(x);
 RegStepName = {'Start_wrp_RegisterASL'};
 RegStepUsed = 0;
 
@@ -359,7 +359,7 @@ if x.settings.bAutoACPC
     xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 0); % Then register
     
     % get new overlap score
-    [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1)] = xASL_im_GetSpatialOverlapASL(x);
+    [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1), ~, regStepsImage{end+1}] = xASL_im_GetSpatialOverlapASL(x);
     RegStepName{end+1} = 'im_CenterOfMass';
     RegStep_TC_MeanPerc = xASL_stat_MeanNan([RegStep_TC_PWIPerc;RegStep_TC_ControlPerc], 1);
     
@@ -421,7 +421,7 @@ if bRegistrationControl
         end
 
         % get new overlap score
-        [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1)] = xASL_im_GetSpatialOverlapASL(x);
+        [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1), ~, regStepsImage{end+1}] = xASL_im_GetSpatialOverlapASL(x);
         RegStep_TC_MeanPerc = xASL_stat_MeanNan([RegStep_TC_PWIPerc;RegStep_TC_ControlPerc], 1);
 
         if RegStep_TC_MeanPerc(end)>=RegStep_TC_MeanPerc(max(find(RegStepUsed))) % if alignment improved or remained same
@@ -475,7 +475,7 @@ if bRegistrationCBF
 				% then register
 				xASL_spm_coreg(x.P.Path_PseudoCBF, x.P.Path_mean_PWI_Clipped, OtherList, x);
 				% and check for improvement
-                [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1)] = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+                [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1), ~, regStepsImage{end+1}] = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
                 RegStepName{end+1} = ['linear_PWI->pseudoCBF_' num2str(iT)];
 
 				if x.modules.asl.bRegistrationContrast~=3 % if we don't don't force CBF-pGM registration
@@ -526,7 +526,7 @@ if bRegistrationCBF
 				xASL_spm_affine(x.P.Path_mean_PWI_Clipped, x.P.Path_PseudoCBF, 5, 5, BaseOtherList);
 
 				% Verify if the affine registration improved the alignment
-                [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1)] = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+                [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1), ~, regStepsImage{end+1}] = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
                 RegStep_TC_MeanPerc = xASL_stat_MeanNan([RegStep_TC_PWIPerc;RegStep_TC_ControlPerc], 1);
                 RegStepName{end+1} = 'affine_PWI->pseudoCBF';
 
@@ -560,7 +560,7 @@ if bRegistrationCBF
 				end
 
 				% Verify if the DCT+affine registration improved the alignment
-                [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1)] = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
+                [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1), ~, regStepsImage{end+1}] = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
                 RegStep_TC_MeanPerc = xASL_stat_MeanNan([RegStep_TC_PWIPerc;RegStep_TC_ControlPerc], 1);                
                 RegStepName{end+1} = 'affine+DCT_PWI->pseudoCBF';
 
@@ -645,7 +645,7 @@ end
 
 %% ==========================================================================================================
 %% ==========================================================================================================
-function [TanimotoCoeffControl, TanimotoCoeffPWI, sCoV] = xASL_im_GetSpatialOverlapASL(x, bsCoV)
+function [TanimotoCoeffControl, TanimotoCoeffPWI, sCoV, slicesRow] = xASL_im_GetSpatialOverlapASL(x, bsCoV)
 %xASL_im_GetSpatialOverlapASL Compute the overlap between two images (using
 % TC by default)
 %   x           - structure containing fields with all information required to run this submodule (REQUIRED)
@@ -653,6 +653,10 @@ function [TanimotoCoeffControl, TanimotoCoeffPWI, sCoV] = xASL_im_GetSpatialOver
 %   
 %
 % Output:
+% TanimotoCoeffControl  - Tanimoto Similarity Coefficient, overlap between control image and pseudo-tissue image (%)
+% TanimotoCoeffPWI      - Tanimoto Similarity Coefficient, overlap between PWI image and pseudo-CBF image (%)
+% sCoV                  - spatial CoV within the PWI (fraction/ratio)
+% slicesRow             - row with two slices (48 & 69 in MNI) for control and PWI (if available) with GM-WM contour overlaid
 
 
 %% Admin
@@ -660,6 +664,11 @@ function [TanimotoCoeffControl, TanimotoCoeffPWI, sCoV] = xASL_im_GetSpatialOver
 if nargin<2 || isempty(bsCoV)
     bsCoV = false;
 end
+
+pathPWI_MNI = fullfile(x.dir.SESSIONDIR, 'mean_PWI_Clipped_MNI.nii'); % PWI temporary in MNI
+pathWM_MNI = fullfile(x.dir.SESSIONDIR, 'PVwm_MNI.nii'); % pvWM temporary in MNI
+pathControl_MNI = fullfile(x.dir.SESSIONDIR, 'mean_control_MNI.nii'); % pvWM temporary in MNI
+
 
 %% Get mask
 PathMaskTemplate = fullfile(x.dir.SESSIONDIR, 'Mask_Template.nii'); % mask MNI
@@ -680,7 +689,7 @@ else
     %% Get PWI-based Tanimoto Coefficient
     PathImageTemplate = fullfile(x.dir.SESSIONDIR, 'Mean_CBF_Template.nii'); % PWI template image MNI
     pathImageNative = fullfile(x.dir.SESSIONDIR, 'LowRes_Mean_CBF_Template.nii'); % PWI template image native space
-    
+
     % Downsample images from MNI to native space
     xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, PathImageTemplate, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, pathImageNative, 1);
     
@@ -704,18 +713,20 @@ else
 
 end
 
+% Resample c2T1 to pvWM, as we use this below for overlay visualization
+xASL_im_PreSmooth(x.P.Path_mean_control, x.P.Path_c2T1, x.P.Path_PVwm, [4 4 4], [], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+xASL_spm_reslice(x.P.Path_mean_control, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwm);
+
 %% Get control-based Tanimoto Coefficient
 if xASL_exist(x.P.Path_mean_control)
     % We create a pseudo meanControl based on T1w segmentations
 
-    % Resample c1T1, c2T1, c3T1 to pvGM pvWM pvCSF
+    % Resample c1T1, c3T1 to pvGM pvCSF
             % PM: estimate effective spatial resolution?
     xASL_im_PreSmooth(x.P.Path_mean_control, x.P.Path_c1T1, x.P.Path_PVgm, [4 4 4], [], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-    xASL_im_PreSmooth(x.P.Path_mean_control, x.P.Path_c2T1, x.P.Path_PVwm, [4 4 4], [], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
     xASL_im_PreSmooth(x.P.Path_mean_control, x.P.Path_c3T1, x.P.Path_PVcsf, [4 4 4], [], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
 
     xASL_spm_reslice(x.P.Path_mean_control, x.P.Path_PVgm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVgm);
-    xASL_spm_reslice(x.P.Path_mean_control, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwm);
     xASL_spm_reslice(x.P.Path_mean_control, x.P.Path_PVcsf, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVcsf);
 
     % Multiply with mean tissue value within meanControl
@@ -739,6 +750,33 @@ if xASL_exist(x.P.Path_mean_control)
     fprintf('\033[1m%s \033[0m\n', ['Tanimoto Coeff control-based=' num2str(TanimotoCoeffControl, 3)]);
 end
 
+
+%% Visualization
+spaceNative = {x.P.Path_PVwm};
+spaceMNI = {pathWM_MNI};
+
+if xASL_exist(x.P.Path_mean_PWI_Clipped, 'file')
+    spaceNative{end+1} = x.P.Path_mean_PWI_Clipped;
+    spaceMNI{end+1} = pathPWI_MNI;
+end
+if xASL_exist(x.P.Path_mean_control, 'file')
+    spaceNative{end+1} = x.P.Path_mean_control;
+    spaceMNI{end+1} = pathControl_MNI;
+end
+
+xASL_spm_deformations(x, spaceNative, spaceMNI, [], [], x.P.Path_mean_PWI_Clipped_sn_mat, x.P.Path_y_ASL);
+x.S.TraSlices = [48 69]; % 53;
+x.S.CorSlices = [];
+x.S.SagSlices = [];
+slicesRow = [];
+if xASL_exist(pathControl_MNI, 'file')
+    ImOut_Control = xASL_vis_CreateVisualFig(x, {pathControl_MNI pathWM_MNI}, [], [], [], {x.S.gray x.S.red}, [], [], [], [], [], [], 1);
+    slicesRow = [slicesRow, ImOut_Control];
+end
+if xASL_exist(pathPWI_MNI, 'file')
+    ImOut_PWI = xASL_vis_CreateVisualFig(x, {pathPWI_MNI pathWM_MNI}, [], [], [], {x.S.gray x.S.red}, [], [], [], [], [], [], 1);
+    slicesRow = [slicesRow, ImOut_PWI];
+end
 
 
 %% PM: COMMENTED OUT; THIS FUNCTION IS WRITTEN FOR CHECKING REGISTRATION OF ASL-BASED IMAGES, WHICH ARE NEVER BINARY
@@ -777,6 +815,11 @@ end
 
 % Householding; because at each registration iteration, the reference image x.P.Path_mean_PWI_Clipped and/or x.P.Path_mean_control
 % will have a different orientation matrix
+
+
+xASL_delete(pathPWI_MNI);
+xASL_delete(pathControl_MNI);
+
 xASL_delete(pathMaskNative);
 xASL_delete(pathImageNative);
 
