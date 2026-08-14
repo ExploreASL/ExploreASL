@@ -134,7 +134,7 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
     if ~isempty(regexpi(sourcePar.tSequenceFileName, 'ep2d', 'once'))
         bidsPar.PulseSequenceType = 'EPI'; 
 		bidsPar.MRAcquisitionType = '2D';
-    elseif ~isempty(regexpi(sourcePar.tSequenceFileName, '(gse|grs3d', 'once'))
+    elseif ~isempty(regexpi(sourcePar.tSequenceFileName, '(tgse|gse|grs3d)', 'once'))
         bidsPar.PulseSequenceType = 'GRASE'; 
 		bidsPar.MRAcquisitionType = '3D';
     end
@@ -283,30 +283,46 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 	end
 
 	%% 4. Reading the _VE11C sequences from DJJ Wang
-	if ~bSequenceIdentified && ~isempty(regexpi(sourcePar.tSequenceFileName,'pcasl_ve11c', 'once'))
-
-		if ~isempty(regexpi(sourcePar.tSequenceFileName,'ep2d_pcasl_ve11c', 'once'))
-			% 2DEPI VE11C PCASL
+	if ~bSequenceIdentified && ~isempty(regexpi(sourcePar.tSequenceFileName,'pcasl_ve11', 'once'))
+		if ~isempty(regexpi(sourcePar.tSequenceFileName,'(ep2d_pcasl_ve11c|tgse_pcasl_ve11c)', 'once'))
 			if ~isempty(sourcePar.sWipMemBlockadFree2)
 				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockadFree2 / 1000000.0;
 			end
 
-		elseif ~isempty(regexpi(sourcePar.tSequenceFileName,'tgse_pcasl_ve11c', 'once'))
-			% 3DGRASE VE11C PCASL
+			% M0 TR for this sequence is 2.0s by default
+			bidsPar.RepetitionTimePreparationM0 = 2.0;
+
+		elseif ~isempty(regexpi(sourcePar.tSequenceFileName,'(ep2d_pcasl_ve11e|tgse_pcasl_ve11e)', 'once'))
 			if ~isempty(sourcePar.sWipMemBlockadFree2)
-				bidsPar.PostLabelingDelay = sourcePar.sWipMemBlockadFree2 / 1000000.0;
+				bidsPar.RepetitionTimePreparationM0 = sourcePar.sWipMemBlockadFree2 / 1000000.0;
 			end
 
-			if ~isempty(sourcePar.sWipMemBlockalFree13) && sourcePar.sWipMemBlockalFree13 == 1
-				bidsPar.BackgroundSuppression = true;
-			else
-				bidsPar.BackgroundSuppression = false;
+			% Read multi-PLD data
+			vectorPLD = [xASL_str2num(sourcePar.sWipMemBlockalFree1), xASL_str2num(sourcePar.sWipMemBlockalFree2), xASL_str2num(sourcePar.sWipMemBlockalFree3),...
+				         xASL_str2num(sourcePar.sWipMemBlockalFree4), xASL_str2num(sourcePar.sWipMemBlockalFree5)]/1000000; 
+			vectorPLDNum = [xASL_str2num(sourcePar.sWipMemBlockalFree8), xASL_str2num(sourcePar.sWipMemBlockalFree9), xASL_str2num(sourcePar.sWipMemBlockalFree10),...
+				         xASL_str2num(sourcePar.sWipMemBlockalFree11), xASL_str2num(sourcePar.sWipMemBlockalFree12)]; 
+			maxPLD = 0;
+			% Find the number of non-empty (non-NaN) entries
+			while (maxPLD < 5) && ~isnan(vectorPLD(maxPLD+1)) && ~isnan(vectorPLDNum(maxPLD+1))
+				maxPLD = maxPLD + 1;
 			end
 
+			% Fill in the PLD vector based on the entries
+			bidsPar.PostLabelingDelay = [];
+			for iPLD = 1:maxPLD
+				bidsPar.PostLabelingDelay = [bidsPar.PostLabelingDelay, ones(1, vectorPLDNum(iPLD)*2) * vectorPLD(iPLD)];
+			end
 		else
-			error('Unknown variant of PCASL_VE11C');
+			error('Unknown variant of PCASL_VE11');
 		end
 
+		if ~isempty(sourcePar.sWipMemBlockalFree13) && sourcePar.sWipMemBlockalFree13 == 1
+			bidsPar.BackgroundSuppression = true;
+		else
+			bidsPar.BackgroundSuppression = false;
+		end
+		
 		if ~isempty(sourcePar.sWipMemBlockadFree1)
 			bidsPar.LabelingDistance = sourcePar.sWipMemBlockadFree1;
 		end
@@ -327,8 +343,6 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 			bidsPar.LabelingDuration = sourcePar.sWipMemBlockadFree3 * 18.4 / 1000.0;
 		end
 		
-		% M0 TR for this sequence is 2.0s by default
-		bidsPar.RepetitionTimePreparationM0 = 2.0;
 	end
 	
 	%% 5. Reading the CSL_818 sequences
