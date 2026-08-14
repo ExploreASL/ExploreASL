@@ -75,7 +75,7 @@ IndexSetsAge = find(strcmpi(x.S.SetsName, 'age'));
 IndexSetsSex = find(strcmpi(x.S.SetsName, 'sex'));
 indexSetsHct = find(strcmpi(x.S.SetsName, 'hematocrit'));
 
-% a. We prioritize participants.tsv>Hematocrit (x.S.SetsID > x.Hematocrit)
+%% a. We prioritize participants.tsv>Hematocrit (x.S.SetsID > x.Hematocrit)
 if ~isempty(indexSetsHct)
     x.Q.Hematocrit = x.S.SetsID(x.iSubjectSession, indexSetsHct);
     fprintf('%s\n', 'Using hematocrit found in participants.tsv for blood T1 correction');
@@ -86,7 +86,7 @@ if isfield(x, 'Hematocrit') || isfield(x, 'hematocrit')
 end
 
 
-% a2. Manage hematocrit usage parameter
+%% a2. Manage hematocrit usage parameter
 if isfield(x.modules.asl, 'bHct2BloodT1')
     if x.modules.asl.bHct2BloodT1 == 2 && isfield(x.Q, 'Hematocrit')
         warning('Parameter x.modules.asl.bHct2BloodT1 was set to 2: trying to infer hematocrit from age and sex, but hematocrit data were also found');
@@ -117,7 +117,7 @@ if ~isfield(x.modules.asl, 'bHct2BloodT1') || isempty(x.modules.asl.bHct2BloodT1
 end
 
 
-% b. We model the expected hematocrit from age & sex
+%% b. We model the expected hematocrit from age & sex
 if x.modules.asl.bHct2BloodT1 == 2
     fprintf('%s\n', 'Trying to infer hematocrit from age & sex');
     
@@ -255,6 +255,7 @@ if ~isfield(x.Q,'T1WM')
 			fprintf('%s\n',['Warning: Unknown T1 WM for ' num2str(x.MagneticFieldStrength) 'T scanners, using 3T value']);
 	end
 end
+
 
 %% ------------------------------------------------------------------------------------------------
 %% 5.   Tissue T2(*) in GM
