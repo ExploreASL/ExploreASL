@@ -239,6 +239,7 @@ function [x] = xASL_init_DefineDataParDependentSettings(x)
     
                 % ASL module
                 x.D.ASLCheckDir         = fullfile(x.D.PopDir, 'ASLCheck');
+                x.D.ASLregT1wDir        = fullfile(x.D.PopDir, 'ASLregT1wCheck');
                 x.D.MotionDir           = fullfile(x.D.PopDir, 'MotionASL');
                 x.D.ExclusionDir        = fullfile(x.D.PopDir, 'Exclusion');
                 x.D.DICOMparameterDir   = fullfile(x.D.PopDir, 'DICOMparameters');
@@ -248,7 +249,6 @@ function [x] = xASL_init_DefineDataParDependentSettings(x)
                 x.D.SliceCheckDir       = fullfile(x.D.PopDir, 'SliceGradientCheck');
                 x.D.RawDir              = fullfile(x.D.PopDir, 'RawSourceIMCheck');
                 x.D.RawEPIdir           = fullfile(x.D.PopDir, 'Raw_EPI_Check');
-                x.D.T1_ASLREGDIR        = fullfile(x.D.PopDir, 'T1_ASLReg');
                 x.D.TTCheckDir          = fullfile(x.D.PopDir, 'ATT_Check');
                 x.D.ATTCheckDir         = fullfile(x.D.PopDir, 'ATT_Check'); % Putting TT and ATT maps to the same folder
                 x.D.TexCheckDir         = fullfile(x.D.PopDir, 'Tex_Check');

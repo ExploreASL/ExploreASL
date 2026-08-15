@@ -11,9 +11,6 @@ if ~isfield(x.settings,'Quality')
     x.settings.Quality=1;
 end
 
-% xASL_adm_CreateDir( x.D.T1_ASLREGDIR);
-% xASL_adm_CreateDir(x.D.DICOMparameterDir);
-
 x.STRUCT_TEMPLATE_IM = fullfile(x.D.PopDir, 'Templates', 'pGM_bs-mean.nii');
 pGM_exist   = true;
 if ~xASL_exist(x.STRUCT_TEMPLATE_IM,'file')

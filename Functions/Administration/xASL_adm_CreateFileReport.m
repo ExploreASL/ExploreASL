@@ -216,7 +216,7 @@ end
 % FigEndfix{1}{5}     = {'_reg\.jpg' '.jpg'};
 % FigEndfix{1}{6}     = {'.niiColor.jpg'};
 % 
-% FigureDIR{2}        = {x.D.ASLCheckDir x.D.T1_ASLREGDIR x.D.SliceCheckDir};
+% FigureDIR{2}        = {x.D.ASLCheckDir x.D.SliceCheckDir};
 % 
 % FigPrefix{2}{1}    = {['q' x.P.CBF '_'] ['q' x.P.CBF '_untreated_']};
 % FigPrefix{2}{2}    = {'PWI_'};
