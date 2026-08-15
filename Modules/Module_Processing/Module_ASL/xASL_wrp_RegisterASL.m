@@ -16,8 +16,6 @@ function x = xASL_wrp_RegisterASL(x)
 % DEVELOPER:
 % PM: the vascular template registration may need some improvement
 % PM: this function can be divided into subfunctions for readability and to be less bug-prone
-% PM: failsafe: if a transformation matrix contains a flip, 90-degree rotation, or any other major change, ignore it
-% PM: instead of always comparing the TC [PWI| pseudoCBF], compare the TC [meanControl | T1w] with the TC [PWI | pseudoCBF]; see #1893
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This submodule registers ASL images to T1w space, by using a
@@ -84,6 +82,16 @@ function x = xASL_wrp_RegisterASL(x)
 %                          - 0 = DCT registration disabled
 %                          - 1 = DCT registration enabled if affine enabled and conditions for affine passed
 %                          - 2 = DCT enabled as above, but use PVC on top of it to get the local intensity scaling right
+%
+%
+% We have the following QC output:
+% x.Output.ASL.<SESSION>.RegStepName -> name of the registration attempt
+% x.Output.ASL.<SESSION>.RegStep_TC_ControlPerc -> control-based Tanimoto Coefficient (alignment with pseudo-tissue)
+% x.Output.ASL.<SESSION>.RegStep_TC_PWIPerc -> PWI-based Tanimoto Coefficient (alignment with pseudo-CBF)
+% x.Output.ASL.<SESSION>.RegStepUsed -> boolean if we applied the registration step (true) or not (false)
+% -> this was based on PWI-based TC, now on the average of PWI-based and control-based TC (whichever is available)
+% /derivatives/ExploreASL/Population/ASLregT1wCheck/ASL2T1wreg_>SUBJECT>_<SESSION> -> visualization of registration steps (rows), both control-based (left two columns) and PWI-based (right two columns), transversal slices 48 and 69, with GM-WM contours overlaid.
+% First row is the original alignment, second and other rows are delineated with green if the corresponding registration step was applied or red if not.
 %
 % EXAMPLE: xASL_wrp_RegisterASL(x);
 % __________________________________
@@ -343,7 +351,7 @@ end
 % ATT biasfield and vascular peaks
 xASL_im_CreatePseudoCBF(x, 0);
 
-[RegStep_TC_ControlPerc, RegStep_TC_PWIPerc, ~, regStepsImage] = xASL_im_GetSpatialOverlapASL(x);
+[RegStep_TC_ControlPerc, RegStep_TC_PWIPerc, ~, regStepsImage{1}] = xASL_im_GetSpatialOverlapASL(x);
 RegStepName = {'Start_wrp_RegisterASL'};
 RegStepUsed = 0;
 
@@ -367,9 +375,11 @@ if x.settings.bAutoACPC
 
         xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
         RegStepUsed(end+1) = 1;
+        regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [0 1 0]);
     else % if alignment got worse
         xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
         RegStepUsed(end+1) = 0;
+        regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [1 0 0]);        
     end
 end
 
@@ -429,9 +439,11 @@ if bRegistrationControl
             % use this
             xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
             RegStepUsed(end+1) = 1;
+            regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [0 1 0]);
         else % if alignment got significantly (>5% Tanimoto) worse
             xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
             RegStepUsed(end+1) = 0;
+            regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [1 0 0]);
         end
     end
 end
@@ -485,6 +497,7 @@ if bRegistrationCBF
 						% if alignment improved or remained more or less the same
 						xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
                         RegStepUsed(end+1) = 1;
+                        regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [0 1 0]);
 					else
 						% if alignment got significantly (>1% Tanimoto) worse
 						% we don't force CBF-pGM registration
@@ -494,6 +507,7 @@ if bRegistrationCBF
 							bAffineRegistration = 0; % skip affine registration and therefore also DCT - only when it fails to improve on the first, not on the second
                         end
                         RegStepUsed(end+1) = 0;
+                        regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [1 0 0]);
 					end
 				end
 
@@ -534,10 +548,12 @@ if bRegistrationCBF
 					% if alignment improved or remained more or less the same
 					xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
                     RegStepUsed(end+1) = 1;
+                    regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [0 1 0]);
 				else
 					% if alignment got significantly (>1% Tanimoto) worse
 					xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
                     RegStepUsed(end+1) = 0;
+                    regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [1 0 0]);
 				end
 			else
 				% The affine+DCT registration option
@@ -567,11 +583,13 @@ if bRegistrationCBF
                 if RegStep_TC_MeanPerc(end)>=RegStep_TC_MeanPerc(max(find(RegStepUsed)))*0.99
                     % No need to delete backup if all went fine
                     RegStepUsed(end+1) = 1;
+                    regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [0 1 0]);
                 else
 					% if alignment got significantly (>1% Tanimoto) worse
 					[FpathSnMat, FfileSnMat] = xASL_fileparts(x.P.Path_mean_PWI_Clipped);
 					delete(fullfile(FpathSnMat, [FfileSnMat '_sn.mat']));
                     RegStepUsed(end+1) = 0;
+                    regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [1 0 0]);
 				end
 			end
 
@@ -589,7 +607,12 @@ fprintf('\033[1m%-25s %20s %20s\n','Name', 'control-based TC (%)', 'PWI-based TC
 for iT=1:length(RegStepName)
     fprintf('\033[0m%-20s %20.2f %20.2f\n', RegStepName{iT}, RegStep_TC_ControlPerc(iT), RegStep_TC_PWIPerc(iT));
 end
-fprintf('\n%s\n', ['Of which we applied steps ' num2str(find(RegStepUsed))]);
+StepsThatWeUsed = find(RegStepUsed);
+if isempty(StepsThatWeUsed)
+    fprintf('\n%s\n', 'Of which we skipped all steps (registration could not improve alignment)');
+else
+    fprintf('\n%s\n', ['Of which we applied steps ' num2str(StepsThatWeUsed) ', the other steps did not improve alignment']);
+end
 
 fprintf('%s\n\n\n','--------------------------------------------------------------------');
 
@@ -600,6 +623,15 @@ x.Output.ASL.(x.SESSIONS{x.iSession}).RegStep_TC_PWIPerc = RegStep_TC_PWIPerc;
 x.Output.ASL.(x.SESSIONS{x.iSession}).RegStepName = RegStepName;
 x.Output.ASL.(x.SESSIONS{x.iSession}).RegStepUsed = RegStepUsed;
 x.Output.ASL.(x.SESSIONS{x.iSession}).TC_ASL2T1w_Perc = RegStep_TC_MeanPerc(end);
+
+% Combine the images into a single QC image and save it
+combinedImage = [];
+for iImage=1:numel(regStepsImage)
+    combinedImage = [combinedImage; regStepsImage{iImage}];
+end
+pathSave = fullfile(x.D.ASLregT1wDir, ['ASL2T1wreg_' x.SUBJECT '_' x.SESSIONS{x.iSession}]);
+xASL_vis_Imwrite(combinedImage, pathSave, [], 0);
+
 
 %% ----------------------------------------------------------------------------------------
 %% Delete temporary files
@@ -646,21 +678,31 @@ end
 %% ==========================================================================================================
 %% ==========================================================================================================
 function [TanimotoCoeffControl, TanimotoCoeffPWI, sCoV, slicesRow] = xASL_im_GetSpatialOverlapASL(x, bsCoV)
-%xASL_im_GetSpatialOverlapASL Compute the overlap between two images (using
-% TC by default)
-%   x           - structure containing fields with all information required to run this submodule (REQUIRED)
-%   bsCoV       - boolean for getting warning if sCoV is not trustworthy (OPTIONAL, DEFAULT = false)
-%   
+%xASL_im_GetSpatialOverlapASL Compute the overlap between two images using TC
 %
-% Output:
+% FORMAT: [TanimotoCoeffControl, TanimotoCoeffPWI, sCoV, slicesRow] = xASL_im_GetSpatialOverlapASL(x[, bsCoV])
+%
+% INPUT:
+%   x  - structure containing fields with all information required to run this subfunction (REQUIRED)
+%   bsCoV       - boolean for getting warning if sCoV is not trustworthy (OPTIONAL, DEFAULT = false)
+%
+% OUTPUT:
 % TanimotoCoeffControl  - Tanimoto Similarity Coefficient, overlap between control image and pseudo-tissue image (%)
 % TanimotoCoeffPWI      - Tanimoto Similarity Coefficient, overlap between PWI image and pseudo-CBF image (%)
 % sCoV                  - spatial CoV within the PWI (fraction/ratio)
 % slicesRow             - row with two slices (48 & 69 in MNI) for control and PWI (if available) with GM-WM contour overlaid
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: This subfunction computes the PWI-based and control-based Tanimoto Coefficient as similarity index,
+% which can be used as index of alignment between an ASL image and T1w.
+% For PWI, it also computes the spatial CoV.
+% It also visualizes the alignment in MNI space, from PWI->pseudo-CBF, and control->pseudo-tissue.
+% 
+% EXAMPLES:
+% [RegStep_TC_ControlPerc, RegStep_TC_PWIPerc, ~, regStepsImage] = xASL_im_GetSpatialOverlapASL(x);
+% [~, ~, sCoV] = xASL_im_GetSpatialOverlapASL(x, 1);
 
 
 %% Admin
-
 if nargin<2 || isempty(bsCoV)
     bsCoV = false;
 end
