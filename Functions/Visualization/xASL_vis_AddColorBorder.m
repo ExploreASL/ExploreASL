@@ -6,8 +6,9 @@ function ImageThrough = xASL_vis_AddColorBorder(ImageThrough, BorderColor, Borde
 % INPUT:
 %   ImageThrough         - Input 3D image (2D image with 3rd dimension RGB) (REQUIRED)
 %   BorderColor          - RGB triplet specifying the border color, with values
-%                          between 0 and 1 (OPTIONAL, DEFAULT = [0 1 0])
-%   BorderWidth          - Border width in pixels (OPTIONAL, DEFAULT = 4)
+%                          between 0 and 1 (OPTIONAL, DEFAULT = [0 1 0], green)
+%                          see examples below
+%   BorderWidth          - Border width in pixels (OPTIONAL, DEFAULT = 2% of smallest dimension, minimal 2 lines)
 %   bBlackOuterLine      - boolean for keeping the outermost line black
 %                          which could facilitate visualizing concatenated images with
 %                          differently colored borders (OPTIONAL, DEFAULT = true)
@@ -42,17 +43,14 @@ function ImageThrough = xASL_vis_AddColorBorder(ImageThrough, BorderColor, Borde
 % __________________________________
 
 
-
-%xASL_vis_AddColorBorder Add a colored border inside an RGB image
-%
-
-
 if nargin < 4 || isempty(bBlackOuterLine)
     bBlackOuterLine = true;
 end
 
 if nargin < 3 || isempty(BorderWidth)
-    BorderWidth = 4;
+    minSize = min(size(ImageThrough(:,:,1)));
+    BorderWidth = ceil(0.02*minSize); % take 2% of the smallest dimension
+    BorderWidth = max(BorderWidth, 2); % take at least 2 lines
 end
 
 % Ensure that the image has an RGB dimension
@@ -62,7 +60,7 @@ elseif ndims(ImageThrough)~=3 || size(ImageThrough, 3) ~= 3
     error('Image has to be two-dimensional or with RGB 3rd dimension');
 end
 
-% Convert an RGB triplet in the range 0–1 to the image's numeric range
+% Numeric range: use either 0-1 range or 0-255 range
 if isinteger(ImageThrough)
     BorderColor = cast(BorderColor .* double(intmax(class(ImageThrough))), ...
                        class(ImageThrough));
@@ -74,7 +72,6 @@ else
 end
 
 
-
 % Draw each side of the border
 for iColor = 1:3
     ImageThrough(1:BorderWidth, :, iColor) = BorderColor(iColor);
@@ -84,9 +81,8 @@ for iColor = 1:3
 end
 
 % Make the outermost line black
-ImageThrough([1 end], :, :) = 0;
-ImageThrough(:, [1 end], :) = 0;
-ImageThrough(:, :, [1 end]) = 0;
+ImageThrough([1, end], :, :) = 0;
+ImageThrough(:, [1, end], :) = 0;
 
 
 end
