@@ -89,8 +89,12 @@ function [parameterList,phoenixProtocol] = xASL_bids_PhoenixProtocolReader(rawPh
                 condition_C = ~isempty(strfind(curLine,[preambleParIdentifier,'Bool']));
                 condition_D = ~isempty(strfind(curLine,[preambleParIdentifier,'Double']));
                 % Use conditions
+                
+                correctIndexStart = ~isempty(indexStart) && isnumeric(indexStart) && all(isfinite(indexStart)) && numel(indexStart)==1;
+                correctIndexEnd = ~isempty(indexEnd) && isnumeric(indexEnd) && all(isfinite(indexEnd))  && numel(indexEnd)==1;
+                
                 validParameter = condition_A || condition_B || condition_C || condition_D;
-                if ~isempty(indexStart) && ~isempty(indexEnd) && validParameter
+                if correctIndexStart && correctIndexEnd && validParameter
                     % Get the paramater value
                     valueToExtract = curLine(indexStart+1:indexEnd-1);
                     % Add key and value to general parameterList

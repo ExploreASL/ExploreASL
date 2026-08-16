@@ -490,11 +490,16 @@ function value = xASL_bids_PhoenixProtocolAnalyzer_getPhoePar(sourcePar,curParTo
     % Get cell ID
     IndexC = strfind(sourcePar,curParToExtract);
     cellID = find(not(cellfun('isempty',IndexC)));
-    % Return value
-    value = sourcePar{cellID,2};
-    % Convert string numbers to numbers
-    if ~isnan(str2double(value))
-        value = str2double(value);
+
+    correctIndexcellID = ~isempty(cellID) && isnumeric(cellID) && all(isfinite(cellID)) && numel(cellID)==1;
+
+    if correctIndexcellID
+        % Return value
+        value = sourcePar{cellID,2};
+        % Convert string numbers to numbers
+        if ~isnan(str2double(value))
+            value = str2double(value);
+        end
     end
 end
 

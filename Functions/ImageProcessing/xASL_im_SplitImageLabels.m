@@ -156,18 +156,27 @@ for iImage=1:length(ImagePaths)
             if ~isempty(ResampleDir)
                 % Get subject id
                 [StartIndex, EndIndex] = regexp(FileName, SubRegExp(2:end-1));
-                SubjectID = FileName(StartIndex:EndIndex);
-                % get filetype
-                [~, FileType] = xASL_fileparts(FileName);
-                
-                PathOut = fullfile(ResampleDir, [FileType '_' SubjectID '.nii']);
-                Path_y_ASL = fullfile(FileName(1:EndIndex), sessionFolder, 'y_ASL.nii');
-                if ~xASL_exist(Path_y_ASL)
-                    warning(['file didnt exist: ' Path_y_ASL]);
-                elseif ~xASL_exist(FileName)
-                    warning(['file didnt exist: ' FileName]);
+
+                correctIndexStart = ~isempty(StartIndex) && isnumeric(StartIndex) && all(isfinite(StartIndex)) && numel(StartIndex)==1;
+                correctIndexEnd = ~isempty(EndIndex) && isnumeric(EndIndex) && all(isfinite(EndIndex)) && numel(EndIndex) ==1;
+
+                if correctIndexStart && correctIndexEnd
+
+                    SubjectID = FileName(StartIndex:EndIndex);
+                    % get filetype
+                    [~, FileType] = xASL_fileparts(FileName);
+                    
+                    PathOut = fullfile(ResampleDir, [FileType '_' SubjectID '.nii']);
+                    Path_y_ASL = fullfile(FileName(1:EndIndex), sessionFolder, 'y_ASL.nii');
+                    if ~xASL_exist(Path_y_ASL)
+                        warning(['file didnt exist: ' Path_y_ASL]);
+                    elseif ~xASL_exist(FileName)
+                        warning(['file didnt exist: ' FileName]);
+                    else
+                        xASL_spm_deformations([], FileName, [PathOut '.gz'], 0, [], [], Path_y_ASL);
+                    end
                 else
-                    xASL_spm_deformations([], FileName, [PathOut '.gz'], 0, [], [], Path_y_ASL);
+                    warning(['Something wrong with filename:' FileName]);
                 end
             end
         end

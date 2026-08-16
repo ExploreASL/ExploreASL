@@ -41,7 +41,10 @@ for iCell=1:size(CellData,1)
 %     Field1 = []; % we start with no first field
 %     Field2 = []; % we start with no second field
     
-    if ~isempty(IndicesQuotes) && ~isempty(IndexColon)
+    correctIndicesQuotes = ~isempty(IndicesQuotes) && isnumeric(IndicesQuotes) && all(isfinite(IndicesQuotes)) && numel(IndicesQuotes)>1; % we need at least 2 IndicesQuotes
+    correctIndexColon = ~isempty(IndexColon) && isnumeric(IndexColon) && all(isfinite(IndexColon));
+
+    if correctIndicesQuotes && correctIndexColon
         % only now continue, we need a key & value
         % if IndicesQuotes(1)==2 % first field
         % if IndicesQuotes(1)==3 % second field -> etc, we could use this

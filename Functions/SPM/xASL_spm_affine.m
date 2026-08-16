@@ -112,7 +112,10 @@ if ~isempty(otherList) && ~bDCT
         
         % find comma
         StartComma = regexp(otherList{iList},',');
-        if ~isempty(StartComma)
+
+        correctIndexStart = ~isempty(StartComma) && isnumeric(StartComma) && all(isfinite(StartComma)) && numel(StartComma)==1;
+
+        if correctIndexStart
             Index4D = xASL_str2num(otherList{iList}(StartComma+1:end));
             otherList{iList} = otherList{iList}(1:StartComma-1);
             if Index4D==1

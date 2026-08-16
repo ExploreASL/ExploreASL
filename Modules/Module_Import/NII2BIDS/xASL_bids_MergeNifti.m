@@ -131,6 +131,15 @@ for iFile=1:length(NiftiPaths)
 	
 	% List the end number from the file name
 	[iStart, iEnd] = regexp(Ffile,'\d*$');
+
+    correctIndexStart = ~isempty(iStart) && isnumeric(iStart) && all(isfinite(iStart)) && numel(iStart)==1;
+    correctIndexEnd = ~isempty(iEnd) && isnumeric(iEnd) && all(isfinite(iEnd)) && numel(iEnd)==1;
+
+    if ~correctIndexStart || ~correctIndexEnd
+        warning(['End number missing in file:' Ffile]);
+        return
+    end
+
 	listEndNumber(iFile) = str2double(Ffile(iStart:iEnd));
 	
 	% Compare the PEAxis and PEDirection and check that it is the same for all of the M0-files

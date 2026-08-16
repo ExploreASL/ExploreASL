@@ -237,8 +237,10 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     				indexEnd = strfind(niiEntriesAlt{iEnt}, string(''''''));
 
                     % If both patterns exist, then remove its contents (insides)
-                    
-                    if ~isempty(indexStart) && ~isempty(indexEnd)
+                    correctIndexStart = ~isempty(indexStart) && isnumeric(indexStart) && all(isfinite(indexStart)) && numel(indexStart)==1;
+                    correctIndexEnd = ~isempty(indexEnd) && isnumeric(indexEnd) && all(isfinite(indexEnd))  && numel(indexEnd)==1;
+
+                    if correctIndexStart && correctIndexEnd
                         % Within that count the number of special characters by backslashes
                         numSlashes = sum(niiEntriesAlt{iEntry}((indexStart+3):(indexEnd-1)) == '\');
 
@@ -369,7 +371,14 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     expression = '_(\d+)$'; % Get last number after last _ symbol
                     [~, fileName, ~] = xASL_fileparts(fTempNii);
                     startIndex = regexp(fileName,expression);
-                    niiInstanceNumber = fileName(startIndex+1:end);
+
+                    correctIndexStart = ~isempty(startIndex) && isnumeric(startIndex) && all(isfinite(startIndex)) && numel(startIndex)==1;
+                    
+                    if ~correctIndexStart
+                        warning(['Something wrong with ' niiInstanceNumber]);
+                    else
+                        niiInstanceNumber = fileName(startIndex+1:end);
+                    end
                 end
 
                 if length(vectorKeep)>1 % add iVolume suffix (if there are multiple)
@@ -477,12 +486,15 @@ function [niiEntriesDest, niiNamesDest] = xASL_io_dcm2nii_FixFormat(niiEntries, 
         startIndexA = regexp(niiNames{iFile},expressionA);
         startIndexB = regexp(niiNames{iFile},expressionB);
         
+        correctIndexStartA = ~isempty(startIndexA) && isnumeric(startIndexA) && all(isfinite(startIndexA)) && numel(startIndexA)==1;
+        correctIndexStartB = ~isempty(startIndexB) && isnumeric(startIndexB) && all(isfinite(startIndexB)) && numel(startIndexB)==1;
+
         % Try different formats
-        if ~isempty(startIndexA)
+        if correctIndexStartA
             elements = strsplit(niiNames{iFile}(startIndexA+1:end),'_');
             instanceNumber = elements{1};
             echoNumber = elements{2}(2:end);
-        elseif ~isempty(startIndexB)
+        elseif correctIndexStartB
             instanceNumber = niiNames{iFile}(startIndexB+1:end);
         end
         
@@ -491,9 +503,9 @@ function [niiEntriesDest, niiNamesDest] = xASL_io_dcm2nii_FixFormat(niiEntries, 
         echoNumber = sprintf('%05s', echoNumber);
         
         % Rename file
-        if ~isempty(startIndexA)
+        if correctIndexStartA
             niiNamesDest{iFile} = [niiNames{iFile}(1:startIndexA) instanceNumber '_e' echoNumber];
-        elseif ~isempty(startIndexB)
+        elseif correctIndexStartB
             niiNamesDest{iFile} = [niiNames{iFile}(1:startIndexB) instanceNumber '_e' echoNumber];
         else
             niiNamesDest{iFile} = [niiNames{iFile} instanceNumber '_e' echoNumber];
