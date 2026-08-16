@@ -100,34 +100,40 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
         Software.ExploreASL_git = 'NoGitInstalled';
     else
         [indexStart, indexEnd] = regexp(gitVersion, '\d*\.\d*\.\d*');
-        if isempty(indexStart) || isempty(indexEnd)
+
+        % Check first if the indices are correct, 
+        % the terminal/system call could not work,
+        % or there could be other text coming from the terminal/system
+        correctIndexStart = ~isempty(indexStart) && isnumeric(indexStart) && isfinite(indexStart);
+        correctIndexEnd = ~isempty(indexEnd) && isnumeric(indexEnd) && isfinite(indexEnd);
+        
+        if ~correctIndexStart || ~correctIndexEnd
             warning('Unknown git version format');
+            Software.GIT = 'CouldNotGetGitVersion';
         else
-            gitVersion = gitVersion(indexStart:indexEnd);
-        end
-        
-        Software.GIT = gitVersion;
+            Software.GIT = gitVersion(indexStart(1):indexEnd(1));
 
-        % Test if there is a gitdir (if ExploreASL was cloned from github)
-        gitDir = fullfile(x.opts.MyPath, '.git');
-        
-        if ~exist(gitDir, 'dir')
-            Software.ExploreASL_git = 'NoGitDir';
-        else
-
-            oldPath = pwd;
-            cd(x.opts.MyPath);
+            % Test if there is a gitdir (if ExploreASL was cloned from github)
+            gitDir = fullfile(x.opts.MyPath, '.git');
             
-            [ResultIs, xASL_gitCommit] = xASL_system('git rev-parse HEAD');
-            cd(oldPath);
-            if ResultIs~=0
-                Software.ExploreASL_git = 'SomethingWrong';
+            if ~exist(gitDir, 'dir')
+                Software.ExploreASL_git = 'NoGitDir';
             else
-                Software.ExploreASL_git = strtrim(xASL_gitCommit);
+                oldPath = pwd;
+                cd(x.opts.MyPath);
+                
+                [ResultIs, xASL_gitCommit] = xASL_system('git rev-parse HEAD');
+                cd(oldPath);
+                if ResultIs~=0
+                    Software.ExploreASL_git = 'CouldNotGetGitVersion';
+                else
+                    Software.ExploreASL_git = strtrim(xASL_gitCommit);
+                end
             end
         end
     end
 
+    
     %% Add software field to x output
     try
         x.Output.SoftwareVersion(1) = Software;
