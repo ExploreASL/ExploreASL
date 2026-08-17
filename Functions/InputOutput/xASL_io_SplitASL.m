@@ -108,6 +108,9 @@ function xASL_io_SplitASL(inPath, iM0, iDummy)
 		iDummy = [iDummy, indexCBF'];
 		iDummy = sort(iDummy, 'ascend');
 	end
+
+	% Prioritize Dummy volume tag over M0 volume tag.
+	iM0 = iM0(~ismember(iM0, iDummy));
 	
     if ~xASL_exist(paths.ASL_Source,'file') % otherwise was already split
 
