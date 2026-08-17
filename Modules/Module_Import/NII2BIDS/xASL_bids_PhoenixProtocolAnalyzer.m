@@ -302,15 +302,15 @@ function [bidsPar,sourcePar] = xASL_bids_PhoenixProtocolAnalyzer(parameterList)
 				         xASL_str2num(sourcePar.sWipMemBlockalFree4), xASL_str2num(sourcePar.sWipMemBlockalFree5)]/1000000; 
 			vectorPLDNum = [xASL_str2num(sourcePar.sWipMemBlockalFree8), xASL_str2num(sourcePar.sWipMemBlockalFree9), xASL_str2num(sourcePar.sWipMemBlockalFree10),...
 				         xASL_str2num(sourcePar.sWipMemBlockalFree11), xASL_str2num(sourcePar.sWipMemBlockalFree12)]; 
-			maxPLD = 0;
+			maxIndexPLD = 0;
 			% Find the number of non-empty (non-NaN) entries
-			while (maxPLD < 5) && ~isnan(vectorPLD(maxPLD+1)) && ~isnan(vectorPLDNum(maxPLD+1))
-				maxPLD = maxPLD + 1;
+			while (maxIndexPLD < 5) && ~isnan(vectorPLD(maxIndexPLD+1)) && ~isnan(vectorPLDNum(maxIndexPLD+1))
+				maxIndexPLD = maxIndexPLD + 1;
 			end
 
 			% Fill in the PLD vector based on the entries
 			bidsPar.PostLabelingDelay = [];
-			for iPLD = 1:maxPLD
+			for iPLD = 1:maxIndexPLD
 				bidsPar.PostLabelingDelay = [bidsPar.PostLabelingDelay, ones(1, vectorPLDNum(iPLD)*2) * vectorPLD(iPLD)];
 			end
 		else
