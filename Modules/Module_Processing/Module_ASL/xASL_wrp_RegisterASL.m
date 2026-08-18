@@ -371,7 +371,7 @@ if x.settings.bAutoACPC
     RegStepName{end+1} = 'im_CenterOfMass';
     RegStep_TC_MeanPerc = xASL_stat_MeanNan([RegStep_TC_PWIPerc;RegStep_TC_ControlPerc], 1);
     
-    if RegStep_TC_MeanPerc(end)>=RegStep_TC_MeanPerc(max(find(RegStepUsed))) % if alignment improved or remained same
+    if RegStep_TC_MeanPerc(end)>RegStep_TC_MeanPerc(max([1, find(RegStepUsed)])) % if alignment improved
 
         xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
         RegStepUsed(end+1) = 1;
@@ -434,7 +434,7 @@ if bRegistrationControl
         [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1), ~, regStepsImage{end+1}] = xASL_im_GetSpatialOverlapASL(x);
         RegStep_TC_MeanPerc = xASL_stat_MeanNan([RegStep_TC_PWIPerc;RegStep_TC_ControlPerc], 1);
 
-        if RegStep_TC_MeanPerc(end)>=RegStep_TC_MeanPerc(max(find(RegStepUsed))) % if alignment improved or remained same
+        if RegStep_TC_MeanPerc(end)>RegStep_TC_MeanPerc(max([1, find(RegStepUsed)])) % if alignment improved
 
             % use this
             xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
@@ -490,26 +490,24 @@ if bRegistrationCBF
                 [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1), ~, regStepsImage{end+1}] = xASL_im_GetSpatialOverlapASL(x); % get new overlap score
                 RegStepName{end+1} = ['linear_PWI->pseudoCBF_' num2str(iT)];
 
-				if x.modules.asl.bRegistrationContrast~=3 % if we don't don't force CBF-pGM registration
-					RegStep_TC_MeanPerc = xASL_stat_MeanNan([RegStep_TC_PWIPerc;RegStep_TC_ControlPerc], 1);
-                    
-                    if RegStep_TC_MeanPerc(end)>=RegStep_TC_MeanPerc(max(find(RegStepUsed))) % if alignment improved or remained same
-						% if alignment improved or remained more or less the same
-						xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
-                        RegStepUsed(end+1) = 1;
-                        regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [0 1 0]);
-					else
-						% if alignment got significantly (>1% Tanimoto) worse
-						% we don't force CBF-pGM registration
-						xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
-						bSkipThis = true; % skip next iteration
-						if iT == 1
-							bAffineRegistration = 0; % skip affine registration and therefore also DCT - only when it fails to improve on the first, not on the second
-                        end
-                        RegStepUsed(end+1) = 0;
-                        regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [1 0 0]);
-					end
-				end
+				RegStep_TC_MeanPerc = xASL_stat_MeanNan([RegStep_TC_PWIPerc;RegStep_TC_ControlPerc], 1);
+
+                if RegStep_TC_MeanPerc(end)>RegStep_TC_MeanPerc(max([1, find(RegStepUsed)])) % if alignment improved
+					% if alignment improved or remained more or less the same
+					xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
+                    RegStepUsed(end+1) = 1;
+                    regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [0 1 0]);
+				else
+					% if alignment got significantly (>1% Tanimoto) worse
+					% we don't force CBF-pGM registration
+					xASL_im_BackupAndRestoreAll(BaseOtherList, 2); % restore NIfTIs from backup
+					bSkipThis = true; % skip next iteration
+					if iT == 1
+						bAffineRegistration = 0; % skip affine registration and therefore also DCT - only when it fails to improve on the first, not on the second
+                    end
+                    RegStepUsed(end+1) = 0;
+                    regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [1 0 0]);
+                end
 
                 [~, ~, sCoV(iT+1)] = xASL_im_GetSpatialOverlapASL(x, 1);
 			end
@@ -544,8 +542,8 @@ if bRegistrationCBF
                 RegStep_TC_MeanPerc = xASL_stat_MeanNan([RegStep_TC_PWIPerc;RegStep_TC_ControlPerc], 1);
                 RegStepName{end+1} = 'affine_PWI->pseudoCBF';
 
-                if RegStep_TC_MeanPerc(end)>=RegStep_TC_MeanPerc(max(find(RegStepUsed)))*0.99
-					% if alignment improved or remained more or less the same
+                if RegStep_TC_MeanPerc(end)>RegStep_TC_MeanPerc(max([1, find(RegStepUsed)]))*0.99
+					% if alignment improved
 					xASL_im_BackupAndRestoreAll(BaseOtherList, 3); % delete backup
                     RegStepUsed(end+1) = 1;
                     regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [0 1 0]);
@@ -580,7 +578,7 @@ if bRegistrationCBF
                 RegStep_TC_MeanPerc = xASL_stat_MeanNan([RegStep_TC_PWIPerc;RegStep_TC_ControlPerc], 1);                
                 RegStepName{end+1} = 'affine+DCT_PWI->pseudoCBF';
 
-                if RegStep_TC_MeanPerc(end)>=RegStep_TC_MeanPerc(max(find(RegStepUsed)))*0.99
+                if RegStep_TC_MeanPerc(end)>RegStep_TC_MeanPerc(max([1, find(RegStepUsed)]))*0.99
                     % No need to delete backup if all went fine
                     RegStepUsed(end+1) = 1;
                     regStepsImage{end} = xASL_vis_AddColorBorder(regStepsImage{end}, [0 1 0]);
@@ -756,8 +754,8 @@ else
 end
 
 % Resample c2T1 to pvWM, as we use this below for overlay visualization
-xASL_im_PreSmooth(x.P.Path_mean_control, x.P.Path_c2T1, x.P.Path_PVwm, [4 4 4], [], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
-xASL_spm_reslice(x.P.Path_mean_control, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwm);
+xASL_im_PreSmooth(x.P.Path_mean_PWI_Clipped, x.P.Path_c2T1, x.P.Path_PVwm, [4 4 4], [], x.P.Path_mean_PWI_Clipped_sn_mat, 1);
+xASL_spm_reslice(x.P.Path_mean_PWI_Clipped, x.P.Path_PVwm, x.P.Path_mean_PWI_Clipped_sn_mat, 1, x.settings.Quality, x.P.Path_PVwm);
 
 %% Get control-based Tanimoto Coefficient
 if xASL_exist(x.P.Path_mean_control)
