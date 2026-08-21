@@ -476,7 +476,7 @@ for iScanType=1:length(PreFixList)
                         RMS.(rmsFieldName) = RMS_output;
                         RMS.([rmsFieldName '_SUBJECTS']) = LoadSubjects';
 
-                        LoadSessions = repmat(listSessions(iSession),[nSize 1]);
+                        LoadSessions = repmat(listSessions(iSession),[length(LoadSubjects) 1]);
 
                         if SessionsExist(iScanType)
                             xASL_bids_Add2ParticipantsTSV([LoadSubjects LoadSessions num2cell(RMS_output')], [rmsFieldName '_QC_RMS'], x, [], pathTSV);
