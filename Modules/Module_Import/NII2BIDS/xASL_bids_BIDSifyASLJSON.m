@@ -87,9 +87,11 @@ end
 
 %% 4. Convert certain DICOM fields
 %% 4a. General conversions
-% For GE, the NumberOfExcitations tag can act as a replacement for TotalAcquiredPairs
-if isfield(jsonInMerged,'NumberOfExcitations') && ~isfield(jsonInMerged, 'TotalAcquiredPairs') && ~isempty(regexpi(jsonInMerged.Manufacturer, 'GE'))
-	jsonInMerged.TotalAcquiredPairs = jsonInMerged.NumberOfExcitations;
+% For GE, use NumberOfExcitations as TotalAcquiredPairs (NEX = number of pairs)
+if isfield(jsonInMerged,'NumberOfExcitations') && ~isempty(regexpi(jsonInMerged.Manufacturer, 'GE'))
+    % Always use NumberOfExcitations for GE as it directly reflects 
+    % the number of acquired pairs, regardless of TotalAcquiredPairs
+    jsonInMerged.TotalAcquiredPairs = jsonInMerged.NumberOfExcitations;
 end
 
 % TotalAcquiredPairs - use only the maximum values from DICOM
