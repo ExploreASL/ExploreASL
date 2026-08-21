@@ -618,14 +618,14 @@ function [parms, pathDcmDictOut] = xASL_bids_Dicom2JSON(imPar, pathIn, pathJSON,
 						if isfield(parms{parmsIndex},'AcquisitionMatrix') && ~isempty(parms{parmsIndex}.AcquisitionMatrix) && ~sum(isnan(parms{parmsIndex}.AcquisitionMatrix))
 							if length(parms{parmsIndex}.AcquisitionMatrix) == 1
 								parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix;
-							elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL')
+							elseif ~isempty(regexpi(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL','once'))
 								parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix(2);
 							else
 								parms{parmsIndex}.ReconMatrixPE = parms{parmsIndex}.AcquisitionMatrix(1);
 							end
-						elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL')
+						elseif ~isempty(regexpi(parms{parmsIndex}.InPlanePhaseEncodingDirection,'COL','once'))
 							parms{parmsIndex}.ReconMatrixPE = double(parms{parmsIndex}.Rows);
-						elseif strcmp(parms{parmsIndex}.InPlanePhaseEncodingDirection,'ROW')
+						elseif ~isempty(regexpi(parms{parmsIndex}.InPlanePhaseEncodingDirection,'ROW','once'))
 							parms{parmsIndex}.ReconMatrixPE = double(parms{parmsIndex}.Columns);
 						else
 							error('Unknown InPlanePhaseEncodingDirection');

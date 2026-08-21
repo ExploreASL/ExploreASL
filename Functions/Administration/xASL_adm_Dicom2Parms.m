@@ -367,9 +367,9 @@ function [parms, pathDcmDictOut] = xASL_adm_Dicom2Parms(imPar, inp, parmsfile, d
                 if isfield(parms,'BandwidthPerPixelPhaseEncode') && isfield(parms,'InPlanePhaseEncodingDirection')
                     parms.BandwidthPerPixelPhaseEncode = double(parms.BandwidthPerPixelPhaseEncode);
                     
-                    if strcmp(parms.InPlanePhaseEncodingDirection,'COL')
+                    if ~isempty(regexpi(parms.InPlanePhaseEncodingDirection,'COL','once'))
                        parms.ReconMatrixPE = double(parms.Rows);
-                    elseif strcmp(parms.InPlanePhaseEncodingDirection,'ROW')
+                    elseif ~isempty(regexpi(parms.InPlanePhaseEncodingDirection,'ROW','once'))
                        parms.ReconMatrixPE = double(parms.Columns);
                     else
                        error('Unknown InPlanePhaseEncodingDirection');
