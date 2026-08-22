@@ -529,7 +529,7 @@ for iScanType=1:length(PreFixList)
                             end % iSet=1:length(Sets2Check)
                         end % if bComputeSets
                     end % if bProceedComputationMaps
-                end % bSkipWhenMissingScans && UnAvailable>0.10*nSize
+                end % bSkipWhenMissingScans && UnAvailable>0.10*nSubjectsPredefined
             end % bSkipWhenMissingScans && isempty(LoadFiles)
         end % if bProceedThisSession
 
