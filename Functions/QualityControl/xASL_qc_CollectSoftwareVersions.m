@@ -104,8 +104,8 @@ function [x] = xASL_qc_CollectSoftwareVersions(x)
         % Check first if the indices are correct, 
         % the terminal/system call could not work,
         % or there could be other text coming from the terminal/system
-        correctIndexStart = ~isempty(indexStart) && isnumeric(indexStart) && all(isfinite(indexStart));
-        correctIndexEnd = ~isempty(indexEnd) && isnumeric(indexEnd) && all(isfinite(indexEnd));
+        correctIndexStart = ~isempty(indexStart) && isnumeric(indexStart);
+        correctIndexEnd = ~isempty(indexEnd) && isnumeric(indexEnd);
         
         if ~correctIndexStart || ~correctIndexEnd
             warning('Unknown git version format');

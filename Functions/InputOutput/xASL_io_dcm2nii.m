@@ -237,7 +237,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     				indexEnd = strfind(niiEntriesAlt{iEnt}, string(''''''));
 
                     % If both patterns exist, then remove its contents (insides)
-                    correctIndexStart = ~isempty(indexStart) && && numel(indexStart)==1;
+                    correctIndexStart = ~isempty(indexStart) && numel(indexStart)==1;
                     correctIndexEnd = ~isempty(indexEnd) && numel(indexEnd)==1;
 
                     if correctIndexStart && correctIndexEnd

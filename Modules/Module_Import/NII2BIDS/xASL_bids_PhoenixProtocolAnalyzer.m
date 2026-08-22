@@ -491,7 +491,7 @@ function value = xASL_bids_PhoenixProtocolAnalyzer_getPhoePar(sourcePar,curParTo
     IndexC = strfind(sourcePar,curParToExtract);
     cellID = find(not(cellfun('isempty',IndexC)));
 
-    correctIndexcellID = ~isempty(cellID) && isnumeric(cellID) && all(isfinite(cellID)) && numel(cellID)==1;
+    correctIndexcellID = ~isempty(cellID) && numel(cellID)==1;
 
     if correctIndexcellID
         % Return value
