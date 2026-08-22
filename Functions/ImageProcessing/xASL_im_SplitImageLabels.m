@@ -157,8 +157,8 @@ for iImage=1:length(ImagePaths)
                 % Get subject id
                 [StartIndex, EndIndex] = regexp(FileName, SubRegExp(2:end-1));
 
-                correctIndexStart = ~isempty(StartIndex) && isnumeric(StartIndex) && all(isfinite(StartIndex)) && numel(StartIndex)==1;
-                correctIndexEnd = ~isempty(EndIndex) && isnumeric(EndIndex) && all(isfinite(EndIndex)) && numel(EndIndex) ==1;
+                correctIndexStart = ~isempty(StartIndex) && numel(StartIndex)==1;
+                correctIndexEnd = ~isempty(EndIndex) && numel(EndIndex) ==1;
 
                 if correctIndexStart && correctIndexEnd
 

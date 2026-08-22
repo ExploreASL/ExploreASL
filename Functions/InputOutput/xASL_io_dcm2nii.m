@@ -237,8 +237,8 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
     				indexEnd = strfind(niiEntriesAlt{iEnt}, string(''''''));
 
                     % If both patterns exist, then remove its contents (insides)
-                    correctIndexStart = ~isempty(indexStart) && isnumeric(indexStart) && all(isfinite(indexStart)) && numel(indexStart)==1;
-                    correctIndexEnd = ~isempty(indexEnd) && isnumeric(indexEnd) && all(isfinite(indexEnd))  && numel(indexEnd)==1;
+                    correctIndexStart = ~isempty(indexStart) && && numel(indexStart)==1;
+                    correctIndexEnd = ~isempty(indexEnd) && numel(indexEnd)==1;
 
                     if correctIndexStart && correctIndexEnd
                         % Within that count the number of special characters by backslashes
@@ -372,7 +372,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
                     [~, fileName, ~] = xASL_fileparts(fTempNii);
                     startIndex = regexp(fileName,expression);
 
-                    correctIndexStart = ~isempty(startIndex) && isnumeric(startIndex) && all(isfinite(startIndex)) && numel(startIndex)==1;
+                    correctIndexStart = ~isempty(startIndex) && numel(startIndex)==1;
                     
                     if ~correctIndexStart
                         warning(['Something wrong with ' niiInstanceNumber]);
@@ -486,8 +486,8 @@ function [niiEntriesDest, niiNamesDest] = xASL_io_dcm2nii_FixFormat(niiEntries, 
         startIndexA = regexp(niiNames{iFile},expressionA);
         startIndexB = regexp(niiNames{iFile},expressionB);
         
-        correctIndexStartA = ~isempty(startIndexA) && isnumeric(startIndexA) && all(isfinite(startIndexA)) && numel(startIndexA)==1;
-        correctIndexStartB = ~isempty(startIndexB) && isnumeric(startIndexB) && all(isfinite(startIndexB)) && numel(startIndexB)==1;
+        correctIndexStartA = ~isempty(startIndexA) && numel(startIndexA)==1;
+        correctIndexStartB = ~isempty(startIndexB) && numel(startIndexB)==1;
 
         % Try different formats
         if correctIndexStartA

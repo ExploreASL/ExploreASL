@@ -30,8 +30,8 @@ for iS=1:length(Lesion_ROI_list)
 	[fPath, fName, fExt] = xASL_fileparts(Lesion_ROI_list{iS}); % Split the filename to path and name
 	[startIndex,endIndex] = regexp(fName, '(T1|FLAIR)'); % Extract the name of the structural file
 
-    correctIndexStart = ~isempty(startIndex) && isnumeric(startIndex) && all(isfinite(startIndex)) && numel(startIndex)==1;
-    correctIndexEnd = ~isempty(endIndex) && isnumeric(endIndex) && all(isfinite(endIndex)) && numel(endIndex)==1;
+    correctIndexStart = ~isempty(startIndex) && numel(startIndex)==1;
+    correctIndexEnd = ~isempty(endIndex) && numel(endIndex)==1;
     
     if correctIndexStart && correctIndexEnd
 
