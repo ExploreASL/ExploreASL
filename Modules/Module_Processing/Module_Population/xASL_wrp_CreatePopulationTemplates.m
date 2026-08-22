@@ -405,9 +405,9 @@ for iScanType=1:length(PreFixList)
 
                 % Irrespective of the number of sessions, we use the number of subjects
                 % for checking missing scans (as we process each session independently)
-                nSize = x.dataset.nSubjects;
+                nSubjectsPredefined = x.dataset.nSubjects;
 
-                if bSkipWhenMissingScans && UnAvailable>0.10*nSize % we can allow for 10% unavailable scans
+                if bSkipWhenMissingScans && UnAvailable>0.10*nSubjectsPredefined % we can allow for 10% unavailable scans
                     fprintf('\n%s',['More than 10% missing ' PreFixList{iScanType} ' files, skipping...']);
                 else
 
