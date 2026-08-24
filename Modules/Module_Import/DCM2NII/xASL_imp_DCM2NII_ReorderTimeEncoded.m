@@ -48,7 +48,8 @@ if numel(nii_files)>=1
 				% This is only relevant for non gammastar sequence versions. For gammaStar, this step can be skipped. 
 				% Note that there are two different DICOM tags that can be used to identify gammaStar - both are checked in case some were removed during data anonymization
 				if (~isfield(resultJSON, 'PulseSequenceDetails') || isempty(regexpi(resultJSON.PulseSequenceDetails, 'fme_gammastar', 'once'))) &&...
-			       (~isfield(resultJSON, 'SequenceName') || isempty(regexpi(resultJSON.SequenceName, 'gammastar', 'once')))
+			       (~isfield(resultJSON, 'SequenceName') || isempty(regexpi(resultJSON.SequenceName, 'gammastar', 'once'))) &&...
+				   (~isfield(resultJSON, 'PulseSequenceName') || isempty(regexpi(resultJSON.PulseSequenceName, 'gammastar', 'once')))
 					if numel(vectorPLD) > numberPLDs
 						for iRepetition = 2:floor(numel(vectorPLD)/numberPLDs)
 							if ~isequal(vectorPLD(1:numberPLDs),vectorPLD((1:numberPLDs)+numberPLDs*(iRepetition-1)))
