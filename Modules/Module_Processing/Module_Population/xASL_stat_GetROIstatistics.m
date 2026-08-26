@@ -118,7 +118,7 @@ if x.S.InputNativeSpace
 		% Go through subjects and sessions until we find an existing atlas/ROI
 		indExistSubject = indExistSubject + 1;
 		indExistSession = 0;
-		while (indExistSession < x.dataset.nSessions) && ~bExistingSession
+		while (indExistSession < length(listSessions)) && ~bExistingSession
 			indExistSession = indExistSession + 1;
 			if xASL_exist(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{indExistSubject},listSessions{indExistSession},[x.S.InputAtlasNativeName '.nii']), 'file')
 				bExistingSession = 1;
