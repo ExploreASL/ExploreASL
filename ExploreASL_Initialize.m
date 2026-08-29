@@ -134,8 +134,10 @@ function [x] = ExploreASL_Initialize(varargin)
 
 	if ~isdeployed && usejava('desktop') % true if the Matlab GUI is loaded, false when in CLI with or without Java VM
         disp('<a href="https://exploreasl.github.io/Documentation">Click here for the ExploreASL manual</a>');
+		disp('Send donations to the ExploreASL team through <a href="https://www.patreon.com/ExploreASL">Patreon</a>');
     else % text only
         fprintf('ExploreASL manual is available at https://exploreasl.github.io/Documentation\n');
+		fprintf('Send donations to the ExploreASL team through https://www.patreon.com/ExploreASL\n');
     end
 end
 
