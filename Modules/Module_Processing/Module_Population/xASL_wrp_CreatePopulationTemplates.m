@@ -237,8 +237,8 @@ end
 if UsePredefined
     % Structural images
     PreFixList          = {['r' x.P.STRUCT]};                   TemplateNameList           = {'T1'};        SessionsExist        =  0;
-    PreFixList{end+1}   = ['mrc1' x.P.STRUCT];                  TemplateNameList{end+1}    = 'mrc1T1';      SessionsExist(end+1) =  0;
-    PreFixList{end+1}   = ['mrc2' x.P.STRUCT];                  TemplateNameList{end+1}    = 'mrc2T1';      SessionsExist(end+1) =  0;
+    % PreFixList{end+1}   = ['mrc1' x.P.STRUCT];                  TemplateNameList{end+1}    = 'mrc1T1';      SessionsExist(end+1) =  0;
+    % PreFixList{end+1}   = ['mrc2' x.P.STRUCT];                  TemplateNameList{end+1}    = 'mrc2T1';      SessionsExist(end+1) =  0;
     PreFixList{end+1}   = ['rc1' x.P.STRUCT];                   TemplateNameList{end+1}    = 'pGM';         SessionsExist(end+1) =  0;
     PreFixList{end+1}   = ['rc2' x.P.STRUCT];                   TemplateNameList{end+1}    = 'pWM';         SessionsExist(end+1) =  0;
     PreFixList{end+1}   = ['rc3' x.P.STRUCT];                   TemplateNameList{end+1}    = 'pCSF';        SessionsExist(end+1) =  0;
@@ -428,6 +428,9 @@ for iScanType=1:length(PreFixList)
                             for iLoad=1:nLoad % add images
                                 % xASL_TrackProgress(iLoad, nLoad);
                                 tempIM = xASL_io_Nifti2Im(LoadFiles{iCell}{iLoad, 1});
+								% clip below zero for visualization
+								tempIM(tempIM<0) = 0;
+
                                 tempImColumn = xASL_im_IM2Column(tempIM, x.S.masks.WBmask);
 
                                 if iLoad>1 && ~(size(tempImColumn, 1)==size(IM{iCell},1))
@@ -444,9 +447,7 @@ for iScanType=1:length(PreFixList)
                             end
                             fprintf('\n');
                             
-                            % clip below zero for visualization
-                            IM{iCell}(IM{iCell}<0) = 0;
-                            if bSaveUnmasked; IM2noMask{iCell}(IM2noMask{iCell}<0) = 0; end                            
+                            
                         end
                     end
                     
@@ -877,9 +878,9 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
     UseIM = ones(size(IM,iDim),1);
     for iM=1:size(IM,iDim)
         if bMask
-            CheckSum = xASL_stat_SumNan(IM(:,iM))==0;
+			CheckSum = any(IM(:, iM)>0, 'all');
         else
-            CheckSum = xASL_stat_SumNan(xASL_stat_SumNan(xASL_stat_SumNan(IM(:,:,:,iM))))==0;
+			CheckSum = any(IM(:,:,:, iM)>0, 'all');
         end
         if CheckSum
             UseIM(iM) = 0;
