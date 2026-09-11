@@ -179,7 +179,7 @@ end
 % warning & try to correct this
 
 if exist('imOut', 'var')
-	MaxIm = max(imOut(isfinite(imOut)));
+	MaxIm = max(imOut, [], 'all', 'omitnan');
     if isempty(MaxIm)
         % skip this image checking, it is empty
     elseif MaxIm>1e9 && exist('Fpath', 'var') && exist('Ffile', 'var')

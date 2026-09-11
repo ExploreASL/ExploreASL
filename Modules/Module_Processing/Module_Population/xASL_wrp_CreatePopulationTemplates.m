@@ -1,8 +1,8 @@
-function RMS = xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, SpecificScantype, bSkipWhenMissingScans, bRemoveOutliers, FunctionsAre, bUpdateMetadata, SmoothingFWHM, bSaveMasks4QC)
+function RMS = xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Sets, SpecificScantype, bSkipWhenMissingScans, bRemoveOutliers, FunctionsAre, bUpdateMetadata, SmoothingFWHM, bSaveMasks4QC, bRobustCalculation)
 %xASL_wrp_CreatePopulationTemplates ExploreASL Population module wrapper,
 %creates population parametric images for each ScanType
 %
-% FORMAT: xASL_wrp_CreatePopulationTemplates(x[, bSaveUnmasked, Compute4Sets, SpecificScantype, bSkipWhenMissingScans, bRemoveOutliers, FunctionsAre])
+% FORMAT: xASL_wrp_CreatePopulationTemplates(x[, bSaveUnmasked, Compute4Sets, SpecificScantype, bSkipWhenMissingScans, bRemoveOutliers, FunctionsAre, bRobustCalculation])
 %
 % INPUT:
 %   x            - structure containing fields with all information required to run the population module (REQUIRED)
@@ -44,6 +44,7 @@ function RMS = xASL_wrp_CreatePopulationTemplates(x, bSaveUnmasked, bCompute4Set
 %                       masks, to avoid space redundancy, which is also why
 %                       this is stored in uint8 and zipped. (OPTIONAL,
 %                       DEFAULT = 0)
+%   bRobustCalculation - use the more robust way of calculating the means and medians for templates which is way more memory consuming (OPTIONAL, DEFAULT = false)
 %
 % OUTPUT: n/a
 %
@@ -154,6 +155,10 @@ else
     error('Illegal value for bSaveMasks4QC');
 end
 
+if nargin<11 || isempty(bRobustCalculation)
+	bRobustCalculation = false;
+end
+
 if ~isfield(x,'GradualSkull')
     x.GradualSkull = xASL_io_Nifti2Im(fullfile(x.D.MapsSPMmodifiedDir, 'rbrainmask.nii'));
 end
@@ -237,8 +242,8 @@ end
 if UsePredefined
     % Structural images
     PreFixList          = {['r' x.P.STRUCT]};                   TemplateNameList           = {'T1'};        SessionsExist        =  0;
-    PreFixList{end+1}   = ['mrc1' x.P.STRUCT];                  TemplateNameList{end+1}    = 'mrc1T1';      SessionsExist(end+1) =  0;
-    PreFixList{end+1}   = ['mrc2' x.P.STRUCT];                  TemplateNameList{end+1}    = 'mrc2T1';      SessionsExist(end+1) =  0;
+    % PreFixList{end+1}   = ['mrc1' x.P.STRUCT];                  TemplateNameList{end+1}    = 'mrc1T1';      SessionsExist(end+1) =  0;
+    % PreFixList{end+1}   = ['mrc2' x.P.STRUCT];                  TemplateNameList{end+1}    = 'mrc2T1';      SessionsExist(end+1) =  0;
     PreFixList{end+1}   = ['rc1' x.P.STRUCT];                   TemplateNameList{end+1}    = 'pGM';         SessionsExist(end+1) =  0;
     PreFixList{end+1}   = ['rc2' x.P.STRUCT];                   TemplateNameList{end+1}    = 'pWM';         SessionsExist(end+1) =  0;
     PreFixList{end+1}   = ['rc3' x.P.STRUCT];                   TemplateNameList{end+1}    = 'pCSF';        SessionsExist(end+1) =  0;
@@ -389,186 +394,274 @@ for iScanType=1:length(PreFixList)
                     UnAvailable = UnAvailable+1;
                 end
             end
-            
-            if isempty(LoadFiles{1})
-                fprintf('\n%s',['No ' PreFixList{iScanType} ' NIfTIs found, skipping...']);
-            elseif AnyBilateralFound && AnyUnilateralFound
-                warning('\n%s',['Both bilateral & unilateral ' PreFixList{iScanType} ' NIfTIs found, please remove one of these, skipping...']);
-            else
-                %% 4. Load images
-                if AnyUnilateralFound
-                    fprintf('%s\n', 'Unilateral (left and right) images detected');
-                    LoadString = {'left' 'right'};
-                else
-                    LoadString = {'bilateral'};
-                end
 
-                % Irrespective of the number of sessions, we use the number of subjects
-                % for checking missing scans (as we process each session independently)
-                nSubjectsPredefined = x.dataset.nSubjects;
+			if isempty(LoadFiles{1})
+				fprintf('\n%s',['No ' PreFixList{iScanType} ' NIfTIs found, skipping...']);
+			elseif AnyBilateralFound && AnyUnilateralFound
+				warning('\n%s',['Both bilateral & unilateral ' PreFixList{iScanType} ' NIfTIs found, please remove one of these, skipping...']);
+			else
+				%% 4. Load images
+				if AnyUnilateralFound
+					fprintf('%s\n', 'Unilateral (left and right) images detected');
+					LoadString = {'left' 'right'};
+				else
+					LoadString = {'bilateral'};
+				end
 
-                if bSkipWhenMissingScans && UnAvailable>0.10*nSubjectsPredefined % we can allow for 10% unavailable scans
-                    fprintf('\n%s',['More than 10% missing ' PreFixList{iScanType} ' files, skipping...']);
-                else
+				% Irrespective of the number of sessions, we use the number of subjects
+				% for checking missing scans (as we process each session independently)
+				nSubjectsPredefined = x.dataset.nSubjects;
 
-                    % If we load both left & right (unilateral) images, IM & IM2noMask
-                    % becomes 2 cells, if we load only bilateral images, IM
-                    % & IM2noMask have 1 cell
-                    bProceedComputationMaps = 1;
-                    
-                    for iCell=1:2
-                        if iCell==2 && AnyBilateralFound
-                            % we skip the second cell for bilateral images
-                        else
-                            % fprintf('%s', ['Loading ' LoadString{iCell} ' images:   ']);
-                            nLoad = size(LoadFiles{iCell}, 1);
-                            IM{iCell} = zeros(Size1, nLoad, 'single'); % pre-allocating for speed
-                            if bSaveUnmasked; IM2noMask{iCell} = zeros(121,145,121,nLoad, 'single'); end
+				if bSkipWhenMissingScans && UnAvailable>0.10*nSubjectsPredefined % we can allow for 10% unavailable scans
+					fprintf('\n%s',['More than 10% missing ' PreFixList{iScanType} ' files, skipping...']);
+				else
+					if bRobustCalculation
+						% If we load both left & right (unilateral) images, IM & IM2noMask
+						% becomes 2 cells, if we load only bilateral images, IM
+						% & IM2noMask have 1 cell
+						bProceedComputationMaps = 1;
 
-                            for iLoad=1:nLoad % add images
-                                % xASL_TrackProgress(iLoad, nLoad);
-                                tempIM = xASL_io_Nifti2Im(LoadFiles{iCell}{iLoad, 1});
-                                tempImColumn = xASL_im_IM2Column(tempIM, x.S.masks.WBmask);
+						for iCell=1:2
+							if iCell==2 && AnyBilateralFound
+								% we skip the second cell for bilateral images
+							else
+								% fprintf('%s', ['Loading ' LoadString{iCell} ' images:   ']);
+								nLoad = size(LoadFiles{iCell}, 1);
+								IM{iCell} = zeros(Size1, nLoad, 'single'); % pre-allocating for speed
+								if bSaveUnmasked; IM2noMask{iCell} = zeros(121,145,121,nLoad, 'single'); end
 
-                                if iLoad>1 && ~(size(tempImColumn, 1)==size(IM{iCell},1))
-                                    warning(['Wrong size:' LoadFiles{iCell}{iLoad,1}]);
-                                    bProceedComputationMaps = 0; % proceed with next ScanType
-                                elseif size(tempIM, 4)>1 % 4D images, feature that we're working on
-                                    warning(['4D image, incomplete feature:' LoadFiles{iCell}{iLoad,1}]);
-                                    bProceedComputationMaps = 0; % proceed with next ScanType
-                                    fprintf('We are working on a feature for 4D maps statistics, skipping this for now\n');
-                                else % add the image
-                                    IM{iCell}(:,iLoad) = tempImColumn;
-                                    if bSaveUnmasked; IM2noMask{iCell}(:,:,:,iLoad) = tempIM; end
-                                end
-                            end
-                            fprintf('\n');
-                            
-                            % clip below zero for visualization
-                            IM{iCell}(IM{iCell}<0) = 0;
-                            if bSaveUnmasked; IM2noMask{iCell}(IM2noMask{iCell}<0) = 0; end                            
-                        end
-                    end
-                    
-                    if size(LoadSetsID, 1)>size(x.S.SetsID,1)
-                        warning('Somehow the number of subjects or sessions doesnt match between population and other folders');
-                        fprintf('%s/n', 'This could be due to a rerun with e.g. fewer sessions than an earlier run');
-                    else
-                        CurrentSetsID = x.S.SetsID(LoadSetsID, :);
-                    end
-                    
-                    %% Do some computations with the loaded maps, if requested
-                    if bProceedComputationMaps
+								for iLoad=1:nLoad % add images
+									% xASL_TrackProgress(iLoad, nLoad);
+									tempIM = xASL_io_Nifti2Im(LoadFiles{iCell}{iLoad, 1});
+									% clip below zero for visualization
+									tempIM(tempIM<0) = 0;
 
-                        % initialize image indices that will be included
-                        NotOutliers = true(1, size(IM{1}, 2));
+									tempImColumn = xASL_im_IM2Column(tempIM, x.S.masks.WBmask);
 
-                        pathTSV = fullfile(x.D.PopDir, 'Stats', 'QC_RMS.tsv');
-
-                        % ----------------------------------------------------------------------------------------------------
-                        %% 4. Compute difference with averate template & store in participants.tsv
-                        % PM: this assumes bilateral images, not left-right splits, hence it only takes IM{1}
-                        [theseAreNotOutliers, ~, RMS_output] = xASL_stat_RobustMean(IM{1}, [], false);
-                        
-                        rmsFieldName = strrep(PreFixList{iScanType}, '_', ''); 
-                        % Avoid underscores, xASL_bids_Add2ParticipantsTSV uses this to separate
-                        % keys from units (e.g. GM_mL)
-                        RMS.(rmsFieldName) = RMS_output;
-                        RMS.([rmsFieldName '_SUBJECTS']) = LoadSubjects';
-
-                        LoadSessions = repmat(listSessions(iSession),[length(LoadSubjects) 1]);
-
-                        if SessionsExist(iScanType)
-                            xASL_bids_Add2ParticipantsTSV([LoadSubjects LoadSessions num2cell(RMS_output')], [rmsFieldName '_QC_RMS'], x, [], pathTSV);
-                        else
-                            xASL_bids_Add2ParticipantsTSV([LoadSubjects num2cell(RMS_output')], [rmsFieldName '_QC_RMS'], x, [], pathTSV);
-                        end
+									if iLoad>1 && ~(size(tempImColumn, 1)==size(IM{iCell},1))
+										warning(['Wrong size:' LoadFiles{iCell}{iLoad,1}]);
+										bProceedComputationMaps = 0; % proceed with next ScanType
+									elseif size(tempIM, 4)>1 % 4D images, feature that we're working on
+										warning(['4D image, incomplete feature:' LoadFiles{iCell}{iLoad,1}]);
+										bProceedComputationMaps = 0; % proceed with next ScanType
+										fprintf('We are working on a feature for 4D maps statistics, skipping this for now\n');
+									else % add the image
+										IM{iCell}(:,iLoad) = tempImColumn;
+										if bSaveUnmasked; IM2noMask{iCell}(:,:,:,iLoad) = tempIM; end
+									end
+								end
+								fprintf('\n');
 
 
-                        % ----------------------------------------------------------------------------------------------------
-                        %% 5. Remove outliers
-                        if bRemoveOutliers
-                            % Exclude outliers
-                            NotOutliers = theseAreNotOutliers;
-                        end
-                        TempOutliers = 1:size(IM{1}, 2);
-                        NotOutliers = TempOutliers(NotOutliers);
+							end
+						end
 
-                        if SessionsExist(iScanType)
-                            NameIM = [TemplateNameList{iScanType} '_' listSessions{iSession} x.S.TemplateNumberName];
-                        else
-                            NameIM = [TemplateNameList{iScanType} x.S.TemplateNumberName];
-                        end
-                        
-                        % ----------------------------------------------------------------------------------------------------
-                        %% 6. Compute templates for all subjects together (only for bilateral images)
-                        if length(IM)==1
-                            xASL_wrp_CreatePopulationTemplates_Computation(IM{1}(:, NotOutliers), NameIM, x, FunctionsAre, true, SmoothingFWHM);
+						if size(LoadSetsID, 1)>size(x.S.SetsID,1)
+							warning('Somehow the number of subjects or sessions doesnt match between population and other folders');
+							fprintf('%s/n', 'This could be due to a rerun with e.g. fewer sessions than an earlier run');
+						else
+							CurrentSetsID = x.S.SetsID(LoadSetsID, :);
+						end
 
-                            if bSaveUnmasked
-                                xASL_wrp_CreatePopulationTemplates_Computation(IM2noMask{1}(:,:,:, NotOutliers), NameIM, x, FunctionsAre, false, SmoothingFWHM);
-                            end
-                        end
-                        
-                        % ----------------------------------------------------------------------------------------------------
-                        %% 7. Compute templates for individual sets
-                        if ~bCompute4Sets
-                            % not requested, skipping
-                        elseif bCompute4Sets && isempty(Sets2Check)
-                            fprintf('\n');
-                            warning('There are no sets that we can create statistical maps for');
-                        else
-                            for iSet=1:length(Sets2Check)
-                                % First validate that this set doesnt have continuous data
-                                if x.S.Sets1_2Sample(Sets2Check(iSet))==3
-                                    warning(['Cannot create maps for non-ordinal set ' x.S.SetsName{Sets2Check(iSet)} ', skipping'])
-                                else
-                                    % run an iteration for a subset
-                                    xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check(iSet), IM, IM2noMask, iScanType, listSessions, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM);
-                                end
-                            end % iSet=1:length(Sets2Check)
-                        end % if bComputeSets
-                    end % if bProceedComputationMaps
-                end % bSkipWhenMissingScans && UnAvailable>0.10*nSubjectsPredefined
-            end % bSkipWhenMissingScans && isempty(LoadFiles)
-        end % if bProceedThisSession
+						%% Do some computations with the loaded maps, if requested
+						if bProceedComputationMaps
 
-        clear IM % Save each session independently
-    end % for iSession=1:nSessions
+							% initialize image indices that will be included
+							NotOutliers = true(1, size(IM{1}, 2));
 
-    % Now, we average over multiple sessions/runs, e.g., for creating analyses masks
-    if SessionsExist(iScanType)
-        IM_Masked = [];
-        IM_Unmasked = [];
-        includeSess_Masked = 1;
-        includeSess_Unmasked = 1;
-        for iSession=1:length(listSessions)
-            fileList = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^' TemplateNameList{iScanType} '_' listSessions{iSession} x.S.TemplateNumberName '_bs-mean\.nii']);
-            if ~isempty(fileList)
-                IM_Masked(:,:,:,includeSess_Masked) = xASL_io_Nifti2Im(fileList{1});
-                includeSess_Masked = includeSess_Masked+1;
-            end
-            fileList = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^' TemplateNameList{iScanType} '_' listSessions{iSession} x.S.TemplateNumberName '_bs-mean_Unmasked\.nii']);
-            if ~isempty(fileList)
-                IM_Unmasked(:,:,:,includeSess_Unmasked) = xASL_io_Nifti2Im(fileList{1});
-                includeSess_Unmasked = includeSess_Unmasked+1;
-            end
-        end
-        if ~isempty(IM_Masked)
-            IM_Masked = mean(IM_Masked, 4);
-            saveFile = fullfile(x.D.TemplatesStudyDir, [TemplateNameList{iScanType} x.S.TemplateNumberName '_bs-mean.nii']);
-            xASL_io_SaveNifti(fileList{1}, saveFile, IM_Masked)
-        end
-        if ~isempty(IM_Unmasked)
-            IM_Unmasked = mean(IM_Unmasked, 4);
-            saveFile = fullfile(x.D.TemplatesStudyDir, [TemplateNameList{iScanType} x.S.TemplateNumberName '_bs-mean_Unmasked.nii']);
-            xASL_io_SaveNifti(fileList{1}, saveFile, IM_Unmasked)
-        end
-    end
+							pathTSV = fullfile(x.D.PopDir, 'Stats', 'QC_RMS.tsv');
 
-    if UnAvailable>0
-        fprintf('\n%s\n',[num2str(UnAvailable) ' ' PreFixList{iScanType} ' files missing']);
-    end
+							% ----------------------------------------------------------------------------------------------------
+							%% 4. Compute difference with average template & store in participants.tsv
+							% PM: this assumes bilateral images, not left-right splits, hence it only takes IM{1}
+							[theseAreNotOutliers, ~, RMS_output] = xASL_stat_RobustMean(IM{1}, [], false);
+
+							rmsFieldName = strrep(PreFixList{iScanType}, '_', '');
+							% Avoid underscores, xASL_bids_Add2ParticipantsTSV uses this to separate
+							% keys from units (e.g. GM_mL)
+							RMS.(rmsFieldName) = RMS_output;
+							RMS.([rmsFieldName '_SUBJECTS']) = LoadSubjects';
+
+							LoadSessions = repmat(listSessions(iSession),[length(LoadSubjects) 1]);
+
+							if SessionsExist(iScanType)
+								xASL_bids_Add2ParticipantsTSV([LoadSubjects LoadSessions num2cell(RMS_output')], [rmsFieldName '_QC_RMS'], x, [], pathTSV);
+							else
+								xASL_bids_Add2ParticipantsTSV([LoadSubjects num2cell(RMS_output')], [rmsFieldName '_QC_RMS'], x, [], pathTSV);
+							end
+
+
+							% ----------------------------------------------------------------------------------------------------
+							%% 5. Remove outliers
+							if bRemoveOutliers
+								% Exclude outliers
+								NotOutliers = theseAreNotOutliers;
+							end
+							TempOutliers = 1:size(IM{1}, 2);
+							NotOutliers = TempOutliers(NotOutliers);
+
+							if SessionsExist(iScanType)
+								NameIM = [TemplateNameList{iScanType} '_' listSessions{iSession} x.S.TemplateNumberName];
+							else
+								NameIM = [TemplateNameList{iScanType} x.S.TemplateNumberName];
+							end
+
+							% ----------------------------------------------------------------------------------------------------
+							%% 6. Compute templates for all subjects together (only for bilateral images)
+							if length(IM)==1
+								xASL_wrp_CreatePopulationTemplates_Computation(IM{1}(:, NotOutliers), NameIM, x, FunctionsAre, true, SmoothingFWHM);
+
+								if bSaveUnmasked
+									xASL_wrp_CreatePopulationTemplates_Computation(IM2noMask{1}(:,:,:, NotOutliers), NameIM, x, FunctionsAre, false, SmoothingFWHM);
+								end
+							end
+
+							% ----------------------------------------------------------------------------------------------------
+							%% 7. Compute templates for individual sets
+							if ~bCompute4Sets
+								% not requested, skipping
+							elseif bCompute4Sets && isempty(Sets2Check)
+								fprintf('\n');
+								warning('There are no sets that we can create statistical maps for');
+							else
+								for iSet=1:length(Sets2Check)
+									% First validate that this set doesnt have continuous data
+									if x.S.Sets1_2Sample(Sets2Check(iSet))==3
+										warning(['Cannot create maps for non-ordinal set ' x.S.SetsName{Sets2Check(iSet)} ', skipping'])
+									else
+										% run an iteration for a subset
+										xASL_wrp_CreatePopulationTemplates4Sets(x, bSaveUnmasked, bRemoveOutliers, FunctionsAre, Sets2Check(iSet), IM, IM2noMask, iScanType, listSessions, SessionsExist, iSession, TemplateNameList, CurrentSetsID, SmoothingFWHM);
+									end
+								end % iSet=1:length(Sets2Check)
+							end % if bComputeSets
+						end % if bProceedComputationMaps
+					else % bRobustCalculation
+						% ----------------------------------------------------------------------------------------------------
+						%% Simplified calculation of templates that does not load all subjects to working memory
+						% ----------------------------------------------------------------------------------------------------
+						% We only work with bilateral images as the original code only produces templates for bilateral images
+
+						bProceedComputationMaps = 1; % We stop when we find an image of an incompatible size
+						nLoad = size(LoadFiles{1}, 1); % Number of subjects to work with
+
+						% Initialize Welford's algorithm before loading the first image
+						weldorfN      = zeros(121,145,121);
+						weldorfMeanIm = zeros(121,145,121);
+						weldorfM2     = zeros(121,145,121);
+
+						for iLoad=1:nLoad % Load images
+							if bProceedComputationMaps % We stop loading images if a wrong image is detected
+								tempIM = xASL_io_Nifti2Im(LoadFiles{1}{iLoad, 1});
+
+								% clip below zero for visualization
+								tempIM(tempIM<0) = 0;
+
+								if iLoad>1 && ~isequal(size(weldorfN), size(tempIM))
+									warning(['Wrong size:' LoadFiles{1}{iLoad,1}]);
+									bProceedComputationMaps = 0; % proceed with next ScanType
+								elseif size(tempIM, 4)>1 % 4D images, feature that we're working on
+									warning(['4D image, incomplete feature:' LoadFiles{1}{iLoad,1}]);
+									bProceedComputationMaps = 0; % proceed with next ScanType
+									fprintf('We are working on a feature for 4D maps statistics, skipping this for now\n');
+								end
+								
+								%% 4. Compute difference with average template & store in participants.tsv. PM: This is not done in the simplified template calculation
+								%% 5. Remove outliers. PM: This also cannot be done on a single pass without having all images in the memory
+
+								%% 6. Compute templates for all subjects together
+								% Use the Weldorf algorithm for calculating robust std and mean
+								if any(tempIM>0, 'all') % Update only when the image isn't empty
+									indexValid = ~isnan(tempIM);  % only update non-Nan values in the template
+									weldorfN(indexValid) = weldorfN(indexValid) + 1;% Increase N only for valid pixels
+
+									% Welford update only at valid pixels
+									delta = tempIM(indexValid) - weldorfMeanIm(indexValid);
+									weldorfMeanIm(indexValid) = weldorfMeanIm(indexValid) + delta ./ weldorfN(indexValid);
+									delta2 = tempIM(indexValid) - weldorfMeanIm(indexValid);
+									weldorfM2(indexValid) = weldorfM2(indexValid) + delta .* delta2;
+								end
+							end
+						end
+
+						if bProceedComputationMaps % We continue only if there were not any wrong images
+							weldorfStdIm = zeros(size(weldorfM2));
+							indexValid = weldorfN > 1;
+							weldorfStdIm(indexValid) = sqrt(weldorfM2(indexValid) ./ (weldorfN(indexValid) - 1));
+
+							for iMask = 1:2 % Masking
+								for iFunction = 1:2 % mean or std
+									if SessionsExist(iScanType)
+										PathSave = fullfile(x.D.TemplatesStudyDir, [TemplateNameList{iScanType} '_' listSessions{iSession} x.S.TemplateNumberName '_bs-']);
+									else
+										PathSave = fullfile(x.D.TemplatesStudyDir, [TemplateNameList{iScanType} x.S.TemplateNumberName '_bs-']);
+									end
+							
+									if iFunction == 1
+										tempIM = weldorfMeanIm;% mean
+										PathSave = [PathSave 'mean'];
+									else
+										tempIM = weldorfStdIm;% std
+										PathSave = [PathSave 'std'];
+									end
+									
+									if iMask == 1 % Masked, else unmasked
+										tempIM = tempIM .* x.S.masks.WBmask .* x.GradualSkull;
+										PathSave = [PathSave '.nii'];
+									else
+										PathSave = [PathSave '_Unmasked.nii'];
+									end
+								% Smooth the map (if requested)
+								if max(SmoothingFWHM)>0
+									tempIM = xASL_im_ndnanfilter(tempIM, 'gauss', SmoothingFWHM, 1); % smooths with about 6 mm FWHM
+								end
+
+								% Save the map as NIfTI
+								xASL_io_SaveNifti(x.D.ResliceRef, PathSave, tempIM);
+								end % for iFunction
+							end % for iMask
+						end % if bProceedComputationMaps
+						%% 7. Compute templates for individual sets. PM: This is not implemented for the simplified version as this is never called in the code and cannot be made active using external parameters
+					end % bRobustCalculation
+				end % bSkipWhenMissingScans && UnAvailable>0.10*nSubjectsPredefined
+			end % bSkipWhenMissingScans && isempty(LoadFiles)
+		end % if bProceedThisSession
+
+		clear IM % Save each session independently
+	end % for iSession=1:nSessions
+
+	% Now, we average over multiple sessions/runs, e.g., for creating analyses masks
+	if SessionsExist(iScanType)
+		IM_Masked = [];
+		IM_Unmasked = [];
+		includeSess_Masked = 1;
+		includeSess_Unmasked = 1;
+		for iSession=1:length(listSessions)
+			fileList = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^' TemplateNameList{iScanType} '_' listSessions{iSession} x.S.TemplateNumberName '_bs-mean\.nii']);
+			if ~isempty(fileList)
+				IM_Masked(:,:,:,includeSess_Masked) = xASL_io_Nifti2Im(fileList{1});
+				includeSess_Masked = includeSess_Masked+1;
+			end
+			fileList = xASL_adm_GetFileList(x.D.TemplatesStudyDir, ['^' TemplateNameList{iScanType} '_' listSessions{iSession} x.S.TemplateNumberName '_bs-mean_Unmasked\.nii']);
+			if ~isempty(fileList)
+				IM_Unmasked(:,:,:,includeSess_Unmasked) = xASL_io_Nifti2Im(fileList{1});
+				includeSess_Unmasked = includeSess_Unmasked+1;
+			end
+		end
+		if ~isempty(IM_Masked)
+			IM_Masked = mean(IM_Masked, 4);
+			saveFile = fullfile(x.D.TemplatesStudyDir, [TemplateNameList{iScanType} x.S.TemplateNumberName '_bs-mean.nii']);
+			xASL_io_SaveNifti(fileList{1}, saveFile, IM_Masked)
+		end
+		if ~isempty(IM_Unmasked)
+			IM_Unmasked = mean(IM_Unmasked, 4);
+			saveFile = fullfile(x.D.TemplatesStudyDir, [TemplateNameList{iScanType} x.S.TemplateNumberName '_bs-mean_Unmasked.nii']);
+			xASL_io_SaveNifti(fileList{1}, saveFile, IM_Unmasked)
+		end
+	end
+
+	if UnAvailable>0
+		fprintf('\n%s\n',[num2str(UnAvailable) ' ' PreFixList{iScanType} ' files missing']);
+	end
 end % for iScanType=1:length(PreFixList)
 
 
@@ -877,9 +970,9 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
     UseIM = ones(size(IM,iDim),1);
     for iM=1:size(IM,iDim)
         if bMask
-            CheckSum = xASL_stat_SumNan(IM(:,iM))==0;
+			CheckSum = any(IM(:, iM)>0, 'all');
         else
-            CheckSum = xASL_stat_SumNan(xASL_stat_SumNan(xASL_stat_SumNan(IM(:,:,:,iM))))==0;
+			CheckSum = any(IM(:,:,:, iM)>0, 'all');
         end
         if CheckSum
             UseIM(iM) = 0;

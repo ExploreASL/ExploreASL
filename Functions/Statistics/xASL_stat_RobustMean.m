@@ -63,15 +63,18 @@ Size4 = size(IM, 2);
 if bVerbose; fprintf('%s\n',['QC: detecting outliers for n=' num2str(Size4)]); end
 
 MedianIM = repmat(xASL_stat_MedianNan(IM, 2), [1 Size4]);
+MedianIM = repmat(median(IM, 2, 'omitnan'), [1 Size4]);
 
 if strcmpi(ParameterFunction,'SoS')
      DiffIm = (IM - MedianIM).^2;
      Deviation = xASL_stat_MeanNan(DiffIm, 1); % gives deviation sum per image, higher is worse quality
+	 Deviation = mean(DiffIm, 1, 'omitnan'); % gives deviation sum per image, higher is worse quality
      Deviation = sqrt(Deviation);
      RMS = Deviation;
 elseif strcmpi(ParameterFunction,'AI')
      DiffIm = abs(IM - repmat(IMtemp,[1 Size4])) ./ (0.5.*(IM + repmat(IMtemp,[1 Size4]))); % weighted SoS, AI
      Deviation = xASL_stat_MeanNan(DiffIm, 1); % gives deviation sum per image, higher is worse quality
+	 Deviation = mean(DiffIm, 1, 'omitnan'); % gives deviation sum per image, higher is worse quality
 end
 
 NaNmask = isfinite(Deviation);
