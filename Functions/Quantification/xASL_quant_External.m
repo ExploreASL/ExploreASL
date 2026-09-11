@@ -475,7 +475,7 @@ switch lower(x.Q.LabelingType)
 			error('PASL is implemented for BASIL only and not for FABBER/VABY');
 		end
 
-		if length(unique(PWI4D_json.Q.EchoTime)) > 1
+		if length(unique(jsonPWI4D.Q.EchoTime)) > 1
 			error('Multi-TE quantification is not implemented for PASL');
 		end
 
