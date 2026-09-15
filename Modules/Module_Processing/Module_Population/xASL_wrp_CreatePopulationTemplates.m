@@ -121,7 +121,7 @@ end
 
 if nargin<7 || isempty(FunctionsAre)
     FunctionsAre{1} = {@xASL_stat_MeanNan,@xASL_stat_StdNan};
-    FunctionsAre{2} = {'mean' 'sd'};
+    FunctionsAre{2} = {'mean' 'std'};
 else
     if ~iscell(FunctionsAre{1})
         FunctionsAre{1}{1} = FunctionsAre{1};
@@ -974,7 +974,7 @@ function xASL_wrp_CreatePopulationTemplates_Computation(IM, NameIM, x, Functions
         else
 			CheckSum = any(IM(:,:,:, iM)>0, 'all');
         end
-        if CheckSum
+        if ~CheckSum
             UseIM(iM) = 0;
         end
     end
