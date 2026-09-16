@@ -878,8 +878,8 @@ for iSubject=1:x.dataset.nSubjects
 				
 
                 %% B. Then check for empty data first, in which case we will skip this subject-run
-                if ~xASL_stat_SumNan(DataIm(:))
-                    % Check for empty CBF map first
+				if ~any(DataIm > 0, 'all')
+					% Check for empty CBF map first
                     fprintf('%s\n', ['Warning: Empty image for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess)]);
                 else
                     %% C. In the case of existing data, we will check masks
@@ -893,11 +893,11 @@ for iSubject=1:x.dataset.nSubjects
 				    end
     
                     % Now check for empty masks
-                    if ~xASL_stat_SumNan(CurrentMaskNotVascular(:))
+                    if ~any(CurrentMaskNotVascular > 0, 'all')
                         fprintf('%s\n', ['* Empty ' x.S.TissueMaskingLocal ' CBF mask for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
-                    elseif ~xASL_stat_SumNan(pvPrimary(:))
+                    elseif ~any(pvPrimary > 0, 'all')
                         fprintf('%s\n', ['* Empty pv' pvPrimaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
-                    elseif ~xASL_stat_SumNan(pvSecondary(:))
+                    elseif ~any(pvSecondary > 0, 'all')
                         fprintf('%s\n', ['* Empty pv' pvSecondaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
                     else                    
                         % Check if the ROI size is large enough
@@ -930,7 +930,7 @@ for iSubject=1:x.dataset.nSubjects
 						    CurrentMaskVascular = CurrentMaskNotVascular;
                         end
     
-                        if ~xASL_stat_SumNan(CurrentMaskVascular(:))
+                        if ~any(CurrentMaskNotVascular > 0, 'all') 
                             % Now check again for empty mask (as it was
                             % masked now also with a vascular artifact
                             % mask)
@@ -988,10 +988,10 @@ for iSubject=1:x.dataset.nSubjects
 					    
 					    % Compute the temporal values - we add here the type of statistics and PVC status, the contrast type (CBF/ATT/Tex) is assigned outside of this function
 					    % We already do all the averaging here, so it has to be contained in the name
-					    x.S.DAT_CoV4D_mean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(sCoV4D);
-					    x.S.DAT_CoV4D_sd_PVC0(SubjSess, iROI) = xASL_stat_StdNan(sCoV4D);
-					    x.S.DAT_diffCoV4D_mean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(diffCoV4D);
-					    x.S.DAT_diffCoV4D_sd_PVC0(SubjSess, iROI) = xASL_stat_StdNan(diffCoV4D);
+					    x.S.DAT_CoV4D_mean_PVC0(SubjSess, iROI) = mean(sCoV4D, 'omitnan');
+					    x.S.DAT_CoV4D_sd_PVC0(SubjSess, iROI) = std(sCoV4D, [], 'omitnan');
+					    x.S.DAT_diffCoV4D_mean_PVC0(SubjSess, iROI) = mean(diffCoV4D, 'omitnan');
+					    x.S.DAT_diffCoV4D_sd_PVC0(SubjSess, iROI) = std(diffCoV4D, [], 'omitnan');
     
                         % Compute average label position stats
                         % Initialization
@@ -1007,23 +1007,22 @@ for iSubject=1:x.dataset.nSubjects
 							    sCoV4D_SliceWise(iSlice, iRepetition) = xASL_stat_ComputeSpatialCoV(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
 						    end
 						    % First STD across repetitions, the slice-wise mean
-						    tempSD4D_SliceWise(iSlice) = xASL_stat_ComputeMean(xASL_stat_StdNan(Data4D(:, :, iSlice, :), [], 4), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
+						    tempSD4D_SliceWise(iSlice) = xASL_stat_ComputeMean(std(Data4D(:, :, iSlice, :), [], 4, 'omitnan'), CurrentMaskNotVascularFull(:, :, iSlice), 0, 0, 1);
 					    end
     
 					    % For each repetition - calculate the best slice
 					    vectorSlice = repmat((1:size(Data4D, 3))', [1 size(mean4D_SliceWise, 2)]); % Vector with slice numbers
 					    mean4D_SliceWise = abs(mean4D_SliceWise); % flip negative values
-					    mean4DcenterSlice = xASL_stat_SumNan(mean4D_SliceWise.*vectorSlice, 1)./xASL_stat_SumNan(mean4D_SliceWise, 1); % Calculate the weighted mean
-					    x.S.DAT_LabelSliceLocation4D_tMean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(mean4DcenterSlice);
-					    x.S.DAT_LabelSliceLocation4D_tSD_PVC0(SubjSess, iROI) = xASL_stat_StdNan(mean4DcenterSlice);
+						mean4DcenterSlice = sum(mean4D_SliceWise.*vectorSlice, 1, 'omitnan')./sum(mean4D_SliceWise, 1, 'omitnan'); % Calculate the weighted mean
+						x.S.DAT_LabelSliceLocation4D_tMean_PVC0(SubjSess, iROI) = mean(mean4DcenterSlice, 'omitnan');
+					    x.S.DAT_LabelSliceLocation4D_tSD_PVC0(SubjSess, iROI) = std(mean4DcenterSlice, [], 'omitnan');
     
 					    sCoV4D_SliceWise = abs(sCoV4D_SliceWise); % flip negative values
                         % Note that sCoV4D is only negative for negative means
-					    sCoV4DcenterSlice = xASL_stat_SumNan(sCoV4D_SliceWise.*vectorSlice, 1)./xASL_stat_SumNan(sCoV4D_SliceWise, 1); % Calculate the weighted mean
-					    x.S.DAT_LabelsCoV_SliceLocation_tMean_PVC0(SubjSess, iROI) = xASL_stat_MeanNan(sCoV4DcenterSlice);
-					    x.S.DAT_LabelsCoV_SliceLocation_tSD_PVC0(SubjSess, iROI) = xASL_stat_StdNan(sCoV4DcenterSlice);
+						sCoV4DcenterSlice = sum(sCoV4D_SliceWise.*vectorSlice, 1, 'omitnan')./sum(sCoV4D_SliceWise, 1, 'omitnan'); % Calculate the weighted mean
+					    x.S.DAT_LabelsCoV_SliceLocation_tSD_PVC0(SubjSess, iROI) = std(sCoV4DcenterSlice, [], 'omitnan');
     
-					    x.S.DAT_SlicetSD_SliceLocation_PVC0(SubjSess, iROI) = xASL_stat_SumNan(tempSD4D_SliceWise.*vectorSlice(:,1)')./xASL_stat_SumNan(tempSD4D_SliceWise); % Calculate the weighted mean
+						x.S.DAT_SlicetSD_SliceLocation_PVC0(SubjSess, iROI) = sum(tempSD4D_SliceWise.*vectorSlice(:,1)', 'omitnan')./sum(tempSD4D_SliceWise, 'omitnan'); % Calculate the weighted mean
                     end % if ~isempty(Data4D)
                 end % if ~xASL_stat_SumNan(DataIm(:))
 			end % x.S.IsASL
@@ -1219,7 +1218,7 @@ nVoxelsWMROI = sum(sum(sum(WMmask(ROI))));
 pGMROIsum = sum(sum(sum(pGM(ROI))));
 pWMROIsum = sum(sum(sum(pWM(ROI))));
 
-if  ~xASL_stat_SumNan(ROI(:))
+if  ~any(ROI>0, 'all')
     fprintf('%s','Empty ROI, skipping PVEc expansion');
     return;
 end

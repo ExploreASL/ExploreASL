@@ -22,9 +22,9 @@ function [AtlasOut] = xASL_vis_Convert4D_3D_atlas(AtlasIn)
 % __________________________________
 
     
-    AtlasOut = zeros(size(AtlasIn(:,:,:,1,1,1)),'uint8');
+    AtlasOut = zeros(size(AtlasIn, 1), size(AtlasIn, 2), size(AtlasIn, 3), 'uint8');
     for iL=1:size(AtlasIn,4)
         AtlasOut(logical(AtlasIn(:,:,:,iL))) = iL;
-    end
+	end
 
 end

@@ -83,9 +83,7 @@ end
 
 %% 2. Create masks
 % Only compute in real data
-imMask = (imMask>0) & isfinite(imCBF);
-
-imMask = imMask & (imCBF~=0); % Exclude zero values as well
+imMask = (imMask>0) & isfinite(imCBF) & (imCBF~=0);
 
 % Constrain calculation to the mask and to finite values
 imCBF = imCBF(imMask);
@@ -97,14 +95,16 @@ if ~isempty(imWM)
 	imWM = imWM(imMask); 
 end
     
-if sum(imMask(:))<nMinSize 
+maskSize = sum(imMask(:));
+
+if maskSize < nMinSize || maskSize <= 0 
     sCov  = NaN;
     return;
 end
 
 %% 3. sCoV computation
 
-sCov = std(imCBF(:)) / mean(imCBF(:));
+sCov = std(imCBF(:), 'omitnan') / mean(imCBF(:), 'omitnan');
 
 if bPVC==2
     % Partial volume correction by normalizing by expected variance because of the structural data
