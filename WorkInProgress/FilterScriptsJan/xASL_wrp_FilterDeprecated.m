@@ -22,7 +22,7 @@ function xASL_wrp_FilterDeprecated(InputFile, OutputFile, x, MaskingOption )
     TempFile                        = fullfile(Fpath,[PreFix Ffile Fext]);
 
     % Create PWI & mean control images in native space
-    xASL_io_PairwiseSubtraction( InputFile,OutputFile,0,0);
+    xASL_io_PairwiseSubtraction( InputFile,OutputFile,0,0); % This function is deprecated and needs to be replaced
 
     if  strcmp(InputFile,x.P.Path_ASL4D) || strcmp(InputFile,x.P.Path_despiked_ASL4D)
         xASL_Copy(OutputFile,x.P.Path_PWI,1);
