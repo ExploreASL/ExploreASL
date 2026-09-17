@@ -129,7 +129,7 @@ if x.S.InputNativeSpace
 	x.S.masks.WBmask = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{indExistSubject},listSessions{indExistSession},[x.S.InputAtlasNativeName '.nii']));
 	x.S.masks.WBmask = sum(x.S.masks.WBmask,4) > 0;
 	x.LeftMask = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{1},listSessions{1},'LeftRight_Atlas.nii'));
-	x.LeftMask = (x.S.masks.WBmask .* (x.LeftMask == 1)) > 0;
+	x.LeftMask = x.S.masks.WBmask & (x.LeftMask == 1) > 0;
 else
 	% Standard space
 	x.LeftMask = x.S.masks.WBmask;
@@ -228,9 +228,9 @@ if x.S.InputNativeSpace
 		% For standard atlases - 4D binary masks
 		atlasN = max(x.S.InputMasks,[],'all');
 		inputAtlasTmp = x.S.InputMasks;
-		x.S.InputMasks = zeros([size(inputAtlasTmp), atlasN]);
+		x.S.InputMasks = false([size(inputAtlasTmp), atlasN]);
 		for kk = 1:atlasN
-			x.S.InputMasks(:,:,:,kk) = (inputAtlasTmp == kk).*x.S.masks.WBmask;
+			x.S.InputMasks(:,:,:,kk) = (inputAtlasTmp == kk) & x.S.masks.WBmask;
 		end
 
 		if ~isempty(strfind(x.S.InputAtlasNativeName,'Hammers'))
@@ -382,16 +382,16 @@ for iSubject=1:x.dataset.nSubjects
 				x.LeftMask = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},'LeftRight_Atlas.nii'));
 				x.LeftMask = (x.S.masks.WBmask .* (x.LeftMask == 1)) > 0;
 
-				x.S.InputMasks = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii'])) > 0;
+				x.S.InputMasks = xASL_io_Nifti2Im(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']));
 				if x.S.bSubjectSpecificROI
 					% For subject specific atlases - they are a 4D collection of non-binary PV maps
 					for kk = 1:size(x.S.InputMasks, 4)
-						x.S.InputMasks(:,:,:,kk) = x.S.InputMasks(:,:,:,kk) & x.S.masks.WBmask;
+						x.S.InputMasks(:,:,:,kk) = x.S.InputMasks(:,:,:,kk) .* x.S.masks.WBmask;
 					end
 				else
 					atlasN = max(x.S.InputMasks, [], 'all');
 					inputAtlasTmp = x.S.InputMasks;
-					x.S.InputMasks = zeros([size(x.LeftMask), atlasN]);
+					x.S.InputMasks = false([size(x.LeftMask), atlasN]);
 					for kk = 1:atlasN
 						x.S.InputMasks(:,:,:,kk) = (inputAtlasTmp == kk) & x.S.masks.WBmask;
 					end
@@ -492,16 +492,24 @@ for iSubject=1:x.dataset.nSubjects
 
 			if x.S.bSubjectSpecificROI
 				x.S.InputMasks = zeros(NewSize);
+				for iMask = 1:size(InputMasksTemp,4)
+					for iROI = 1:size(InputMasksTemp,5)
+						x.S.InputMasks(:,:,:,(iMask-1)*3+1, iROI) = InputMasksTemp(:,:,:,iMask,iROI);
+						x.S.InputMasks(:,:,:,(iMask-1)*3+2, iROI) = InputMasksTemp(:,:,:,iMask,iROI) .* x.LeftMask;
+						x.S.InputMasks(:,:,:,(iMask-1)*3+3, iROI) = InputMasksTemp(:,:,:,iMask,iROI) .* (~x.LeftMask);
+					end
+				end
 			else
 				x.S.InputMasks = false(NewSize);
-			end
-			for iMask = 1:size(InputMasksTemp,4)
-				for iROI = 1:size(InputMasksTemp,5)
-					x.S.InputMasks(:,:,:,(iMask-1)*3+1, iROI) = InputMasksTemp(:,:,:,iMask,iROI);
-					x.S.InputMasks(:,:,:,(iMask-1)*3+2, iROI) = InputMasksTemp(:,:,:,iMask,iROI) & x.LeftMask;
-					x.S.InputMasks(:,:,:,(iMask-1)*3+3, iROI) = InputMasksTemp(:,:,:,iMask,iROI) & (~x.LeftMask);
+				for iMask = 1:size(InputMasksTemp,4)
+					for iROI = 1:size(InputMasksTemp,5)
+						x.S.InputMasks(:,:,:,(iMask-1)*3+1, iROI) = InputMasksTemp(:,:,:,iMask,iROI);
+						x.S.InputMasks(:,:,:,(iMask-1)*3+2, iROI) = InputMasksTemp(:,:,:,iMask,iROI) & x.LeftMask;
+						x.S.InputMasks(:,:,:,(iMask-1)*3+3, iROI) = InputMasksTemp(:,:,:,iMask,iROI) & (~x.LeftMask);
+					end
 				end
 			end
+
 			bDoOnceROILR = 0;
 		end
 

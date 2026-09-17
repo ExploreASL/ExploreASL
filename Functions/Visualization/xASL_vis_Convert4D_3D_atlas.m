@@ -24,7 +24,7 @@ function [AtlasOut] = xASL_vis_Convert4D_3D_atlas(AtlasIn)
     
     AtlasOut = zeros(size(AtlasIn, 1), size(AtlasIn, 2), size(AtlasIn, 3), 'uint8');
     for iL=1:size(AtlasIn,4)
-        AtlasOut(logical(AtlasIn(:,:,:,iL))) = iL;
+        AtlasOut(AtlasIn(:,:,:,iL)>0) = iL;
 	end
 
 end
