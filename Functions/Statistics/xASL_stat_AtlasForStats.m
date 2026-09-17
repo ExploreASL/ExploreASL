@@ -65,7 +65,7 @@ elseif ~xASL_exist(x.S.InputAtlasPath, 'file')
 	return;
 end
 
-SumMask = sum(x.S.masks.WBmask(:));
+SumMask = sum(x.S.masks.WBmask, 'all');
 
 if strcmp(x.S.InputAtlasPath(end-2:end),'.gz')
     x.S.InputAtlasPath = x.S.InputAtlasPath(1:end-3); % allow .gz or .nii input
