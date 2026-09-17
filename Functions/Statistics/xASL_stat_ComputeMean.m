@@ -130,9 +130,9 @@ if ~isempty(resMeanPVC2GM) || ~isempty(resMeanPVC2WM)
 	% If running PVC, then need imGM and imWM of the same size as imCBF
 	if ~isequal(size(imCBF),size(imGM)) || ~isequal(size(imCBF),size(imWM))
 		warning('When running PVC, the GM and WM maps should have the same size as the CBF image');
-	elseif size(imGM, 2)>2
+	elseif size(imGM, 4)>2
         warning('Invalid GM map size');
-    elseif size(imWM, 2)>2
+    elseif size(imWM, 4)>2
         warning('Invalid WM map size');
 	end
 end
@@ -154,7 +154,7 @@ if ~isempty(imWM)
 	imWM = imWM(imMask); 
 end
 
-maskSize = sum(imMask(:));
+maskSize = sum(imMask, 'all');
 
 if maskSize < nMinSize || maskSize <= 0 
     return;

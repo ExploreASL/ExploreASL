@@ -109,10 +109,10 @@ end
 
 
 %% 2) Load atlas image matrix, deal with memory mapping
-AtlasIsColumns = false;
 if ischar(x.S.InputAtlasPath) % allows both image input or ImagePath input
     if strcmp(x.S.InputAtlasPath(end-3:end),'.dat') % if memory mapping, then load this
         %% Part for Atlas stored as columns
+		error('Column atlas support needs to be fixed');
         AtlasIsColumns = true;
         TempAtlas = memmapfile(x.S.InputAtlasPath);
 
@@ -122,63 +122,49 @@ if ischar(x.S.InputAtlasPath) % allows both image input or ImagePath input
             nMasks = 6;
         end
         nSubj = size(TempAtlas.Data,1)/SumMask/nMasks;
-        InputAtlasIM = reshape(TempAtlas.Data,[SumMask nMasks nSubj]); % reshape into [Brainvoxels nMasks nSubjects]
+        x.S.InputMasks = reshape(TempAtlas.Data,[SumMask nMasks nSubj]); % reshape into [Brainvoxels nMasks nSubjects]
     else
-        InputAtlasIM = xASL_io_Nifti2Im(x.S.InputAtlasPath);
+        x.S.InputMasks = xASL_io_Nifti2Im(x.S.InputAtlasPath);
     end
 else
-    InputAtlasIM = x.S.InputAtlasPath;
+    x.S.InputMasks = x.S.InputAtlasPath;
 end
 
-if ~AtlasIsColumns
-    %% 3) Resample atlas 50 1.5 mm^3 MNI
-    % Allow for multiple voxel dimensions, BUT THIS FORCES MNI 1.5 mm
-    SizeAtlas = size(InputAtlasIM);
-    DimRatioAtlas = SizeAtlas(1:3)./[121 145 121];
-    if prod(DimRatioAtlas)~=1
-        fprintf('%s\n','Atlas has different dimensions, make sure it is in MNI space');
-        if round(DimRatioAtlas(1),2)==round(DimRatioAtlas(2),2) && round(DimRatioAtlas(2),2)==round(DimRatioAtlas(3),2)
-            fprintf('%s\n','Detected that atlas has different MNI dimensions, resampling to 1.5 mm');
-            [Fpath, Ffile, Fext] = xASL_fileparts(x.S.InputAtlasPath);
-            Atlas15Path = fullfile(Fpath,[Ffile '_1_5mm' Fext]);
-            xASL_spm_reslice( x.D.ResliceRef, x.S.InputAtlasPath, [], [], x.settings.Quality, Atlas15Path, 0 );
-        end
-        InputAtlasIM = xASL_io_Nifti2Im(Atlas15Path);
-    end
+%% 3) Resample atlas 50 1.5 mm^3 MNI
+% Allow for multiple voxel dimensions, BUT THIS FORCES MNI 1.5 mm
+SizeAtlas = size(x.S.InputMasks);
+DimRatioAtlas = SizeAtlas(1:3)./[121 145 121];
+if prod(DimRatioAtlas)~=1
+	fprintf('%s\n','Atlas has different dimensions, make sure it is in MNI space');
+	if round(DimRatioAtlas(1),2)==round(DimRatioAtlas(2),2) && round(DimRatioAtlas(2),2)==round(DimRatioAtlas(3),2)
+		fprintf('%s\n','Detected that atlas has different MNI dimensions, resampling to 1.5 mm');
+		[Fpath, Ffile, Fext] = xASL_fileparts(x.S.InputAtlasPath);
+		Atlas15Path = fullfile(Fpath,[Ffile '_1_5mm' Fext]);
+		xASL_spm_reslice( x.D.ResliceRef, x.S.InputAtlasPath, [], [], x.settings.Quality, Atlas15Path, 0 );
+	end
+	x.S.InputMasks = xASL_io_Nifti2Im(Atlas15Path);
+end
 
-    %% 4) Converted atlas with integers to 4D binary image
-    %  Allow for multiple atlas forms (3D or 4D), later transformed to multi-atlas 2D (Columns)
-    if ~(size(InputAtlasIM,4)==1 && max(InputAtlasIM(:))>1)
-        % don't need to reorganize
-    else
-        AtlasIn = InputAtlasIM;
-        AtlasOut = zeros([size(AtlasIn(:,:,:,1,1,1)) max(AtlasIn(:))],'uint8');
-        for iL=1:max(AtlasIn(:))
-            tempIM = zeros(size(AtlasIn(:,:,:,1,1,1)));
-            tempIM(AtlasIn==iL) = 1;
-            AtlasOut(:,:,:,iL) = tempIM;
-        end
-        InputAtlasIM = AtlasOut;
-    end
-
-    %% 5) Convert/compress masks into Columns
-    fprintf('%s\n','Converting masks:   ');
-    x.S.InputMasks = zeros(sum(x.S.masks.WBmask(:)),size(InputAtlasIM,4),'uint8'); % memory pre-allocation
-    for iL=1:size(InputAtlasIM,4)
-        xASL_TrackProgress(iL,size(InputAtlasIM,4));
-        x.S.InputMasks(:,iL,:) = xASL_im_IM2Column(InputAtlasIM(:,:,:,iL,[1:size(InputAtlasIM,5)]),x.S.masks.WBmask);
-    end
-    fprintf('\n');
+%% 4) Converted atlas with integers to 4D binary image
+%  Allow for multiple atlas forms (3D or 4D), later transformed to multi-atlas 2D (Columns)
+maxAtlas = max(x.S.InputMasks, [], 'all');
+if ~(size(x.S.InputMasks,4)==1 && maxAtlas>1)
+	% don't need to reorganize
 else
-	x.S.InputMasks = InputAtlasIM;
+	AtlasIn = x.S.InputMasks;
+	x.S.InputMasks = zeros([size(AtlasIn,1),size(AtlasIn,2),size(AtlasIn,3),maxAtlas],'uint8');
+	for iL=1:maxAtlas
+		x.S.InputMasks(:,:,:,iL) = (AtlasIn==iL) & x.S.masks.WBmask;
+	end
 end
+
 
 %% Create dummy ROI names, if we don't have them
 if ~isfield(x.S,'NamesROI')
-    if size(InputAtlasIM,4)>1
-        maxROI = size(InputAtlasIM,4);
+    if size(x.S.InputMasks,4)>1
+        maxROI = size(x.S.InputMasks,4);
     else
-        maxROI = max(InputAtlasIM(:));
+        maxROI = maxAtlas;
     end
     for iR=1:maxROI
         x.S.NamesROI{iR,1} = ['ROI_' num2str(iR)]; % default ROIs
@@ -190,9 +176,9 @@ if x.S.SubjectWiseVisualization
     fprintf('Printing subject-specific masks (if exist) together in label colors:   ')
     % CAVE: only one label per voxel will be shown (latest have preference,
     % can be improved later)
-    for iSub=1:size(x.S.InputMasks,3)
-        xASL_TrackProgress(iSub,size(x.S.InputMasks, 3));
-        LabelIM = xASL_vis_TransformData2View(xASL_vis_Convert4D_3D_atlas(xASL_im_Column2IM(x.S.InputMasks(:,:,iSub), x.S.masks.WBmask)), x);
+    for iSub=1:size(x.S.InputMasks,4)
+        xASL_TrackProgress(iSub,size(x.S.InputMasks, 4));
+        LabelIM = xASL_vis_TransformData2View(xASL_vis_Convert4D_3D_atlas(x.S.InputMasks(:,:,:,iSub)), x);
         DataIM = xASL_vis_TransformData2View(x.S.masks.skull.*xASL_io_Nifti2Im(fullfile(x.D.SPMDIR, 'MapsAdded', 'rT1.nii')), x);
         CombiIM = xASL_im_ProjectLabelsOverData(DataIM,LabelIM, x);
         xASL_vis_Imwrite(CombiIM, fullfile(x.S.CheckMasksDir, [Ffile '_Subj_' num2str(iSub) '.jpg']));

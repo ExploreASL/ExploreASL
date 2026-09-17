@@ -103,7 +103,7 @@ if bCreateStandardSpaceMasks
 	xASL_io_SaveNifti(PathFoV, fullfile(x.S.StatsDir,'MaskSusceptibility.nii'), MaskSusceptibility, 8, true);
 	
 	% this is used in stats:
-	x.S.MaskSusceptibility = xASL_im_IM2Column(MaskSusceptibility,x.S.masks.WBmask);
+	x.S.MaskSusceptibility = MaskSusceptibility.*x.S.masks.WBmask;
 end
 
 % Define atlas paths

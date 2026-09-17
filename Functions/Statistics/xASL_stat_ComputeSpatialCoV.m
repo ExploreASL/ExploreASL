@@ -95,7 +95,7 @@ if ~isempty(imWM)
 	imWM = imWM(imMask); 
 end
     
-maskSize = sum(imMask(:));
+maskSize = sum(imMask, 'all');
 
 if maskSize < nMinSize || maskSize <= 0 
     sCov  = NaN;
@@ -104,12 +104,12 @@ end
 
 %% 3. sCoV computation
 
-sCov = std(imCBF(:), 'omitnan') / mean(imCBF(:), 'omitnan');
+sCov = std(imCBF, 'omitnan') / mean(imCBF, 'omitnan');
 
 if bPVC==2
     % Partial volume correction by normalizing by expected variance because of the structural data
     PseudoCoV = imGM + 0.3.*imWM;
-    PseudoCoV = std(PseudoCoV(:)) / mean(PseudoCoV(:));
+    PseudoCoV = std(PseudoCoV) / mean(PseudoCoV);
     sCov = sCov./PseudoCoV;
 end
     
