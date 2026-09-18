@@ -253,7 +253,7 @@ if isfield(x.P,'SubjectID')
 
 	ListFields = {'Path_ASL4D' 'Path_despiked_ASL4D' 'Path_rdespiked_ASL4D' 'Path_rtemp_despiked_ASL4D' 'Path_mean_PWI_Clipped' 'Path_mean_control' 'Path_M0' 'Path_M0_backup' 'Pop_Path_PWI4D'};
 	for iL = 1:length(ListFields)
-		x.P.([ListFields{iL} '_mat']) = [x.P.(ListFields{iL})(1:end-4) '.mat'];
+		x.P.([ListFields{iL} '_json']) = [x.P.(ListFields{iL})(1:end-4) '.json'];
 	end
 end
 
