@@ -63,7 +63,7 @@ if nargin < 7 || isempty(b3D)
 	b3D = 0;
 end
 
-if sum(imMask(:))<nMinSize 
+if sum(imMask, 'all') < nMinSize 
     diffCov  = NaN;
     return;
 end
