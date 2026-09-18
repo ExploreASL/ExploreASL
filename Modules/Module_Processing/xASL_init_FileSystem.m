@@ -76,7 +76,7 @@ Prefix = {'r' 'm' 'mr' 'rmr' 'rr' 'temp_' 'rtemp_' 'mask_' 'BiasField_' 'noSmoot
 ListFieldsSuffixBackup{1} = {};
 ListFieldsSuffixBackup{2} = {'M0'};
 ListFieldsSuffixORI{1} = {'T1' 'T2' 'T1c' 'c1T1' 'c2T1' 'FLAIR' 'WMH_SEGM'};
-ListFieldsSuffixORI{2} = {'mean_PWI_Clipped_ORI' 'ASL4D'};
+ListFieldsSuffixORI{2} = {'mean_PWI_Clipped' 'ASL4D'};
 ListFieldsSuffixORI_r_Pop{1} = {'T1' 'c1T1' 'c2T1' 'rc1T1' 'rc2T1'};
 ListFieldsSuffixORI_r_Pop{2} = {};
 
@@ -89,12 +89,12 @@ ListFieldsPrefixRR{1} = {};ListFieldsPrefixRR{2} = {'M0'};
 ListFieldsPrefixMR{1} = {'FLAIR'};ListFieldsPrefixMR{2} = {};
 ListFieldsPrefixRMR{1} = {'FLAIR'};ListFieldsPrefixRMR{2} = {};
 ListFieldsPrefixM{1} = {'FLAIR' 'T1'};ListFieldsPrefixM{2} = {};
-ListFieldsPrefixR{1} = {'c1T1' 'c2T1' 'c3T1' 'WMH_SEGM' 'T1'};ListFieldsPrefixR{2} = {'despiked_ASL4D' 'M0' 'PWI' 'mean_PWI_Clipped'};
+ListFieldsPrefixR{1} = {'c1T1' 'c2T1' 'c3T1' 'WMH_SEGM' 'T1' 'FLAIR'};ListFieldsPrefixR{2} = {'despiked_ASL4D' 'M0' 'PWI' 'mean_PWI_Clipped'};
 
 ListFieldsPrefixNosmoothPop{1} = {};ListFieldsPrefixNosmoothPop{2} = {'M0'};
 ListFieldsPrefixMaskPop{1} = {};ListFieldsPrefixMaskPop{2} = {'M0'};
 ListFieldsPrefixMRPop{1} = {'c1T1' 'c2T1' 'c3T1' 'WMH_SEGM'};ListFieldsPrefixMRPop{2} = {};
-ListFieldsPrefixRPop{1} = {'c1T1' 'c2T1' 'c3T1' 'WMH_SEGM' 'T1' 'T2' 'T1c'};ListFieldsPrefixRPop{2} = {};
+ListFieldsPrefixRPop{1} = {'c1T1' 'c2T1' 'c3T1' 'WMH_SEGM' 'T1' 'T2' 'T1c' 'FLAIR'};ListFieldsPrefixRPop{2} = {};
 
 % use "b" for backup & "o" for original, to reduce the number of suffixes
 % need to define various ASL4D_session files still
