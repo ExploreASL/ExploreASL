@@ -246,7 +246,7 @@ if isfield(x.P,'SubjectID')
 		x.P.([ListFields{iL} '_sn_mat']) = [x.P.(ListFields{iL})(1:end-4) '_sn.mat'];
 	end
 
-	ListFields = {'Path_ASL4D' 'Path_despiked_ASL4D' 'File_ASL4D' 'File_despiked_ASL4D' 'SliceGradient'};
+	ListFields = {'Path_ASL4D' 'Path_despiked_ASL4D' 'File_ASL4D' 'File_despiked_ASL4D' 'Path_SliceGradient'};
 	for iL = 1:length(ListFields)
 		x.P.([ListFields{iL} '_mat']) = [x.P.(ListFields{iL})(1:end-4) '.mat'];
 	end
