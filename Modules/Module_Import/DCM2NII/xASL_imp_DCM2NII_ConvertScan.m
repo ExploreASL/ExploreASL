@@ -1,7 +1,7 @@
-function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM2NII_ConvertScan(x, matches, thisSubject, dcm2niiCatchedErrors, thisVisit, thisRun, scanFields)
+function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields, bSuccess] = xASL_imp_DCM2NII_ConvertScan(x, matches, thisSubject, dcm2niiCatchedErrors, thisVisit, thisRun, scanFields)
 %xASL_imp_DCM2NII_ConvertScan Run DCM2NII for one individual scan.
 %
-% FORMAT: [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM2NII_ConvertScan(x, matches, thisSubject, dcm2niiCatchedErrors, thisVisit, thisRun, scanFields)
+% FORMAT: [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields, bSuccess] = xASL_imp_DCM2NII_ConvertScan(x, matches, thisSubject, dcm2niiCatchedErrors, thisVisit, thisRun, scanFields)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
@@ -19,6 +19,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
 %   thisSubject            -
 %   dcm2niiCatchedErrors   -
 %   PrintDICOMFields       - 
+%   bSuccess               - true if scan conversion succeeded (BOOLEAN)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run DCM2NII for one individual scan.
@@ -47,6 +48,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
     %% 4.1 Initialize variables
     
     PrintDICOMFields = [];
+    bSuccess = true;
     
     % Get other basic fields
     scanID = thisRun.scanIDs{scanFields.iScan};
@@ -186,7 +188,7 @@ function [x, thisSubject, dcm2niiCatchedErrors, PrintDICOMFields] = xASL_imp_DCM
     % end
 
     % Conversion
-    [thisSubject.globalCounts, x, ~, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = ...
+    [thisSubject.globalCounts, x, ~, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match, bSuccess] = ...
         xASL_imp_DCM2NII_Subject_StartConversion(...
         thisSubject.globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, scanFields);
 
@@ -253,5 +255,3 @@ function xASL_imp_Check_DCM2NII_Output(nii_files,scanID)
     end
 
 end
-
-

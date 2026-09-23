@@ -1,14 +1,15 @@
-function x = xASL_wrp_DCM2NII(x)
+function [x, bSuccess] = xASL_wrp_DCM2NII(x)
 %xASL_wrp_DCM2NII Run the dcm2nii part of the import.
 %
-% FORMAT: x = xASL_wrp_DCM2NII(x)
+% FORMAT: [x, bSuccess] = xASL_wrp_DCM2NII(x)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
 %   x.modules.import.imPar - A substructure with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
-%   x      - ExploreASL x structure
+%   x          - ExploreASL x structure
+%   bSuccess   - true if all attempted scan conversions succeeded (BOOLEAN)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run the dcm2nii part of the import.
@@ -20,7 +21,7 @@ function x = xASL_wrp_DCM2NII(x)
 % 5. Clean-up
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x = xASL_wrp_DCM2NII(x);
+% EXAMPLE:     [x, bSuccess] = xASL_wrp_DCM2NII(x);
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
@@ -45,7 +46,7 @@ function x = xASL_wrp_DCM2NII(x)
 
     %% 3. Import visit by visit, session by session, scan by scan for current subject
     fprintf('\nRunning DCM2NIIX...\n');
-    [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, x.modules.import.matches, dcm2niiCatchedErrors);
+    [x, PrintDICOMFields, dcm2niiCatchedErrors, bSuccess] = xASL_wrp_DCM2NII_Subject(x, x.modules.import.matches, dcm2niiCatchedErrors);
     
     % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
     iSubject = strcmp(x.SUBJECT,x.SUBJECTS);
