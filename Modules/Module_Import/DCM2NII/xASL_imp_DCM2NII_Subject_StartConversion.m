@@ -1,7 +1,7 @@
-function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, scanFields)
+function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match, bSuccess] = xASL_imp_DCM2NII_Subject_StartConversion(globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, scanFields)
 %xASL_imp_DCM2NII_Subject_StartConversion Start of DCM2NII subject conversion.
 %
-% FORMAT: [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match] = xASL_imp_DCM2NII_Subject_StartConversion(globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, scanFields)
+% FORMAT: [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, nii_files, first_match, bSuccess] = xASL_imp_DCM2NII_Subject_StartConversion(globalCounts, x, bSkipThisOne, summary_line, destdir, scanpath, scan_name, dcm2niiCatchedErrors, scanFields)
 %
 % INPUT:
 %   globalCounts           - Converted, skipped & missing scans (REQUIRED, STRUCT)
@@ -16,7 +16,7 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
 %   scanFields             - struct containing iSubject, iVisit, iSession, iScan (REQUIRED)
 %
 % OUTPUT:
-%   Almost the same as input + nii_files & first_match
+%   Almost the same as input + nii_files, first_match & bSuccess
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Start of DCM2NII subject conversion.
@@ -31,6 +31,7 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
 
     %% Start the conversion if this scan should not be skipped
     first_match = [];
+    bSuccess = true;
     if bSkipThisOne
         summary_line = sprintf(',"skipped",,,,,,,,');
         globalCounts.skipped_scans(scanFields.iSubject, scanFields.iVisit, scanFields.iSession, scanFields.iScan) = 1;
@@ -58,6 +59,7 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
             
         else %% Convert DICOM files
             %% Start the conversion. Note that the dicom filter is only in effect when a directory is specified as input.
+            bSuccess = false;
             try
                 % First we try to see if there are deeper layers
                 if xASL_exist(scanpath, 'dir') == 7 % run this part only for folders
@@ -81,10 +83,15 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
                     end
                 end
                 
-                [nii_files, scan_name, first_match, MsgDcm2nii] = xASL_io_dcm2nii(scanpath, destdir, scan_name, x.modules.import.imPar, x.opts.MyPath);
+                [nii_files, scan_name, first_match, MsgDcm2nii, dcm2niiStatus] = xASL_io_dcm2nii(scanpath, destdir, scan_name, x.modules.import.imPar, x.opts.MyPath);
+                % Command must have succeeded and there must be at least one NIfTI file produced
+                bSuccess = dcm2niiStatus == 0 && ~isempty(nii_files);
 
                 % If dcm2nii produced a warning or error, catch this & store it
-                if ~isempty(MsgDcm2nii) && ~isempty(regexpi(MsgDcm2nii,'.*(error).*')) % if it contains a warning/error
+                if dcm2niiStatus ~= 0
+                    MsgDcm2nii = sprintf('dcm2niix exited with status %d:\n%s', dcm2niiStatus, MsgDcm2nii);
+                end
+                if dcm2niiStatus ~= 0 || (~isempty(MsgDcm2nii) && ~isempty(regexpi(MsgDcm2nii,'.*(error).*'))) % if it contains a warning/error
                     dcm2niiCatchedErrors = xASL_imp_CatchErrors('xASL_io_dcm2nii', MsgDcm2nii, dbstack, ...
                         ['dcm2nii_' x.modules.import.imPar.dcm2nii_version], pwd, scan_name, scanpath, destdir, dcm2niiCatchedErrors, x.modules.import.imPar);
                 end
@@ -107,5 +114,3 @@ function [globalCounts, x, summary_line, destdir, scanpath, scan_name, dcm2niiCa
     end
 
 end
-
-

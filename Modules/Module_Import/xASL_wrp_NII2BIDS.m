@@ -1,14 +1,15 @@
-function x = xASL_wrp_NII2BIDS(x)
+function [x, bSuccess] = xASL_wrp_NII2BIDS(x)
 %xASL_wrp_NII2BIDS Run the NII2BIDS conversion.
 %
-% FORMAT: x = xASL_wrp_NII2BIDS(x)
+% FORMAT: [x, bSuccess] = xASL_wrp_NII2BIDS(x)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
 %   x.modules.import.imPar - JSON file with structure with import parameters (REQUIRED, STRUCT)
 %
 % OUTPUT:
-%   x               - ExploreASL x structure (STRUCT)
+%   x          - ExploreASL x structure (STRUCT)
+%   bSuccess   - true if all subject sessions succeeded (BOOLEAN)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run the NII2BIDS conversion.
@@ -18,7 +19,7 @@ function x = xASL_wrp_NII2BIDS(x)
 % 3. Go through all subjects and check all the M0 and ASLs and modify the JSONs
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     xASL_wrp_NII2BIDS(x);
+% EXAMPLE:     [x, bSuccess] = xASL_wrp_NII2BIDS(x);
 %
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
@@ -28,6 +29,7 @@ function x = xASL_wrp_NII2BIDS(x)
 
 
     %% Run the NII2BIDS conversion
+    bSuccess = true;
     
     % Make sure that logging is still active
     diary(x.dir.diaryFile);
@@ -87,7 +89,9 @@ function x = xASL_wrp_NII2BIDS(x)
     for iSubjectSession = 1:length(listSubjectsSessions)
         % Only run it for the current subject (maybe we can do this more elegantly in the future)
         if ~isempty(regexpi(listSubjectsSessions{iSubjectSession}, subjectName, 'once'))
-            x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, listSubjectsSessions{iSubjectSession});
+            % Subject-level success is the logical AND of all run-level successes
+            [x, bSubjectSuccess] = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, listSubjectsSessions{iSubjectSession});
+            bSuccess = bSuccess && bSubjectSuccess;
         end
     end
     
@@ -105,19 +109,23 @@ function x = xASL_wrp_NII2BIDS(x)
         end
     end
     
-    % Delete temp folder of all the subjects that might be there
-    tempDirs = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],[],[],true);
-    for iTempDir=1:numel(tempDirs)
-        if ~isempty(regexpi(tempDirs{iTempDir}, subjectName, 'once'))
-            xASL_delete(fullfile(tempDirs{iTempDir}), true);
+    % Preserve temp input after a failed conversion. NII2BIDS-only reruns derive
+    % their subject list from TempRoot, so deleting it would prevent retry.
+    if bSuccess
+        % Delete temp folder of all the subjects that might be there
+        tempDirs = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],[],[],true);
+        for iTempDir=1:numel(tempDirs)
+            if ~isempty(regexpi(tempDirs{iTempDir}, subjectName, 'once'))
+                xASL_delete(fullfile(tempDirs{iTempDir}), true);
+            end
         end
-    end
-    
-    % Delete temp directory if it is empty
-    dirsInTemp = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],[],[],true);
-    filesInTemp = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],[],[],false);
-    if isempty(dirsInTemp) && isempty(filesInTemp)
-        xASL_delete(x.modules.import.imPar.TempRoot, true);
+
+        % Delete temp directory if it is empty
+        dirsInTemp = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],[],[],true);
+        filesInTemp = xASL_adm_GetFileList(x.modules.import.imPar.TempRoot,[],[],[],false);
+        if isempty(dirsInTemp) && isempty(filesInTemp)
+            xASL_delete(x.modules.import.imPar.TempRoot, true);
+        end
     end
 
 end

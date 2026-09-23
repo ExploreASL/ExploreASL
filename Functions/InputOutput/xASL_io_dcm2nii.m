@@ -1,8 +1,8 @@
-function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, imPar, myPath)
+function [niifiles, ScanNameOut, usedinput, msg, status] = xASL_io_dcm2nii(inpath, destdir, series_name, imPar, myPath)
 %xASL_io_dcm2nii Convert DICOM NIfTI/BIDS format using the dcm2nii command line utility.
 % (http://www.nitrc.org/projects/mricron)
 %
-% FORMAT:       [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destdir, series_name, imPar, myPath)
+% FORMAT:       [niifiles, ScanNameOut, usedinput, msg, status] = xASL_io_dcm2nii(inpath, destdir, series_name, imPar, myPath)
 % 
 % INPUT:   
 %      inpath          path to dicom folder, dicom file, PAR-file or REC-file. In case of a dicom folder, 'DcmExt' will be used to
@@ -18,7 +18,12 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 %
 %               The first DICOM file will be used if inpath is a directory.
 %
-% OUTPUT:       ...
+% OUTPUT:
+%      niifiles        converted NIfTI files (CELL ARRAY)
+%      ScanNameOut     output scan name (CHAR ARRAY)
+%      usedinput       input file used for conversion (CHAR ARRAY)
+%      msg             dcm2niix command output (CHAR ARRAY)
+%      status          dcm2niix exit status, zero on success (INTEGER)
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION:  Convert DICOM NIfTI/BIDS format using the dcm2nii command line utility.
@@ -73,6 +78,7 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
 	
     niifiles = {};
     msg = [];
+    status = 0;
 
     %% 3. Locate dcm2nii executable
 
@@ -180,14 +186,14 @@ function [niifiles, ScanNameOut, usedinput, msg] = xASL_io_dcm2nii(inpath, destd
         % Command line string
         cmdline = [quote ExePath quote ' ' dcm2nii_args ' -o ' quote temp_dir quote ' ' quote inpath quote];
 
-        % User feedback if verbose
+        % User feedback if verbose; status is returned to have it checked in the wrapper function
         if imPar.bVerbose
             fprintf('executing: [%s]\n',cmdline);
             [status, msg] = system(cmdline, '-echo');
             separatorline = xASL_adm_BreakString('',[],[],1,0);
             fprintf('%s\n%s%s\nstatus: %d\n',separatorline,msg,separatorline,status);
         else
-            [~, msg] = system(cmdline);
+            [status, msg] = system(cmdline);
         end
 
         %% Move/Rename NIfTIs to final destination
