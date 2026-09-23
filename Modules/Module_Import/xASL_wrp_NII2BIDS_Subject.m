@@ -1,7 +1,7 @@
-function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSession)
+function [x, bSuccess] = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSession)
 %xASL_wrp_NII2BIDS_Subject Run NII to ASL-BIDS for one individual subject.
 %
-% FORMAT: x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSession)
+% FORMAT: [x, bSuccess] = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSession)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
@@ -11,7 +11,8 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
 %   nameSubjectSession     - name of the subject (REQUIRED, CELL STRUCT)
 %
 % OUTPUT:
-%   x               - ExploreASL x structure (STRUCT)
+%   x          - ExploreASL x structure (STRUCT)
+%   bSuccess   - true if all runs succeeded (BOOLEAN)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run NII to ASL-BIDS for one individual subject.
@@ -23,7 +24,7 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
 % - 3. Iterate over runs
 % 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSession);
+% EXAMPLE:     [x, bSuccess] = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSession);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
 % ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
@@ -31,6 +32,7 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
 
 
     %% 1. Initialize
+    bSuccess = true;
     bidsLabel = xASL_imp_CheckForAliasInSession(x.modules.import.imPar,nameSubjectSession);
     
     % Make a subject directory
@@ -58,7 +60,9 @@ function x = xASL_wrp_NII2BIDS_Subject(x, bidsPar, studyParAll, nameSubjectSessi
 		end
 		studyParSpecificSubjSessionRun = xASL_imp_StudyParPriority(studyParAll, bidsLabel.subject, bidsLabel.visit, runName, true);
 		
-        x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyParSpecificSubjSessionRun, listRuns, nameSubjectSession, bidsLabel, iRun);
+        % Subject-level success is the logical AND of all run-level successes
+        [x, bRunSuccess] = xASL_imp_NII2BIDS_Run(x, bidsPar, studyParSpecificSubjSessionRun, listRuns, nameSubjectSession, bidsLabel, iRun);
+        bSuccess = bSuccess && bRunSuccess;
     end
 end
 

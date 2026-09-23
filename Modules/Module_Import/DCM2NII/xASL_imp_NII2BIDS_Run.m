@@ -1,7 +1,7 @@
-function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun)
+function [x, bSuccess] = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun)
 %xASL_imp_NII2BIDS_Run NII2BIDS conversion for a single run.
 %
-% FORMAT: x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun)
+% FORMAT: [x, bSuccess] = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
@@ -14,7 +14,8 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 %   iRun                   - Run number (INTEGER, REQUIRED)
 %
 % OUTPUT:
-%   x                     - ExploreASL x structure (STRUCT)
+%   x                      - ExploreASL x structure (STRUCT)
+%   bSuccess               - true if anatomical and perfusion conversion succeeded (BOOLEAN)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: NII2BIDS conversion for a single run.
@@ -23,12 +24,12 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 % 2. Convert structural and ASL runs
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
+% EXAMPLE:     [x, bSuccess] = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSession, bidsLabel, iRun);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
 % ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
 % __________________________________
-
+    bSuccess = true;
 
     %% Print the run that is being converted
     xASL_adm_BreakString('CONVERT RUN');
@@ -75,6 +76,7 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 			xASL_imp_NII2BIDS_RunAnat(x.modules.import.imPar, bidsPar, studyPar, subjectSessionLabel, outSessionPath, listRuns, iRun, nameSubjectSession);
 		end
 	catch loggingEntry
+		bSuccess = false;
 		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
 		xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'anatomical', subjectSessionLabel, iRun);
 	end
@@ -86,6 +88,7 @@ function x = xASL_imp_NII2BIDS_Run(x, bidsPar, studyPar, listRuns, nameSubjectSe
 			xASL_imp_NII2BIDS_RunPerf(x.modules.import.imPar, bidsPar, studyPar, subjectSessionLabel, inSessionPath, outSessionPath, listRuns, iRun);
 		end
 	catch loggingEntry
+		bSuccess = false;
 		[x] = xASL_qc_AddLoggingInfo(x, loggingEntry);
 		xASL_imp_NII2BIDS_RunIssueWarning(loggingEntry, 'perfusion', subjectSessionLabel, iRun);
 	end

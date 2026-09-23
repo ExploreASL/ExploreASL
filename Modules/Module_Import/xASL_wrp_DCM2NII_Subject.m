@@ -1,7 +1,7 @@
-function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, matches, dcm2niiCatchedErrors)
+function [x, PrintDICOMFields, dcm2niiCatchedErrors, bSuccess] = xASL_wrp_DCM2NII_Subject(x, matches, dcm2niiCatchedErrors)
 %xASL_wrp_DCM2NII_Subject Run DCM2NII for one individual subject.
 %
-% FORMAT: [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, matches, dcm2niiCatchedErrors)
+% FORMAT: [x, PrintDICOMFields, dcm2niiCatchedErrors, bSuccess] = xASL_wrp_DCM2NII_Subject(x, matches, dcm2niiCatchedErrors)
 % 
 % INPUT:
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
@@ -13,6 +13,7 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
 %   x                      - ExploreASL x structure (REQUIRED, STRUCT)
 %   PrintDICOMFields       - Print DICOM fields
 %   dcm2niiCatchedErrors   - DCM2NII catched errors
+%   bSuccess               - true if all attempted scan conversions succeeded (BOOLEAN)
 %                         
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: Run DCM2NII for one individual subject.
@@ -23,7 +24,7 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
 % 4. Iterate over scans
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
-% EXAMPLE:     [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(x, matches, dcm2niiCatchedErrors);
+% EXAMPLE:     [x, PrintDICOMFields, dcm2niiCatchedErrors, bSuccess] = xASL_wrp_DCM2NII_Subject(x, matches, dcm2niiCatchedErrors);
 % __________________________________
 % SPDX-License-Identifier: Apache-2.0
 % ExploreASL; see permissions and limitations at https://github.com/ExploreASL/ExploreASL/blob/main/LICENSE
@@ -32,6 +33,7 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
 
 
     %% 1. Run DCM2NII for one individual subject
+    bSuccess = true;
     
     % We do not iterate over subjects anymore, since this is done in xASL_Iteration now
     iSubject = find(strcmp(x.SUBJECT,x.SUBJECTS));
@@ -142,8 +144,9 @@ function [x, PrintDICOMFields, dcm2niiCatchedErrors] = xASL_wrp_DCM2NII_Subject(
 					scanFields.numberSession = xASL_str2num(thisRun.name(5:end));
 				end
                 % Convert scan
-                [x, thisSubject,dcm2niiCatchedErrors, PrintDICOMFields] = ...
+                [x, thisSubject,dcm2niiCatchedErrors, PrintDICOMFields, bScanSuccess] = ...
                     xASL_imp_DCM2NII_ConvertScan(x, matches, thisSubject, dcm2niiCatchedErrors, thisVisit, thisRun, scanFields);
+                bSuccess = bSuccess && bScanSuccess;
             end
             
         end
@@ -203,6 +206,4 @@ function subjectExport = xASL_imp_SubjectName(subjectID)
     % fix the subject ids in there afterwards, too!
 
 end
-
-
 

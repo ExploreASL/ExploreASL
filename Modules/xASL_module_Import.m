@@ -1,7 +1,7 @@
-function [result, x] = xASL_module_Import(x)
+function [bSuccess, x] = xASL_module_Import(x)
 %xASL_module_Import Imports the DICOM or PAR/REC source data to NIFTIs in ASL-BIDS format
 %
-% FORMAT: [result, x] = xASL_module_Import(x)
+% FORMAT: [bSuccess, x] = xASL_module_Import(x)
 %
 % INPUT:
 %   x                     - ExploreASL x structure. (STRUCT, REQUIRED)
@@ -32,7 +32,7 @@ function [result, x] = xASL_module_Import(x)
 % 
 % OUTPUT:
 %   x        - ExploreASL x structure
-%   result   - True for successful run of this module, false for insuccessful run
+%   bSuccess   - True for successful run of this module, false for insuccessful run
 % 
 % 
 % OUTPUT FILES:
@@ -123,8 +123,8 @@ function [result, x] = xASL_module_Import(x)
 
 
     %% Import Module
-    
-    result = false;
+    % Use a "errors as values" pattern to have the success/failure of the module be the logical AND of the success/failure of the steps
+    bSuccess = true;
     
     % DCM2NIIX and other tools seem to stop the diary logging automatically, here we extract the current 
     % diary file path to make sure that at the beginning of each module the logging is still enabled.
@@ -138,6 +138,14 @@ function [result, x] = xASL_module_Import(x)
     StateName{1} = '010_DCM2NII';
     StateName{2} = '020_NII2BIDS';
 	StateName{3} = '030_DEFACE';
+
+    % Remove completion states that depend on a stage which will be rerun
+    if x.opts.bImport(1) && ~x.mutex.HasState(StateName{1})
+        x.mutex.DelState(StateName{2});
+        x.mutex.DelState('999_ready');
+    elseif x.opts.bImport(2) && ~x.mutex.HasState(StateName{2})
+        x.mutex.DelState('999_ready');
+    end
    
     
     %% 0. Initialization
@@ -153,24 +161,28 @@ function [result, x] = xASL_module_Import(x)
     %% 1. Run DCM2NIIX
     iState = 1;
     if x.opts.bImport(1) && ~x.mutex.HasState(StateName{1})
-        x = xASL_wrp_DCM2NII(x);
-        x.mutex.AddState(StateName{iState});
+        [x, bSuccess] = xASL_wrp_DCM2NII(x);
+        if bSuccess
+            x.mutex.AddState(StateName{iState});
+        end
     elseif x.opts.bImport(1) && x.mutex.HasState(StateName{1})
         fprintf('DCM2NIIX was run before...   \n');
     end
 
     %% 2. Run NIfTI to ASL-BIDS
     iState = 2;
-	if x.opts.bImport(2) && ~x.mutex.HasState(StateName{2})
-        x = xASL_wrp_NII2BIDS(x);
-        x.mutex.AddState(StateName{iState});
+	if bSuccess && x.opts.bImport(2) && ~x.mutex.HasState(StateName{2})
+        [x, bSuccess] = xASL_wrp_NII2BIDS(x);
+        if bSuccess
+            x.mutex.AddState(StateName{iState});
+        end
     elseif x.opts.bImport(2) && x.mutex.HasState(StateName{2})
         fprintf('NIIX to ASL-BIDS was run before...   \n');
 	end
     
 	%% 3. Run DEFACE
     iState = 3;
-    if x.opts.bImport(3) && ~x.mutex.HasState(StateName{3})
+    if bSuccess && x.opts.bImport(3) && ~x.mutex.HasState(StateName{3})
         xASL_wrp_Deface(x);
         x.mutex.AddState(StateName{iState});
     elseif x.opts.bImport(3) && x.mutex.HasState(StateName{3})
@@ -181,12 +193,11 @@ function [result, x] = xASL_module_Import(x)
     x = xASL_adm_CleanUpX(x);
     
     % We need to terminate the module correctly
-    if x.mutex.HasState(StateName{1}) && x.mutex.HasState(StateName{2})
+    if bSuccess && x.mutex.HasState(StateName{1}) && x.mutex.HasState(StateName{2})
         x.mutex.AddState('999_ready');
     end
     
     x.mutex.Unlock();
-    result = true;
     close all;
 
     
