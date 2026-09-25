@@ -55,12 +55,17 @@ else
 end
 
 [Fpath, Ffile, Fext] = xASL_fileparts(InputPath);
+
 rpfile = fullfile( Fpath, ['rp_' Ffile '.txt']);
 rInputPath = fullfile( Fpath, ['r' Ffile Fext]);
 InputPathJson = fullfile( Fpath, [Ffile '.json']);
 rInputPathJson = fullfile( Fpath, ['r' Ffile '.json']);
 matFile = fullfile(Fpath, [Ffile '.mat']);
 
+% Path to a temporary file for registration
+InputPathReg = fullfile(Fpath, ['reg_' Ffile Fext]);
+rpfileReg = fullfile( Fpath, ['rp_reg_' Ffile '.txt']);
+matFileReg = fullfile(Fpath, ['reg_' Ffile '.mat']);
 
 %% Set defaults
 exclusion = NaN;
@@ -111,6 +116,15 @@ if x.Q.nUniqueEchoTime>1
     bMultiTE = 1;
 else
     bMultiTE = 0;
+end
+
+% Set default for edge enhanced motion correction
+if ~isfield(x.modules.asl, 'bMoCoEdgeEnhanced') || isempty(x.modules.asl.bMoCoEdgeEnhanced)
+	if bMultiPLD || x.modules.asl.bTimeEncoded
+		x.modules.asl.bMoCoEdgeEnhanced = true;
+	else
+		x.modules.asl.bMoCoEdgeEnhanced = false;
+	end
 end
 
 %% File management
@@ -230,13 +244,15 @@ fprintf('\nSPM motion estimation:\n');
 fprintf('ExploreASL estimates motion and aligns based on the first TEs (in the case of multiTE)\n');
 %fprintf('ExploreASL estimates motion and aligns within PLD only (in the case of multiPLD (excluding Hadamard))\n');
 
+if x.modules.asl.bMoCoEdgeEnhanced
+	fprintf('%s\n', 'Using edge-based registration');
+end
 
 % Issue warning if empty image
 if max(max(max(max(tempnii.dat(:)))))==0 || numel(unique(tempnii.dat(:)))==1
 	warning('Invalid input image, skipping');
 	return;
 end
-
 
 % If previous realign parameters exist, delete them
 xASL_delete(rpfile);
@@ -246,11 +262,93 @@ xASL_delete(rpfile);
 % regression to account for ASL's potential control-label difference in
 % average head position
 
-V = spm_vol(InputPath); % load the path
-Y = spm_read_vols(V); % Read the image
-rp_all = zeros(nFrames, 6); % rp_all is what ends up in the rp*.txt sidecar, rp=realign parameters
-mat_all = zeros(4, 4, size(Y,4)); % mat_all is what ends up in the ASL*.mat sidecar, containing the orientation matrices for each frame/volume
+Vorig = spm_vol(InputPath); % Load the original volume
+Yorig = spm_read_vols(Vorig); % Read the image
 
+Vreg = Vorig; % Volume to be register. Either identical to Vorig, or containing edge enhancement
+rpPath = rpfile; % Path to the RP-file
+
+if x.modules.asl.bMoCoEdgeEnhanced
+	% Edge-enhancement 
+	
+	%gradient is suboptimal, as the edge slope is contrast dependent. we want to first detect edges - derivative 0 - and then smooth edges for better convergence, but ont just gradients.
+	for iVol = 1:numel(Vorig)
+		% Modify the path of the smoothed image
+		Vreg(iVol).fname = InputPathReg;
+		Vreg(iVol).descrip = 'Gaussian-smoothed gradient magnitude';
+		switch(3)
+			case 1
+				% Sobel with 0.5STD presmoothing
+				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
+				imSmooth = xASL_im_Smooth3D(Yorig(:,:,:,iVol), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing
+				[Gx, Gy, Gz] = gradient(imSmooth); % Computes spatial gradients
+				imEdge = sqrt(Gx.^2 + Gy.^2 + Gz.^2); % Computes gradient magnitude
+			case 2
+				% Sobel with 1.5STD presmoothing
+				sigmaEdge = 1.5; % STD of smoothing kernel in voxels
+				imSmooth = xASL_im_Smooth3D(Yorig(:,:,:,iVol), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing
+				[Gx, Gy, Gz] = gradient(imSmooth); % Computes spatial gradients
+				imEdge = sqrt(Gx.^2 + Gy.^2 + Gz.^2); % Computes gradient magnitude
+			case 3
+				% Sobel with 0.5STD presmoothing, thresholding and further smoothing
+				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
+				imSmooth = xASL_im_Smooth3D(Yorig(:,:,:,iVol), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing
+				[Gx, Gy, Gz] = gradient(imSmooth); % Computes spatial gradients
+				imEdge = sqrt(Gx.^2 + Gy.^2 + Gz.^2); % Computes gradient magnitude
+				imThreshold = sort(imEdge(:)); % Calculate 95th percentile
+				imThreshold = imThreshold(ceil(numel(imThreshold)*0.95));
+				imEdge = imEdge > imThreshold; % Threshold to avoid intensity scale differences
+				imEdge = xASL_im_Smooth3D(double(imEdge), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing 
+			case 4
+				% LoG - Laplacian of Gaussian filter, 0.5STD Gaussian, then Laplacian
+				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
+				imSmooth = xASL_im_Smooth3D(Yorig(:,:,:,iVol), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing
+
+				imLoG = zeros(3,3,3);% 3D Laplacian kernel: 6-neighbour stencil
+				imLoG(:,2,2) = 1;
+				imLoG(2,:,2) = 1;
+				imLoG(2,2,:) = 1;
+				imLoG(2,2,2) = -6; 
+
+				imEdge = convn(imSmooth, imLoG, 'same');
+			case 5
+				% LoG - Laplacian of Gaussian filter, 0.5STD Gaussian, then Laplacian, zero-crossings of second derivative
+				sigmaEdge = 0.5; % STD of smoothing kernel in voxels
+				imSmooth = xASL_im_Smooth3D(Yorig(:,:,:,iVol), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing
+
+				imLoG = zeros(3,3,3);% 3D Laplacian kernel: 6-neighbour stencil
+				imLoG(:,2,2) = 1;
+				imLoG(2,:,2) = 1;
+				imLoG(2,2,:) = 1;
+				imLoG(2,2,2) = -6; 
+
+				imSmooth = convn(imSmooth, imLoG, 'same');
+				imEdge = zeros(size(imSmooth));
+				shifts = [1 0 0; -1 0 0; 0 1 0; 0 -1 0; 0 0 1; 0 0 -1];
+
+				imThreshold = sort(imSmooth(:)); % Calculate 98th percentile
+				imThreshold = imThreshold(ceil(numel(imThreshold)*0.98));
+
+				for k = 1:size(shifts,1)
+					S = circshift(imSmooth, shifts(k,:));
+					crossing = (imSmooth .* S) < 0;
+					strong = abs(imSmooth - S) > imThreshold;
+					imEdge = imEdge | (crossing & strong);
+				end
+
+				% Avoid wrapped boundary artefacts from circshift
+				imEdge([1,end],:,:) = 0;
+				imEdge(:,[1,end],:) = 0;
+				imEdge(:,:,[1,end]) = 0;
+				imEdge = xASL_im_Smooth3D(double(imEdge), [sigmaEdge, sigmaEdge, sigmaEdge]); % Gaussian smoothing 
+		end
+		spm_write_vol(Vreg(iVol), imEdge); % Save to the gradient enhanced image
+	end
+	rpPath = rpfileReg;
+end
+
+rp_all = zeros(nFrames, 6); % rp_all is what ends up in the rp*.txt sidecar, rp=realign parameters
+mat_all = zeros(4, 4, size(Yorig,4)); % mat_all is what ends up in the ASL*.mat sidecar, containing the orientation matrices for each frame/volume
 
 if bMultiTE
     fprintf('Multi-TE data detected: aligning based on shortest TEs only\n');
@@ -268,52 +366,63 @@ if bMultiTE
 	end
 
 	% Realigns only the flagged frames
-    spm_realign(V(idx_minTE), flags, bZigZag); 
+    spm_realign(Vreg(idx_minTE), flags, bZigZag); 
 	% This affects the ASL4D.mat file, rp_ASL4D.txt file and MAT within the ASL4D.nii volume
     
-    rp_temp = load(rpfile); % Load the rp file written by spm_realign
+    rp_temp = load(rpPath); % Load the rp file written by spm_realign
+	Vreg = spm_vol(Vreg(1).fname); % Read the updated volumes
 
-	V = spm_vol(InputPath); % Read the updated volumes
     % Loop through TE groups
     for idxTE = 1:length(idx_minTE)
         % Repeats the motion estimates extracted from the rp file for the rest of the TEs and writes to the corresponding rows in rp_all
         rp_all(idx_minTE(idxTE):idx_maxTE(idxTE), :) = repmat(rp_temp(idxTE,:), x.Q.nUniqueEchoTime, 1); 
     
 		for idxAllTE = idx_minTE(idxTE):idx_maxTE(idxTE)
-			mat_all(:, :, idxAllTE) = V(idx_minTE(idxTE)).mat;
+			mat_all(:, :, idxAllTE) = Vreg(idx_minTE(idxTE)).mat;
 		end
         
     end
-    
+
 % elseif bMultiPLD && ~x.modules.asl.bTimeEncoded
 %     fprintf('MultiPLD detected, aligning within PLDs only\n');
 %     % Handles only Multi-PLD datasets - aligns only between the same PLDs
-% 	% Motion correction across all PLDs is not really necessary as that can be done with the simple motion correction
-% 	% Note that we handle normal mutli-PLD (not TimeEncoded), so there are still control and label images and we can thus do ZigZag
+%     % Motion correction across all PLDs is not really necessary as that can be done with the simple motion correction
+% 	  % Note that we handle normal mutli-PLD (not TimeEncoded), so there are still control and label images and we can thus do ZigZag
 % 
 %     for pld = x.Q.uniqueInitial_PLD(:)'
 %         idxSinglePLD = find(x.Q.Initial_PLD == pld); % Finds the same PLDs
-%         spm_realign(V(idxSinglePLD), flags, bZigZag);
+%         spm_realign(Vreg(idxSinglePLD), flags, bZigZag);
 % 
-%         rp_temp = load(rpfile); % Load the rp file written by spm_realign
-% 		V = spm_vol(InputPath); % Read the updated volumes
+%         rp_temp = load(rpPath); % Load the rp file written by spm_realign
+% 		  Vreg = spm_vol(InputPathReg); % Read the updated volumes
 % 
-% 		% Loop through TE groups
+% 		% Loop through PLD groups
 % 		rp_all(idxSinglePLD, :) = rp_temp;
 % 
 % 		for idxPLD = idxSinglePLD(:)'
-% 			mat_all(:, :, idxPLD) = V(idxPLD).mat;
+% 			mat_all(:, :, idxPLD) = Vreg(idxPLD).mat;
 % 		end
 %     end
+
+elseif x.modules.asl.bMoCoEdgeEnhanced
+    fprintf('Standard SPM motion estimation\n');
+	% Handles simple datasets but with the edge-based registration, so need to read the results and apply them to the original image    
+    spm_realign(Vreg, flags, bZigZag);
+
+	Vreg = spm_vol(Vreg(1).fname); % Read the updated volumes
+	rp_all = load(rpPath); % Load the rp file written by spm_realign
+
+	for iVol = 1:numel(Vreg)
+		mat_all(:, :, iVol) = Vreg(iVol).mat;
+	end
 else
     fprintf('Standard SPM motion estimation\n');
     % Handles simple datasets
-    spm_realign(V, flags, bZigZag);
+    spm_realign(Vorig, flags, bZigZag); % No reordering or edge-based registration, we can keep the results as they are
 end
- 
 
 % For these special cases, we need to save the updated transformation matrices
-if bMultiTE %|| (bMultiPLD && ~x.modules.asl.bTimeEncoded)
+if bMultiTE || x.modules.asl.bMoCoEdgeEnhanced %|| (bMultiPLD && ~x.modules.asl.bTimeEncoded)
 	% Save the updated matrix TXT
 	writematrix(rp_all, rpfile, 'delimiter', '\t'); 
 
@@ -321,16 +430,20 @@ if bMultiTE %|| (bMultiPLD && ~x.modules.asl.bTimeEncoded)
 	xASL_delete(matFile);
 
 	% Save the updated volume, one by one
-	for iVolume = 1:size(Y,4)
-		Vt = V(iVolume);                
+	for iVolume = 1:size(Yorig,4)
+		Vt = Vorig(iVolume);                
 		Vt.n = [iVolume 1];
 		Vt.mat = mat_all(:,:,iVolume);
-		spm_write_vol(Vt, Y(:,:,:,iVolume)); % Save one 3D volume
+		spm_write_vol(Vt, Yorig(:,:,:,iVolume)); % Save one 3D volume
 	end
 	mat = mat_all;
 	save(matFile, 'mat'); % Save also the MAT file - NIfTI header and MAT-file contain the same information, but that's what normally happens after spm_realign
 end
 
+% Delete the temporary files
+xASL_delete(InputPathReg);
+xASL_delete(rpfileReg);
+xASL_delete(matFileReg);
 
 %% ----------------------------------------------------------------------------------------
 %% 2. Calculate position and motion parameters
