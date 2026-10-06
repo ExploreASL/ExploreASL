@@ -161,8 +161,8 @@ if ~isempty(PathGraph)
         exp(-(1:round(max(SliceTime)))/T1Time);
 end
  
-% Plot the visualization
-if ~isempty(PathGraph)
+% Plot the visualization - this can only work when JVM is on (especially in older Matlab versions)
+if ~isempty(PathGraph) && usejava('jvm')
 	% This part is used for visualization only and not for calculation the signal reduction
     % Create a figure without displaying it
     if ~bFigureExists
