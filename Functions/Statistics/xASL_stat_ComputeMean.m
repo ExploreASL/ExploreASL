@@ -1,7 +1,7 @@
 function [resMeanPVC0, resMeanPVC1, resMeanPVC2GM, resMeanPVC2WM, resMedian] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bOutput, imGM, imWM)
 %xASL_stat_ComputeMean calculates mean or median of CBF in the image across a mask with an optional partial volume correction.
 %
-% FORMAT:  [resMeanPVC0, resMeanPVC1, resMeanPVC2GM, resMeanPVC2WM, resMedian] = xASL_stat_ComputeMean(imCBF[, imMask, nMinSize, imGM, imWM])
+% FORMAT:  [resMeanPVC0, resMeanPVC1, resMeanPVC2GM, resMeanPVC2WM, resMedian] = xASL_stat_ComputeMean(imCBF[, imMask, nMinSize, bOutput, imGM, imWM])
 %
 % INPUT:
 %   imCBF  - input CBF volume (REQUIRED)
