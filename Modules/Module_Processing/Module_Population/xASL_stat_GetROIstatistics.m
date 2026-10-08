@@ -255,7 +255,7 @@ end
 
 %% 0.c Determine whether group mask exists
 if ~x.S.InputNativeSpace
-	if isfield(x.S,'MaskSusceptibility')
+	if isfield(x.S,'MaskSusceptibility') && any(x.S.MaskSusceptibility == false, 'all') % Masks with all 1 are also not considered as group masks
 		HasGroupSusceptMask = true;
 	else
 		HasGroupSusceptMask = false;
@@ -847,7 +847,7 @@ for iSubject=1:x.dataset.nSubjects
 		            fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_nonASL_CoV'];
                     [pathOutput_nonASL_CoV] = xASL_stat_VisualizeSubjectWiseROI(x, CurrentMaskNotVascular, DataIm, fileName, pathOutput_nonASL_CoV);
 
-					x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, 0, 0, 1);
+					x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, 0);
 				end
             else
                 %% A. For ASL stats, first initialize defaults (NaNs)
@@ -921,10 +921,13 @@ for iSubject=1:x.dataset.nSubjects
 							fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
 							[pathOutput_sCoV] = xASL_stat_VisualizeSubjectWiseROI(x, CurrentMaskNotVascular, DataIm, fileName, pathOutput_sCoV);
 
-							x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 0);
-							if ~bSkipPVC
+							
+							if bSkipPVC
+								x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 0);
+							else
 								% No visualization here, because there is no different masking
-								% x.S.DAT_CoV_PVC2(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 2, 1, pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+								x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, 0);
+								% [x.S.DAT_CoV_PVC0(SubjSess,iROI), x.S.DAT_CoV_PVC2(SubjSess,iROI)] = xASL_stat_ComputeSpatialCoV(DataIm, CurrentMaskNotVascular, MinVoxels, [1, 1], pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 							end
 						end
 
@@ -973,7 +976,7 @@ for iSubject=1:x.dataset.nSubjects
     
 					    % Precalculate the temporal values - use functions that work in 3D only to do it for each temporal point
 					    for iRepetition=1:size(Data4DIm, 4)
-						    sCoV4D(iRepetition) = xASL_stat_ComputeSpatialCoV(Data4DIm(:,:,:, iRepetition), CurrentMaskNotVascular, MinVoxels, 0);
+						    sCoV4D(iRepetition) = xASL_stat_ComputeSpatialCoV(Data4DIm(:,:,:, iRepetition), CurrentMaskNotVascular, MinVoxels);
 					    end
     
 					    for iRepetition=1:size(Data4DIm, 2)
@@ -998,7 +1001,7 @@ for iSubject=1:x.dataset.nSubjects
 					    for iSlice=1:size(Data4D, 3)
 						    for iRepetition=1:size(Data4DIm, 2)
 							    mean4D_SliceWise(iSlice, iRepetition) = xASL_stat_ComputeMean(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascular(:, :, iSlice), 0);
-							    sCoV4D_SliceWise(iSlice, iRepetition) = xASL_stat_ComputeSpatialCoV(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascular(:, :, iSlice), 0, 0, 1);
+							    sCoV4D_SliceWise(iSlice, iRepetition) = xASL_stat_ComputeSpatialCoV(Data4D(:, :, iSlice, iRepetition), CurrentMaskNotVascular(:, :, iSlice), 0);
 						    end
 						    % First STD across repetitions, the slice-wise mean
 						    tempSD4D_SliceWise(iSlice) = xASL_stat_ComputeMean(std(Data4D(:, :, iSlice, :), [], 4, 'omitnan'), CurrentMaskNotVascular(:, :, iSlice), 0);

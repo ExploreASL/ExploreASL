@@ -278,7 +278,7 @@ function [ASL] = xASL_qc_CollectQC_ASL_CalculateDerivatives(x, ASL)
 
     % Spatial CoV
     CBFmasked = imCBF(imMaskWB);
-    ASL.SpatialCoV_GM_Perc = 100*xASL_stat_ComputeSpatialCoV(CBFmasked, [], [], 0, 1);
+    ASL.SpatialCoV_GM_Perc = 100*xASL_stat_ComputeSpatialCoV(CBFmasked);
 
     %% 4. Calculations across time, including vascular signal
     %% I. Admin

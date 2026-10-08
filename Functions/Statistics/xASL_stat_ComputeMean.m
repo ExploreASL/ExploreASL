@@ -1,7 +1,7 @@
-function [resMeanPVC0, resMeanPVC1, resMeanPVC2GM, resMeanPVC2WM, resMedian] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bOutput, imGM, imWM)
+function [meanPVC0, meanPVC1, meanPVC2GM, meanPVC2WM, medianPVC0] = xASL_stat_ComputeMean(imCBF, imMask, nMinSize, bOutput, imGM, imWM)
 %xASL_stat_ComputeMean calculates mean or median of CBF in the image across a mask with an optional partial volume correction.
 %
-% FORMAT:  [resMeanPVC0, resMeanPVC1, resMeanPVC2GM, resMeanPVC2WM, resMedian] = xASL_stat_ComputeMean(imCBF[, imMask, nMinSize, bOutput, imGM, imWM])
+% FORMAT:  [meanPVC0, meanPVC1, meanPVC2GM, meanPVC2WM, medianPVC0] = xASL_stat_ComputeMean(imCBF[, imMask, nMinSize, bOutput, imGM, imWM])
 %
 % INPUT:
 %   imCBF  - input CBF volume (REQUIRED)
@@ -9,17 +9,17 @@ function [resMeanPVC0, resMeanPVC1, resMeanPVC2GM, resMeanPVC2WM, resMedian] = x
 %   nMinSize - minimal size of the ROI in voxels, if not big enough, then return NaN
 %            - ignore when 0 (OPTIONAL, default = 0)
 %   bOutput - vector of length 1 to 5 that specifies if each of the outputs is provided in the order
-%             [resMeanPVC0, resMeanPVC1, resMeanPVC2GM, resMeanPVC2WM, resMedian] (OPTIONAL, DEFAULT [1 0 0 0 0])
+%             [meanPVC0, meanPVC1, meanPVC2GM, meanPVC2WM, medianPVC0] (OPTIONAL, DEFAULT [1 0 0 0 0])
 %   imGM   - GM partial volume map with the same size as imCBF
 %            (OPTIONAL, REQUIRED for bPVC==2 and bPVC==1)
 %   imWM   - WM partial volume map with the same size as imCBF
 %            (OPTIONAL, REQUIRED for bPVC==2)
 % OUTPUT:
-%   resMeanPVC0 - mean value with PVC0
-%   resMeanPVC1 - mean value with PVC1
-%   resMeanPVC2GM - mean value with PVC2 in GM
-%   resMeanPVC2WM - mean value with PVC2 in WM
-%   resMedian   - median value
+%   meanPVC0 - mean value with PVC0
+%   meanPVC1 - mean value with PVC1
+%   meanPVC2GM - mean value with PVC2 in GM
+%   meanPVC2WM - mean value with PVC2 in WM
+%   medianPVC0   - median value
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: It calculates mean or median of CBF over the mask imMask if the mask volume exceeds nMinSize. It calculates either
 %              a mean, a median, or a mean after PVC - depending on what outputs. For the PVC options, it needs also imGM and imWM and returns the
@@ -36,13 +36,13 @@ function [resMeanPVC0, resMeanPVC1, resMeanPVC2GM, resMeanPVC2WM, resMedian] = x
 % 3c. Simple PVC
 % 3d. Full PVC on a region
 %
-% EXAMPLE: resMeanPVC0 = xASL_stat_ComputeMean(imCBF)
-%          resMeanPVC0 = xASL_stat_ComputeMean(imCBF,imMask,[])
-%          [resMeanPVC0,~,~,~,resMedian] = xASL_stat_ComputeMean(imCBF,[],[],[1,0,0,0,1])
-%          [~,~,~,~,resMedian] = xASL_stat_ComputeMean(imCBF,imMask,290,[0 0 0 0 1])
-%          [resMeanPVC0, resMeanPVC1] = xASL_stat_ComputeMean(imCBF,imMask,[],[1 1 0 0 0],imGM)
-%          [~,~,resMeanPVC2GM,~] = xASL_stat_ComputeMean(imCBF,imMask,[],[0 0 1 0 0],imGM,imWM)
-%          [resMeanPVC0, resMeanPVC1, resMeanPVC2GM, resMeanPVC2WM, resMedian] = xASL_stat_ComputeMean(imCBF,[],[],[1 1 1 1 1],imGM,imWM)
+% EXAMPLE: meanPVC0 = xASL_stat_ComputeMean(imCBF)
+%          meanPVC0 = xASL_stat_ComputeMean(imCBF,imMask,[])
+%          [meanPVC0,~,~,~,medianPVC0] = xASL_stat_ComputeMean(imCBF,[],[],[1,0,0,0,1])
+%          [~,~,~,~,medianPVC0] = xASL_stat_ComputeMean(imCBF,imMask,290,[0 0 0 0 1])
+%          [meanPVC0, meanPVC1] = xASL_stat_ComputeMean(imCBF,imMask,[],[1 1 0 0 0],imGM)
+%          [~,~,meanPVC2GM,~] = xASL_stat_ComputeMean(imCBF,imMask,[],[0 0 1 0 0],imGM,imWM)
+%          [meanPVC0, meanPVC1, meanPVC2GM, meanPVC2WM, medianPVC0] = xASL_stat_ComputeMean(imCBF,[],[],[1 1 1 1 1],imGM,imWM)
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % REFERENCES: Asllani I, Borogovac A, Brown TR. Regression algorithm correcting for partial volume effects in arterial spin labeling MRI. Magnetic 
 %             Resonance in Medicine: An Official Journal of the International Society for Magnetic Resonance in Medicine. 2008 Dec;60(6):1362-71.
@@ -83,42 +83,42 @@ end
 
 % Initialize the output
 if nargout>=1 && bOutput(1)
-	resMeanPVC0 = NaN;
+	meanPVC0 = NaN;
 else
-	resMeanPVC0 = [];
+	meanPVC0 = [];
 end
 
 if nargout>=2 && length(bOutput)>1 && bOutput(2)
-	resMeanPVC1 = NaN;
+	meanPVC1 = NaN;
 	if isempty(imGM)
-		error('Cannot calculate resMeanPVC1 when imGM is not provided');
+		error('Cannot calculate meanPVC1 when imGM is not provided');
 	end
 else
-	resMeanPVC1 = [];
+	meanPVC1 = [];
 end
 
 if nargout>=3 && length(bOutput)>2 && bOutput(3)
-	resMeanPVC2GM = NaN;
+	meanPVC2GM = NaN;
 	if isempty(imWM) || isempty(imGM)
-		error('Cannot calculate resMeanPVC2GM when imGM and imWM are not provided');
+		error('Cannot calculate meanPVC2GM when imGM and imWM are not provided');
 	end
 else
-	resMeanPVC2GM = [];
+	meanPVC2GM = [];
 end
 
 if nargout>=4 && length(bOutput)>3 && bOutput(4)
-	resMeanPVC2WM = NaN;
+	meanPVC2WM = NaN;
 	if isempty(imWM) || isempty(imGM)
-		error('Cannot calculate resMeanPVC2WM when imGM and imWM are not provided');
+		error('Cannot calculate meanPVC2WM when imGM and imWM are not provided');
 	end
 else
-	resMeanPVC2WM = [];
+	meanPVC2WM = [];
 end
 
 if nargout>=5 && length(bOutput)>4 && bOutput(5)
-	resMedian = NaN;
+	medianPVC0 = NaN;
 else
-	resMedian = [];
+	medianPVC0 = [];
 end
 
 if ~any(imCBF>0, 'all')
@@ -126,7 +126,7 @@ if ~any(imCBF>0, 'all')
     return;
 end
 
-if ~isempty(resMeanPVC2GM) || ~isempty(resMeanPVC2WM)
+if ~isempty(meanPVC2GM) || ~isempty(meanPVC2WM)
 	% If running PVC, then need imGM and imWM of the same size as imCBF
 	if ~isequal(size(imCBF),size(imGM)) || ~isequal(size(imCBF),size(imWM))
 		warning('When running PVC, the GM and WM maps should have the same size as the CBF image');
@@ -164,25 +164,25 @@ end
 sumCBF = sum(imCBF, 1, 'omitnan');
 
 %% 3a. No PVC and simple mean
-if ~isempty(resMeanPVC0)
-	resMeanPVC0 = sumCBF/maskSize;
+if ~isempty(meanPVC0)
+	meanPVC0 = sumCBF/maskSize;
 end
 
 %% 3b. No PVC and median
-if ~isempty(resMedian)
-	resMedian = median(imCBF, 1, 'omitnan'); % this is non-parametric
+if ~isempty(medianPVC0)
+	medianPVC0 = median(imCBF, 1, 'omitnan'); % this is non-parametric
 end
 
 %% 3c. Simple PVC
-if ~isempty(resMeanPVC1)
+if ~isempty(meanPVC1)
 	if isempty(imGM)
 		error('imGM needs to be provided for bPVC == 1');
 	end
-	resMeanPVC1 = sumCBF/sum(imGM, 1, 'omitnan');
+	meanPVC1 = sumCBF/sum(imGM, 1, 'omitnan');
 end
 	
 %% 3d. Full PVC on a region
-if ~isempty(resMeanPVC2GM) || ~isempty(resMeanPVC2WM)
+if ~isempty(meanPVC2GM) || ~isempty(meanPVC2WM)
 	% although assuming that CBF in CSF = 0, that maps are optimally resampled (cave
 	% smoothing of c1T1 & c2T1 to ASL smoothness!) and that TotalVolume-GM-WM = CSF
 	% The current absence of modulation here will not change a lot according to Jan Petr
@@ -199,11 +199,11 @@ if ~isempty(resMeanPVC2GM) || ~isempty(resMeanPVC2WM)
 	gwpv                       = imGM;
 	gwpv(:,2)                  = imWM;
 	gwcbf                      = (imCBF')*pinv(gwpv');
-	if ~isempty(resMeanPVC2GM)
-		resMeanPVC2GM = gwcbf(1);
+	if ~isempty(meanPVC2GM)
+		meanPVC2GM = gwcbf(1);
 	end
-	if ~isempty(resMeanPVC2WM)
-		resMeanPVC2WM = gwcbf(2);
+	if ~isempty(meanPVC2WM)
+		meanPVC2WM = gwcbf(2);
 	end
 end
 
