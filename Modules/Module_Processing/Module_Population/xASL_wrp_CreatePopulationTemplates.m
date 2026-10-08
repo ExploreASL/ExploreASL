@@ -550,7 +550,7 @@ for iScanType=1:length(PreFixList)
 						weldorfM2     = zeros(121,145,121);
 
 						for iLoad=1:nLoad % Load images
-							if bProceedComputationMaps % We stop loading images if a wrong image is detected
+							if bProceedComputationMaps % We continue loading images, unless a wrong image is detected
 								tempIM = xASL_io_Nifti2Im(LoadFiles{1}{iLoad, 1});
 
 								% clip below zero for visualization
@@ -558,7 +558,7 @@ for iScanType=1:length(PreFixList)
 
 								if iLoad>1 && ~isequal(size(weldorfN), size(tempIM))
 									warning(['Wrong size:' LoadFiles{1}{iLoad,1}]);
-									bProceedComputationMaps = 0; % proceed with next ScanType
+									bProceedComputationMaps = 0; % stop loading images, but proceed with next ScanType
 								elseif size(tempIM, 4)>1 % 4D images, feature that we're working on
 									warning(['4D image, incomplete feature:' LoadFiles{1}{iLoad,1}]);
 									bProceedComputationMaps = 0; % proceed with next ScanType

@@ -6,8 +6,7 @@ function [x] = xASL_stat_AtlasForStats(x)
 % INPUT:
 %   x                   - struct containing statistical pipeline environment parameters (REQUIRED)
 %   x.S.InputAtlasPath  - path to NIfTI file containing atlas to load (REQUIRED)
-%   x.S.masks.WBmask    - WholeBrain mask used to convert image to column &
-%                         vice versa (ExploreASL compression method) (REQUIRED)
+%   x.S.masks.WBmask    - WholeBrain mask used for calculations (REQUIRED)
 %   x.S.ROInamesPath    - path to TSV file containing ROI names for atlas.
 %                         This TSV file should contain 1 row, with each
 %                         cell corresponding to the ROI number (i.e. an
@@ -19,7 +18,7 @@ function [x] = xASL_stat_AtlasForStats(x)
 %
 % OUTPUT:
 %   x                   - same as input
-%   x.S.InputMasks      - ROI masks to compute statistics for, converted/compressed to columns
+%   x.S.InputMasks      - ROI masks to compute statistics 
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % DESCRIPTION: This function loads atlases, checks them, and
 %              their ROI names, for later use as ROI definition in xASL_stat_GetROIstatistics
@@ -33,8 +32,7 @@ function [x] = xASL_stat_AtlasForStats(x)
 %              2. deal with memory mapping
 %              3. Resample atlas 50 1.5 mm^3 MNI
 %              4. Converted atlas with integers to 4D binary image
-%              5. Convert/compress masks into Columns
-%              6. Print atlas overview image
+%              5. Print atlas overview image
 %
 % -----------------------------------------------------------------------------------------------------------------------------------------------------
 % EXAMPLE: x = xASL_stat_AtlasForStats(x);
@@ -110,22 +108,7 @@ end
 
 %% 2) Load atlas image matrix, deal with memory mapping
 if ischar(x.S.InputAtlasPath) % allows both image input or ImagePath input
-    if strcmp(x.S.InputAtlasPath(end-3:end),'.dat') % if memory mapping, then load this
-        %% Part for Atlas stored as columns
-		error('Column atlas support needs to be fixed');
-        AtlasIsColumns = true;
-        TempAtlas = memmapfile(x.S.InputAtlasPath);
-
-        if isfield(x.S,'NamesROI') % get number of masks
-            nMasks = length(x.S.NamesROI);
-        else
-            nMasks = 6;
-        end
-        nSubj = size(TempAtlas.Data,1)/SumMask/nMasks;
-        x.S.InputMasks = reshape(TempAtlas.Data,[SumMask nMasks nSubj]); % reshape into [Brainvoxels nMasks nSubjects]
-    else
-        x.S.InputMasks = xASL_io_Nifti2Im(x.S.InputAtlasPath);
-    end
+	x.S.InputMasks = xASL_io_Nifti2Im(x.S.InputAtlasPath);
 else
     x.S.InputMasks = x.S.InputAtlasPath;
 end
@@ -146,7 +129,7 @@ if prod(DimRatioAtlas)~=1
 end
 
 %% 4) Converted atlas with integers to 4D binary image
-%  Allow for multiple atlas forms (3D or 4D), later transformed to multi-atlas 2D (Columns)
+%  Allow for multiple atlas forms (3D or 4D)
 maxAtlas = max(x.S.InputMasks, [], 'all');
 if ~(size(x.S.InputMasks,4)==1 && maxAtlas>1)
 	% don't need to reorganize
@@ -171,7 +154,7 @@ if ~isfield(x.S,'NamesROI')
     end
 end
 
-%% 6) Print atlas overview image (takes time, disabled by default)
+%% 5) Print atlas overview image (takes time, disabled by default)
 if x.S.SubjectWiseVisualization
     fprintf('Printing subject-specific masks (if exist) together in label colors:   ')
     % CAVE: only one label per voxel will be shown (latest have preference,
