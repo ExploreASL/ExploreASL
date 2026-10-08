@@ -71,7 +71,7 @@ FileDef{2} = {'y_ASL' 'ASL4D' 'ASL4D_RevPE' 'M0_RevPE'...
 			   'PseudoCBF' 'PWI' 'PWI3D' 'PWI4D' 'mean_PWI_Clipped' 'mean_PWI_Clipped_DCT' 'M0' 'mean_control' 'SD' 'SNR' 'SD_control'...
 			   'SNR_control' 'SliceGradient' 'SliceGradient_extrapolated' 'FoV' 'TT' 'ATT' 'Tex' 'ABV' 'ITT' 'PVgm' 'PVwm' 'PVcsf' 'PVt1' 'PVwmh' 'CBFgm' 'CBFwm'}; 
 
-Prefix = {'r' 'm' 'mr' 'rmr' 'rr' 'temp_' 'rtemp_' 'mask_' 'BiasField_' 'noSmooth_'}; % r=resample m=modulate s=smooth w=warp q=quantified p=probability % USE t for TEMP? replace w by r
+Prefix = {'r' 'm' 'mr' 'rmr' 'rr' 'temp_' 'rtemp_' 'mask_' 'BiasField_' 'noSmooth_'}; % r=resample m=modulate q=quantified 
 
 ListFieldsSuffixBackup{1} = {};
 ListFieldsSuffixBackup{2} = {'M0'};
@@ -81,7 +81,7 @@ ListFieldsSuffixORI_r_Pop{1} = {'T1' 'c1T1' 'c2T1' 'rc1T1' 'rc2T1'};
 ListFieldsSuffixORI_r_Pop{2} = {};
 
 % List of prefixes 
-ListFieldsPrefixBiasField{1} = {'FALIR','T1'};ListFieldsPrefixBiasField{2} = {};
+ListFieldsPrefixBiasField{1} = {'FLAIR','T1'};ListFieldsPrefixBiasField{2} = {};
 ListFieldsPrefixMask{1} = {'T1'};ListFieldsPrefixMask{2} = {'M0'};
 ListFieldsPrefixRtemp{1} = {};ListFieldsPrefixRtemp{2} = {'despiked_ASL4D'};
 ListFieldsPrefixTemp{1} = {};ListFieldsPrefixTemp{2} = {'despiked_ASL4D'};
