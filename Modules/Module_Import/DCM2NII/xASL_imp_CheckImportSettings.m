@@ -85,13 +85,36 @@ function [x] = xASL_imp_CheckImportSettings(x)
     nScanAliases = size(x.modules.import.imPar.tokenScanAliases,1);
 
 	% Report this
-	fprintf('%s\n', [xASL_num2str(nGroupsFolderHierarchy) ' captured groups () defined in folderHierarchy']);
-    fprintf('%s\n', [xASL_num2str(nGroupsTokenOrdering) ' captured groups () defined in tokenOrdering']);
-	fprintf('%s\n', [xASL_num2str(nTokensTokenOrdering) ' tokens () defined in tokenOrdering']);
+	fprintf('%s\n', ['->' xASL_num2str(nGroupsFolderHierarchy) ' groups () captured in folderHierarchy:']);
+    for iLayer = 1:numel(x.modules.import.imPar.folderHierarchy)
+        fprintf('%s\n', ['  Layer ' xASL_num2str(iLayer) ': ' x.modules.import.imPar.folderHierarchy{iLayer}]);
+    end
 
-    fprintf('%s\n', [xASL_num2str(nVisitAliases) ' visits defined in tokenVisitAliases']);
-    fprintf('%s\n', [xASL_num2str(nSessionAliases) ' sessions defined in tokenSessionAliases: ']);
-    fprintf('%s\n', [xASL_num2str(nScanAliases) ' scans defined in tokenSessionAliases']);
+    fprintf('\n%s', ['->tokenOrdering contains ' xASL_num2str(nGroupsTokenOrdering) ' captured groups () and ']);
+	fprintf('%s', [xASL_num2str(nTokensTokenOrdering) ' tokens (): ']);
+	fprintf('%s\n', [xASL_num2str(x.modules.import.imPar.tokenOrdering)]);
+    
+    fprintf('\n%s\n', ['->' xASL_num2str(nScanAliases) ' scan aliases defined in tokenScanAliases:']);
+    for iScan = 1:nScanAliases
+        fprintf('%s\n', [x.modules.import.imPar.tokenScanAliases{iScan,2} ' = ' x.modules.import.imPar.tokenScanAliases{iScan,1}]);
+    end
+
+    fprintf('%\ns\n', ['->' xASL_num2str(nVisitAliases) ' visit/session aliases defined in tokenVisitAliases: ']);
+    if ~isempty(x.modules.import.imPar.tokenVisitAliases)
+        for iVisit = 1:nVisitAliases
+            fprintf('%s\n', ['session/visit ' num2str(iVisit) ' = ' x.modules.import.imPar.tokenVisitAliases{iVisit, 1}]);
+        end
+    end
+    fprintf('\n%s\n', ['->' xASL_num2str(nSessionAliases) ' session/run aliases defined in tokenSessionAliases: ']);
+    if ~isempty(x.modules.import.imPar.tokenSessionAliases)
+        for iSession = 1:nSessionAliases
+            fprintf('%s\n', [x.modules.import.imPar.tokenSessionAliases{iSession,2} ' = ' x.modules.import.imPar.tokenSessionAliases{iSession,1}]);
+        end
+    end
+
+    fprintf('\n');
+    
+    
     
     if nGroupsFolderHierarchy < nGroupsTokenOrdering
 		error('The number of captured groups in folderHierarchy should >= the number of tokens in tokenOrdering');
@@ -102,7 +125,7 @@ function [x] = xASL_imp_CheckImportSettings(x)
 		warning('The number of captured groups in folderHierarchy is higher than the number of tokens in tokenOrdering. Ensure that this is correct');
 	end
     if nGroupsTokenOrdering ~= nTokensTokenOrdering
-		warning('Not all captured groups in folderHierarchy are used as a token in tokenOrdering. Ensure that this is correct')
+		warning('Number of tokens is not equal to the number of captured groups. Ensure that this is correct')
     end
 
     % Check visits

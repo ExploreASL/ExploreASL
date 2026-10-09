@@ -79,17 +79,31 @@ function xASL_imp_ReadSourceData_CheckLastElement(x)
     % Get last element
     lastElement = lower(x.modules.import.imPar.folderHierarchy{end});
 
-    % List of known file extensions (formatted as regular expression)
-    knownExtensions = '(zip|dcm|ima|xml|par|rec|nii|gz|nii\.gz|nii\\\.gz)';
+    if strcmp(lastElement(1), '^')
+        lastElement = lastElement(2:end);
+    end
+    if strcmp(lastElement(end), '$')
+        lastElement = lastElement(1:end-1);
+    end
 
-    iExtension = regexp(lastElement, '\\\.'); % First test extension defined properly for regexp as \.ext
+    % List of known file extensions (formatted as regular expression)
+    % Note that any double \\ slashes in the sourceStructure.json have been replaced by a single by now
+    knownExtensions = '(zip|dcm|ima|xml|par|rec|nii|gz|nii\.gz|nii\\.gz)';
+
+    iExtension = regexp(lastElement, '\\\.'); % First test extension defined properly for regexp as \.
 	if ~isempty(iExtension)
 		extensionIs = lastElement(iExtension(end)+2:end); % Need to count two characters \. before the extension
 	else
-		iExtension = regexp(lastElement, '\.'); % Afterwards, look for an extension defined .ext
+		iPeriod = regexp(lastElement, '\.'); % Afterwards, look for any .
+        ExtLastElement = lastElement(iPeriod(end):end); % Take the last part (to get the extension)
+
+        iExtension = regexp(ExtLastElement, '\..{2,}$'); % Afterwards, look for an extension defined .ext that has at least two characters 
+        % (two exclude the use of '.*' as a non-token)
+
 		if isempty(iExtension)
 			extensionIs = char;
-		else
+        else
+            iExtension = iExtension+iPeriod(end)-1;
 			extensionIs = lastElement(iExtension(end)+1:end); 
 		end
 	end
