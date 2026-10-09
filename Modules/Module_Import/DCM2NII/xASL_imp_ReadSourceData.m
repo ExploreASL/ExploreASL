@@ -94,12 +94,16 @@ function xASL_imp_ReadSourceData_CheckLastElement(x)
 	if ~isempty(iExtension)
 		extensionIs = lastElement(iExtension(end)+2:end); % Need to count two characters \. before the extension
 	else
-		iExtension = regexp(lastElement, '\..{2,}$'); % Afterwards, look for an extension defined .ext that has at least two characters 
+		iPeriod = regexp(lastElement, '\.'); % Afterwards, look for any .
+        ExtLastElement = lastElement(iPeriod(end):end); % Take the last part (to get the extension)
+
+        iExtension = regexp(ExtLastElement, '\..{2,}$'); % Afterwards, look for an extension defined .ext that has at least two characters 
         % (two exclude the use of '.*' as a non-token)
 
 		if isempty(iExtension)
 			extensionIs = char;
-		else
+        else
+            iExtension = iExtension+iPeriod(end)-1;
 			extensionIs = lastElement(iExtension(end)+1:end); 
 		end
 	end
