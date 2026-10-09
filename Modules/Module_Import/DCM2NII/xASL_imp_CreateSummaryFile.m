@@ -80,16 +80,16 @@ function xASL_imp_CreateSummaryFile(thisSubject, PrintDICOMFields, x)
                     % Here we try to skip this table if something went wrong in dicom2nii
                     bSkipIt = false;
                     if x.modules.import.nSubjects>sizeConvertedScans(1)
-                        warning('Something went wrong with number of subjects');
+                        fprintf('\n%s\n', ['-> Could only dcm2niiX convert ' num2str(sizeConvertedScans(1)) ' out of ' num2str(x.modules.import.nSubjects) ' subjects']);
                         bSkipIt = true;
                     elseif thisSubject.nVisits>sizeConvertedScans(2)
-                        warning('Something went wrong with number of visits');
+                        fprintf('\n%s\n', ['-> Could only dcm2niiX convert ' num2str(sizeConvertedScans(2)) ' out of ' num2str(thisSubject.nVisits) ' visits/sessions']);
                         bSkipIt = true;
                     elseif thisVisit.nSessions>sizeConvertedScans(3)
-                        warning('Something went wrong with number of sessions');
+                        fprintf('\n%s\n', ['-> Could only dcm2niiX convert ' num2str(sizeConvertedScans(3)) ' out of ' num2str(thisVisit.nSessions) ' sessions/runs']);
                         bSkipIt = true;
                     elseif thisVisit.nScans>sizeConvertedScans(4)
-                        warning('Something went wrong with number of scans');
+                        fprintf('\n%s\n', ['-> Could only dcm2niiX convert ' num2str(sizeConvertedScans(4)) ' out of ' num2str(thisVisit.nScans) ' scans']);
                         bSkipIt = true;
                     end
 
