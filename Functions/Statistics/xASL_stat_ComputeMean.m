@@ -72,7 +72,7 @@ end
 if nargin<4 || isempty(bOutput)
 	bOutput = [1 0 0 0 0];
 else
-	bOutput(end:1:5) = 0;
+	bOutput(end+1:5) = 0;
 end
 
 if nargin<5
@@ -86,9 +86,9 @@ end
 % Initialize the output
 meanPVC0 = NaN;
 meanPVC1 = NaN;
-meanPVC2 = NaN;
 meanPVC2primary = NaN;
 meanPVC2secondary = NaN;
+medianPVC0 = NaN;
 
 if nargout>=1 && bOutput(1)
 	

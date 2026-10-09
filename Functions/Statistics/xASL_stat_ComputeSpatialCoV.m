@@ -57,7 +57,7 @@ end
 if nargin < 4 || isempty(bOutput)
 	bOutput = [1 0];
 else
-	bOutput(end:1:2) = 0;
+	bOutput((end+1):2) = 0;
 end
 
 if nargin < 5
