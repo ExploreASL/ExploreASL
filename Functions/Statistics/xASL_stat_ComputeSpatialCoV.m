@@ -9,8 +9,9 @@ function [sCoVPVC0, sCoVPVC2] = xASL_stat_ComputeSpatialCoV(imCBF, imMask, nMinS
 %   nMinSize    - minimal size of the ROI in voxels, if not big enough, then return NaN (OPTIONAL, DEFAULT 0)
 %   bOutput     - vector of length 1 or 2 that specifies which output is requested
 %                 [sCoVPVC0, sCoVPVC2] (OPTIONAL, DEFAULT [1 0 ])
-%   imPVprimary        - Primary partial volume map with the same size as imCBF (OPTIONAL, but REQUIRED for bPVC==2)
-%   imPVsecondary        - Secondary partial volume map with the same size as imCBF (OPTIONAL, but REQUIRED for bPVC==2)
+%   imPVprimary - Primary partial volume map with the same size as imCBF (OPTIONAL, but REQUIRED for bPVC==2)
+%                 in most cases: imPVprimary = pvGM, imPVsecondary = pvWM 
+%   imPVsecondary - Secondary partial volume map with the same size as imCBF (OPTIONAL, but REQUIRED for bPVC==2)
 %
 % OUTPUT:
 %   sCoVPVC0   - calculated spatial coefficient of variation

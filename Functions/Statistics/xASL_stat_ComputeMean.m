@@ -10,10 +10,11 @@ function [meanPVC0, meanPVC1, meanPVC2primary, meanPVC2secondary, medianPVC0] = 
 %            - ignore when 0 (OPTIONAL, default = 0)
 %   bOutput - vector of length between 1 and 5 that specifies which output is requested
 %             [meanPVC0, meanPVC1, meanPVC2primary, meanPVC2secondary, medianPVC0] (OPTIONAL, DEFAULT [1 0 0 0 0])
-%   imPVprimary   - Primary partial volume map with the same size as imCBF
-%            (OPTIONAL, REQUIRED for bPVC==2 and bPVC==1)
-%   imPVsecondary   - Secondary partial volume map with the same size as imCBF
-%            (OPTIONAL, REQUIRED for bPVC==2)
+%   imPVprimary - Primary partial volume map with the same size as imCBF
+%                 in most cases: imPVprimary = pvGM, imPVsecondary = pvWM 
+%                 (OPTIONAL, REQUIRED for bPVC==2 and bPVC==1)
+%   imPVsecondary - Secondary partial volume map with the same size as imCBF
+%                   (OPTIONAL, REQUIRED for bPVC==2)
 % OUTPUT:
 %   meanPVC0 - mean value with PVC0
 %   meanPVC1 - mean value with PVC1
