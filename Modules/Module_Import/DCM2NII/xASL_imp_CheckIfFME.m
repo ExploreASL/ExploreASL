@@ -52,7 +52,7 @@ function bTimeEncodedFME = xASL_imp_CheckIfFME(jsonIn, jsonOut, bTimeEncoded)
 	if isfield(jsonIn, 'SequenceName') &&...
 	   (~isempty(regexp(char(jsonIn.SequenceName), 'fme_asl', 'once')) ||...
 	    ~isempty(regexp(char(jsonIn.SequenceName), 'gammastar_pCASL', 'once')))
-		if (isfield(jsonOut, 'PostLabelingDelay') && length(unique(jsonOut.PostLabelingDelay))>1)
+		if (isfield(jsonOut, 'PostLabelingDelay') && length(unique(jsonOut.PostLabelingDelay))>1) && (~isfield(jsonOut, 'ArterialSpinLabelingType') || ~isempty(regexp(jsonOut.ArterialSpinLabelingType, 'PCASL')))
 			bTimeEncodedFME = true;
 			return
 		end
