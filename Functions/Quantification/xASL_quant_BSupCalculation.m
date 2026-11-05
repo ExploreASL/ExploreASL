@@ -83,6 +83,11 @@ if ~isempty(PathGraph)
     [fpath, fname] = fileparts(PathGraph);
     PathGraph = fullfile(fpath, [fname '.jpg']);
 end
+
+% Collapse readoutTime to a single value if there's only a unique single value
+if length(unique(ReadoutTime)) == 1
+	ReadoutTime = unique(ReadoutTime);
+end
  
 % Sort the BSup pulses in ascending order. Since in BIDS format the BSup pulses are given as time
 % after the start of labeling, ascending order is from the first to last pulse
