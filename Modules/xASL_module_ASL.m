@@ -395,13 +395,18 @@ iState = 5;
 % We currently only do this once per subject, as we do not anticipate resolution differences between ASL sessions
 % We skip this in case there are no structural segmentations
 if xASL_exist(x.P.Path_c1T1,'file') && xASL_exist(x.P.Path_c2T1,'file')
-    % Or if this is the first session, redo this (if ExploreASL is rerun)
-    if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-1})
+    
+	% Or if this is the first session, redo this (if ExploreASL is rerun)
+	if ~x.mutex.HasState(StateName{iState}) && x.mutex.HasState(StateName{iState-1})
+	
+		% In standard space we only have 1 set of PV maps in ASL resolution per T1w
+		% Therefore, for the first session create both PV maps in native and standard space
+		% For other sessions, only run the PV maps in native space
+		% Note that the first session per subject is not necessarily Session 1, but it could be session 2 if session 1 is missing
+		% Therefore run the standard space PV creating in case it is missing
+		bStandardSpace = ~xASL_exist(x.P.Pop_Path_PV_pGM);
 
-        bStandardSpace = strcmp(x.P.SessionID,x.SESSIONS{1});
-        % in standard space we only have 1 set of PV maps in ASL resolution
-        % per T1w, therefore only create these for the first ASL session
-        x = xASL_wrp_PreparePV(x, bStandardSpace);
+		x = xASL_wrp_PreparePV(x, bStandardSpace);
 
         x.mutex.AddState(StateName{iState});
         xASL_adm_CompareDataSets([], [], x); % unit testing
