@@ -142,9 +142,13 @@ function [bSuccess, x] = xASL_module_Import(x)
     % Remove completion states that depend on a stage which will be rerun
     if x.opts.bImport(1) && ~x.mutex.HasState(StateName{1})
         x.mutex.DelState(StateName{2});
+		x.mutex.DelState(StateName{3});
         x.mutex.DelState('999_ready');
     elseif x.opts.bImport(2) && ~x.mutex.HasState(StateName{2})
+		x.mutex.DelState(StateName{3});
         x.mutex.DelState('999_ready');
+	elseif x.opts.bImport(3) && ~x.mutex.HasState(StateName{3})
+		x.mutex.DelState('999_ready');
     end
    
     
@@ -190,7 +194,9 @@ function [bSuccess, x] = xASL_module_Import(x)
     end
     
     %% 4. Clean-up
-    x = xASL_adm_CleanUpX(x);
+	if bSuccess
+		x = xASL_adm_CleanUpX(x);
+	end
     
     % We need to terminate the module correctly
     if bSuccess && x.mutex.HasState(StateName{1}) && x.mutex.HasState(StateName{2})
