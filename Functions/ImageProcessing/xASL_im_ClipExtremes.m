@@ -67,8 +67,7 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
         end
         % By default, ThreshLow is 1-ThreshHigh (i.e. 0.001)
         % To disable, set ThreshLow to 0
-           ThreshLow = 1-ThreshHigh;
-    elseif ThreshLow == 1 % backward compatibility
+		% Note that the backward compatible value of setting ThreshLow==1 to invoke this default setting was removed from everywhere
            ThreshLow = 1-ThreshHigh;
     end    
     
@@ -86,7 +85,9 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
             ThreshHigh=1;
     end
 
-
+	if ThreshLow > ThreshHigh
+		error('ThreshLow has to be lower than ThreshHigh')
+	end
 
     %% ------------------------------------------------------------------------------------------
     NewIM = xASL_io_Nifti2Im(InputIm);

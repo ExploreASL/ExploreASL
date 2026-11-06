@@ -54,7 +54,7 @@ Lbl = mean(LabelIm,4);
 %% Create brainmask
 % First remove extreme values, we want to have average values
 % within the brain
-Ctrl = xASL_im_ClipExtremes(Ctrl, 0.99, 1, false); % 0.99 removes artifacts
+Ctrl = xASL_im_ClipExtremes(Ctrl, 0.99, [], false); % 0.99 removes artifacts
 % If this threshold doesn't work, it should be adjusted!
 
 MaskIM = Ctrl>0.5.*max(Ctrl(:));

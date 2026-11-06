@@ -40,7 +40,7 @@ for ii=1:2
     stdPre{ii}      = xASL_stat_StdNan(IMvalues{ii});
 
     %% Remove extreme values
-    IM{ii}          = xASL_im_ClipExtremes(IM{ii},0.9975,1,0);
+    IM{ii}          = xASL_im_ClipExtremes(IM{ii}, 0.9975, [], 0);
 
     %% Clip lenient mask
     IM{ii}(IM{ii}<Clip1{ii})  = Clip1{ii};
