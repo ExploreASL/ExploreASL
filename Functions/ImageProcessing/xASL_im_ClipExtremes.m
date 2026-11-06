@@ -67,8 +67,7 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
         end
         % By default, ThreshLow is 1-ThreshHigh (i.e. 0.001)
         % To disable, set ThreshLow to 0
-           ThreshLow = 1-ThreshHigh;
-    elseif ThreshLow == 1 % backward compatibility
+		% Note that the backward compatible value of setting ThreshLow==1 to invoke this default setting was removed from everywhere
            ThreshLow = 1-ThreshHigh;
     end    
     
@@ -86,40 +85,51 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
             ThreshHigh=1;
     end
 
-
+	if ThreshLow > ThreshHigh
+		error('ThreshLow has to be lower than ThreshHigh')
+	end
 
     %% ------------------------------------------------------------------------------------------
     NewIM = xASL_io_Nifti2Im(InputIm);
-    SortedInt = sort(NewIM(NewIM~=0 & isfinite(NewIM)));
+	% Zeros, Inf, and NaN are excluded from the sorted vector
+	maskFinite = NewIM~=0 & isfinite(NewIM);
+	SortedInt = sort(NewIM(maskFinite));
 
     % 2. Clip high intensities
     IndexNumber = round(ThreshHigh*length(SortedInt));
     if IndexNumber<=length(SortedInt) && IndexNumber>0
-
-        maxInt = max(NewIM(:));
-        ClipInt = SortedInt(round(ThreshHigh*length(SortedInt)));
+        maxInt = max(NewIM, [], 'all'); % Old maximum
+        ClipInt = SortedInt(IndexNumber); % Clipping to set the new maximum (note that ClipInt is always within the image range)
         NewIM(NewIM>ClipInt) = ClipInt;
-        maxIntNew = max(NewIM(:));
         if bVerbose
-            fprintf('%s\n',['Clipped maximal intensity from ' num2str(maxInt) ' to ' num2str(maxIntNew)]);
+            fprintf('%s\n',['Clipped maximal intensity from ' num2str(maxInt) ' to ' num2str(ClipInt)]);
         end
     end
 
-
-
     %% ------------------------------------------------------------------------------------------
-    if ThreshLow~=0
+    if ThreshLow > 0 % Skip clipping for ThreshLow > 0
         % 3. Clip low intensities
-        IndexNumber = round(ThreshLow*length(SortedInt));
-        if IndexNumber>0
-            minInt = min(NewIM(:));
-            ClipIntLow = SortedInt(round(ThreshLow*length(SortedInt)));
-            NewIM(NewIM<ClipIntLow) = ClipIntLow;
-            minIntNew = min(NewIM(:));
-            if bVerbose
-                fprintf('%s\n',['Clipped minimal intensity from ' num2str(minInt) ' to ' num2str(minIntNew)]);
-            end
-        end
+        IndexNumber = round(ThreshLow*numel(NewIM)) - numel(NewIM) + sum(maskFinite, 'all'); % Low threshold takes into account all values and also background. Since low clipping is usually used to remove the background
+		
+		% Make sure we are clipping to a real value in the image
+		if IndexNumber < 1 
+			IndexNumber = 1;
+		end
+		if IndexNumber > length(SortedInt)
+			IndexNumber = length(SortedInt);
+		end
+
+		% Check the minimum value and clipping value
+		minInt = min(NewIM, [], 'all');
+		ClipIntLow = SortedInt(IndexNumber);
+
+		% Only do the clipping if meaningful
+		if ClipIntLow > minInt
+			NewIM(NewIM<ClipIntLow) = ClipIntLow;
+			if bVerbose
+				fprintf('%s\n',['Clipped minimal intensity from ' num2str(minInt) ' to ' num2str(ClipIntLow)]);
+			end
+		end
     end
 
     
