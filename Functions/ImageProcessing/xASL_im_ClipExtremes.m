@@ -109,11 +109,14 @@ function [NewIM] = xASL_im_ClipExtremes(InputIm, ThreshHigh, ThreshLow, bVerbose
     %% ------------------------------------------------------------------------------------------
     if ThreshLow > 0 % Skip clipping for ThreshLow > 0
         % 3. Clip low intensities
-        IndexNumber = round(ThreshLow*numel(NewIM)) - sum(maskFinite, 'all'); % Low threshold takes into account all values and also background. Since low clipping is usually used to remove the background
+        IndexNumber = round(ThreshLow*numel(NewIM)) - numel(NewIM) + sum(maskFinite, 'all'); % Low threshold takes into account all values and also background. Since low clipping is usually used to remove the background
 		
 		% Make sure we are clipping to a real value in the image
 		if IndexNumber < 1 
 			IndexNumber = 1;
+		end
+		if IndexNumber > length(SortedInt)
+			IndexNumber = length(SortedInt);
 		end
 
 		% Check the minimum value and clipping value
