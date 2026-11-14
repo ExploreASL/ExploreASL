@@ -329,7 +329,7 @@ elseif ~x.mutex.HasState(StateName{iState})
         
         OtherList = {x.P.Path_M0, PathB0, PathRevPE, PathField, PathFieldCoeff, PathUnwarped, x.P.Path_ASL4D_ORI}; % all other files will be created
         if x.settings.bAutoACPC
-            xASL_im_CenterOfMass(x.P.Path_ASL4D, OtherList, 10); % set CenterOfMass to lower accepted distance for when rerunning wrong registration
+            xASL_im_CenterOfMass(x.P.Path_ASL4D, OtherList, 20); % set CenterOfMass to lower accepted distance for when rerunning wrong registration
         end
         
         if nVolumes>1 % skip realignment if there are too few volumes
