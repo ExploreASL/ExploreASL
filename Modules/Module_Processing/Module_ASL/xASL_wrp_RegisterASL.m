@@ -363,7 +363,7 @@ if x.settings.bAutoACPC
     OtherList = xASL_adm_RemoveFromOtherList(BaseOtherList, {x.P.Path_despiked_ASL4D}); % x.P.Path_despiked_ASL4D is padded to the end of the list
 
     xASL_im_BackupAndRestoreAll(BaseOtherList, 1); % First backup all NIfTIs & .mat sidecars of BaseOtherList
-    xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 0); % Then register
+    xASL_im_CenterOfMass(x.P.Path_despiked_ASL4D, OtherList, 20); % Then register
     
     % get new overlap score
     [RegStep_TC_ControlPerc(end+1), RegStep_TC_PWIPerc(end+1), ~, regStepsImage{end+1}] = xASL_im_GetSpatialOverlapASL(x);
