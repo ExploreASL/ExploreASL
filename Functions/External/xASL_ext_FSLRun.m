@@ -84,8 +84,8 @@ if exist(fullfile(RootFSLdir,'etc','fslconf','fsl.sh'),'file')
 elseif exist(fullfile(RootFSLdir,'etc','fsl','fsl.sh'),'file')
 	FSLinit1 = ['. ' FSLdir '/etc/fsl/fsl.sh;'];
 else
-	warning('Cannot locate fsl.sh, skipping FSL function');
-	return;
+	fprintf('%s\n', 'Cannot locate fsl.sh');
+	FSLinit1 = [];
 end
 FSLinit2 = 'PATH=${FSLDIR}/bin:${PATH};';
 FSLinit3 = 'export FSLDIR PATH;';
