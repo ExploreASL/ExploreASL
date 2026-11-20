@@ -213,7 +213,11 @@ switch x.settings.Quality
 	case 1 % normal quality
 		flags.quality = 1;
 		flags.sep = minVoxelSize;
-		flags.rtm = 1; % realign to mean
+        if x.modules.asl.bMergingSessions
+		    flags.rtm = 0; % realign to the first volume
+        else
+            flags.rtm = 1; % in a second-pass, realign to the mean -> theoretically this gives more equal interpolation across the timeseries
+        end
 	case 0 % low quality for fast try-out
 		flags.quality = 0.01;
 		flags.rtm = 0; % disable realign to mean
