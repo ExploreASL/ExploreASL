@@ -116,7 +116,7 @@ end
 
 if bAutomaticallyDetectFSL
     %% 2) Try searching at different ROOT paths, first layer subfolder
-    PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin' '/usr/local/apps' '/usr/lib'};
+    PathApps = {'/data/usr/local' '/usr/local' '/opt/amc' '/usr/local/bin' '/usr/local/apps' '/usr/lib' '/appdata/neurodesk/local/containers'};
 
     if ispc
         PathApps{end+1} = getenv('USERPROFILE');
