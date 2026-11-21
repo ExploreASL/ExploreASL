@@ -565,7 +565,7 @@ for iSubject=1:x.dataset.nSubjects
 		        if xASL_exist(PathCSF, 'file')
 			        pCSF = xASL_io_Nifti2Im(PathCSF);
 		        else
-			        pCSF = max(0,ones(pWM) - pGM - pWM);
+			        pCSF = max(0, ones(size(pWM)) - pGM - pWM);
 		        end
         
 		        %% 4.b Correct for WMH SEGM
