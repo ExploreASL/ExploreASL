@@ -518,117 +518,74 @@ for iSubject=1:x.dataset.nSubjects
 			fprintf('\n%s\n','Computing ROI data:   ');
 			bDoOnceROIStart = 0;
 		end
-		SubjectSpecificMasks = x.S.InputMasks(:,:,:,:,1); % changed below if size(x.S.InputMasks,5)>1
+		
+        % Deal with SubjectSpecificMasks
+	    if size(x.S.InputMasks,5)>1
+		    SubjectSpecificMasks = x.S.InputMasks(:,:,:,:,iSubject);
+        else
+            SubjectSpecificMasks = x.S.InputMasks(:,:,:,:,1);
+	    end
+
 
 		if iSess == 1
 			xASL_TrackProgress(iSubject, x.dataset.nSubjects);
 		end
 
-		% Here we assume there are no subject-specific masks
+        % Define PV map paths
 		% Run this only once for the first session for the standard space mode, because all share the same maps
 		if x.S.InputNativeSpace
-			if x.S.IsASL
-				%% 4.a Load partial volume maps
-				if xASL_exist(x.P.Path_PVgm,'file')
-					pGM = xASL_io_Nifti2Im(x.P.Path_PVgm);
-				else
-					fprintf('%s\n',[x.P.Path_PVgm ' missing...']);
-					continue;
-				end
+            PathGM = x.P.Path_PVgm;
+            PathWM = x.P.Path_PVwm;
+            PathCSF = x.P.Path_PVcsf;
+            PathWMH = x.P.Path_PVwmh;
+        else
+            PathGM = fullfile(x.D.PopDir, ['PV_pGM_' x.SUBJECTS{iSubject} '.nii']);
+            PathWM = fullfile(x.D.PopDir, ['PV_pWM_' x.SUBJECTS{iSubject} '.nii']);
+            PathCSF = fullfile(x.D.PopDir, ['PV_pCSF_' x.SUBJECTS{iSubject} '.nii']);
+            PathWMH = fullfile(x.D.PopDir, ['PV_WMH_SEGM_' x.SUBJECTS{iSubject} '.nii']);
+        end
 
-				if xASL_exist(x.P.Path_PVwm,'file')
-					pWM = xASL_io_Nifti2Im(x.P.Path_PVwm);
-				else
-					fprintf('%s\n',[x.P.Path_PVwm ' missing...']);
-					continue;
-				end
-
-				if xASL_exist(x.P.Path_PVcsf, 'file')
-					pCSF = xASL_io_Nifti2Im(x.P.Path_PVcsf);
-				else
-					pCSF = max(0,ones(pWM) - pGM - pWM);
-				end
-
-				%% 4.b Correct for WMH SEGM
-				if ~x.S.bWMH && xASL_exist(x.P.Path_PVwmh, 'file')
-					pWMH = xASL_io_Nifti2Im(x.P.Path_PVwmh);
-					% we take sqrt(pWMH) to mimic the effective resolution of ASL (instead of smoothing)
-					pWMH(pWMH<0) = 0;
-					pGM = max(0, pGM - pWMH);
-					pWM = max(0, pWM - pWMH);
-					pCSF = max(0, pCSF - pWMH);
-				end
-
-				if size(x.S.InputMasks,5)>1
-					SubjectSpecificMasks = x.S.InputMasks(:,:,:,:,iSubject);
-				end
-			end
-
-		else
-			if iSess == 1
-				if x.S.IsASL
-					%% 4.b.a Load partial volume maps
-					PathGM = fullfile(x.D.PopDir, ['PV_pGM_' x.SUBJECTS{iSubject} '.nii']);
-					if xASL_exist(PathGM,'file')
-						pGM = xASL_io_Nifti2Im(PathGM);
-					else
-						fprintf('%s\n',[PathGM ' missing...']);
-						continue;
-					end
-
-					PathWM = fullfile(x.D.PopDir, ['PV_pWM_' x.SUBJECTS{iSubject} '.nii']);
-					if xASL_exist(PathWM,'file')
-						pWM = xASL_io_Nifti2Im(PathWM);
-					else
-						fprintf('%s\n',[PathWM ' missing...']);
-						continue;
-					end
-
-					PathCSF = fullfile(x.D.PopDir, ['PV_pCSF_' x.SUBJECTS{iSubject} '.nii']);
-					if xASL_exist(PathCSF,'file')
-						pCSF = xASL_io_Nifti2Im(PathCSF);
-					else
-						pCSF = max(0,ones(size(pWM)) - pGM - pWM);
-					end
-
-					%% 4.b.b Correct for WMH SEGM
-					WMHfile = fullfile(x.D.PopDir, ['PV_WMH_SEGM_' x.SUBJECTS{iSubject} '.nii']);
-					if ~x.S.bWMH && xASL_exist(WMHfile,'file')
-						% The newer version with PV_WMH already pre-calculated
-						pWMH = xASL_io_Nifti2Im(WMHfile);
-						pWMH(pWMH<0) = 0;
-						pGM = max(0, pGM - pWMH);
-						pWM = max(0, pWM - pWMH);
-						pCSF = max(0, pCSF - pWMH);
-                    elseif ~x.S.bWMH
-						% The older version with PV_WMH not calculated.
-						% Keep it for backwards compatibility, but issue a warning
-						WMHfile = fullfile(x.D.PopDir, ['rWMH_SEGM_' x.SUBJECTS{iSubject} '.nii']);
-						if xASL_exist(WMHfile, 'file')
-							if ~bWarnedPVWMH; warning(['pvWMH didnt exist, using the old non-PV version instead: ' WMHfile]); end
-                            bWarnedPVWMH = true; % we don't want to re-issue this warning for each iteration
-							pWMH = xASL_io_Nifti2Im(WMHfile);
-							% we take sqrt(pWMH) to mimic the effective resolution of ASL (instead of smoothing)
-							pWMH(pWMH<0) = 0;
-							pGM = max(0, pGM - pWMH.^0.67);
-							pWM = max(0, pWM - pWMH.^0.67);
-							pCSF = max(0, pCSF - pWMH.^0.67);
-						end
-					end
-				end
-
-				if size(x.S.InputMasks,5)>1
-					SubjectSpecificMasks = x.S.InputMasks(:,:,:,:,iSubject);
-				end
-			end
-		end
+        if x.S.InputNativeSpace || iSess == 1 % for standard space, only reload this for each first session
+	        if x.S.IsASL
+		        %% 4.a Load partial volume maps
+		        if xASL_exist(PathGM, 'file')
+			        pGM = xASL_io_Nifti2Im(PathGM);
+		        else
+			        fprintf('%s\n',[PathGM ' missing...']);
+			        continue;
+		        end
+        
+		        if xASL_exist(PathWM,'file')
+			        pWM = xASL_io_Nifti2Im(PathWM);
+		        else
+			        fprintf('%s\n',[PathWM ' missing...']);
+			        continue;
+		        end
+        
+		        if xASL_exist(PathCSF, 'file')
+			        pCSF = xASL_io_Nifti2Im(PathCSF);
+		        else
+			        pCSF = max(0,ones(pWM) - pGM - pWM);
+		        end
+        
+		        %% 4.b Correct for WMH SEGM
+		        if ~x.S.bWMH && xASL_exist(PathWMH, 'file')
+			        pWMH = xASL_io_Nifti2Im(PathWMH);
+			        % we take sqrt(pWMH) to mimic the effective resolution of ASL (instead of smoothing)
+			        pWMH(pWMH<0) = 0;
+			        pGM = max(0, pGM - pWMH);
+			        pWM = max(0, pWM - pWMH);
+			        pCSF = max(0, pCSF - pWMH);
+		        end
+	        end
+        end
 
 		% Here starts the real repetition for all session for the standard space mode
 		% for iSess=1:nSessions % NB this is not x.nSession
 		% but the one above that can be forced to a single nSessions
 		% in case of volume or TT or ATT
 
-        
+
 		%% 4.c Load data
         Data3DIm = []; % initialize empty variable
 		Data4DIm = []; % initialize empty variable
@@ -1042,6 +999,8 @@ fprintf('\n');
 
 end
 
+
+
 %% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
@@ -1069,6 +1028,8 @@ function [pathOutput] = xASL_stat_VisualizeSubjectWiseROI(x, MaskROI, Background
     end
 
 end
+
+
 
 %% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
@@ -1108,6 +1069,8 @@ if ~isempty(UnderScoreFound)
 end
 
 end
+
+
 
 %% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
@@ -1150,6 +1113,8 @@ end
 %ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 17); % Dilate ROI
 
 end
+
+
 
 %% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
