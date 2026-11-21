@@ -199,11 +199,11 @@ if bMasking(3)==1
 else
     fprintf('%s\n', 'tissue-specific mask: disabled');
 end
-if bMasking(4)==1
-    fprintf('%s\n', 'WholeBrain mask: enabled');
-else
-    fprintf('%s\n', 'WholeBrain mask: disabled');
-end
+
+% bMasking(4) was whole-brain masking, because a whole-brain mask, a few times dilated, was used for data reduction; to bring an image down to a column
+% Since we do not use this anymore, the use of this mask is moot.
+% If a user wants a whole-brain mask, the tissue-specific mask should be changed from GM or WM to WB
+
 if x.S.bWMH==1
     fprintf('%s\n', 'pvWMH ignored & included in all ROIs (affects mainly WM ROIs)');
 else
