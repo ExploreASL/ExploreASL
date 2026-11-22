@@ -74,8 +74,16 @@ elseif ~isfield(x.S, 'Atlases') || ~isfield(x.S, 'TissueMasking') || length(x.S.
 end
 
 if ~isfield(x.S, 'TissueThreshold')
-	% The default threshold is 0.7
-	x.S.TissueThreshold = ones(1,length(x.S.TissueMasking)) * 0.7;
+	% Default to thresholds 0.5 & 0.7
+    % 0.5 works better for thin cortices: more available GM SNR & less bias towards thicker GM parts
+    % 0.7 is more accurate, and according to literature
+    % Current solution is to provide both
+
+	x.S.Atlases(end+1:end+length(x.S.Atlases)) = x.S.Atlases;
+    x.S.TissueMasking(end+1:end+length(x.S.TissueMasking)) = x.S.TissueMasking;
+    
+    x.S.TissueThreshold([1:length(x.S.TissueMasking)/2]) = 0.5;
+    x.S.TissueThreshold([length(x.S.TissueMasking)/2+1:length(x.S.TissueMasking)]) = 0.7;
 elseif length(x.S.TissueMasking) ~= length(x.S.TissueThreshold)
 	error('x.S.TissueThreshold has to match the length of x.S.TissueMasking');
 elseif max(x.S.TissueThreshold) > 1
