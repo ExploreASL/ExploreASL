@@ -175,10 +175,19 @@ else
     x.S.unit = 'au';
 end
 
-Statistics = {'median' 'mean' 'CoV' 'sum' 'CoV4D_mean' 'CoV4D_sd' 'diffCoV4D_mean' 'diffCoV4D_sd' 'LabelSliceLocation4D_tMean'...
+Statistics = {'VolumeROI_InclVasc' 'VolumeROI_ExclVasc' 'median' 'mean' 'CoV' 'sum' 'CoV4D_mean' 'CoV4D_sd' 'diffCoV4D_mean' 'diffCoV4D_sd' 'LabelSliceLocation4D_tMean'...
     'LabelSliceLocation4D_tSD' 'LabelsCoV_SliceLocation_tMean' 'LabelsCoV_SliceLocation_tSD' 'SlicetSD_SliceLocation'};
 
 for iStat=1:length(Statistics)
+    % Also check if a field exists without PVC
+    StatField = ['DAT_' Statistics{iStat}];
+    if isfield(x.S,StatField)
+        x.S.DAT = x.S.(StatField);
+        FileName = [Statistics{iStat} '_' x.S.output_ID '.tsv'];
+        x.S.SaveFile = fullfile(x.S.StatsDir, FileName);
+        xASL_stat_PrintStats(x); % print individual overview
+    end
+
     for iPVC=1:3
         StatField = ['DAT_' Statistics{iStat} '_PVC' num2str(iPVC-1)];
         if isfield(x.S,StatField)

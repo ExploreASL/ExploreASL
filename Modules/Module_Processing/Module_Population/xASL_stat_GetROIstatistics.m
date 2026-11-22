@@ -281,6 +281,7 @@ fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
 	end
     
 	% Initialize the voxel size, which is always the same for standard space, but study-specific for native space
+    %% -> PM: NOTE THAT THIS MAY VARY BETWEEN SCANS, WITHIN THE SAME STUDY
 	if x.S.InputNativeSpace
 		VoxelSize = xASL_io_ReadNifti(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{indExistSubject},listSessions{indExistSession},[x.S.InputAtlasNativeName '.nii']));
 		VoxelSize = [norm(VoxelSize.mat(1:3,1)), norm(VoxelSize.mat(1:3,2)), norm(VoxelSize.mat(1:3,3))];
@@ -619,8 +620,8 @@ for iSubject=1:x.dataset.nSubjects
 		end
 
 		% Also load the 4D variant if it exists
-		FilePath4D = fullfile(filePathDir, [filePathDataStr '4D.nii']); % We write it general, but it will only exist for CBF
-		if xASL_exist(FilePath, 'file')
+		FilePath4D = fullfile(filePathDir, [filePathDataStr '4D' filePathSubject '.nii']); % We write it general, but it will only exist for CBF
+		if xASL_exist(FilePath4D, 'file')
 			Data4DIm = xASL_io_Nifti2Im(FilePath4D);
 		end
 
@@ -864,7 +865,8 @@ for iSubject=1:x.dataset.nSubjects
 					else
 						% Check if the ROI size is large enough
 						maskSize = sum((CurrentMaskNotVascular>0) & isfinite(Data3DIm) & (Data3DIm~=0), 'all');
-                        maskVolume = maskSize*1.5*1.5*1.5; % volume in mL for standard space
+                        maskVolume = maskSize .* prod(VoxelSize) ./ 1000;
+                        x.S.DAT_VolumeROI_InclVasc(SubjSess,iROI) = maskVolume;
 
 						if maskSize<MinVoxels
 							fprintf('\n\n%s\n\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(maskVolume) ' mL, so this ROI may not be reliable']);
@@ -875,12 +877,12 @@ for iSubject=1:x.dataset.nSubjects
 						fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
 						[pathOutput_sCoV] = xASL_stat_VisualizeSubjectWiseROI(x, CurrentMaskNotVascular, Data3DIm, fileName, pathOutput_sCoV);
 
-						
 						if bSkipPVC
-							x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, MinVoxels, 0);
+							x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, [], 0);
 						else
 							% No visualization here, because there is no different masking
-							x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, MinVoxels, 0);
+							x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, [], 0);
+
 							% [x.S.DAT_CoV_PVC0(SubjSess,iROI), x.S.DAT_CoV_PVC2(SubjSess,iROI)] = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, MinVoxels, [1, 1], pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 						end
 
@@ -899,7 +901,8 @@ for iSubject=1:x.dataset.nSubjects
 
 						% Check if the ROI size is large enough
 						maskSize = sum((CurrentMaskVascular>0) & isfinite(Data3DIm) & (Data3DIm~=0), 'all');
-                        maskVolume = maskSize*1.5*1.5*1.5; % volume in mL for standard space
+                        maskVolume = maskSize .* prod(VoxelSize) ./ 1000;
+                        x.S.DAT_VolumeROI_ExclVasc(SubjSess,iROI) = maskVolume;
 
 						if maskSize < MinVoxels
                             fprintf('\n\n%s\n\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(maskVolume) ' mL, so this ROI may not be reliable']);
@@ -979,7 +982,7 @@ for iSubject=1:x.dataset.nSubjects
 		end % for iROI=1:size(SubjectSpecificMasks,2)
         
         % Create last rows if missing
-		FieldsAre = {'DAT_mean_PVC0' 'DAT_median_PVC0' 'DAT_mean_PVC2' 'DAT_mean_PVC2' 'DAT_CoV_PVC2' 'DAT_CoV4D_mean_PVC0' 'DAT_CoV4D_sd_PVC0' 'DAT_diffCoV4D_mean_PVC0' 'DAT_diffCoV4D_sd_PVC0'};
+		FieldsAre = {'DAT_mean_PVC0' 'DAT_median_PVC0' 'DAT_mean_PVC2' 'DAT_mean_PVC2' 'DAT_CoV_PVC2' 'DAT_CoV4D_mean_PVC0' 'DAT_CoV4D_sd_PVC0' 'DAT_diffCoV4D_mean_PVC0' 'DAT_diffCoV4D_sd_PVC0' 'DAT_VolumeROI_InclVasc' 'DAT_VolumeROI_ExclVasc'};
         for iField = 1:length(FieldsAre)
             if isfield(x.S, FieldsAre{iField})
 				% Go through all the missing rows

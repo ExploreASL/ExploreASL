@@ -276,7 +276,7 @@ function [Legend] = xASL_stat_CreateLegend(x)
                     Legend{iSet+1} = 'hhmmss';
                 case {'GM_vol', 'GM_L', 'WM_vol', 'WM_L', 'CSF_vol', 'CSF_L'}
                     Legend{iSet+1} = 'Liter'; % 1 Liter = 10 cm*10 cm * 10 cm
-                case {'WMH_vol'}
+                case {'WMH_vol', 'VolumeROI_InclVasc' 'VolumeROI_ExclVasc'};  % 1 mL = 10 mm * 10 mm * 10 mm (so 1000 1 mm^3 voxels)
                     Legend{iSet+1} = 'mL';
                 case 'GM_ICVRatio'
                     Legend{iSet+1} = 'ratio GM/ICV';
@@ -290,8 +290,6 @@ function [Legend] = xASL_stat_CreateLegend(x)
                     Legend{iSet+1} = 'years';
                 case 'WMH_count'
                     Legend{iSet+1} = 'n lesions (integer)';
-                case 'WMH_vol'
-                    Legend{iSet+1} = 'mL'; % 1 mL = 10 mm * 10 mm * 10 mm (so 1000 1 mm^3 voxels)
                 case 'MeanMotion'
                     Legend{iSet+1} = 'mm';
                 otherwise
@@ -307,15 +305,20 @@ function [Legend] = xASL_stat_CreateLegend(x)
     end
     
     if isfield(x.S,'NamesROI') && isfield(x.S,'SaveFile')
-        for iM=1:length(x.S.NamesROI)
-            if ~isempty(regexp(x.S.SaveFile,fullfile(x.D.PopDir,'Stats','CoV.*'), 'once')) % look for stat filename containing CoV
-                Legend{end+1} = 'SD/mean';
-            elseif ~isempty(regexp(x.S.SaveFile,fullfile(x.D.PopDir,'Stats','.*CBF'), 'once'))% look for stat filename containing CBF
-                Legend{end+1} = 'mL/100g/min';
-            else
-                Legend{end+1} = '...';
-            end
+        [~, fileName] = fileparts(x.S.SaveFile);
+
+        if startsWith(fileName, 'VolumeROI')
+            roiUnit = {'mL'};
+        elseif startsWith(fileName, 'CoV')
+            roiUnit = {'SD/mean'};
+        elseif contains(fileName, 'CBF')
+            roiUnit = {'mL/100g/min'};
+        else
+            roiUnit = {'...'};
         end
+
+        Legend(end+1:length(Legend)+length(x.S.NamesROI)) = roiUnit;
+
     else
         fprintf(2, 'Could not find ROI names or filename to save, tsv header may be invalid\n');
     end
