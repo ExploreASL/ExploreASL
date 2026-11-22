@@ -864,26 +864,26 @@ for iSubject=1:x.dataset.nSubjects
 					else
 						% Check if the ROI size is large enough
 						maskSize = sum((CurrentMaskNotVascular>0) & isfinite(Data3DIm) & (Data3DIm~=0), 'all');
+                        maskVolume = maskSize*1.5*1.5*1.5; % volume in mL for standard space
 
 						if maskSize<MinVoxels
-							fprintf('\n');
-							fprintf('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(maskSize) ' voxels, so this ROI will be skipped in sCoV calculations']);
-							fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
-						else
-							%% CoV
-							% Visualization first
-							fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
-							[pathOutput_sCoV] = xASL_stat_VisualizeSubjectWiseROI(x, CurrentMaskNotVascular, Data3DIm, fileName, pathOutput_sCoV);
+							fprintf('\n\n%s\n\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(maskVolume) ' mL, so this ROI may not be reliable']);
+                        end
 
-							
-							if bSkipPVC
-								x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, MinVoxels, 0);
-							else
-								% No visualization here, because there is no different masking
-								x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, MinVoxels, 0);
-								% [x.S.DAT_CoV_PVC0(SubjSess,iROI), x.S.DAT_CoV_PVC2(SubjSess,iROI)] = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, MinVoxels, [1, 1], pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
-							end
+						%% CoV
+						% Visualization first
+						fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
+						[pathOutput_sCoV] = xASL_stat_VisualizeSubjectWiseROI(x, CurrentMaskNotVascular, Data3DIm, fileName, pathOutput_sCoV);
+
+						
+						if bSkipPVC
+							x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, MinVoxels, 0);
+						else
+							% No visualization here, because there is no different masking
+							x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, MinVoxels, 0);
+							% [x.S.DAT_CoV_PVC0(SubjSess,iROI), x.S.DAT_CoV_PVC2(SubjSess,iROI)] = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, MinVoxels, [1, 1], pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 						end
+
 
 						%% CBF (now remove vascular artifacts)
 						if bMasking(2)==1 % apply vascular mask, but rename this to CurrentVascular mask, because we still need the original CurrentMaskNotVascular for 4D temporal calculations
@@ -899,20 +899,19 @@ for iSubject=1:x.dataset.nSubjects
 
 						% Check if the ROI size is large enough
 						maskSize = sum((CurrentMaskVascular>0) & isfinite(Data3DIm) & (Data3DIm~=0), 'all');
+                        maskVolume = maskSize*1.5*1.5*1.5; % volume in mL for standard space
 
 						if maskSize < MinVoxels
-							fprintf('\n');
-							fprintf('%s\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(maskSize) ' voxels, so this ROI will be skipped in CBF calculations']);
-							fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
+                            fprintf('\n\n%s\n\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(maskVolume) ' mL, so this ROI may not be reliable']);
+                        end
+
+						% In a single function, we calculate PVC0, PVC1, PVC2, and median
+						if ~bSkipPVC
+							[x.S.DAT_mean_PVC0(SubjSess,iROI), x.S.DAT_mean_PVC1(SubjSess,iROI), x.S.DAT_mean_PVC2(SubjSess,iROI), ~, x.S.DAT_median_PVC0(SubjSess,iROI)] = ...
+								xASL_stat_ComputeMean(Data3DIm, CurrentMaskVascular, MinVoxels, [1 1 1 1 1], pvPrimary, pvSecondary);
 						else
-							% In a single function, we calculate PVC0, PVC1, PVC2, and median
-							if ~bSkipPVC
-								[x.S.DAT_mean_PVC0(SubjSess,iROI), x.S.DAT_mean_PVC1(SubjSess,iROI), x.S.DAT_mean_PVC2(SubjSess,iROI), ~, x.S.DAT_median_PVC0(SubjSess,iROI)] = ...
-									xASL_stat_ComputeMean(Data3DIm, CurrentMaskVascular, MinVoxels, [1 1 1 1 1], pvPrimary, pvSecondary);
-							else
-								[x.S.DAT_mean_PVC0(SubjSess,iROI), x.S.DAT_mean_PVC1(SubjSess,iROI), ~, ~, x.S.DAT_median_PVC0(SubjSess,iROI)] = ...
-									xASL_stat_ComputeMean(Data3DIm, CurrentMaskVascular, MinVoxels, [1 1 0 0 1], pvPrimary, pvSecondary);
-							end
+							[x.S.DAT_mean_PVC0(SubjSess,iROI), x.S.DAT_mean_PVC1(SubjSess,iROI), ~, ~, x.S.DAT_median_PVC0(SubjSess,iROI)] = ...
+								xASL_stat_ComputeMean(Data3DIm, CurrentMaskVascular, MinVoxels, [1 1 0 0 1], pvPrimary, pvSecondary);
 						end
 					end
 
