@@ -307,7 +307,9 @@ function [Legend] = xASL_stat_CreateLegend(x)
     if isfield(x.S,'NamesROI') && isfield(x.S,'SaveFile')
         [~, fileName] = fileparts(x.S.SaveFile);
 
-        if startsWith(fileName, 'VolumeROI')
+        if startsWith(fileName, 'CNR')
+            roiUnit = {'CNR'};
+        elseif startsWith(fileName, 'VolumeROI')
             roiUnit = {'mL'};
         elseif startsWith(fileName, 'CoV')
             roiUnit = {'SD/mean'};

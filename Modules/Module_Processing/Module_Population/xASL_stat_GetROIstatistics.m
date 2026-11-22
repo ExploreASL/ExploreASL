@@ -864,9 +864,13 @@ for iSubject=1:x.dataset.nSubjects
 						fprintf('%s\n', ['* Empty pv' pvSecondaryName ' for ' x.SUBJECTS{iSubject} '_ASL_' xASL_num2str(iSess) ', ROI ' xASL_num2str(iROI) ':' namesROIuse{iROI}]);
 					else
 						% Check if the ROI size is large enough
-						maskSize = sum((CurrentMaskNotVascular>0) & isfinite(Data3DIm) & (Data3DIm~=0), 'all');
+                        
+						maskValid = (CurrentMaskNotVascular>0) & isfinite(Data3DIm) & (Data3DIm~=0);
+                        maskSize = sum(maskValid, 'all');
                         maskVolume = maskSize .* prod(VoxelSize) ./ 1000;
                         x.S.DAT_VolumeROI_InclVasc(SubjSess,iROI) = maskVolume;
+
+                        x.S.DAT_CNR_InclVasc(SubjSess,iROI) = CalculateCNR(maskValid, pvPrimary, pvSecondary, Data3DIm, VoxelSize);
 
 						if maskSize<MinVoxels
 							fprintf('\n\n%s\n\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(maskVolume) ' mL, so this ROI may not be reliable']);
@@ -903,6 +907,8 @@ for iSubject=1:x.dataset.nSubjects
 						maskSize = sum((CurrentMaskVascular>0) & isfinite(Data3DIm) & (Data3DIm~=0), 'all');
                         maskVolume = maskSize .* prod(VoxelSize) ./ 1000;
                         x.S.DAT_VolumeROI_ExclVasc(SubjSess,iROI) = maskVolume;
+
+                        x.S.DAT_CNR_ExclVasc(SubjSess,iROI) = CalculateCNR(maskValid, pvPrimary, pvSecondary, Data3DIm, VoxelSize);
 
 						if maskSize < MinVoxels
                             fprintf('\n\n%s\n\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(maskVolume) ' mL, so this ROI may not be reliable']);
@@ -982,7 +988,7 @@ for iSubject=1:x.dataset.nSubjects
 		end % for iROI=1:size(SubjectSpecificMasks,2)
         
         % Create last rows if missing
-		FieldsAre = {'DAT_mean_PVC0' 'DAT_median_PVC0' 'DAT_mean_PVC2' 'DAT_mean_PVC2' 'DAT_CoV_PVC2' 'DAT_CoV4D_mean_PVC0' 'DAT_CoV4D_sd_PVC0' 'DAT_diffCoV4D_mean_PVC0' 'DAT_diffCoV4D_sd_PVC0' 'DAT_VolumeROI_InclVasc' 'DAT_VolumeROI_ExclVasc'};
+		FieldsAre = {'DAT_mean_PVC0' 'DAT_median_PVC0' 'DAT_mean_PVC2' 'DAT_mean_PVC2' 'DAT_CoV_PVC2' 'DAT_CoV4D_mean_PVC0' 'DAT_CoV4D_sd_PVC0' 'DAT_diffCoV4D_mean_PVC0' 'DAT_diffCoV4D_sd_PVC0' 'DAT_VolumeROI_InclVasc' 'DAT_VolumeROI_ExclVasc' 'DAT_CNR_InclVasc' 'DAT_CNR_ExclVasc'};
         for iField = 1:length(FieldsAre)
             if isfield(x.S, FieldsAre{iField})
 				% Go through all the missing rows
@@ -1238,5 +1244,58 @@ else % It adds layers of WM until reaching certain ratio of GM and WM size (nVox
         Iteration = Iteration+1;
     end
 end
+
+end
+
+
+%% ------------------------------------------------------------------------------------------------------------
+%% ------------------------------------------------------------------------------------------------------------
+%% ------------------------------------------------------------------------------------------------------------
+function [roiCNR] =  CalculateCNR(maskIn, pvPrimary, pvSecondary, DataIn, VoxelSize)
+%CalculateCNR Calculate CNR as QC criterion
+%
+% FORMAT: [roiCNR] =  CalculateCNR(maskIn, pvPrimary, pvSecondary, DataIn, VoxelSize)
+%
+% INPUT:
+%   maskIn          - ROI binary mask (REQUIRED)
+%   pvPrimary       - e.g., GM probability map (this should be in ASL resolution) (REQUIRED)
+%   pvSecondary     - e.g., WM probability map (this should be in ASL resolution) (REQUIRED)
+%   DataIn          - ASL input data (REQUIRED)
+%   VoxelSize       - [x y z] in mm (OPTIONAL, DEFAULT=1.5 1.5 1.5)
+%
+% OUTPUT:
+%   roiCNR          - contrast-to-noise
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% DESCRIPTION: 
+% -----------------------------------------------------------------------------------------------------------------------------------------------------
+% EXAMPLE: ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 17);
+% __________________________________
+
+if nargin<5 || isempty(VoxelSize)
+    VoxelSize = [1.5 1.5 1.5];
+end
+    
+    % Get CNR of this ROI
+    % First select equally amount of voxels from primary and secondary tissue types
+    indicesAre = find(maskIn);
+    
+    % Higher score = relatively more primary tissue
+    pvScore = pvPrimary(indicesAre) ./ pvPrimary(indicesAre)+pvSecondary(indicesAre);
+    [~, pvOrder] = sort(pvScore, 'ascend');
+    nSelect = floor(numel(indicesAre)/2);
+
+    % Define masks
+    maskPrimary = false(size(maskIn));
+    maskSecondary = false(size(maskIn));
+    maskPrimary(indicesAre(pvOrder(1:nSelect))) = true;
+    maskSecondary(indicesAre(pvOrder(end-nSelect+1:end))) = true;
+
+    roiPrimaryMean = mean(DataIn(maskPrimary), 'all', 'omitnan');
+    roiSecondaryMean = mean(DataIn(maskSecondary), 'all', 'omitnan');
+
+    roiPrimarySD = std(DataIn(maskPrimary), [], 'all', 'omitnan');
+    roiSecondarySD = std(DataIn(maskSecondary), [], 'all', 'omitnan');
+    roiSDsqrt = sqrt(0.5*(roiPrimarySD^2+roiSecondarySD^2));
+    roiCNR = (roiPrimaryMean - roiSecondaryMean) / roiSDsqrt;
 
 end
