@@ -276,7 +276,7 @@ function [Legend] = xASL_stat_CreateLegend(x)
                     Legend{iSet+1} = 'hhmmss';
                 case {'GM_vol', 'GM_L', 'WM_vol', 'WM_L', 'CSF_vol', 'CSF_L'}
                     Legend{iSet+1} = 'Liter'; % 1 Liter = 10 cm*10 cm * 10 cm
-                case {'WMH_vol', 'VolumeROI_InclVasc' 'VolumeROI_ExclVasc'};  % 1 mL = 10 mm * 10 mm * 10 mm (so 1000 1 mm^3 voxels)
+                case {'WMH_vol'}  % 1 mL = 10 mm * 10 mm * 10 mm (so 1000 1 mm^3 voxels)
                     Legend{iSet+1} = 'mL';
                 case 'GM_ICVRatio'
                     Legend{iSet+1} = 'ratio GM/ICV';
