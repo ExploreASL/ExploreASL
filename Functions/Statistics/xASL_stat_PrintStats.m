@@ -269,37 +269,46 @@ function [Legend] = xASL_stat_CreateLegend(x)
     
     if isfield(x.S,'SetsName')
         for iSet=1:length(x.S.SetsName)
-            switch x.S.SetsName{iSet}
-                case {'LongitudinalTimePoint', 'SubjectNList', 'Site'}
-                    Legend{iSet+1} = 'integer';
-                case 'AcquisitionTime'
-                    Legend{iSet+1} = 'hhmmss';
-                case {'GM_vol', 'GM_L', 'WM_vol', 'WM_L', 'CSF_vol', 'CSF_L'}
-                    Legend{iSet+1} = 'Liter'; % 1 Liter = 10 cm*10 cm * 10 cm
-                case {'WMH_vol'}  % 1 mL = 10 mm * 10 mm * 10 mm (so 1000 1 mm^3 voxels)
-                    Legend{iSet+1} = 'mL';
-                case 'GM_ICVRatio'
-                    Legend{iSet+1} = 'ratio GM/ICV';
-                case 'GMWM_ICVRatio'    
-                    Legend{iSet+1} = 'ratio (GM+WM)/ICV';
-                case {'CBF_spatial_CoV', 'PseudoCBF_spatial_CoV'}
-                    Legend{iSet+1} = '(SD/mean)';
-                case 'CBF_spatial_CoV_norm'
-                    Legend{iSet+1} = 'ratio (spatial CoV/pseudoCBF spatial CoV)';
-                case 'Age'
-                    Legend{iSet+1} = 'years';
-                case 'WMH_count'
-                    Legend{iSet+1} = 'n lesions (integer)';
-                case 'MeanMotion'
-                    Legend{iSet+1} = 'mm';
-                otherwise
-                    Legend{iSet+1} = '...';
-            end
-        end
-        
-        for iSet=1:length(x.S.SetsName)
-            if strcmp(Legend{iSet+1},'...') && ~isempty(strfind(x.S.SetsName{iSet},'count'))
+
+            if startsWith(x.S.SetsName{iSet}, 'CNR')
+                Legend{iSet+1} = 'CNR';
+            elseif startsWith(x.S.SetsName{iSet}, 'VolumeROI')
+                Legend{iSet+1} = 'mL';
+            elseif startsWith(x.S.SetsName{iSet}, 'CoV')
+                Legend{iSet+1} = 'SD/mean';
+            elseif contains(x.S.SetsName{iSet}, 'CBF')
+                Legend{iSet+1} = 'mL/100g/min';
+            elseif contains(x.S.SetsName{iSet}, 'att') || contains(x.S.SetsName{iSet}, 'ATT') || contains(x.S.SetsName{iSet}, 'tex') || contains(x.S.SetsName{iSet}, 'Tex')
+                Legend{iSet+1} = 's';
+            elseif contains(x.S.SetsName{iSet}, 'count')
                 Legend{iSet+1} = 'integer';
+            else
+                switch x.S.SetsName{iSet}
+                    case {'LongitudinalTimePoint', 'SubjectNList', 'Site'}
+                        Legend{iSet+1} = 'integer';
+                    case 'AcquisitionTime'
+                        Legend{iSet+1} = 'hhmmss';
+                    case {'GM_vol', 'GM_L', 'WM_vol', 'WM_L', 'CSF_vol', 'CSF_L'}
+                        Legend{iSet+1} = 'Liter'; % 1 Liter = 10 cm*10 cm * 10 cm
+                    case {'WMH_vol'}  % 1 mL = 10 mm * 10 mm * 10 mm (so 1000 1 mm^3 voxels)
+                        Legend{iSet+1} = 'mL';
+                    case 'GM_ICVRatio'
+                        Legend{iSet+1} = 'ratio GM/ICV';
+                    case 'GMWM_ICVRatio'    
+                        Legend{iSet+1} = 'ratio (GM+WM)/ICV';
+                    case {'CBF_spatial_CoV', 'PseudoCBF_spatial_CoV'}
+                        Legend{iSet+1} = '(SD/mean)';
+                    case 'CBF_spatial_CoV_norm'
+                        Legend{iSet+1} = 'ratio (spatial CoV/pseudoCBF spatial CoV)';
+                    case 'Age'
+                        Legend{iSet+1} = 'years';
+                    case 'WMH_count'
+                        Legend{iSet+1} = 'n lesions (integer)';
+                    case 'MeanMotion'
+                        Legend{iSet+1} = 'mm';
+                    otherwise
+                        Legend{iSet+1} = '...';
+                end
             end
         end
     end
@@ -315,6 +324,8 @@ function [Legend] = xASL_stat_CreateLegend(x)
             roiUnit = {'SD/mean'};
         elseif contains(fileName, 'CBF')
             roiUnit = {'mL/100g/min'};
+        elseif contains(fileName, 'att') || contains(fileName, 'ATT') || contains(fileName, 'tex') || contains(fileName, 'Tex')
+            roiUnit = {'s'};
         else
             roiUnit = {'...'};
         end
