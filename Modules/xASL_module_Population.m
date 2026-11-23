@@ -400,7 +400,7 @@ if ~x.mutex.HasState(StateName{8})
         for iStat=1:length(regExp_Stats)
             for iAtlas=1:length(regExp_Atlas)
                 for iPVC=1:length(regExp_PVC)
-                    regExp = ['^' regExp_Stats{iStat} '_' regExp_Type{iType} '.*Space-Standard_' regExp_Atlas{iAtlas} '_n-' num2str(x.dataset.nSubjects) '_' dateString '_' regExp_PVC{iPVC} '\.tsv$'];
+                    regExp = ['^' regExp_Stats{iStat} '_' regExp_Type{iType} '.*Thrsh0.5_Space-Standard_' regExp_Atlas{iAtlas} '_n-' num2str(x.dataset.nSubjects) '_' dateString '_' regExp_PVC{iPVC} '\.tsv$'];
                     fList = xASL_adm_GetFileList(fullfile(x.D.PopDir, 'Stats'), regExp, 'FPList');
                     if length(fList)>1
                         warning('Multiple stats files found to be added to participants.tsv, using the first only');
