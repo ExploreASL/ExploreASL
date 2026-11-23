@@ -57,9 +57,22 @@ if isempty(FileList)
     return;
 end
 
-% Now we take the most recent version
-PathTSV = fullfile(x.S.StatsDir, FileList{end});
+%% Select the most recent version
+for iFile=1:length(FileList)
+    dateToken = regexp(FileList{iFile}, '_n-\d+_(\d{2}[A-Za-z]{3}\d{4})_PVC-\d+(?:\.tsv)?$', 'tokens', 'once');
+    fileDates(iFile) = datetime(dateToken{1}, 'InputFormat', 'ddMMMyyyy', 'Locale', 'en_US');
+end
 
+validIndices = find(~isnat(fileDates)); % Exclude filenames without a valid date
+if isempty(validIndices)
+    warning('No spatial CoV TSV files with valid filename dates found.');
+    return;
+end
+
+[~, iLatest] = max(fileDates(validIndices));
+PathTSV = fullfile(x.S.StatsDir, FileList{validIndices(iLatest)});
+
+%% Get sCoV sorting from the TSV file
 [~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathTSV);
 subjectList = CellTSV(3:end,1);
 
@@ -75,6 +88,12 @@ if isempty(regexpi(subjectList{1}, 'ASL_\d+'))
     end
 else
     subjectSessionList = subjectList;
+end
+
+columnHeaders = CellTSV(1,:);
+
+if ~strcmp(CellTSV{1,end-2}, 'Total_GM_B')
+    warning('Spatial CoV column not found, spatial CoV sorting may go wrong');
 end
 
 sCoVList = CellTSV(3:end,end-2);
