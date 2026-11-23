@@ -213,7 +213,7 @@ switch x.settings.Quality
 	case 1 % normal quality
 		flags.quality = 1;
 		flags.sep = minVoxelSize;
-        if x.modules.asl.bMergingSessions
+        if isfield(x.modules.asl, 'bMergingSessions') && x.modules.asl.bMergingSessions
 		    flags.rtm = 0; % realign to the first volume
         else
             flags.rtm = 1; % in a second-pass, realign to the mean -> theoretically this gives more equal interpolation across the timeseries
