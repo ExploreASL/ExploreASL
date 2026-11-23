@@ -140,14 +140,14 @@ else
 end
 
 % Add subject/run-wise input data (e.g., qCBF) and subject/run-wise tissue mask (e.g., GM or GM+WM)
-x.S.output_ID = [x.S.output_ID x.S.InputDataStr '_' strrep(x.S.TissueMaskingLocal,'+','_') '_PV' num2str(x.S.TissueThresholdLocal)];
+x.S.output_ID = [x.S.output_ID x.S.InputDataStr '_' strrep(x.S.TissueMaskingLocal,'+','_') '-Thrsh' num2str(x.S.TissueThresholdLocal)];
 
 if x.S.InputNativeSpace
-	x.S.output_ID = [x.S.output_ID '_NativeSpace'];
+	x.S.output_ID = [x.S.output_ID '_Space-Native'];
 else
-	x.S.output_ID = [x.S.output_ID '_StandardSpace'];
+	x.S.output_ID = [x.S.output_ID '_Space-Standard'];
 end
-x.S.output_ID = [x.S.output_ID '_' Ffile '_n=' num2str(x.dataset.nSubjects) '_' date];
+x.S.output_ID = [x.S.output_ID '_' Ffile '_n-' num2str(x.dataset.nSubjects) '_' strrep(date, '-', '')];
 
 
 %% ------------------------------------------------------------------------------------------------------------
@@ -175,8 +175,8 @@ else
     x.S.unit = 'au';
 end
 
-Statistics = {'CNR_InclVasc' 'CNR_ExclVasc' 'VolumeROI_InclVasc' 'VolumeROI_ExclVasc' 'median' 'mean' 'CoV' 'sum' 'CoV4D_mean' 'CoV4D_sd' 'diffCoV4D_mean' 'diffCoV4D_sd' 'LabelSliceLocation4D_tMean'...
-    'LabelSliceLocation4D_tSD' 'LabelsCoV_SliceLocation_tMean' 'LabelsCoV_SliceLocation_tSD' 'SlicetSD_SliceLocation'};
+Statistics = {'CNR-InclVasc' 'CNR-ExclVasc' 'VolumeROI-InclVasc' 'VolumeROI-ExclVasc' 'median' 'mean' 'CoV' 'sum' 'CoV4D-mean' 'CoV4D-sd' 'diffCoV4D-mean' 'diffCoV4D-sd' 'LabelSliceLocation4D-tMean'...
+    'LabelSliceLocation4D-tSD' 'LabelsCoV_SliceLocation-tMean' 'LabelsCoV_SliceLocation-tSD' 'SlicetSD-SliceLocation'};
 
 for iStat=1:length(Statistics)
     % Also check if a field exists without PVC
@@ -192,7 +192,7 @@ for iStat=1:length(Statistics)
         StatField = ['DAT_' Statistics{iStat} '_PVC' num2str(iPVC-1)];
         if isfield(x.S,StatField)
             x.S.DAT = x.S.(StatField);
-            FileName = [Statistics{iStat} '_' x.S.output_ID '_PVC' num2str(iPVC-1) '.tsv'];
+            FileName = [Statistics{iStat} '_' x.S.output_ID '_PVC-' num2str(iPVC-1) '.tsv'];
             x.S.SaveFile = fullfile(x.S.StatsDir, FileName);
             xASL_stat_PrintStats(x); % print individual overview
         end

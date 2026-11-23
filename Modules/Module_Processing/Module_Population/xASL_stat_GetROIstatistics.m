@@ -272,6 +272,7 @@ end
 
 fprintf('%s\n',['Preparing ROI-based ' x.S.output_ID ' statistics:']);
 
+output_ID_noDate = regexprep(x.S.output_ID, ['_n-\d+_' strrep(date, '-', '') '$'], '');
 
 %if x.S.IsASL
     %% ------------------------------------------------------------------------------------------------------------
@@ -651,7 +652,7 @@ for iSubject=1:x.dataset.nSubjects
 		%% 4.d Show ROIs projected on ASL image
         % This is after expansion with WM for PVC
 		LabelIM = xASL_vis_Convert4D_3D_atlas(SubjectSpecificMasks(:,:,:, 1:3:end));
-		fileName = [x.S.output_ID(1:end-16) '_' x.S.SubjectSessionID{SubjSess,1}];
+		fileName = [output_ID_noDate '_' x.S.SubjectSessionID{SubjSess,1}];
         
         xASL_stat_VisualizeSubjectWiseROI(x, LabelIM, Data3DIm, fileName);
 
@@ -785,21 +786,23 @@ for iSubject=1:x.dataset.nSubjects
 				if x.S.IsVolume
                     %% Volume
                     % Visualization first
-		            fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_volume_sum'];
+                    
+
+		            fileName = [output_ID_noDate '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_volume_sum'];
                     [pathOutput_volume] = xASL_stat_VisualizeSubjectWiseROI(x, CurrentMaskNotVascular, Data3DIm, fileName, pathOutput_volume);
                     
 					x.S.DAT_sum_PVC0(SubjSess,iROI) = sum(Data3DIm(CurrentMaskNotVascular)) .* prod(VoxelSize);
 				else
                     %% Non-ASL median
                     % Visualization first
-		            fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_nonASL_median'];
+		            fileName = [output_ID_noDate '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_nonASL_median'];
                     [pathOutput_nonASL_median] = xASL_stat_VisualizeSubjectWiseROI(x, CurrentMaskNotVascular, Data3DIm, fileName, pathOutput_nonASL_median);
 
                     [~, ~, ~, ~, x.S.DAT_median_PVC0(SubjSess,iROI)] = xASL_stat_ComputeMean(Data3DIm, CurrentMaskNotVascular, 0, [0 0 0 0 1]);
                     
                     %% Non-ASL CoV
                     % Visualization first
-		            fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_nonASL_CoV'];
+		            fileName = [output_ID_noDate '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_nonASL_CoV'];
                     [pathOutput_nonASL_CoV] = xASL_stat_VisualizeSubjectWiseROI(x, CurrentMaskNotVascular, Data3DIm, fileName, pathOutput_nonASL_CoV);
 
 					x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, 0);
@@ -878,7 +881,7 @@ for iSubject=1:x.dataset.nSubjects
 
 						%% CoV
 						% Visualization first
-						fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
+						fileName = [output_ID_noDate '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_sCoV'];
 						[pathOutput_sCoV] = xASL_stat_VisualizeSubjectWiseROI(x, CurrentMaskNotVascular, Data3DIm, fileName, pathOutput_sCoV);
 
 						if bSkipPVC
@@ -900,7 +903,7 @@ for iSubject=1:x.dataset.nSubjects
 						end
 
 						% Visualization first (this differs from sCoV only by the vascular mask)
-						fileName = [x.S.output_ID(1:end-16) '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_CBF'];
+						fileName = [output_ID_noDate '_ROI' xASL_num2str(iROI) '-' namesROIuse{iROI} '_' x.S.SubjectSessionID{SubjSess,1} '_CBF'];
 						[pathOutput_CBF] = xASL_stat_VisualizeSubjectWiseROI(x, CurrentMaskVascular, Data3DIm, fileName, pathOutput_CBF);
 
 						% Check if the ROI size is large enough
