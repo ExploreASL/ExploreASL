@@ -117,7 +117,7 @@ end
 % Allow for multiple voxel dimensions, BUT THIS FORCES MNI 1.5 mm
 SizeAtlas = size(x.S.InputMasks);
 DimRatioAtlas = SizeAtlas(1:3)./[121 145 121];
-if prod(DimRatioAtlas)~=1
+if ~isequal(SizeAtlas(1:3), [121 145 121])
 	fprintf('%s\n','Atlas has different dimensions, make sure it is in MNI space');
 	if round(DimRatioAtlas(1),2)==round(DimRatioAtlas(2),2) && round(DimRatioAtlas(2),2)==round(DimRatioAtlas(3),2)
 		fprintf('%s\n','Detected that atlas has different MNI dimensions, resampling to 1.5 mm');
