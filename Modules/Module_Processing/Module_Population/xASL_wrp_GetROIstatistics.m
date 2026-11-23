@@ -58,10 +58,6 @@ if ~isfield(x.S,'IsVolume') || isempty(x.S.IsVolume)
     x.S.IsVolume = false; % default
 end
 
-if isfield(x.D,'PopDir') || ~isempty(x.D.PopDir)
-    x.S.InputDataDir = x.D.PopDir; 
-end
-
 if ~isfield(x.S,'InputNativeSpace') || isempty(x.S.InputNativeSpace)
 	x.S.InputNativeSpace = 0;
 end
@@ -183,18 +179,26 @@ for iStat=1:length(Statistics)
     StatField = ['DAT_' Statistics{iStat}];
     if isfield(x.S,StatField)
         x.S.DAT = x.S.(StatField);
-        FileName = [Statistics{iStat} '_' x.S.output_ID '.tsv'];
-        x.S.SaveFile = fullfile(x.S.StatsDir, FileName);
-        xASL_stat_PrintStats(x); % print individual overview
+        if numel(x.S.DAT)~=sum(isnan(x.S.DAT),'all')
+            % if there were no valid images, the data here would only contain NaNs, and we skip it; don't print a TSV from it
+            FileName = [Statistics{iStat} '_' x.S.output_ID '.tsv'];
+            x.S.SaveFile = fullfile(x.S.StatsDir, FileName);
+            xASL_stat_PrintStats(x); % print individual overview
+            x.S.DAT = [];
+        end
     end
 
     for iPVC=1:3
         StatField = ['DAT_' Statistics{iStat} '_PVC' num2str(iPVC-1)];
         if isfield(x.S,StatField)
             x.S.DAT = x.S.(StatField);
-            FileName = [Statistics{iStat} '_' x.S.output_ID '_PVC-' num2str(iPVC-1) '.tsv'];
-            x.S.SaveFile = fullfile(x.S.StatsDir, FileName);
-            xASL_stat_PrintStats(x); % print individual overview
+            if numel(x.S.DAT)~=sum(isnan(x.S.DAT),'all')
+                % if there were no valid images, the data here would only contain NaNs, and we skip it; don't print a TSV from it
+                FileName = [Statistics{iStat} '_' x.S.output_ID '_PVC-' num2str(iPVC-1) '.tsv'];
+                x.S.SaveFile = fullfile(x.S.StatsDir, FileName);
+                xASL_stat_PrintStats(x); % print individual overview
+                x.S.DAT = [];
+            end
         end
     end
 end

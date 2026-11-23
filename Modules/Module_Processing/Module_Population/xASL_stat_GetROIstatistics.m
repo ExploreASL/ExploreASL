@@ -550,10 +550,11 @@ for iSubject=1:x.dataset.nSubjects
         if x.S.InputNativeSpace || iSess == 1 % for standard space, only reload this for each first session
 	        if x.S.IsASL
 		        %% 4.a Load partial volume maps
-		        if xASL_exist(PathGM, 'file')
+                if xASL_exist(PathGM, 'file')
 			        pGM = xASL_io_Nifti2Im(PathGM);
 		        else
 			        fprintf('%s\n',[PathGM ' missing...']);
+                    pGM = []; % initialize this to avoid using previous subject's image
 			        continue;
 		        end
         
@@ -561,6 +562,7 @@ for iSubject=1:x.dataset.nSubjects
 			        pWM = xASL_io_Nifti2Im(PathWM);
 		        else
 			        fprintf('%s\n',[PathWM ' missing...']);
+                    pWM = []; % initialize this to avoid using previous subject's image
 			        continue;
 		        end
         
@@ -692,7 +694,39 @@ for iSubject=1:x.dataset.nSubjects
         
         % Now fill with data
 		for iROI=1:size(SubjectSpecificMasks,4)
-			% Swap tissue compartments if needed (this is easier scripting-wise)
+
+    		% Initialize output data matrix [subject/session ROI-statistics] with NaNs
+            x.S.DAT_sum_PVC0(SubjSess,iROI) = NaN;
+    
+            x.S.DAT_mean_PVC0(SubjSess,iROI) = NaN;
+		    x.S.DAT_mean_PVC1(SubjSess,iROI) = NaN;
+		    x.S.DAT_mean_PVC2(SubjSess,iROI) = NaN;
+    
+            x.S.DAT_median_PVC0(SubjSess,iROI) = NaN;
+            
+            x.S.DAT_CoV_PVC0(SubjSess,iROI) = NaN;
+		    x.S.DAT_CoV_PVC2(SubjSess,iROI) = NaN;
+    
+            x.S.DAT_VolumeROI_InclVasc(SubjSess,iROI) = NaN;
+            x.S.DAT_VolumeROI_ExclVasc(SubjSess,iROI) = NaN;
+            x.S.DAT_CNR_InclVasc(SubjSess,iROI) = NaN;
+            x.S.DAT_CNR_ExclVasc(SubjSess,iROI) = NaN;
+    
+            x.S.DAT_Diff_CoV_PVC0(SubjSess,iROI) = NaN;
+            x.S.DAT_Diff_CoV_PVC1(SubjSess,iROI) = NaN;
+            x.S.DAT_Diff_CoV_PVC2(SubjSess,iROI) = NaN;
+    
+            x.S.DAT_CoV4D_mean_PVC0(SubjSess, iROI) = NaN;
+            x.S.DAT_CoV4D_sd_PVC0(SubjSess, iROI) = NaN;
+            x.S.DAT_diffCoV4D_mean_PVC0(SubjSess, iROI) = NaN;
+            x.S.DAT_diffCoV4D_sd_PVC0(SubjSess, iROI) = NaN;
+    
+            x.S.DAT_LabelSliceLocation4D_tMean_PVC0(SubjSess, iROI) = NaN;
+            x.S.DAT_LabelSliceLocation4D_tSD_PVC0(SubjSess, iROI) = NaN;
+            x.S.DAT_LabelsCoV_SliceLocation_tSD_PVC0(SubjSess, iROI) = NaN;
+            x.S.DAT_SlicetSD_SliceLocation_PVC0(SubjSess, iROI) = NaN;
+            
+            % Swap tissue compartments if needed (this is easier scripting-wise)
 			%
 			% With ASL normally we are interested in GM only
 			% which is why we, by default, compute the pGM of a ROI throughout this script
@@ -831,17 +865,6 @@ for iSubject=1:x.dataset.nSubjects
 					end
 				end
 
-				% Initialize output data matrix [subject/session ROI-statistics] with NaNs
-                x.S.DAT_mean_PVC0(SubjSess,iROI) = NaN;
-                x.S.DAT_median_PVC0(SubjSess,iROI) = NaN;
-                x.S.DAT_CoV_PVC0(SubjSess,iROI) = NaN;
-				
-				x.S.DAT_mean_PVC1(SubjSess,iROI) = NaN;
-				if ~bSkipPVC
-					x.S.DAT_mean_PVC2(SubjSess,iROI) = NaN;
-					%x.S.DAT_CoV_PVC2(SubjSess,iROI) = NaN;
-				end
-				
 
                 %% B. Then check for empty data first, in which case we will skip this subject-run
 				if ~any(Data3DIm > 0, 'all')
@@ -873,7 +896,7 @@ for iSubject=1:x.dataset.nSubjects
                         maskVolume = maskSize .* prod(VoxelSize) ./ 1000;
                         x.S.DAT_VolumeROI_InclVasc(SubjSess,iROI) = maskVolume;
 
-                        x.S.DAT_CNR_InclVasc(SubjSess,iROI) = CalculateCNR(maskValid, pvPrimary, pvSecondary, Data3DIm, VoxelSize);
+                        x.S.DAT_CNR_InclVasc(SubjSess,iROI) = CalculateCNR(maskValid, pvPrimary, pvSecondary, Data3DIm);
 
 						if maskSize<MinVoxels
 							fprintf('\n\n%s\n\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(maskVolume) ' mL, so this ROI may not be reliable']);
@@ -888,9 +911,7 @@ for iSubject=1:x.dataset.nSubjects
 							x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, [], 0);
 						else
 							% No visualization here, because there is no different masking
-							x.S.DAT_CoV_PVC0(SubjSess,iROI) = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, [], 0);
-
-							% [x.S.DAT_CoV_PVC0(SubjSess,iROI), x.S.DAT_CoV_PVC2(SubjSess,iROI)] = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, MinVoxels, [1, 1], pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
+							[x.S.DAT_CoV_PVC0(SubjSess,iROI), x.S.DAT_CoV_PVC2(SubjSess,iROI)] = xASL_stat_ComputeSpatialCoV(Data3DIm, CurrentMaskNotVascular, MinVoxels, [1, 1], pvPrimary, pvSecondary); % PVC==2, "dual-compartment" (full) PVC (regress pGM & pWM)
 						end
 
 
@@ -911,7 +932,7 @@ for iSubject=1:x.dataset.nSubjects
                         maskVolume = maskSize .* prod(VoxelSize) ./ 1000;
                         x.S.DAT_VolumeROI_ExclVasc(SubjSess,iROI) = maskVolume;
 
-                        x.S.DAT_CNR_ExclVasc(SubjSess,iROI) = CalculateCNR(maskValid, pvPrimary, pvSecondary, Data3DIm, VoxelSize);
+                        x.S.DAT_CNR_ExclVasc(SubjSess,iROI) = CalculateCNR(maskValid, pvPrimary, pvSecondary, Data3DIm);
 
 						if maskSize < MinVoxels
                             fprintf('\n\n%s\n\n', [x.S.TissueMaskingLocal ' ' namesROIuse{iROI} ' only contains ' xASL_num2str(maskVolume) ' mL, so this ROI may not be reliable']);
@@ -945,7 +966,7 @@ for iSubject=1:x.dataset.nSubjects
 					    end
     
 					    for iRepetition=1:size(Data4DIm, 4)
-						    diffCoV4D(iRepetition) = xASL_stat_ComputeDifferCoV(Data4D(:, :, :, iRepetition), CurrentMaskNotVascular, MinVoxels);
+						    diffCoV4D(iRepetition) = xASL_stat_ComputeDifferCoV(Data4DIm(:, :, :, iRepetition), CurrentMaskNotVascular, MinVoxels);
 					    end
 					    
 					    % Compute the temporal values - we add here the type of statistics and PVC status, the contrast type (CBF/ATT/Tex) is assigned outside of this function
@@ -1254,17 +1275,16 @@ end
 %% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
 %% ------------------------------------------------------------------------------------------------------------
-function [roiCNR] =  CalculateCNR(maskIn, pvPrimary, pvSecondary, DataIn, VoxelSize)
+function [roiCNR] =  CalculateCNR(maskIn, pvPrimary, pvSecondary, DataIn)
 %CalculateCNR Calculate CNR as QC criterion
 %
-% FORMAT: [roiCNR] =  CalculateCNR(maskIn, pvPrimary, pvSecondary, DataIn, VoxelSize)
+% FORMAT: [roiCNR] =  CalculateCNR(maskIn, pvPrimary, pvSecondary, DataIn)
 %
 % INPUT:
 %   maskIn          - ROI binary mask (REQUIRED)
 %   pvPrimary       - e.g., GM probability map (this should be in ASL resolution) (REQUIRED)
 %   pvSecondary     - e.g., WM probability map (this should be in ASL resolution) (REQUIRED)
 %   DataIn          - ASL input data (REQUIRED)
-%   VoxelSize       - [x y z] in mm (OPTIONAL, DEFAULT=1.5 1.5 1.5)
 %
 % OUTPUT:
 %   roiCNR          - contrast-to-noise
@@ -1274,17 +1294,13 @@ function [roiCNR] =  CalculateCNR(maskIn, pvPrimary, pvSecondary, DataIn, VoxelS
 % EXAMPLE: ROI = xASL_im_PVC_ROIexpansion(ROI, pGM, pWM, 17);
 % __________________________________
 
-if nargin<5 || isempty(VoxelSize)
-    VoxelSize = [1.5 1.5 1.5];
-end
-    
     % Get CNR of this ROI
     % First select equally amount of voxels from primary and secondary tissue types
     indicesAre = find(maskIn);
     
     % Higher score = relatively more primary tissue
-    pvScore = pvPrimary(indicesAre) ./ pvPrimary(indicesAre)+pvSecondary(indicesAre);
-    [~, pvOrder] = sort(pvScore, 'ascend');
+    pvScore = pvPrimary(indicesAre) ./ (pvPrimary(indicesAre)+pvSecondary(indicesAre));
+    [~, pvOrder] = sort(pvScore, 'descend');
     nSelect = floor(numel(indicesAre)/2);
 
     % Define masks
