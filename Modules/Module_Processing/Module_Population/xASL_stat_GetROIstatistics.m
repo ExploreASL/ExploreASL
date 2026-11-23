@@ -373,6 +373,10 @@ for iSubject=1:x.dataset.nSubjects
 			%  towards an atlas-based masking. However, these results didn"t seem
 			%  to change much
 			if x.S.InputNativeSpace
+                %% MASKS ARE LOADED HERE PER SUBJECT, BUT THEY MAY BE PV MAPS INSTEAD OF ROIs
+                %% THIS CAN BE MISLEADING; NOT REALLY CLEAR HOW THIS WORKS WITH THE 4RD & 5TH DIMENSIONS
+                %% WHICH ARE REDUCED FURTHER DOWN INTO 4 DIMENSIONS ONLY
+
 				% Reload the previous masks for this subject/session
 				if ~xASL_exist(fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']),'file')
 					fprintf('%s\n',[fullfile(x.dir.xASLDerivatives,x.SUBJECTS{iSubject},listSessions{iSess},[x.S.InputAtlasNativeName '.nii']) ' missing...']);
@@ -459,12 +463,12 @@ for iSubject=1:x.dataset.nSubjects
 					fprintf('Expanding ROIs with WM for PVC:    ');
 					for iROI=1:size(x.S.InputMasks,4)
 						xASL_TrackProgress(iROI,size(x.S.InputMasks,4));
-						for iMask=1:size(x.S.InputMasks,5)
-							if sum(SumList(iROI,iMask))~=0 % skip empty ROIs
-								x.S.InputMasks(:,:,:,iROI,iMask) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,:,:,iROI,iMask), pGM_MNI, pWM_MNI);
+						for iSubject=1:size(x.S.InputMasks,5)  % in case of subject-specific masks, the 5th dimension is subject
+							if sum(SumList(iROI,iSubject))~=0 % skip empty ROIs
+								x.S.InputMasks(:,:,:,iROI,iSubject) = xASL_im_CreatePVEcROI(x,x.S.InputMasks(:,:,:,iROI,iSubject), pGM_MNI, pWM_MNI);
 							else
 								fprintf('\n');
-								numVoxels = sum(x.S.InputMasks(:,:,:,iROI,iMask), 'all');
+								numVoxels = sum(x.S.InputMasks(:,:,:,iROI,iSubject), 'all');
 								fprintf('%s\n', ['Current ROI ' namesROIlocal{iROI} ' only contains ' xASL_num2str(numVoxels) ' voxels, so this ROI will be skipped']);
 								fprintf('%s\n\n', 'Consider reducing the minimal ROI volume by lowering x.S.MinimalROIVolume to also evaluate this ROI');
 							end
@@ -494,21 +498,15 @@ for iSubject=1:x.dataset.nSubjects
 
 			if x.S.bSubjectSpecificROI
 				x.S.InputMasks = zeros(NewSize);
-				for iMask = 1:size(InputMasksTemp,4)
-					for iROI = 1:size(InputMasksTemp,5)
-						x.S.InputMasks(:,:,:,(iMask-1)*3+1, iROI) = InputMasksTemp(:,:,:,iMask,iROI);
-						x.S.InputMasks(:,:,:,(iMask-1)*3+2, iROI) = InputMasksTemp(:,:,:,iMask,iROI) .* x.LeftMask;
-						x.S.InputMasks(:,:,:,(iMask-1)*3+3, iROI) = InputMasksTemp(:,:,:,iMask,iROI) .* (~x.LeftMask);
-					end
-				end
-			else
-				x.S.InputMasks = false(NewSize);
-				for iMask = 1:size(InputMasksTemp,4)
-					for iROI = 1:size(InputMasksTemp,5)
-						x.S.InputMasks(:,:,:,(iMask-1)*3+1, iROI) = InputMasksTemp(:,:,:,iMask,iROI);
-						x.S.InputMasks(:,:,:,(iMask-1)*3+2, iROI) = InputMasksTemp(:,:,:,iMask,iROI) & x.LeftMask;
-						x.S.InputMasks(:,:,:,(iMask-1)*3+3, iROI) = InputMasksTemp(:,:,:,iMask,iROI) & (~x.LeftMask);
-					end
+            else
+                x.S.InputMasks = false(NewSize);
+            end
+
+			for iMask = 1:size(InputMasksTemp,4)
+				for iSubject = 1:size(InputMasksTemp,5) % in case of subject-specific masks, the 5th dimension is subject
+					x.S.InputMasks(:,:,:,(iMask-1)*3+1, iSubject) = InputMasksTemp(:,:,:,iMask, iSubject);
+					x.S.InputMasks(:,:,:,(iMask-1)*3+2, iSubject) = InputMasksTemp(:,:,:,iMask, iSubject) .* x.LeftMask;
+					x.S.InputMasks(:,:,:,(iMask-1)*3+3, iSubject) = InputMasksTemp(:,:,:,iMask, iSubject) .* (~x.LeftMask);
 				end
 			end
 
