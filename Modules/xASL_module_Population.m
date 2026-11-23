@@ -418,7 +418,8 @@ if ~x.mutex.HasState(StateName{8})
                         
                         for iKey=1:length(tableROI)
                             dataIn = [tableSubjRuns tableValues(:, iKey)];
-                            keyBIDS = [regExp_Stats{iStat} '_' key_Type{iType} '_' tableROI{iKey} '_' regExp_PVC{iPVC}];
+                            pvcColumnLabel = strrep(regExp_PVC{iPVC}, '-', '');
+                            keyBIDS = [regExp_Stats{iStat} '_' key_Type{iType} '_' tableROI{iKey} '_' pvcColumnLabel];
                             xASL_bids_Add2ParticipantsTSV(dataIn, keyBIDS, x);
                         end
                     end
