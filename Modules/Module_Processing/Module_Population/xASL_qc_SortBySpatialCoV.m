@@ -60,10 +60,14 @@ end
 %% Select the most recent version
 for iFile=1:length(FileList)
     dateToken = regexp(FileList{iFile}, '_n-\d+_(\d{2}[A-Za-z]{3}\d{4})_PVC-\d+(?:\.tsv)?$', 'tokens', 'once');
-    fileDates(iFile) = datetime(dateToken{1}, 'InputFormat', 'ddMMMyyyy', 'Locale', 'en_US');
+    try
+        fileDates(iFile) = datetime(dateToken{1}, 'InputFormat', 'ddMMMyyyy', 'Locale', 'en_US');
+    catch
+        warning(['Invalid date in filename: ' FileList{iFile}]);
+    end
 end
 
-validIndices = find(~isnat(fileDates)); % Exclude filenames without a valid date
+validIndices = find(~ismissing(fileDates)); % Exclude filenames without a valid date
 if isempty(validIndices)
     warning('No spatial CoV TSV files with valid filename dates found.');
     return;
