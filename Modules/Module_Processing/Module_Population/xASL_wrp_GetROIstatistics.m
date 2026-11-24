@@ -171,7 +171,7 @@ else
     x.S.unit = 'au';
 end
 
-Statistics = {'CNR_InclVasc' 'CNR_ExclVasc' 'VolumeROI_InclVasc' 'VolumeROI_ExclVasc' 'median' 'mean' 'CoV' 'sum' 'CoV4D_mean' 'CoV4D_sd' 'diffCoV4D_mean' 'diffCoV4D_sd' 'LabelSliceLocation4D_tMean'...
+Statistics = {'CNR_CoV' 'CNR_Mean' 'VolumeROI_CoV' 'VolumeROI_Mean' 'median' 'mean' 'CoV' 'sum' 'CoV4D_mean' 'CoV4D_sd' 'diffCoV4D_mean' 'diffCoV4D_sd' 'LabelSliceLocation4D_tMean'...
     'LabelSliceLocation4D_tSD' 'LabelsCoV_SliceLocation_tMean' 'LabelsCoV_SliceLocation_tSD' 'SlicetSD_SliceLocation'};
 
 for iStat=1:length(Statistics)
