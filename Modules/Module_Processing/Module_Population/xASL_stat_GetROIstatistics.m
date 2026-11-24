@@ -521,6 +521,40 @@ for iSubject=1:x.dataset.nSubjects
             SubjectSpecificMasks = x.S.InputMasks(:,:,:,:,1);
 	    end
 
+        %% Initialize all values, also for missing subjects & ROIs
+        % If all subjects/ROIs were missing (or no subjects have a specific image), this will be skipped in xASL_wrp_GetROIstatistics
+		% Initialize output data matrix [subject/session ROI-statistics] with NaNs
+        nROIs = size(SubjectSpecificMasks,4);
+        
+        x.S.DAT_sum_PVC0(SubjSess,1:nROIs) = NaN;
+
+        x.S.DAT_mean_PVC0(SubjSess,1:nROIs) = NaN;
+	    x.S.DAT_mean_PVC1(SubjSess,1:nROIs) = NaN;
+	    x.S.DAT_mean_PVC2(SubjSess,1:nROIs) = NaN;
+
+        x.S.DAT_median_PVC0(SubjSess,1:nROIs) = NaN;
+        
+        x.S.DAT_CoV_PVC0(SubjSess,1:nROIs) = NaN;
+	    x.S.DAT_CoV_PVC2(SubjSess,1:nROIs) = NaN;
+
+        x.S.DAT_VolumeROI_CoV(SubjSess,1:nROIs) = NaN;
+        x.S.DAT_VolumeROI_Mean(SubjSess,1:nROIs) = NaN;
+        x.S.DAT_CNR_CoV(SubjSess,1:nROIs) = NaN;
+        x.S.DAT_CNR_Mean(SubjSess,1:nROIs) = NaN;
+
+        x.S.DAT_Diff_CoV_PVC0(SubjSess,1:nROIs) = NaN;
+        x.S.DAT_Diff_CoV_PVC1(SubjSess,1:nROIs) = NaN;
+        x.S.DAT_Diff_CoV_PVC2(SubjSess,1:nROIs) = NaN;
+
+        x.S.DAT_CoV4D_mean_PVC0(SubjSess,1:nROIs) = NaN;
+        x.S.DAT_CoV4D_sd_PVC0(SubjSess,1:nROIs) = NaN;
+        x.S.DAT_diffCoV4D_mean_PVC0(SubjSess,1:nROIs) = NaN;
+        x.S.DAT_diffCoV4D_sd_PVC0(SubjSess,1:nROIs) = NaN;
+
+        x.S.DAT_LabelSliceLocation4D_tMean_PVC0(SubjSess,1:nROIs) = NaN;
+        x.S.DAT_LabelSliceLocation4D_tSD_PVC0(SubjSess,1:nROIs) = NaN;
+        x.S.DAT_LabelsCoV_SliceLocation_tSD_PVC0(SubjSess,1:nROIs) = NaN;
+        x.S.DAT_SlicetSD_SliceLocation_PVC0(SubjSess,1:nROIs) = NaN;
 
 		if iSess == 1
 			xASL_TrackProgress(iSubject, x.dataset.nSubjects);
@@ -688,37 +722,6 @@ for iSubject=1:x.dataset.nSubjects
         % Now fill with data
 		for iROI=1:size(SubjectSpecificMasks,4)
 
-    		% Initialize output data matrix [subject/session ROI-statistics] with NaNs
-            x.S.DAT_sum_PVC0(SubjSess,iROI) = NaN;
-    
-            x.S.DAT_mean_PVC0(SubjSess,iROI) = NaN;
-		    x.S.DAT_mean_PVC1(SubjSess,iROI) = NaN;
-		    x.S.DAT_mean_PVC2(SubjSess,iROI) = NaN;
-    
-            x.S.DAT_median_PVC0(SubjSess,iROI) = NaN;
-            
-            x.S.DAT_CoV_PVC0(SubjSess,iROI) = NaN;
-		    x.S.DAT_CoV_PVC2(SubjSess,iROI) = NaN;
-    
-            x.S.DAT_VolumeROI_CoV(SubjSess,iROI) = NaN;
-            x.S.DAT_VolumeROI_Mean(SubjSess,iROI) = NaN;
-            x.S.DAT_CNR_CoV(SubjSess,iROI) = NaN;
-            x.S.DAT_CNR_Mean(SubjSess,iROI) = NaN;
-    
-            x.S.DAT_Diff_CoV_PVC0(SubjSess,iROI) = NaN;
-            x.S.DAT_Diff_CoV_PVC1(SubjSess,iROI) = NaN;
-            x.S.DAT_Diff_CoV_PVC2(SubjSess,iROI) = NaN;
-    
-            x.S.DAT_CoV4D_mean_PVC0(SubjSess, iROI) = NaN;
-            x.S.DAT_CoV4D_sd_PVC0(SubjSess, iROI) = NaN;
-            x.S.DAT_diffCoV4D_mean_PVC0(SubjSess, iROI) = NaN;
-            x.S.DAT_diffCoV4D_sd_PVC0(SubjSess, iROI) = NaN;
-    
-            x.S.DAT_LabelSliceLocation4D_tMean_PVC0(SubjSess, iROI) = NaN;
-            x.S.DAT_LabelSliceLocation4D_tSD_PVC0(SubjSess, iROI) = NaN;
-            x.S.DAT_LabelsCoV_SliceLocation_tSD_PVC0(SubjSess, iROI) = NaN;
-            x.S.DAT_SlicetSD_SliceLocation_PVC0(SubjSess, iROI) = NaN;
-            
             % Swap tissue compartments if needed (this is easier scripting-wise)
 			%
 			% With ASL normally we are interested in GM only
