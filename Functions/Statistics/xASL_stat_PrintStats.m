@@ -153,7 +153,7 @@ else
     SubjectExpression = x.dataset.subjectRegexp;
     if strcmp(SubjectExpression(end), '$') % remove this for allowing an ASL suffix
         SubjectExpression = SubjectExpression(1:end-1);
-    end
+	end
 
     printedSessionN = 0;
     
@@ -175,22 +175,25 @@ else
         if isempty(startSubjectIndex) || isempty(endSubjectIndex)
             fprintf(2, ['Could not find subject for ' x.S.SubjectSessionID{iSubjSess} '\n']);
 		else
-			% Look also for the session ID including the ASL_\d substring
-			[startSessionIndex, endSessionIndex] = regexp(x.S.SubjectSessionID{iSubjSess}, 'ASL_\d+');
+			% Look also for the session ID including the ASL_\d+ substring at the end of the subject name
+			[startSessionIndex, endSessionIndex] = regexp(x.S.SubjectSessionID{iSubjSess}, 'ASL_\d+$');
             
             if isempty(startSessionIndex) || isempty(endSessionIndex)
 				% If the sessionID was not found, then report a warning and use the entire expression for subjectID
                 fprintf(2, ['Could not find session for ' x.S.SubjectSessionID{iSubjSess} '\n']);
 			else
 				% If session ID was identified, we have to double-check that session ID is not part of subject ID and exclude if necessary
-				SubjectID = x.S.SubjectSessionID{iSubjSess}(startSubjectIndex:min(endSubjectIndex(1), startSessionIndex-2));
+				endSubjectIndexReal = min(max(endSubjectIndex), startSessionIndex-2); % Calculate the last index of the subjectID so that it doesn't overlap with sessionID
+				SubjectID = x.S.SubjectSessionID{iSubjSess}(1:endSubjectIndexReal);% Note that the session name always has to start at the start of the string
 				
                 % Fix visit suffix
-                [StartIndexTemp, EndIndexTemp] = find(regexp(SubjectID, '_\d+'));
+                [StartIndexTemp, EndIndexTemp] = regexp(SubjectID, '_\d+$');
                 if isempty(StartIndexTemp) && isempty(EndIndexTemp)
-					[StartIndexTemp, EndIndexTemp] = regexp(x.S.SubjectSessionID{iSubjSess}(endSubjectIndex(1)+1:startSessionIndex-2), '_\d+');
+					% In case there is no visit suffix at the end of the subjectID, we have to include it - look inside the unused part of the name
+					[StartIndexTemp, EndIndexTemp] = regexp(x.S.SubjectSessionID{iSubjSess}(endSubjectIndexReal:startSessionIndex-2), '_\d+');
                     if ~isempty(StartIndexTemp)
-						SubjectID = [SubjectID x.S.SubjectSessionID{iSubjSess}(endSubjectIndex(1)+StartIndexTemp:endSubjectIndex(1)+EndIndexTemp)];
+						% In case a number is found, add the last occurence
+						SubjectID = [SubjectID x.S.SubjectSessionID{iSubjSess}(endSubjectIndexReal-1+(max(StartIndexTemp):max(EndIndexTemp)))];
                     end
                 end
                 
