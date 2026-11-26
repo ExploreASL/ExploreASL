@@ -188,9 +188,9 @@ else
                 % Fix visit suffix
                 [StartIndexTemp, EndIndexTemp] = find(regexp(SubjectID, '_\d+'));
                 if isempty(StartIndexTemp) && isempty(EndIndexTemp)
-                    [StartIndexTemp, EndIndexTemp] = regexp(x.S.SubjectSessionID{iSubjSess}(endSubjectIndex+1:startSessionIndex-2), '_\d+');
+					[StartIndexTemp, EndIndexTemp] = regexp(x.S.SubjectSessionID{iSubjSess}(endSubjectIndex(1)+1:startSessionIndex-2), '_\d+');
                     if ~isempty(StartIndexTemp)
-                        SubjectID = [SubjectID x.S.SubjectSessionID{iSubjSess}(endSubjectIndex+StartIndexTemp:endSubjectIndex+EndIndexTemp)];
+						SubjectID = [SubjectID x.S.SubjectSessionID{iSubjSess}(endSubjectIndex(1)+StartIndexTemp:endSubjectIndex(1)+EndIndexTemp)];
                     end
                 end
                 
