@@ -183,7 +183,7 @@ else
                 fprintf(2, ['Could not find session for ' x.S.SubjectSessionID{iSubjSess} '\n']);
 			else
 				% If session ID was identified, we have to double-check that session ID is not part of subject ID and exclude if necessary
-				SubjectID = x.S.SubjectSessionID{iSubjSess}(startSubjectIndex:min(endSubjectIndex, startSessionIndex-2));
+				SubjectID = x.S.SubjectSessionID{iSubjSess}(startSubjectIndex:min(endSubjectIndex(1), startSessionIndex-2));
 				
                 % Fix visit suffix
                 [StartIndexTemp, EndIndexTemp] = find(regexp(SubjectID, '_\d+'));
