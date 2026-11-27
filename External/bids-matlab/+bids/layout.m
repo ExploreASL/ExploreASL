@@ -74,8 +74,15 @@ function BIDS = layout(root, tolerant)
 
   % -Dataset description
   % ==========================================================================
+  datasetLinks = struct();
   try
-    BIDS.description = bids.util.jsondecode(fullfile(BIDS.dir, 'dataset_description.json'));
+    descriptionFile = fullfile(BIDS.dir, 'dataset_description.json');
+    BIDS.description = bids.util.jsondecode(descriptionFile);
+    if isfield(BIDS.description, 'DatasetLinks')
+      % Keep dataset names intact; jsondecode replaces hyphens with underscores.
+      description = spm_jsonread(descriptionFile, struct('replacementStyle', 'nop'));
+      datasetLinks = description.DatasetLinks;
+    end
   catch err
     msg = sprintf('BIDS dataset description could not be read: %s', err.message);
     tolerant_message(tolerant, msg);
@@ -146,7 +153,7 @@ function BIDS = layout(root, tolerant)
   sessTotal = cell(0);
   % Because sessions can differ between subjects,
   % create a separate list for total sessions
-  
+
   fprintf('Parsing BIDS scans:    ');
   for iSub = 1:numel(sub)
       xASL_TrackProgress(iSub, numel(sub));
@@ -158,16 +165,16 @@ function BIDS = layout(root, tolerant)
       
 	      for iSess = 1:numel(sess)
 		      if isempty(BIDS.subjects)
-                 BIDS.subjects = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
+                 BIDS.subjects = parse_subject(BIDS.dir, sub{iSub}, sess{iSess}, datasetLinks);
               else
-                 BIDS.subjects(end + 1) = parse_subject(BIDS.dir, sub{iSub}, sess{iSess});
+                 BIDS.subjects(end + 1) = parse_subject(BIDS.dir, sub{iSub}, sess{iSess}, datasetLinks);
 		      end
 		      
 		      % Add session name to the total session list
-              if ~isempty(sess{iSess})
-                sessTotal{end+1,1} = sess{iSess};
-              end
+          if ~isempty(sess{iSess})
+            sessTotal{end+1,1} = sess{iSess};
           end
+        end
       catch ME
           warning(['BIDS matlab error for ' sub{iSub}]);
           fprintf('%s\n', ME.message);
@@ -194,7 +201,7 @@ end
 % ==========================================================================
 % -Parse a subject's directory
 % ==========================================================================
-function subject = parse_subject(pth, subjname, sesname)
+function subject = parse_subject(pth, subjname, sesname, datasetLinks)
 
   % For each modality (anat, func, eeg...) all the files from the
   % corresponding directory are listed and their filenames parsed with extra
@@ -221,7 +228,7 @@ function subject = parse_subject(pth, subjname, sesname)
   subject = parse_meg(subject);
   subject = parse_beh(subject);
   subject = parse_dwi(subject);
-  subject = parse_perf(subject);
+  subject = parse_perf(subject, pth, datasetLinks);
   subject = parse_pet(subject);
   subject = parse_ieeg(subject);
 
@@ -290,12 +297,17 @@ function subject = parse_func(subject)
 end
 
 
-function subject = parse_perf(subject)
+function subject = parse_perf(subject, bidsRoot, datasetLinks)
     
     % --------------------------------------------------------------------------
     % -ASL perfusion imaging data
     % --------------------------------------------------------------------------
     pth = fullfile(subject.path, 'perf');
+    % IntendedFor paths start at the participant directory.
+    subjectDir = subject.path;
+    if ~isempty(subject.session)
+        subjectDir = fileparts(subjectDir);
+    end
     if exist(pth, 'dir')
         fileList = bids.internal.file_utils('List', pth, ...
             sprintf('^%s.*asl\\.nii(\\.gz)?$', subject.name));
@@ -527,7 +539,8 @@ function subject = parse_perf(subject)
                 % Manage JSON-sidecar metadata (REQUIRED)
                 % ---------------------------
                 metafile = fullfile(pth, bids.internal.file_utils(fb, 'ext', 'json'));
-                
+                subject.perf(j).intended_for = {};
+
                 if ~exist(metafile, 'file')
                     WarningID = ['BIDSLAYOUT:Missing' metafile];
                     warning(WarningID, ['Missing: ' metafile]); % will print this warning unless WarningID has been set OFF
@@ -540,33 +553,49 @@ function subject = parse_perf(subject)
                     % Manage intended-for (REQUIRED)
                     % ---------------------------                    
                     
-                    % Get all NIfTIs that this m0scan is intended for
+                    % Start fresh for each M0; JSON accepts one path or an array.
+                    paths = {};
                     if ~isfield(subject.perf(j).meta, 'IntendedFor')
                         warning(['Missing field IntendedFor in ' metafile]);
-                    elseif ischar(subject.perf(j).meta.IntendedFor)
-                        path_intended_for{1} = subject.perf(j).meta.IntendedFor;
-                    elseif isstruct(subject.perf(j).meta.IntendedFor)
-                        for iPath=1:length(subject.perf(j).meta.IntendedFor)
-                            path_intended_for{iPath} = subject.perf(j).meta.IntendedFor(iPath);
+                    else
+                        paths = subject.perf(j).meta.IntendedFor;
+                        if ischar(paths)
+                            paths = {paths};
+                        elseif ~iscellstr(paths) && ~isempty(paths)
+                            warning('BIDSLAYOUT:InvalidIntendedForType', ...
+                                'IntendedFor must be a string or an array of strings: %s', metafile);
+                            paths = {};
                         end
                     end
-                    
-                    for iPath=1:length(path_intended_for)
-                        % check if this NIfTI is not missing
-                        if ~exist(fullfile(fileparts(pth), path_intended_for{iPath}), 'file')
-                            WarningID = 'BIDSLAYOUT:MissingIntendedForField';
-                            warning(WarningID, ['Missing: ' fullfile(fileparts(pth), path_intended_for{iPath})]);  % will print this warning unless WarningID has been set OFF
-                            warning('off', WarningID); % to print this warning only once
+
+                    for iPath = 1:numel(paths)
+                        isBidsUri = strncmpi(paths{iPath}, 'bids:', 5);
+                        if isBidsUri
+                            target = resolve_bids_uri(paths{iPath}, bidsRoot, datasetLinks);
+                            if isempty(target)
+                                continue
+                            end
                         else
-                            % also check that this NIfTI aims to the same m0scan
-                            [~, path2check, ext2check] = fileparts(path_intended_for{iPath});
-                            filename_found = max(arrayfun(@(x) strcmp(x.filename, [path2check ext2check]), subject.perf));
+                            target = fullfile(subjectDir, paths{iPath});
+                            % ExploreASL also writes session-relative paths.
+                            if ~exist(target, 'file') && exist(fullfile(subject.path, paths{iPath}), 'file')
+                                target = fullfile(subject.path, paths{iPath});
+                            end
+                        end
+                        if exist(target, 'file') ~= 2
+                            WarningID = 'BIDSLAYOUT:MissingIntendedForField';
+                            warning(WarningID, ['Missing: ' target]);
+                            warning('off', WarningID);
+                        else
+                            [~, path2check, ext2check] = fileparts(target);
+                            % URI targets can belong to another session or dataset.
+                            filename_found = isBidsUri || any(arrayfun(@(x) strcmp(x.filename, [path2check ext2check]), subject.perf));
                             if ~filename_found
                                 WarningID = 'BIDSLAYOUT:MissingIntendedForNifTIFile';
-                                warning(WarningID, ['Did not find NIfTI for which is intended: ' subject.perf(j).filename]); % will print this warning unless WarningID has been set OFF
+                                warning(WarningID, ['Did not find NIfTI for which is intended: ' subject.perf(j).filename]);
                                 warning('off', WarningID); % to print this warning only once
                             else
-                                subject.perf(j).intended_for = path_intended_for{iPath};
+                                subject.perf(j).intended_for{end+1} = target;
                             end
                         end
                     end
@@ -577,6 +606,57 @@ function subject = parse_perf(subject)
        
     end % if exist(pth, 'dir')
 end % function subject = parse_perf(subject)
+
+function target = resolve_bids_uri(uri, bidsRoot, datasetLinks)
+    target = '';
+    parts = regexpi(uri, '^bids:(?<dataset>[^:]*):(?<path>[^/\\].*)$', 'names', 'once');
+    if isempty(parts)
+        warning('BIDSLAYOUT:InvalidBidsUri', 'Invalid BIDS URI: %s', uri);
+        return
+    end
+
+    baseDir = bidsRoot;
+    if ~isempty(parts.dataset)
+        if ~isstruct(datasetLinks) || ~isfield(datasetLinks, parts.dataset)
+            warning('BIDSLAYOUT:UnknownDatasetLink', 'DatasetLinks has no entry for: %s', parts.dataset);
+            return
+        end
+        link = datasetLinks.(parts.dataset);
+        if ~ischar(link) || isempty(link)
+            warning('BIDSLAYOUT:InvalidDatasetLink', 'Invalid DatasetLinks entry: %s', parts.dataset);
+            return
+        end
+        if strncmpi(link, 'file:', 5)
+            try
+                % Decode escaped characters without a JVM.
+                fileUri = matlab.net.URI(link, 'literal');
+                baseDir = char(join(fileUri.Path, '/'));
+                if isempty(baseDir)
+                    baseDir = char(fileUri.EncodedPath);
+                end
+                if strlength(fileUri.EncodedAuthority) ~= 0 || ...
+                        ~isempty(regexp(link, '[?#]|%(?![0-9A-Fa-f]{2})', 'once')) || ...
+                        ~strncmp(baseDir, '/', 1)
+                    error('Expected an absolute local file URI.');
+                end
+                if ispc
+                    % Windows file URIs have a slash before the drive letter.
+                    baseDir = regexprep(baseDir, '^/([A-Za-z]:/)', '$1');
+                end
+            catch
+                warning('BIDSLAYOUT:InvalidDatasetLink', 'Invalid local file URI: %s', link);
+                return
+            end
+        elseif ~isempty(regexp(link, '^([A-Za-z][A-Za-z0-9+.-]*:|//)', 'once'))
+            % Resolve local datasets only; do not fetch remote data.
+            warning('BIDSLAYOUT:UnresolvedDatasetLink', 'Cannot resolve dataset locally: %s', link);
+            return
+        else
+            baseDir = fullfile(bidsRoot, link);
+        end
+    end
+    target = fullfile(baseDir, parts.path);
+end
 
 
 
