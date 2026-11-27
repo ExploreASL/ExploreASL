@@ -172,12 +172,12 @@ end
 Size1 = sum(x.S.masks.WBmask(:));
 
 % Create parenchyma mask for QC purposes
-pathGM = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii');
-pathWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii');
-imGM = xASL_io_Nifti2Im(pathGM);
-imWM = xASL_io_Nifti2Im(pathWM);
+pathTemplateGM = fullfile(x.D.MapsSPMmodifiedDir, 'rc1T1.nii');
+pathTemplateWM = fullfile(x.D.MapsSPMmodifiedDir, 'rc2T1.nii');
+imTemplateGM = xASL_io_Nifti2Im(pathTemplateGM);
+imTemplateWM = xASL_io_Nifti2Im(pathTemplateWM);
 
-x.S.masks.Parenchyma = (imGM+imWM)>0.5;
+x.S.masks.Parenchyma = (imTemplateGM+imTemplateWM)>0.5;
 x.S.masks.Parenchyma(:,:,1:15) = 0; % remove the lower end of the cerebellum
 
 
