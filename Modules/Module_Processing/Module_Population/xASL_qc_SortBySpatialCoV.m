@@ -50,7 +50,7 @@ if nargin<3 || isempty(Threshold2)
 end
 
 %% Find spatial CoV stats
-FileList = xASL_adm_GetFileList(x.S.StatsDir, ['(?i)^CoV_qCBF_GM-Thrsh0\.5_Space-Standard_Total_n-' num2str(x.dataset.nSubjects) '_.*PVC-0\.tsv$'], 'List',[0 Inf]);
+FileList = xASL_adm_GetFileList(x.S.StatsDir, ['(?i)^CoV_qCBF_GM-Thrsh0.\d_Space-Standard_Total_n-' num2str(x.dataset.nSubjects) '_.*PVC-0\.tsv$'], 'List',[0 Inf]);
 
 if isempty(FileList)
     warning('Couldnt find spatial CoV information! File missing, skipping...');
@@ -59,6 +59,9 @@ end
 
 %% Select the most recent version
 for iFile=1:length(FileList)
+    filethreshold{iFile} = regexp(FileList{iFile}, 'Thrsh(\d+\.\d)', 'tokens', 'once');
+    isPreferredThreshold(iFile) = str2double(filethreshold{iFile}) == 0.5;
+    
     dateToken = regexp(FileList{iFile}, '_n-\d+_(\d{2}[A-Za-z]{3}\d{4})_PVC-\d+(?:\.tsv)?$', 'tokens', 'once');
     try
         fileDates(iFile) = datetime(dateToken{1}, 'InputFormat', 'ddMMMyyyy', 'Locale', 'en_US');
@@ -71,6 +74,11 @@ validIndices = find(~ismissing(fileDates)); % Exclude filenames without a valid 
 if isempty(validIndices)
     warning('No spatial CoV TSV files with valid filename dates found.');
     return;
+end
+
+if any(validIndices(:) & isPreferredThreshold(:))
+    % otherwise, if there is no preferred threshold (0.5), then we keep using the files we have
+    validIndices = find(validFiles & isPreferred); 
 end
 
 [~, iLatest] = max(fileDates(validIndices));
