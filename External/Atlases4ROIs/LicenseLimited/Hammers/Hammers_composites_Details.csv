@@ -1,0 +1,9 @@
+label,name,hemisphere,ROIids,voxels,volume_ml
+1,occipital,bilateral,[23 24 65 66 67 68],57693,194.713875
+2,parietal,bilateral,[27 28 33 34 63 64],73721,248.808375
+3,frontal,bilateral,[29 30 55 56 59 60],107519,362.876625
+4,insula,bilateral,[21 22],12484,42.1335
+5,striatum,bilateral,[35 36 37 38 39 40],6755,22.798125
+6,thalamus,bilateral,[41 42],6241,21.063375
+7,cerebellum,bilateral,[17 18],57611,194.437125
+8,brainstem,bilateral,[19 20],11334,38.25225

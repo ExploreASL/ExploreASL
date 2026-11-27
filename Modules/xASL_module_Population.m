@@ -74,8 +74,16 @@ elseif ~isfield(x.S, 'Atlases') || ~isfield(x.S, 'TissueMasking') || length(x.S.
 end
 
 if ~isfield(x.S, 'TissueThreshold')
-	% The default threshold is 0.7
-	x.S.TissueThreshold = ones(1,length(x.S.TissueMasking)) * 0.7;
+	% Default to thresholds 0.5 & 0.7
+    % 0.5 works better for thin cortices: more available GM SNR & less bias towards thicker GM parts
+    % 0.7 is more accurate, and according to literature
+    % Current solution is to provide both
+
+	x.S.Atlases(end+1:end+length(x.S.Atlases)) = x.S.Atlases;
+    x.S.TissueMasking(end+1:end+length(x.S.TissueMasking)) = x.S.TissueMasking;
+    
+    x.S.TissueThreshold([1:length(x.S.TissueMasking)/2]) = 0.5;
+    x.S.TissueThreshold([length(x.S.TissueMasking)/2+1:length(x.S.TissueMasking)]) = 0.7;
 elseif length(x.S.TissueMasking) ~= length(x.S.TissueThreshold)
 	error('x.S.TissueThreshold has to match the length of x.S.TissueMasking');
 elseif max(x.S.TissueThreshold) > 1
@@ -385,13 +393,14 @@ if ~x.mutex.HasState(StateName{8})
     regExp_Stats = {'mean' 'CoV'};
     regExp_Atlas = {'Total' 'DeepWM' 'Tatu_ACA_MCA_PCA'};
     regExp_Tissue = {'GM' 'WM' 'GM'};
-    regExp_PVC = {'PVC0' 'PVC2'};
+    regExp_PVC = {'PVC-0' 'PVC-2'};
+    dateString = strrep(date, '-', '');
 
     for iType=1:length(regExp_Type)
         for iStat=1:length(regExp_Stats)
             for iAtlas=1:length(regExp_Atlas)
                 for iPVC=1:length(regExp_PVC)
-                    regExp = [regExp_Stats{iStat} '_' regExp_Type{iType} '.*StandardSpace_' regExp_Atlas{iAtlas} regExp_Tissue{iAtlas} '_n=' num2str(x.dataset.nSubjects) '_' date '_' regExp_PVC{iPVC} '\.tsv'];
+                    regExp = ['^' regExp_Stats{iStat} '_' regExp_Type{iType} '.*Thrsh0\.5_Space-Standard_' regExp_Atlas{iAtlas} '_n-' num2str(x.dataset.nSubjects) '_' dateString '_' regExp_PVC{iPVC} '\.tsv$'];
                     fList = xASL_adm_GetFileList(fullfile(x.D.PopDir, 'Stats'), regExp, 'FPList');
                     if length(fList)>1
                         warning('Multiple stats files found to be added to participants.tsv, using the first only');
@@ -409,7 +418,8 @@ if ~x.mutex.HasState(StateName{8})
                         
                         for iKey=1:length(tableROI)
                             dataIn = [tableSubjRuns tableValues(:, iKey)];
-                            keyBIDS = [regExp_Stats{iStat} '_' key_Type{iType} '_' tableROI{iKey} '_' regExp_PVC{iPVC}];
+                            pvcColumnLabel = strrep(regExp_PVC{iPVC}, '-', '');
+                            keyBIDS = [regExp_Stats{iStat} '_' key_Type{iType} '_' tableROI{iKey} '_' pvcColumnLabel];
                             xASL_bids_Add2ParticipantsTSV(dataIn, keyBIDS, x);
                         end
                     end

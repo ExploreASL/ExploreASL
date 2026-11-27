@@ -50,16 +50,41 @@ if nargin<3 || isempty(Threshold2)
 end
 
 %% Find spatial CoV stats
-FileList = xASL_adm_GetFileList(x.S.StatsDir, ['(?i).*CoV_qCBF_GM_PV0.7_StandardSpace_Total_n=' num2str(x.dataset.nSubjects) '_.*PVC0\.tsv$'], 'List',[0 Inf]);
+FileList = xASL_adm_GetFileList(x.S.StatsDir, ['(?i)^CoV_qCBF_GM-Thrsh0.\d_Space-Standard_Total_n-' num2str(x.dataset.nSubjects) '_.*PVC-0\.tsv$'], 'List',[0 Inf]);
 
 if isempty(FileList)
     warning('Couldnt find spatial CoV information! File missing, skipping...');
     return;
 end
 
-% Now we take the most recent version
-PathTSV = fullfile(x.S.StatsDir, FileList{end});
+%% Select the most recent version
+for iFile=1:length(FileList)
+    filethreshold{iFile} = regexp(FileList{iFile}, 'Thrsh(\d+\.\d)', 'tokens', 'once');
+    isPreferredThreshold(iFile) = str2double(filethreshold{iFile}) == 0.5;
+    
+    dateToken = regexp(FileList{iFile}, '_n-\d+_(\d{2}[A-Za-z]{3}\d{4})_PVC-\d+(?:\.tsv)?$', 'tokens', 'once');
+    try
+        fileDates(iFile) = datetime(dateToken{1}, 'InputFormat', 'ddMMMyyyy', 'Locale', 'en_US');
+    catch
+        warning(['Invalid date in filename: ' FileList{iFile}]);
+    end
+end
 
+validIndices = find(~ismissing(fileDates)); % Exclude filenames without a valid date
+if isempty(validIndices)
+    warning('No spatial CoV TSV files with valid filename dates found.');
+    return;
+end
+
+if any(validIndices(:) & isPreferredThreshold(:))
+    % otherwise, if there is no preferred threshold (0.5), then we keep using the files we have
+    validIndices = find(validFiles & isPreferred); 
+end
+
+[~, iLatest] = max(fileDates(validIndices));
+PathTSV = fullfile(x.S.StatsDir, FileList{validIndices(iLatest)});
+
+%% Get sCoV sorting from the TSV file
 [~, CellTSV] = xASL_bids_csv2tsvReadWrite(PathTSV);
 subjectList = CellTSV(3:end,1);
 
@@ -75,6 +100,12 @@ if isempty(regexpi(subjectList{1}, 'ASL_\d+'))
     end
 else
     subjectSessionList = subjectList;
+end
+
+columnHeaders = CellTSV(1,:);
+
+if ~strcmp(CellTSV{1,end-2}, 'Total_GM_B')
+    warning('Spatial CoV column not found, spatial CoV sorting may go wrong');
 end
 
 sCoVList = CellTSV(3:end,end-2);

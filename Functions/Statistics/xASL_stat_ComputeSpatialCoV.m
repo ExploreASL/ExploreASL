@@ -43,6 +43,11 @@ function [sCoVPVC0, sCoVPVC2] = xASL_stat_ComputeSpatialCoV(imCBF, imMask, nMinS
 
 
 %% 1. Admin
+
+% Initialize defaults in case function crashes
+sCoVPVC0  = NaN;
+sCoVPVC2  = NaN;
+
 if nargin < 1
 	error('imCBF is a required parameter');
 end
@@ -74,7 +79,6 @@ if nargout<1
 end
 
 if nargout>=2 && bOutput(2)
-	sCoVPVC2 = NaN;
 	% If running PVC, then need imPVprimary and imPVsecondary of the same size as imCBF
 	if ~isequal(size(imCBF),size(imPVprimary)) || ~isequal(size(imCBF),size(imPVsecondary))
 		warning('When running PVC, need imPVprimary and imPVsecondary of the same size as imCBF');
@@ -106,8 +110,6 @@ end
 maskSize = sum(imMask, 'all');
 
 if maskSize < nMinSize || maskSize <= 0 
-	sCoVPVC0  = NaN;
-    sCoVPVC2  = NaN;
     return;
 end
 
@@ -122,5 +124,5 @@ if bOutput(2)
     sCoVPVC2 = sCoVPVC0./PseudoCoV;
 end
 
-end
 
+end

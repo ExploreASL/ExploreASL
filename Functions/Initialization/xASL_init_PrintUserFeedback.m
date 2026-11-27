@@ -48,7 +48,7 @@ function xASL_init_PrintUserFeedback(x, outputArguments, currentState)
             fprintf('%s\n', 'If you use ExploreASL for commercial purposes, some atlases may require a license');
             fprintf('%s\n', 'The same is valid for the use of FSL tools, such as TopUp, BASIL, and FABBER');
             fprintf('\n');
-            fprintf('%s\n', 'Note that too small ROIs (by default <1 mL) are not processed and assigned NaNs');
+            fprintf('%s\n', 'Note that too small ROIs can generate spurious results, please check ROI volume and CNR');
             fprintf('\n');
             
         % Only print final feedback if data import or processing was performed

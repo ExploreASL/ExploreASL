@@ -58,10 +58,6 @@ if ~isfield(x.S,'IsVolume') || isempty(x.S.IsVolume)
     x.S.IsVolume = false; % default
 end
 
-if isfield(x.D,'PopDir') || ~isempty(x.D.PopDir)
-    x.S.InputDataDir = x.D.PopDir; 
-end
-
 if ~isfield(x.S,'InputNativeSpace') || isempty(x.S.InputNativeSpace)
 	x.S.InputNativeSpace = 0;
 end
@@ -140,14 +136,14 @@ else
 end
 
 % Add subject/run-wise input data (e.g., qCBF) and subject/run-wise tissue mask (e.g., GM or GM+WM)
-x.S.output_ID = [x.S.output_ID x.S.InputDataStr '_' strrep(x.S.TissueMaskingLocal,'+','_') '_PV' num2str(x.S.TissueThresholdLocal)];
+x.S.output_ID = [x.S.output_ID x.S.InputDataStr '_' strrep(x.S.TissueMaskingLocal,'+','_') '-Thrsh' num2str(x.S.TissueThresholdLocal)];
 
 if x.S.InputNativeSpace
-	x.S.output_ID = [x.S.output_ID '_NativeSpace'];
+	x.S.output_ID = [x.S.output_ID '_Space-Native'];
 else
-	x.S.output_ID = [x.S.output_ID '_StandardSpace'];
+	x.S.output_ID = [x.S.output_ID '_Space-Standard'];
 end
-x.S.output_ID = [x.S.output_ID '_' Ffile '_n=' num2str(x.dataset.nSubjects) '_' date];
+x.S.output_ID = [x.S.output_ID '_' Ffile '_n-' num2str(x.dataset.nSubjects) '_' strrep(date, '-', '')];
 
 
 %% ------------------------------------------------------------------------------------------------------------
@@ -175,17 +171,34 @@ else
     x.S.unit = 'au';
 end
 
-Statistics = {'median' 'mean' 'CoV' 'sum' 'CoV4D_mean' 'CoV4D_sd' 'diffCoV4D_mean' 'diffCoV4D_sd' 'LabelSliceLocation4D_tMean'...
+Statistics = {'CNR_CoV' 'CNR_Mean' 'VolumeROI_CoV' 'VolumeROI_Mean' 'median' 'mean' 'CoV' 'sum' 'CoV4D_mean' 'CoV4D_sd' 'diffCoV4D_mean' 'diffCoV4D_sd' 'LabelSliceLocation4D_tMean'...
     'LabelSliceLocation4D_tSD' 'LabelsCoV_SliceLocation_tMean' 'LabelsCoV_SliceLocation_tSD' 'SlicetSD_SliceLocation'};
 
 for iStat=1:length(Statistics)
+    % Also check if a field exists without PVC
+    StatField = ['DAT_' Statistics{iStat}];
+    if isfield(x.S,StatField)
+        x.S.DAT = x.S.(StatField);
+        if numel(x.S.DAT)~=sum(isnan(x.S.DAT),'all')
+            % if there were no valid images, the data here would only contain NaNs, and we skip it; don't print a TSV from it
+            FileName = [Statistics{iStat} '_' x.S.output_ID '.tsv'];
+            x.S.SaveFile = fullfile(x.S.StatsDir, FileName);
+            xASL_stat_PrintStats(x); % print individual overview
+            x.S.DAT = [];
+        end
+    end
+
     for iPVC=1:3
         StatField = ['DAT_' Statistics{iStat} '_PVC' num2str(iPVC-1)];
         if isfield(x.S,StatField)
             x.S.DAT = x.S.(StatField);
-            FileName = [Statistics{iStat} '_' x.S.output_ID '_PVC' num2str(iPVC-1) '.tsv'];
-            x.S.SaveFile = fullfile(x.S.StatsDir, FileName);
-            xASL_stat_PrintStats(x); % print individual overview
+            if numel(x.S.DAT)~=sum(isnan(x.S.DAT),'all')
+                % if there were no valid images, the data here would only contain NaNs, and we skip it; don't print a TSV from it
+                FileName = [Statistics{iStat} '_' x.S.output_ID '_PVC-' num2str(iPVC-1) '.tsv'];
+                x.S.SaveFile = fullfile(x.S.StatsDir, FileName);
+                xASL_stat_PrintStats(x); % print individual overview
+                x.S.DAT = [];
+            end
         end
     end
 end

@@ -71,9 +71,7 @@ else % If files found, continue with defining sessions from SessionList
     bSessionsMissing = 0;
 
     for iSession = 1:nSessions
-        iSessionName = char(SESSIONS(iSession));
-        iSessionNumber = iSessionName(5:end); % Session number
-        CountSessionNumbers(iSession)= sum(~cellfun('isempty',strfind(NewList,iSessionNumber))); % Counts amount of individual session numbers
+        CountSessionNumbers(iSession)= sum(strcmp(NewList,SESSIONS(iSession))); % Counts amount of individual session numbers
     end
     
     % 5. Check and provide warning of number of sessions differs per subject
